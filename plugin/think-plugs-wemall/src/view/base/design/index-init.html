@@ -1,0 +1,391 @@
+<!--{literal}-->
+<style>
+    .design-setting-tpl input[type=number].layui-input {
+        height: 28px;
+        line-height: 28px;
+        text-align: center;
+    }
+</style>
+<script class="layui-hide" type="text/html" id="LayoutSettingFormTemplate">
+    <div class="design-setting-tpl">
+        <div v-for="(x,$index) in items" :key="x.unid">
+            <div v-if="x.type==='表格行数'" class="layui-form-item flex-align-center">
+                <span class="design-form-label">{{x.name || '表格行数'}}</span>
+                <label class="ta-pt-5"><input type="range" min="1" max="5" step="1" v-model.number="mstyle.vRow"></label>
+                <label class="ta-pl-5"><input type="number" min="1" max="5" step="1" v-range v-model.number="mstyle.vRow" class="layui-input"></label>
+                <span class="layui-form-label ta-pl-5 text-left flex-1" style="width:auto">行</span>
+            </div>
+            <div v-if="x.type==='表格列数'" class="layui-form-item flex-align-center">
+                <span class="design-form-label">{{x.name || '表格列数'}}</span>
+                <label class="ta-pt-5"><input type="range" min="1" max="5" step="1" v-model.number="mstyle.vCol"></label>
+                <label class="ta-pl-5"><input type="number" min="1" max="5" step="1" v-range v-model.number="mstyle.vCol" class="layui-input"></label>
+                <span class="layui-form-label ta-pl-5 text-left flex-1" style="width:auto">列</span>
+            </div>
+            <div v-if="x.type==='页面间距'" class="layui-form-item flex-align-center">
+                <span class="design-form-label">{{x.name || '页面间距'}}</span>
+                <label class="ta-pt-5"><input type="range" min="0" max="10" step="0.01" v-model="mstyle.vMarginTop"></label>
+                <label class="ta-pl-5"><input type="number" min="0" max="10" step="0.01" v-range v-model="mstyle.vMarginTop" class="layui-input"></label>
+                <span class="layui-form-label ta-pl-5 text-left flex-1" style="width:auto">vw</span>
+            </div>
+            <div v-if="x.type==='上下内距'" class="layui-form-item flex-align-center">
+                <span class="design-form-label">{{x.name || '上下内距'}}</span>
+                <label class="ta-pt-5"><input type="range" min="0" max="10" step="0.01" v-model="mstyle.vPaddingTopBottom"></label>
+                <label class="ta-pl-5"><input type="number" min="0" max="10" step="0.01" v-range v-model="mstyle.vPaddingTopBottom" class="layui-input"></label>
+                <span class="layui-form-label ta-pl-5 text-left flex-1" style="width:auto">vw</span>
+            </div>
+            <div v-if="x.type==='左右内距'" class="layui-form-item flex-align-center">
+                <span class="design-form-label">{{x.name || '左右内距'}}</span>
+                <label class="ta-pt-5"><input type="range" min="0" max="10" step="0.01" v-model="mstyle.vPaddingLeftRight"></label>
+                <label class="ta-pl-5"><input type="number" min="0" max="10" step="0.01" v-range v-model="mstyle.vPaddingLeftRight" class="layui-input"></label>
+                <span class="layui-form-label ta-pl-5 text-left flex-1" style="width:auto">vw</span>
+            </div>
+            <div v-if="x.type==='上下间距'" class="layui-form-item flex-align-center">
+                <span class="design-form-label">{{x.name || '上下间距'}}</span>
+                <label class="ta-pt-5"><input type="range" min="0" max="10" step="0.01" v-model="mstyle.vMarginTopBottom"></label>
+                <label class="ta-pl-5"><input type="number" min="0" max="10" step="0.01" v-range v-model="mstyle.vMarginTopBottom" class="layui-input"></label>
+                <span class="layui-form-label ta-pl-5 text-left flex-1" style="width:auto">vw</span>
+            </div>
+            <div v-if="x.type==='左右间距'" class="layui-form-item flex-align-center">
+                <span class="design-form-label">{{x.name || '左右间距'}}</span>
+                <label class="ta-pt-5"><input type="range" min="0" max="10" step="0.01" v-model="mstyle.vMarginLeftRight"></label>
+                <label class="ta-pl-5"><input type="number" min="0" max="10" step="0.01" v-range v-model="mstyle.vMarginLeftRight" class="layui-input"></label>
+                <span class="layui-form-label ta-pl-5 text-left flex-1" style="width:auto">vw</span>
+            </div>
+            <div v-if="x.type==='边框位置'" class="layui-form-item flex-align-center">
+                <span class="design-form-label">{{x.name || '边框位置'}}</span>
+                <div class="flex-1">
+                    <div class="layui-btn-group">
+                        {{mstyle.vBorderType || ''}}
+                        <a :class="(mstyle.vBorderType||'').indexOf('t')>-1?'layui-btn-normal':'layui-btn-primary'" @click="char('vBorderType','t')" class="layui-btn">上</a>
+                        <a :class="(mstyle.vBorderType||'').indexOf('r')>-1?'layui-btn-normal':'layui-btn-primary'" @click="char('vBorderType','r')" class="layui-btn">右</a>
+                        <a :class="(mstyle.vBorderType||'').indexOf('b')>-1?'layui-btn-normal':'layui-btn-primary'" @click="char('vBorderType','b')" class="layui-btn">下</a>
+                        <a :class="(mstyle.vBorderType||'').indexOf('l')>-1?'layui-btn-normal':'layui-btn-primary'" @click="char('vBorderType','l')" class="layui-btn">左</a>
+                    </div>
+                </div>
+            </div>
+            <div v-if="x.type==='边框样式'" class="layui-form-item flex-align-center">
+                <span class="design-form-label">{{x.name || '边框样式'}}</span>
+                <div class="flex-1">
+                    <div class="layui-btn-group">
+                        <a :class="mstyle.borderStyle==='solid'?'layui-btn-normal':'layui-btn-primary'" @click="$set(mstyle,'borderStyle','solid')" class="layui-btn">实 线</a>
+                        <a :class="mstyle.borderStyle==='dashed'?'layui-btn-normal':'layui-btn-primary'" @click="$set(mstyle,'borderStyle','dashed')" class="layui-btn">虚 线</a>
+                        <a :class="mstyle.borderStyle==='dotted'?'layui-btn-normal':'layui-btn-primary'" @click="$set(mstyle,'borderStyle','dotted')" class="layui-btn">点状线</a>
+                    </div>
+                </div>
+            </div>
+            <div v-if="x.type==='边框颜色'" class="layui-form-item flex-align-center">
+                <span class="design-form-label">{{x.name || '边框颜色'}}</span>
+                <div class="flex-1">
+                    <color-picker :mstyle="mstyle" mfield="borderColor"/>
+                </div>
+            </div>
+            <div v-if="x.type==='边框宽度'" class="layui-form-item flex-align-center">
+                <span class="design-form-label">{{x.name || '边框宽度'}}</span>
+                <label class="ta-pt-5"><input type="range" min="0" max="10" step="0.01" v-model="mstyle.vBorderWidth"></label>
+                <label class="ta-pl-5"><input type="number" min="0" max="10" step="0.01" v-range v-model="mstyle.vBorderWidth" class="layui-input"></label>
+                <span class="layui-form-label ta-pl-5 text-left flex-1" style="width:auto">vw</span>
+            </div>
+            <div v-if="x.type==='边框圆角'" class="layui-form-item flex-align-center">
+                <span class="design-form-label">{{x.name || '边框圆角'}}</span>
+                <label class="ta-pt-5"><input type="range" min="0" max="50" step="0.01" v-model="mstyle.vBorderRadius"></label>
+                <label class="ta-pl-5"><input type="number" min="0" max="50" step="0.01" v-range v-model="mstyle.vBorderRadius" class="layui-input"></label>
+                <span class="layui-form-label ta-pl-5 text-left flex-1" style="width:auto">vw</span>
+            </div>
+            <div v-if="x.type==='容器宽度'" class="layui-form-item flex-align-center">
+                <span class="design-form-label">{{x.name || '容器宽度'}}</span>
+                <label class="ta-pt-5"><input type="range" min="0.01" max="100" step="0.01" v-model="mstyle.vWidth"></label>
+                <label class="ta-pl-5"><input type="number" min="0.01" max="100" step="0.01" v-range v-model="mstyle.vWidth" class="layui-input"></label>
+                <span class="layui-form-label ta-pl-5 text-left flex-1" style="width:auto">%</span>
+            </div>
+            <div v-if="x.type==='容器宽度2'" class="layui-form-item flex-align-center">
+                <span class="design-form-label">{{x.name || '容器宽度'}}</span>
+                <label class="ta-pt-5"><input type="range" min="0" max="100" step="0.01" v-model="mstyle.vWidth2"></label>
+                <label class="ta-pl-5"><input type="number" min="0" max="100" step="0.01" v-range v-model="mstyle.vWidth2" class="layui-input"></label>
+                <span class="layui-form-label ta-pl-5 text-left flex-1" style="width:auto">vw</span>
+            </div>
+            <div v-if="x.type==='容器高度'" class="layui-form-item flex-align-center">
+                <span class="design-form-label">{{x.name || '容器高度'}}</span>
+                <label class="ta-pt-5"><input type="range" min="0.01" max="100" step="0.01" v-model="mstyle.vHeight"></label>
+                <label class="ta-pl-5"><input type="number" min="0.01" max="100" step="0.01" v-range v-model="mstyle.vHeight" class="layui-input"></label>
+                <span class="layui-form-label ta-pl-5 text-left flex-1" style="width:auto">vw</span>
+            </div>
+            <div v-if="x.type==='文字位置'" class="layui-form-item flex-align-center">
+                <span class="design-form-label">{{x.name || '文字位置'}}</span>
+                <div class="flex-1">
+                    <div class="layui-btn-group">
+                        <a :class="mstyle.textAlign==='left'?'layui-btn-normal':'layui-btn-primary'" @click="$set(mstyle,'textAlign','left')" class="layui-btn">居 左</a>
+                        <a :class="mstyle.textAlign==='center'?'layui-btn-normal':'layui-btn-primary'" @click="$set(mstyle,'textAlign','center')" class="layui-btn">居 中</a>
+                        <a :class="mstyle.textAlign==='right'?'layui-btn-normal':'layui-btn-primary'" @click="$set(mstyle,'textAlign','right')" class="layui-btn">居 右</a>
+                    </div>
+                </div>
+            </div>
+            <div v-if="x.type==='文字粗细'" class="layui-form-item flex-align-center">
+                <span class="design-form-label">{{x.name || '文字粗细'}}</span>
+                <label class="ta-pt-5"><input type="range" min="100" max="900" step="100" v-model="mstyle.fontWeight"></label>
+                <label class="ta-pl-5"><input type="number" min="100" max="900" step="100" v-range v-model="mstyle.fontWeight" class="layui-input"></label>
+                <span class="layui-form-label ta-pl-5 text-left flex-1" style="width:auto"></span>
+            </div>
+            <div v-if="x.type==='文字行高'" class="layui-form-item flex-align-center">
+                <span class="design-form-label">{{x.name || '文字行高'}}</span>
+                <label class="ta-pt-5"><input type="range" min="0.01" max="50" step="0.01" v-model="mstyle.vLineHeight"></label>
+                <label class="ta-pl-5"><input type="number" min="0.01" max="50" step="0.01" v-range v-model="mstyle.vLineHeight" class="layui-input"></label>
+                <span class="layui-form-label ta-pl-5 text-left flex-1" style="width:auto">vw</span>
+            </div>
+            <div v-if="x.type==='文字大小'" class="layui-form-item flex-align-center">
+                <span class="design-form-label">{{x.name || '文字大小'}}</span>
+                <label class="ta-pt-5"><input type="range" min="0.05" max="10" step="0.01" v-model="mstyle.vFontSize"></label>
+                <label class="ta-pl-5"><input type="number" min="0.05" max="10" step="0.01" v-range v-model="mstyle.vFontSize" class="layui-input"></label>
+                <span class="layui-form-label ta-pl-5 text-left flex-1" style="width:auto">vw</span>
+            </div>
+            <div v-if="x.type==='文字颜色'" class="layui-form-item flex">
+                <span class="design-form-label">{{x.name || '文字颜色'}}</span>
+                <color-picker :mstyle="mstyle" mfield="color"/>
+            </div>
+            <div v-if="x.type==='背景颜色'" class="layui-form-item flex">
+                <span class="design-form-label">{{x.name || '背景颜色'}}</span>
+                <color-picker :mstyle="mstyle" mfield="backgroundColor"/>
+            </div>
+            <div v-if="x.type==='背景图片'" class="layui-form-item flex">
+                <span class="design-form-label">{{x.name || '背景图片'}}</span>
+                <div class="flex-1">
+                    <upload-image :mstyle="mstyle" mfield="vBackgroundImage" v-model="mstyle.vBackgroundImage" :showinput="false"></upload-image>
+                </div>
+            </div>
+            <div v-if="x.type==='背景样式' && !!mstyle.vBackgroundImage" class="layui-form-item flex-align-center">
+                <span class="design-form-label">{{x.name || '背景样式'}}</span>
+                <div class="flex-1">
+                    <label class="think-radio" v-for="(xx,$ii) in ['重复平铺','横向平铺','垂直平铺','全屏拉伸','居中裁剪']">
+                        <input type="radio" :name="x.guid" :value="$ii" v-model="mstyle.vBackgroundType" lay-ignore> {{xx}}
+                    </label>
+                </div>
+            </div>
+        </div>
+    </div>
+</script>
+
+<script>
+    function initVueComponents(Vue) {
+
+        Vue.directive('range', el => {
+            if (typeof el.max !== 'undefined') el.value = Math.min(el.value, el.max);
+            if (typeof el.min !== 'undefined') el.value = Math.max(el.value, el.min);
+        });
+
+        function guid(pre) {
+            return Math.random().toString().replace('0.', (pre || '')).substring(-16)
+        }
+
+        Vue.mixin({
+                methods: {
+                    copy: (x, u) => {
+                        let item = JSON.parse(JSON.stringify(x))
+                        if (u) item.unid = guid('U');
+                        return item;
+                    },
+                    guid: pre => guid(pre),
+                    showText: txt => txt.replace(/\n/g, '<br>'),
+                    showBgimg: src => ({backgroundImage: "url('" + src + "')"}),
+                    showColor: clr => ({color: clr}),
+                    showBgcolor: clr => ({backgroundColor: clr}),
+                    showError: tips => ($.msg.notify('操作异常提示：', tips, 2000, {width: '350px', type: 'error'}), this),
+                    arrSplit: function (data, length) {
+                        let sps = [];
+                        while (data.length > length) sps.push(data.splice(0, length));
+                        if (data.length > 0) sps.push(data);
+                        return sps;
+                    },
+                    showByBoolean(val) {
+                        return {opacity: val ? 1.00 : 0.01}
+                    },
+                    showStyle: function (data, extra, allow) {
+                        let width = 400, style = Object.assign({}, JSON.parse(JSON.stringify(data)), extra || {});
+                        let allows = allow ? ',' + allow + ',' : false;
+                        let borders = {t: 'borderTopWidth', l: 'borderLeftWidth', r: 'borderRightWidth', b: 'borderBottomWidth'};
+                        for (let key in style) {
+                            if (allows && allows.indexOf(key) === -1) {
+                                delete style[key];
+                                continue;
+                            }
+                            let value = style[key];
+                            let realpx = (isNaN(Number(value)) ? 0 : value * width / 100) + 'px';
+                            if (/^[_v]/.test(key)) delete style[key];
+                            if (key === 'vWidth2') {
+                                style.width = realpx;
+                                style.maxWidth = '100%';
+                            }
+                            if (key === 'vWidth') style.width = value + '%';
+                            if (key === 'vHeight') style.height = realpx;
+                            if (key === 'vFontSize') style.fontSize = realpx;
+                            if (key === 'vLineHeight') style.lineHeight = realpx;
+                            if (key === 'vMarginTop') style.marginTop = realpx;
+                            if (key === 'vBorderRadius') {
+                                style.overflow = 'hidden';
+                                style.borderRadius = realpx;
+                            }
+                            for (let i in borders) {
+                                if (key === 'vBorderType' && value) {
+                                    value.indexOf(i) < 0 && (style[borders[i]] = 0);
+                                }
+                                if (key === 'vBorderWidth') {
+                                    if (typeof style[borders[i]] === 'undefined') {
+                                        style[borders[i]] = realpx;
+                                        style.boxSizing = 'border-box';
+                                    }
+                                }
+                            }
+                            if (key === 'vBackgroundImage') {
+                                style.backgroundImage = "url('" + value + "')";
+                            }
+                            if (key === 'vPaddingTopBottom') {
+                                style.boxSizing = 'border-box';
+                                style.paddingTop = style.paddingBottom = realpx;
+                            }
+                            if (key === 'vPaddingLeftRight') {
+                                style.boxSizing = 'border-box';
+                                style.paddingLeft = style.paddingRight = realpx;
+                            }
+                            if (key === 'vMarginTopBottom') {
+                                style.boxSizing = 'border-box';
+                                style.marginTop = style.marginBottom = realpx;
+                            }
+                            if (key === 'vMarginLeftRight') {
+                                style.boxSizing = 'border-box';
+                                style.marginLeft = style.marginRight = realpx;
+                            }
+                            // '重复平铺','重复平铺','垂直平铺','全屏拉伸','居中裁减'
+                            if (key === 'vBackgroundType') {
+                                if (value === 0) {
+                                    style.backgroundSize = 'auto';
+                                    style.backgroundRepeat = 'repeat'
+                                } else if (value === 1) {
+                                    style.backgroundSize = 'contain';
+                                    style.backgroundRepeat = 'repeat no-repeat'
+                                } else if (value === 2) {
+                                    style.backgroundSize = 'contain';
+                                    style.backgroundRepeat = 'no-repeat repeat'
+                                } else if (value === 3) {
+                                    style.backgroundSize = '100% 100%';
+                                    style.backgroundRepeat = 'no-repeat';
+                                } else if (value === 4) {
+                                    style.backgroundSize = 'cover'
+                                    style.backgroundRepeat = 'no-repeat'
+                                    style.backgroundPosition = 'center center';
+                                }
+                            }
+                        }
+                        return style;
+                    }
+                }
+            }
+        );
+
+        // 颜色选择器
+        Vue.component('ColorPicker', {
+            data: () => ({eid: '', value: ''}),
+            props: {mstyle: {type: Object, required: true}, mfield: {type: String, required: true}, mtype: {type: String, default: 'rgba'}},
+            template: '' +
+                '<div class="relative">' +
+                '   <label class="layui-input-inline" style="width:230px">' +
+                '       <input :value="value" placeholder="请选择颜色" class="layui-input layui-bg-gray font-code text-center" readonly>' +
+                '   </label>' +
+                '   <div class="layui-inline absolute"><div :id="eid" class="ta-m-0">eid</div></div>' +
+                '</div>',
+            created: function () {
+                let key = '_' + this.mfield.replace(/([A-Z])/g, '_$1').toLowerCase();
+                this.eid = this.mstyle[key] || Math.random().toString().replace('0.', 'colorpicker-');
+                this.value = this.mstyle[this.mfield] || '';
+            },
+            mounted: function () {
+                let conf = {};
+                if (this.mtype === 'hex') conf = {format: 'hex', predefine: true};
+                if (this.mtype === 'rgb') conf = {format: 'rgb', predefine: true};
+                if (this.mtype === 'rgba') conf = {format: 'rgb', predefine: true, alpha: true};
+                let done = color => this.$set(this.mstyle, this.mfield, this.value = color.replace(/\s+/gm, '')) && this.$forceUpdate();
+                this.$nextTick(() => layui.colorpicker.render(Object.assign({}, {
+                    elem: '#' + this.eid, color: this.value, done: done, change: done
+                }, conf)));
+            }
+        });
+
+        // 显示背景图片
+        Vue.component('BgImage', {
+            template: '<div class="transition" :style="bgStyle"></div>',
+            model: {prop: 'bgimg'}, props: {bgimg: {type: String, required: true}},
+            data() {
+                return {
+                    bgStyle: {
+                        width: '100%', height: '100%',
+                        background: 'none no-repeat center center',
+                        backgroundSize: 'cover', backgroundImage: 'url(' + this.bgimg + ')',
+                    }
+                };
+            },
+            watch: {
+                bgimg(value) {
+                    this.bgStyle.backgroundImage = 'url(' + value + ')';
+                }
+            }
+        });
+
+        // 图片上传组件
+        Vue.component('UploadImage', {
+            data: () => ({eid: '', mclass: 'layui-show'}),
+            model: {prop: 'mvalue', event: 'change'},
+            props: {
+                mstyle: {type: Object, required: true},
+                mfield: {type: String, required: true},
+                mvalue: {type: String, default: ''},
+                showinput: {type: Boolean, default: true}
+            },
+            template: '<div class="relative">' +
+                '   <input class="layui-input layui-bg-gray" :class="mclass" v-model="mvalue" readonly :id="eid" placeholder="请上传图片">' +
+                '   <a class="input-right-icon" :class="mclass" data-type="jpg,png,gif" :data-upbtn="eid"><i class="layui-icon layui-icon-upload"></i></a>' +
+                '</div>',
+            created: function () {
+                if (this.showinput === false) this.mclass = 'layui-hide';
+                let key = '_' + this.mfield.replace(/([A-Z])/g, '_$1').toLowerCase();
+                this.eid = this.mstyle[key] || Math.random().toString().replace('0.', 'uploadimage-');
+            },
+            watch: {
+                mvalue() {
+                    this.$nextTick(() => $('#' + this.eid).trigger('change'));
+                }
+            },
+            mounted: function () {
+                this.mvalue = this.mstyle[this.mfield] || '';
+                let done = e => this.$emit('change', e.target.value);
+                // let done = e => this.$set(this.mstyle, this.mfield, e.target.value);
+                this.$nextTick(() => {
+                    let $ele = $('#' + this.eid).uploadOneImage().on('change', done);
+                    $('[data-upbtn=' + this.eid + ']').uploadFile(src => $ele.val(src).trigger('change'));
+                });
+            }
+        });
+
+        // 布局配置插件
+        Vue.component('LayoutSetting', {
+            data: () => ({items: []}),
+            props: {mstyle: Object, mtypes: {type: String, default: '页面间距,边框圆角,容器宽度,容器高度'}},
+            template: $('#LayoutSettingFormTemplate').html(),
+            created: function () {
+                this.mtypes.split(',').forEach(v => {
+                    if (!v && typeof v !== 'string') return;
+                    let attr = v.split('#');
+                    this.items.push({type: attr[0], name: attr[1] || '', unid: this.guid('my')});
+                });
+            }, methods: {
+                /**
+                 * @param {String} key
+                 * @param {String} char
+                 */
+                char: function (key, char) {
+                    let value = this.mstyle[key] || '';
+                    this.$set(this.mstyle, key, value.indexOf(char) >= 0 ? value.replace(new RegExp(char, 'i'), '') : (value + char));
+                }
+            }
+        });
+
+        return Vue;
+    }
+</script>
+<!--{/literal}-->

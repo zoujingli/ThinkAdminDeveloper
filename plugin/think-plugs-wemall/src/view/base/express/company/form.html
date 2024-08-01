@@ -1,0 +1,30 @@
+<form action="{:sysuri()}" class='layui-form layui-card' data-auto="true" data-table-id="DataTable" method="post">
+
+    <div class="layui-card-body ta-pl-40">
+
+        <label class="layui-form-item block relative">
+            <span class="help-label"><b>快递公司名称</b>Name</span>
+            <input class="layui-input" name="name" placeholder="请输入快递公司名称" required vali-name="快递公司名称" value='{$vo.name|default=""}'>
+            <span class="color-desc">必填，快递公司名称用于显示快递配送的公司标识，请尽量保持其精准性。</span>
+        </label>
+
+        <label class="layui-form-item block relative">
+            <span class="help-label"><b>接口查询编码</b>Code</span>
+            <input class="layui-input" name="code" placeholder="请输入快递鸟接口查询编码" required vali-name="接口查询编码" value='{$vo.code|default=""}'>
+            <span class="color-desc">必填，快递公司对应在快递100接口的编码，可以从快递100官方接口文档中获取到。</span>
+        </label>
+
+        <label class="layui-form-item block relative">
+            <span class="help-label"><b>快递公司描述</b>Remark</span>
+            <textarea class="layui-textarea" name="remark" placeholder="请输入快递公司描述">{$vo.remark|default=''}</textarea>
+        </label>
+    </div>
+
+    <div class="hr-line-dashed"></div>
+    {notempty name='vo.id'}<input name='id' type='hidden' value='{$vo.id}'>{/notempty}
+
+    <div class="layui-form-item text-center">
+        <button class="layui-btn" type='submit'>保存数据</button>
+        <button class="layui-btn layui-btn-danger" data-close data-confirm="确定要取消编辑吗？" type='button'>取消编辑</button>
+    </div>
+</form>

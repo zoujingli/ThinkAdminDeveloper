@@ -1,0 +1,76 @@
+<style>
+    .ProduceRule {
+        padding: 8px 10px;
+        border-radius: 3px;
+    }
+
+    .ProduceRule .layui-input {
+        width: 80px;
+        height: 24px;
+        display: inline-block;
+        text-align: center;
+        line-height: 24px;
+    }
+</style>
+<form class="layui-form layui-card" action="{:sysuri()}" data-table-id="CoderTable" id="RuleForm" data-auto="true" method="post">
+    <div class="layui-card-body padding-left-40">
+
+        <label class="layui-form-item block relative">
+            <span class="help-label label-required-prev"><b>物码批次号</b>Code Batch</span>
+            <input value='{$vo.batch|default=""}' disabled class="layui-input think-bg-gray">
+        </label>
+
+        <div class="layui-form-item">
+            <label id="template" class="block relative">
+                <span class="help-label"><b>物码生成模板</b>Code Template</span>
+                {empty name='vo.template'}{php}$vo['template']='{sn},{max},{mid},{min},{encurl},{verify},{number},{encode}';{/php}{/empty}
+                <input class="layui-input" required placeholder="请输入物码默认生成模板" name="template" value="{$vo.template|default=''}">
+            </label>
+            <div class="sub-strong-blue color-desc notselect">
+                {foreach $fields as $k => $v}
+                <div class='margin-right-5 inline-block pointer'>{$v}<b><span style="padding-left:2px">{</span>{$k}<span>}</span></b></div>
+                {/foreach}
+            </div>
+            <script>
+                $('#template').next().on('click', 'div', function () {
+                    $('#template input').insertAtCursor($(this).find('b').text() + ',');
+                });
+            </script>
+        </div>
+
+        {if $vo.type eq 1}
+        <div class="layui-form-item">
+            <span class="help-label label-required-prev"><b>打印组套</b>Print Rule</span>
+            <div class="layui-input think-bg-gray">
+                {if $vo.max_mid>0}<b>1</b> 个大码对应 <b>{$vo.max_mid}</b> 个中码，{else}无大码，{/if}
+                {if $vo.mid_min>0}<b>1</b> 个中码对应 <b>{$vo.mid_min}</b> 个小码。{else}无中码。{/if}
+            </div>
+        </div>
+
+        <div class="layui-form-item layui-hide">
+            <span class="help-label label-required-prev"><b>生产组套</b>Produce Rule</span>
+            <div class="think-bg-gray ProduceRule">
+                {if $vo.max_mid>0}<label><b>1</b> 个大码对应 <input class="layui-input" type="number" min="1" max="{$vo.max_mid}" data-blur-number="0" data-value-min="1" data-value-max="{$vo.max_mid}" name="max_mid" value="{$vo.max_mid}"> 个中码，</label>{else}无大码，{/if}
+                {if $vo.mid_min>0}<label><b>1</b> 个中码对应 <input class="layui-input" type="number" min="1" max="{$vo.mid_min}" data-blur-number="0" data-value-min="1" data-value-max="{$vo.mid_min}" name="mid_min" value="{$vo.mid_min}"> 个小码。</label>{else}无中码。{/if}
+            </div>
+        </div>
+        {/if}
+
+        <div class="layui-form-item">
+            <div class="help-label"><b>物码描述</b>Coder Remark</div>
+            <label class="block">
+                <textarea placeholder="请输入物码描述" class="layui-textarea" name="remark">{$vo.remark|default=""}</textarea>
+            </label>
+        </div>
+
+    </div>
+
+    <div class="hr-line-dashed"></div>
+    {if isset($vo['id'])}<input type='hidden' value='{$vo.id}' name='id'>{/if}
+    {if isset($vo['batch'])}<input type='hidden' value='{$vo.batch}' name='batch'>{/if}
+
+    <div class="layui-form-item text-center">
+        <button class="layui-btn" type='submit'>保存数据</button>
+        <button class="layui-btn layui-btn-danger" type='button' data-confirm="确定要取消编辑吗？" data-close>取消编辑</button>
+    </div>
+</form>

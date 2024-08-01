@@ -1,0 +1,84 @@
+{extend name="main"}
+
+{block name='style'}{include file='source/template/form-style'}{/block}
+{block name='script'}{include file='source/template/form-script'}{/block}
+
+{block name="content"}
+<form action="{:sysuri()}" class="layui-form layui-card" data-auto method="post">
+    <div class="layui-card-body" style="width:1025px" id="TemplateApp">
+
+        <label class="layui-form-item block relative">
+            <span class="help-label"><b>溯源模板名称</b>Template Name</span>
+            <input class="layui-input" name="name" placeholder="请输入溯源模板名称" v-model="name" required>
+        </label>
+
+        <div class="layui-form-item label-required-prev">
+            <span class="help-label"><b>主题颜色设置</b>Theme Color</span>
+            <div class="layui-textarea" style="padding:10px 10px 5px 15px;min-height:unset">
+                背景颜色：
+                <div id="mainBackColor"></div>
+                文字颜色：
+                <div id="mainTextColor"></div>
+            </div>
+            <textarea name="styles" class="layui-textarea layui-hide">{{JSON.stringify(styles)}}</textarea>
+        </div>
+
+        <div class="layui-form-item nowrap">
+            <div class="help-label label-required-prev">
+                <b>溯源模板定制</b>Template Rule
+            </div>
+            <div class="layui-clear">
+                <div class="box-left pull-left">
+                    <div v-for="tool in tools" class="border-0 padding-left-0">
+                        <b v-text="tool.name" class="margin-top-15 layui-badge layui-bg-blue"></b>
+                        <div class="layui-row margin-top-10">
+                            <div class="layui-col-xs4 text-center" v-for="item in tool.data">
+                                <div v-if="item.active">
+                                    <a @click="addItem(item.name)" class="transition">
+                                        <i class="font-s20 block" :class="item.icon"></i>
+                                        <span v-text="item.title||item.name"></span>
+                                    </a>
+                                </div>
+                                <div v-else>
+                                    <a style="color:#ccc;cursor:not-allowed" class="transition">
+                                        <i class="font-s20 block disabled" :class="item.icon"></i>
+                                        <span v-text="item.title||item.name"></span>
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class='box-center pull-left shadow-mini mobile-preview'>
+                    <div class='mobile-header padding-row-40' v-text="name"></div>
+                    <div class='mobile-body border-0'>{include file='source/template/form-view'}</div>
+                </div>
+                <div class="box-right pull-left transition" v-if="item.name">
+                    <div class="layui-card shadow-mini">
+                        <div class="layui-card-header"><b>编辑<span v-text="item.name"></span></b></div>
+                        <div class="layui-card-body relative overauto" style="height:535px;margin-right:-20px">
+                            <div class="overhide relative" style="width:310px">
+                                {include file='source/template/form-edit'}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <label class="layui-form-item layui-hide">
+            <textarea readonly name="content" class="layui-textarea">{{JSON.stringify(items)}}</textarea>
+        </label>
+
+        <div class="hr-line-dashed margin-top-40"></div>
+        {notempty name='vo.id'}<input name="id" type="hidden" value="{$vo.id}">{/notempty}
+        {notempty name='vo.code'}<input name="code" type="hidden" value="{$vo.code}">{/notempty}
+        {notempty name='vo.from'}<input name="from" type="hidden" value="{$vo.from}">{/notempty}
+
+        <div class="layui-form-item text-center">
+            <button class="layui-btn" type='submit'>保存数据</button>
+            <button class="layui-btn layui-btn-danger" type='button' data-confirm="确定要取消编辑吗？" data-target-backup>取消编辑</button>
+        </div>
+    </div>
+</form>
+{/block}

@@ -1,0 +1,431 @@
+<!-- 图片组件 -->
+<div v-if="item.name==='图片'" xmlns:v-model="http://www.w3.org/1999/xhtml">
+    <div class="padding-0 relative">
+        <div class="margin-bottom-20" style="word-break:break-word;white-space:normal">
+            图片以展开形式展示，固定图片宽度，固定图片长度，可上传，多种样式可选。
+        </div>
+        <div class="layui-form-item">
+            <span class="color-green font-w7">样式类型</span>
+            <div class="text-left">
+                <label class="think-radio">
+                    <input type="radio" :checked="item.type==1" @click="setImgType(1)" lay-ignore>单列图
+                </label>
+                <label class="think-radio">
+                    <input type="radio" :checked="item.type==2" @click="setImgType(2)" lay-ignore>双列图
+                </label>
+                <label class="think-radio">
+                    <input type="radio" :checked="item.type==3" @click="setImgType(3)" lay-ignore>橱窗位
+                </label>
+                <label class="think-radio">
+                    <input type="radio" :checked="item.type==4" @click="setImgType(4)" lay-ignore>多图展示
+                </label>
+            </div>
+        </div>
+        <div class="layui-form-item">
+            <div class="color-green font-w7" v-if="item.type<3">{{ item.type == 2 ? '双列图' : '单列图' }}</div>
+            <div class="color-green font-w7" v-if="item.type>2">{{ item.type == 3 ? '橱窗位' : '多图展示' }}</div>
+            <div class="margin-bottom-15" v-for="(ite,i) in item.data" v-if="i+1 <= item.type">
+                <img data-error="false" :src="ite.image" style="width:100%;height:auto;display:block">
+                <label class="margin-top-5 block relative">
+                    <input pattern="^(\w+:)?//" placeholder="请输入跳转地址，需以 http 开头" class="layui-input" v-model="ite.link">
+                </label>
+                <button type="button" @click="uploadImage(ite, 'image')" class="layui-btn layui-btn-sm margin-top-5">上传图片</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- 轮播图组件 -->
+<div v-if="item.name==='轮播图'" class="layui-form-item">
+    <div class="color-green font-w7">请上传图片</div>
+    <div v-for="(x,$index) in item.items" class='layui-form-item'>
+        <div class="overhide relative border-radius-5" style="height:100px;">
+            <div class="absolute pointer notselect padding-row-5 border-radius-5" style='top:0;right:0;color:#fff;background:rgba(0,0,0,0.6)'>
+                <span @click="moveUp(item.items,$index)" class="relative inline-block margin-right-10"><i class="layui-icon">&#xe619;</i></span>
+                <span @click="moveDn(item.items,$index)" class="relative inline-block"><i class="layui-icon">&#xe61a;</i></span>
+                <span @click="moveRm(item.items,$index)" class="relative inline-block margin-left-10"><i class="layui-icon">&#x1006;</i></span>
+            </div>
+            <img data-error="false" class="full-width transition" :src="x.image">
+        </div>
+        <label class="margin-top-5 block relative">
+            <input pattern="^(\w+:)?//" placeholder="请输入跳转地址" class="layui-input" v-model="x.link">
+        </label>
+    </div>
+    <button type="button" @click="uploadImage(item.items,'image','push')" class="layui-btn layui-btn-fluid margin-top-15">添加图片</button>
+</div>
+
+<!-- 二维码组件 -->
+<div v-if="item.name==='二维码'">
+    <div class="layui-form-item">
+        <div class="text-left color-green font-w7">请上传图片</div>
+        <img data-error="false" class="block full-width" :src="item.image">
+        <button type="button" @click="uploadImage(item,'image')" class="layui-btn layui-btn-sm margin-top-15">上传图片</button>
+    </div>
+    <label class="layui-form-item block relative">
+        <div class="text-left color-green font-w7">二维码描述</div>
+        <textarea class="layui-textarea" v-model="item.content"></textarea>
+    </label>
+</div>
+
+<!-- 分割线组件 -->
+<div v-if="item.name==='分割线'">
+    <fieldset class="layui-form-item">
+        <legend><span class="layui-badge think-bg-violet">分割线样式</span></legend>
+        <div class="layui-form-item text-center">
+            <label class="think-radio">
+                <input type="radio" lay-ignore :checked="item.type==='solid'" @click="item.type='solid'"> 实线
+            </label>
+            <label class="think-radio">
+                <input type="radio" lay-ignore :checked="item.type==='dashed'" @click="item.type='dashed'"> 虚线
+            </label>
+        </div>
+    </fieldset>
+    <fieldset class="layui-form-item">
+        <legend><span class="layui-badge think-bg-violet">分割线高度</span></legend>
+        <label class="layui-form-item text-center block relative">
+            <input style="width:120px" class="layui-input padding-0 text-center inline-block" type="number" v-model="item.width">
+        </label>
+    </fieldset>
+    <fieldset class="layui-form-item">
+        <legend><span class="layui-badge think-bg-violet">分割线颜色</span></legend>
+        <div class="text-center">
+            <div id="MyLineColorPicker"></div>
+        </div>
+    </fieldset>
+</div>
+
+<!-- 文本组件 -->
+<div v-if="item.name==='文本'">
+    <div class="layui-form-item">
+        <b class="color-green">文本内容</b>
+        <textarea class="layui-textarea" v-model="item.content"></textarea>
+    </div>
+</div>
+
+<!-- 云监控 -->
+<div v-if="item.name==='云监控'">
+    <div class="padding-0 relative">
+        <label class="layui-form-item block relative">
+            <b class="color-green">云监控标题</b>
+            <input class="layui-input" placeholder="请输入云监控标题" v-model="item.title">
+        </label>
+        <label class="layui-form-item block relative">
+            <b class="color-green">云监控描述</b>
+            <textarea class="layui-textarea" placeholder="请输入云监控描述" v-model="item.remark"></textarea>
+        </label>
+        <div class="layui-form-item block relative">
+            <b class="color-green label-required-prev">云监控设备</b>
+            <div><a class="layui-btn layui-btn-sm" @click="setCamera">选择云监控</a></div>
+        </div>
+    </div>
+</div>
+
+<!-- 防仿信息组件 -->
+<div v-if="item.name==='防伪信息'">
+    <div class="padding-0 relative">
+        <label class="layui-form-item block relative">
+            <b class="color-green label-required-prev">防伪标题</b>
+            <input class="layui-input" required placeholder="请输入防伪标题" v-model="item.title">
+        </label>
+        <label class="layui-form-item block relative">
+            <b class="color-green label-required-prev">查询正品描述</b>
+            <textarea class="layui-textarea" required placeholder="请输入正品描述" v-model="item.success"></textarea>
+        </label>
+        <label class="layui-form-item block relative">
+            <b class="color-green label-required-prev">查询异常描述</b>
+            <textarea class="layui-textarea" required placeholder="请输入异常描述" v-model="item.error"></textarea>
+        </label>
+        <label class="layui-form-item block relative">
+            <b class="color-green label-required-prev">查询次数大于时为异常</b>
+            <input class="layui-input" required placeholder="请输入查询异常次数" @blur="item.count=item.count<1?1:item.count" type="number" min="1" v-model.number="item.count">
+        </label>
+        <div class="layui-form-item relative">
+            <label class='think-checkbox'>
+                <input type="checkbox" lay-ignore :checked="!!item.audio" v-model:checked="item.audio">
+                <b class="color-green">开启防伪结果语音播报</b>
+            </label>
+        </div>
+        <div class="layui-form-item relative">
+            <label class='think-checkbox'>
+                <input type="checkbox" lay-ignore :checked="!!item.verify" v-model:checked="item.verify">
+                <b class="color-green">开启防伪查询需验证码验证</b>
+            </label>
+        </div>
+    </div>
+</div>
+
+<!-- 防仿信息组件 -->
+<div v-if="item.name==='标签序号'">
+    <div class="padding-0 relative">
+        <label class="layui-form-item block relative">
+            <b class="color-green label-required-prev">组件标题</b>
+            <input class="layui-input" required placeholder="请输入防伪标题" v-model="item.title">
+        </label>
+    </div>
+</div>
+
+
+<!-- 防仿信息组件 -->
+<div v-if="item.name==='芯媒体'">
+    <label class="layui-form-item block relative">
+        <b class="color-green label-required-prev">组件标题</b>
+        <input class="layui-input" required placeholder="请输入组件标题" v-model="item.title">
+    </label>
+    <div class="layui-form-item">
+        <div class="text-left color-green font-w7">请上传图片</div>
+        <img data-error="false" class="block full-width" :src="item.image">
+        <button type="button" @click="uploadImage(item,'image')" class="layui-btn layui-btn-sm margin-top-15">上传图片</button>
+    </div>
+    <div class="layui-form-item relative">
+        <label class='think-checkbox'>
+            <input type="checkbox" lay-ignore :checked="!!item.verify" v-model:checked="item.verify">
+            <b class="color-green">开启防伪查询需验证码验证</b>
+        </label>
+    </div>
+</div>
+
+<!-- 表格组件 -->
+<div v-if="item.name==='表格'">
+    <div class="padding-0 relative">
+        <div class="nowrap margin-bottom-20">表格可用于展示产品的数据，规格等。</div>
+        <div class="layui-form-item">
+            <span class="color-green font-w7">选择显示列数</span>
+            <div class="text-left">
+                <label class="think-radio">
+                    <input type="radio" :checked="item.type==2" @click="item.type=2" lay-ignore>二列
+                </label>
+                <label class="think-radio">
+                    <input type="radio" :checked="item.type==3" @click="item.type=3" lay-ignore>三列
+                </label>
+            </div>
+        </div>
+        <div class="layui-form-item relative">
+            <span class="color-green font-w7">标题</span>
+            <input class="layui-input" required placeholder="请输入标题" v-model="item.title">
+        </div>
+        <div class="layui-form-item">
+            <div class="color-green font-w7">字段清单</div>
+            <div class="f-c-b margin-bottom-10" v-for="(ite,i) in item.data">
+                <input class="layui-input" v-model="ite.title" style="width:25%">
+                <input class="layui-input" v-model="ite.content" style="width:60%" v-if="item.type==2">
+                <input class="layui-input" v-model="ite.content" style="width:25%" v-if="item.type==3">
+                <input class="layui-input" v-model="ite.type" style="width:25%" v-if="item.type==3">
+                <div style="width:10%">
+                    <a href="javascript:void(0)" @click="item.data.splice(i,1)">
+                        <i class="layui-icon font-s20 color-red">&#x1007;</i>
+                    </a>
+                </div>
+            </div>
+        </div>
+        <div type="button" class="layui-btn layui-btn-fluid" @click="item.data.push({})">+添加</div>
+    </div>
+</div>
+
+<!-- 按钮组件 -->
+<div v-if="item.name==='按钮'">
+    <div class="padding-0 relative">
+        <div class="margin-bottom-20" style="word-break:break-word;white-space:normal">
+            支持在页面中使用自定义按钮，可进行跳转商城、官网等交互，多种样式可选。
+        </div>
+        <div class="layui-form-item">
+            <span class="color-green font-w7">按钮样式</span>
+            <div class="text-left">
+                <label class="think-radio">
+                    <input type="radio" :checked="item.type==2" @click="item.type=2" lay-ignore> 文字按钮
+                </label>
+                <label class="think-radio">
+                    <input type="radio" :checked="item.type==3" @click="item.type=3" lay-ignore> 图片按钮
+                </label>
+            </div>
+        </div>
+        <div class="layui-form-item relative">
+            <span class="color-green font-w7">标题</span>
+            <input class="layui-input" required v-model="item.title">
+        </div>
+        <div class="layui-form-item">
+            <div class="color-green font-w7">字段清单</div>
+            <div v-if="item.type==2">
+                <div class="f-c-b margin-bottom-10" v-for="(x,i) in item.data">
+                    <label class="relative inline-block" style="width:25%">
+                        <input required placeholder="标题" class="layui-input" v-model="x.title">
+                    </label>
+                    <label class="relative inline-block" style="width:60%">
+                        <input class="layui-input" pattern="^(\w+:)?//" placeholder="跳转地址" v-model="x.link">
+                    </label>
+                    <div class="inline-block" style="width:10%">
+                        <a href="javascript:void(0)" @click="item.data.splice(i,1)">
+                            <i class="layui-icon font-s20 color-red">&#x1007;</i>
+                        </a>
+                    </div>
+                </div>
+            </div>
+            <div v-if="item.type==3">
+                <div class="border-line margin-bottom-15" v-for="(x,i) in item.data">
+                    <span class="absolute pointer" style="right:0;margin:-10px;padding:0 4px" @click="item.data.splice(i,1)">
+                        <i class="layui-icon color-red">&#x1007;</i>
+                    </span>
+                    <div class="f-c padding-10">
+                        <div class="relative pointer padding-right-10" @click="uploadImage(x,'img')">
+                            <img data-error="false" :src="x.img" style="border-radius:10px;width:60px;height:60px">
+                        </div>
+                        <div class="f1">
+                            <label class="relative block"><input required placeholder="请输入标题" class="layui-input" v-model="x.title"></label>
+                            <label class="relative block"><input placeholder="请输入链接" pattern="^(\w+:)?//" class="layui-input margin-top-10" v-model="x.link"></label>
+                        </div>
+                    </div>
+                    <div class='padding-left-15'>建议尺寸：100 * 100 ; 大小 < 1 Mb</div>
+                </div>
+            </div>
+        </div>
+        <div type="button" class="layui-btn layui-btn-fluid" @click="item.data.push({})">新增字段</div>
+    </div>
+</div>
+
+<!-- 视频组件 -->
+<div v-if="item.name==='视频'">
+    <div class="padding-0 relative">
+        <div class="margin-bottom-20 nowrap">可以将视频直接上传，并直接在页面播放。</div>
+        <div class="layui-form-item relative">
+            <span class="color-green font-w7">视频标题</span>
+            <input class="layui-input" required placeholder="请输入视频标题" v-model="item.title">
+        </div>
+        <div class="layui-form-item">
+            <div class="color-green font-w7 margin-bottom-15">视频文件</div>
+            <button type="button" @click="uploadVideo(item,'src')" class="layui-btn layui-btn-sm">上传视频</button>
+        </div>
+    </div>
+</div>
+
+<!-- 图文说明组件 -->
+<div v-if="item.name==='图文说明'">
+    <div class="relative padding-0">
+        <div style="line-height:1.4em;white-space:normal">
+            可用于展示企业信息或其他使用说明等，企业用户可根据自身需求自由编辑
+        </div>
+        <div class="layui-form-item relative">
+            <span class="color-green font-w7">标题</span>
+            <input class="layui-input" required placeholder="请输入标题" v-model="item.data.title">
+        </div>
+        <fieldset class="layui-form-item relative" v-for="(ite,index) in item.data.list">
+            <legend>
+                <span class="layui-badge think-bg-violet">信息 {{ index + 1 }}</span>
+            </legend>
+            <a style="right:0;top:-14px" class="absolute" @click="item.data.list.splice(index,1)">
+                <i class="layui-icon color-red">&#x1007;</i>
+            </a>
+            <div class="layui-form-item relative">
+                <span class="color-green font-w7">标题</span>
+                <input class="layui-input" required placeholder="请输入标题" v-model="ite.title">
+            </div>
+            <div class="layui-form-item">
+                <span class="color-green font-w7">正文内容</span>
+                <textarea class="layui-textarea" placeholder="请输入正文内容" v-model="ite.content"></textarea>
+            </div>
+            <div class="layui-form-item">
+                <span class="color-green font-w7">图片视频</span>
+                <div class="layui-form-item text-center">
+                    <label class="think-radio">
+                        <input type="radio" lay-ignore :checked="ite.fileType==='null'" @click="ite.fileType='null'"> 无
+                    </label>
+                    <label class="think-radio">
+                        <input type="radio" lay-ignore :checked="ite.fileType==='image'" @click="ite.fileType='image'"> 图片
+                    </label>
+                    <label class="think-radio">
+                        <input type="radio" lay-ignore :checked="ite.fileType==='video'" @click="ite.fileType='video'"> 视频
+                    </label>
+                </div>
+                <div class="margin-top-15">
+                    <button v-if="ite.fileType==='image'" type="button" @click="uploadImage(ite,'fileImage')" class="layui-btn layui-btn-sm">上传图片</button>
+                    <button v-if="ite.fileType==='video'" type="button" @click="uploadVideo(ite,'fileVideo')" class="layui-btn layui-btn-sm">上传视频</button>
+                </div>
+            </div>
+        </fieldset>
+        <div type="button" class="layui-btn layui-btn-fluid" @click="item.data.list.push({fileType:'null'})">+ 添加</div>
+    </div>
+</div>
+
+<!-- 物流信息组件 -->
+<div v-if="item.name==='物流信息'">
+    <div class="padding-0 relative">
+        <div class="margin-bottom-20" style="line-height:1.5em;white-space:normal">
+            物流信息组件主要用于产品在市场通售卖的同时，通过手机、PDA收集出货时间、所属代理、销售地区等信息展示给消费者查看。
+            <span style="color:#e41a23">注意：需配合物流码使用，并进行出货</span>
+        </div>
+        <div class="layui-form-item relative">
+            <span class="color-green font-w7">标题</span>
+            <input class="layui-input" required placeholder="请输入标题" v-model="item.title">
+        </div>
+    </div>
+</div>
+
+<!-- 产品信息组件 -->
+<div v-if="item.name==='产品信息'">
+    <div class="padding-0 relative">
+        <div class="margin-bottom-20" style="line-height:1.5em;white-space:normal">
+            产品信息会根据物码关联的产品显示对应参数。
+        </div>
+        <div class="layui-form-item relative">
+            <b class="color-green">标题</b>
+            <input class="layui-input" required placeholder="请输入标题" v-model="item.title">
+        </div>
+    </div>
+</div>
+
+<!-- 代理组件 -->
+<div v-if="item.name==='代理信息'">
+    <div class="padding-0 relative">
+        <div class="margin-bottom-20" style="line-height:1.5em;white-space:normal">
+            代理信息会根据物码关联的产品显示对应参数。
+        </div>
+        <div class="layui-form-item relative">
+            <b class="color-green">标题</b>
+            <input class="layui-input" required placeholder="请输入标题" v-model="item.title">
+        </div>
+    </div>
+</div>
+
+<!-- 通用溯源组件 -->
+<div v-if="item.name==='通用溯源'">
+    <div class="padding-0 relative">
+        <div class="margin-bottom-20" style="word-break:break-word;white-space:normal;line-height:1.4em">
+            可用于几个批次或一个时间段内生产的产品统一用使用的溯源信息，避免繁复的信息采集工作，支持上传图片、视频。
+        </div>
+        <div class="layui-form-item relative">
+            <span class="color-green font-w7">标题</span>
+            <input class="layui-input" required placeholder="请输入标题" v-model="item.data.title">
+        </div>
+        <fieldset class="layui-form-item relative" v-for="(ite,index) in item.data.list">
+            <legend><span class="layui-badge think-bg-violet">信息{{ index + 1 }}</span></legend>
+            <a style="right:0;top:-14px" class="absolute color-red" @click="item.data.list.splice(index,1)">
+                <i class="layui-icon">&#x1007;</i>
+            </a>
+            <div class="layui-form-item relative">
+                <span class="color-green font-w7">标题</span>
+                <input class="layui-input" required placeholder="请输入标题" v-model="ite.title">
+            </div>
+            <div class="layui-form-item">
+                <span class="color-green font-w7">正文内容</span>
+                <textarea class="layui-textarea" placeholder="请输入正文内容" v-model="ite.content"></textarea>
+            </div>
+            <div class="layui-form-item">
+                <span class="color-green font-w7">图片视频</span>
+                <div class="layui-form-item">
+                    <label class="think-radio">
+                        <input type="checkbox" lay-ignore :checked="ite.fileType==='null'" @click="ite.fileType='null'"> 无
+                    </label>
+                    <label class="think-radio">
+                        <input type="checkbox" lay-ignore :checked="ite.fileType==='image'" @click="ite.fileType='image'"> 图片
+                    </label>
+                    <label class="think-radio">
+                        <input type="checkbox" lay-ignore :checked="ite.fileType==='video'" @click="ite.fileType='video'"> 视频
+                    </label>
+                </div>
+                <div class="margin-top-15">
+                    <button type="button" v-if="ite.fileType==='image'" @click="uploadImage(ite,'fileImage')" class="layui-btn layui-btn-sm">上传图片</button>
+                    <button type="button" v-if="ite.fileType==='video'" @click="uploadVideo(ite,'fileVideo')" class="layui-btn layui-btn-sm">上传视频</button>
+                </div>
+            </div>
+        </fieldset>
+        <div type="button" class="layui-btn layui-btn-fluid" @click="item.data.list.push({title:'标题',fileType:'null'})">+ 添加</div>
+    </div>
+</div>

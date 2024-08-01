@@ -1,0 +1,38 @@
+<form action="{:sysuri()}" id="LevelForm" data-table-id="UpgradeTable" class="layui-form layui-card" data-auto="true" method="post">
+    <div class="layui-card-body padding-left-40">
+
+        <label class="layui-form-item block relative">
+            <span class="help-label label-required-prev"><b>等级序号</b>Level Seq.</span>
+            <select class="layui-select" name="number" lay->
+                {for start="0" end="$max" name="i"}{if isset($vo.number) and $vo.number eq $i}
+                <option selected value="{$i}">当前为第 {$vo.number} 级权限</option>
+                {else}
+                <option value="{$i}">设置为第 {$i} 级权限</option>
+                {/if}{/for}
+            </select>
+            <span class="help-block">序号的数字越小表示等级越低，数字越大表示等级越高。</span>
+        </label>
+
+        <label class="layui-form-item block relative">
+            <span class="help-label"><b>等级名称</b>Level Name</span>
+            <input class="layui-input" name="name" placeholder="请输入等级名称" required value="{$vo.name|default=''}">
+            <span class="help-block">请保持等级名称不重复，代理用户将使用此名称显示区分等级。</span>
+        </label>
+
+        <label class="layui-form-item block relative">
+            <span class="help-label"><b>等级描述</b>Level Remark</span>
+            <textarea class="layui-textarea" name="remark" placeholder="请输入等级描述">{$vo.remark|default=''}</textarea>
+            <span class="help-block">等级描述仅用于后台标注该等级的用途或其他描述，其他位置不显示。</span>
+        </label>
+
+    </div>
+
+    <div class="hr-line-dashed"></div>
+    {if isset($vo.id)}<input name='id' type='hidden' value='{$vo.id}'>{/if}
+    {if isset($vo.number)}<input name='old_number' type='hidden' value='{$vo.number}'>{/if}
+
+    <div class="layui-form-item text-center">
+        <button class="layui-btn" type='submit'>保存数据</button>
+        <button class="layui-btn layui-btn-danger" data-close data-confirm="确定要取消编辑吗？" type='button'>取消编辑</button>
+    </div>
+</form>

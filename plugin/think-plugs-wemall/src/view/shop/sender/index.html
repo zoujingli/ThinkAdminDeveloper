@@ -1,0 +1,164 @@
+{extend name="table"}
+
+{block name="button"}
+<!--{if auth('config')}-->
+<a class="layui-btn layui-btn-sm layui-btn-primary" data-width="600px" data-modal="{:url('config')}">退货仓库</a>
+<!--{/if}-->
+{/block}
+
+{block name="content"}
+<div class="layui-tab layui-tab-card">
+    <ul class="layui-tab-title notselect">
+        {foreach ['ta'=>'全部订单','t1'=>'等待发货','t2'=>'已经发货','t3'=>'已经收货'] as $k => $v}
+        {if isset($type) and 't'.$type eq $k}
+        <li class="layui-this" data-open="{:url('index')}?type={$k}">{$v}<sup class="layui-badge border-radius">{$total[$k]??0}</sup></li>
+        {else}
+        <li data-open="{:url('index')}?type={$k}">{$v}<sup class="layui-badge border-radius">{$total[$k]??0}</sup></li>
+        {/if}{/foreach}
+    </ul>
+    <div class="layui-tab-content">
+        {include file='shop/sender/index_search'}
+        <table id="SenderTable" data-line="3" data-url="{:request()->url()}" data-target-search="form.form-search"></table>
+    </div>
+</div>
+{/block}
+
+{block name='script'}
+<script>
+
+    function str2num(v) {
+        return parseFloat(v);
+    }
+
+    function str2name(v) {
+        let _ = [];
+        v.split(';;').forEach(s => _.push(s.split('::').pop()));
+        return _.join(' ');
+    }
+
+    let tstatus = ['已取消', '待发货', '已发货', '已收货'];
+    let tstyles = ['layui-bg-gray layui-border-red', 'layui-bg-black', 'layui-bg-blue', 'layui-bg-green'];
+
+    $(function () {
+        $('#SenderTable').layTable({
+            even: true, height: 'full', sort: {field: 'id', type: 'desc'},
+            cols: [[
+                {field: 'headimg', title: '头 像', width: 90, align: 'center', templet: '<div>{{-showTableImage(d.user.headimg,true,"md")}}</div>'},
+                {
+                    field: 'unid', title: '会员用户', width: 170, templet: function (d) {
+                        let tpls = [];
+                        if (d.user) {
+                            tpls.push('<div>用户昵称：{{d.user.nickname||d.user.username||"-"}}</div>');
+                            tpls.push('<div>用户手机：<b class="font-code">{{d.user.phone}}</b></div>');
+                        } else {
+                            tpls.push('<div class="color-desc ta-pt-10">无用户账号</div>')
+                        }
+                        return laytpl("<div class='nowrap ta-pt-10'>" + tpls.join('') + "</div>").render(d);
+                    }
+                },
+                {
+                    field: 'order_no', title: '订单信息', minWidth: 100, templet: function (d) {
+                        let status = laytpl('<span class="layui-badge layui-badge-middle flex-center {{d.style}}">{{d.status}}</span>').render({
+                            status: tstatus[d.status], style: tstyles[d.status]
+                        });
+                        // status += laytpl('<span class="layui-badge layui-badge-middle flex-center {{d.style}}" style="zoom:85%;line-height:15px;padding:3px 4px">{{d.status}}</span>').render({
+                        //     status: ostatus[d.main.status], style: ostyles[d.main.status]
+                        // });
+                        let tpls = '订单号 <b class="font-code">{{d.main.order_no}}</b> ';
+                        if (d.main.amount_real > 0) {
+                            if (d.main.status > 3) {
+                                tpls += '<br>已支付 <b class="font-code">{{str2num(d.main.amount_real)}}</b> 元';
+                            } else {
+                                tpls += '<br>需支付 <b class="font-code">{{str2num(d.main.amount_real)}}</b> 元';
+                            }
+                        } else {
+                            tpls += '<br>无需支付';
+                        }
+                        if (d.main.amount_express > 0) {
+                            tpls += ' ( 随减 <b class="font-code">{{str2num(d.main.amount_reduct)}}</b> 元，含邮费 <b class="font-code">{{str2num(d.main.amount_express)}}</b> 元)';
+                        } else {
+                            tpls += ' ( 随减 <b class="font-code">{{str2num(d.main.amount_reduct)}}</b> 元，包邮免费 )';
+                        }
+                        tpls += '<br>'
+                        if (d.main.amount_balance > 0) {
+                            tpls += "余额 " + d.main.amount_balance + " 元，"
+                        } else {
+                            tpls += '未使用余额，'
+                        }
+                        if (d.main.amount_integral > 0) {
+                            tpls += "积分 " + d.main.amount_balance + "，"
+                        } else {
+                            tpls += '未使用积分，'
+                        }
+                        if (d.main.coupon_code) {
+                            tpls += "优惠券 " + d.main.coupon_amount + "元，"
+                        } else {
+                            tpls += '未使用优惠券。'
+                        }
+                        return '<div class="flex">' + status + '<div class="nowrap sub-strong-blue">' + laytpl(tpls).render(d) + '</div></div>';
+                    }
+                },
+                {
+                    title: '商品详情', templet: function (d) {
+                        let tpls = [];
+                        d.main.items.forEach(function (v) {
+                            tpls.push(laytpl(
+                                '<div class="flex">' +
+                                '   <div style="padding-top:3px">{{-showTableImage(d.gcover,false,"md")}}</div>' +
+                                '   <div class="ta-pl-5"></div>' +
+                                '   <div>' +
+                                '       <div>{{d.gcode}}</div>' +
+                                '       <div>' +
+                                '           <span>{{d.gname}}</span>' +
+                                '           <span class="ta-pl-5 color-desc">{{str2name(d.gspec)}}</span><br>' +
+                                '           <span>{{d.stock_sales}}件 x {{str2num(d.price_selling)}}元/件，计 {{str2num(d.total_price_selling)}}元</span> ' +
+                                '       </div>' +
+                                '   </div>' +
+                                '</div>'
+                            ).render(v));
+                        });
+                        return tpls.join('<br>');
+                    }
+                },
+                {
+                    title: '物流信息', templet: function (d) {
+                        let tpls = [];
+                        if (d.status > 1) {
+                            tpls.push('<b>发货物流：</b><span class="ta-mr-5">{{d.company_name}}</span><b class="color-blue font-code">{{d.express_code}}</b>');
+                        } else {
+                            tpls.push('<b>发货物流：</b><span class="color-desc">未发货</span>');
+                        }
+                        tpls.push('<b>联系方式：</b><span class="ta-mr-5">{{d.user_name}}</span><span class="color-blue font-code">{{d.user_phone}}</span>');
+                        tpls.push('<b>收货地址：</b>{{d.region_prov}} {{d.region_city}} {{d.region_area}} {{d.region_addr}}');
+                        return laytpl(tpls.join('<br>')).render(d);
+                    }
+                },
+                {
+                    field: 'id', sort: true, title: '创建时间', minWidth: 170, templet: function (d) {
+                        let tpls = [];
+                        tpls.push('发货时间：{{d.express_time}}');
+                        tpls.push('创建时间：{{d.create_time}}');
+                        tpls.push('更新时间：{{d.update_time}}');
+                        return laytpl(tpls.join('<br>')).render(d)
+                    }
+                },
+                /* {if auth('delivery')} */
+                {toolbar: '#toolbar', title: '操作面板', width: 100, align: 'center', fixed: 'right'},
+                /* {/if} */
+            ]]
+        });
+    });
+</script>
+
+<script type="text/html" id="toolbar">
+    <div class="ta-pt-10"></div>
+    <!--{if auth('delivery')}-->
+    {{# if(d.status < 2){  }}
+    <a class="layui-btn layui-btn-sm" data-title="发货快递管理" data-modal="{:url('delivery')}" data-value="order_no#{{d.order_no}}">发 货</a>
+    {{# }else{ }}
+    <a class="layui-btn layui-btn-sm" data-title="发货快递管理" data-modal="{:url('delivery')}" data-value="order_no#{{d.order_no}}">修 改</a>
+    {{# } }}
+    <!--{/if}-->
+</script>
+{/block}
+

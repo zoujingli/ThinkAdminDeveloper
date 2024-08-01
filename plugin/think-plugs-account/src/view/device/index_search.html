@@ -1,0 +1,94 @@
+<form action="{:sysuri()}" autocomplete="off" class="layui-form layui-form-pane form-search" method="get" onsubmit="return false">
+
+    <div class="layui-form-item layui-inline">
+        <label class="layui-form-label">终端类型</label>
+        <div class="layui-input-inline">
+            <select class="layui-select" name="utype">
+                <option value="">-- 全部 --</option>
+                {foreach $types as $k=>$v}
+                {if isset($get.utype) and $v.field eq $get.utype}
+                <option selected value="{$k}">{$v.name}</option>
+                {else}
+                <option value="{$k}">{$v.name}</option>
+                {/if}{/foreach}
+            </select>
+        </div>
+    </div>
+
+    <div class="layui-form-item layui-inline">
+        <label class="layui-form-label">绑定手机</label>
+        <label class="layui-input-inline">
+            <input class="layui-input" name="phone" placeholder="请输入绑定手机" value="{$get.phone|default=''}">
+        </label>
+    </div>
+
+    <div class="layui-form-item layui-inline">
+        <label class="layui-form-label">用户姓名</label>
+        <label class="layui-input-inline">
+            <input class="layui-input" name="username" placeholder="请输入用户姓名" value="{$get.username|default=''}">
+        </label>
+    </div>
+
+    <div class="layui-form-item layui-inline">
+        <label class="layui-form-label">用户昵称</label>
+        <label class="layui-input-inline">
+            <input class="layui-input" name="nickname" placeholder="请输入用户昵称" value="{$get.nickname|default=''}">
+        </label>
+    </div>
+
+    <div class="layui-form-item layui-inline">
+        <label class="layui-form-label">使用状态</label>
+        <div class="layui-input-inline">
+            <select class="layui-select" name="status">
+                <option value="">-- 全部 --</option>
+                {foreach ['已冻结的用户', '已激活的用户'] as $k=>$v}
+                {if $k.'' eq input('status')}
+                <option selected value="{$k}">{$v}</option>
+                {else}
+                <option value="{$k}">{$v}</option>
+                {/if}{/foreach}
+            </select>
+        </div>
+    </div>
+
+    <div class="layui-form-item layui-inline">
+        <label class="layui-form-label">首次登录</label>
+        <div class="layui-input-inline">
+            <input class="layui-input" data-date-range name="create_at" placeholder="请选择绑定时间" value="{$get.create_at|default=''}">
+        </div>
+    </div>
+
+    <div class="layui-form-item layui-inline">
+        <button class="layui-btn layui-btn-primary"><i class="layui-icon">&#xe615;</i> 搜 索</button>
+        <button class="layui-btn layui-btn-primary" data-form-export="{:url('index')}?type={$type}" type="button">
+            <i class="layui-icon layui-icon-export"></i> 导 出
+        </button>
+    </div>
+</form>
+
+<script>
+    require(['excel'], function (excel) {
+        excel.bind(function (data) {
+
+            // 设置表格内容
+            data.forEach(function (item, index) {
+                data[index] = [
+                    {v: item.id, t: 'n'},
+                    item.type_name || item.type || '',
+                    item.username || '-',
+                    item.nickname || '-',
+                    item.phone || '-',
+                    (item.user || {}).code || '-',
+                    item.create_time || '',
+                ];
+            });
+
+            // 设置表头内容
+            data.unshift(['ID', '终端类型', '用户姓名', '用户昵称', '绑定手机', '关联账号', '首次登录']);
+
+            // 设置表格样式
+            return this.withStyle(data, {A: 60, B: 80, C: 80, E: 80});
+
+        }, '用户账号数据' + layui.util.toDateString(Date.now(), '_yyyyMMdd_HHmmss'));
+    });
+</script>

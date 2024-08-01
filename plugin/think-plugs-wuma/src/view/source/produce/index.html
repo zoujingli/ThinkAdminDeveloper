@@ -1,0 +1,100 @@
+{extend name="table"}
+
+{block name="button"}
+<!--{if auth("add")}-->
+<button class='layui-btn layui-btn-sm layui-btn-primary' data-modal='{:url("add")}'>添加批次</button>
+<!--{/if}-->
+{if isset($type) and $type eq 'index'}
+<!--{if auth("remove")}-->
+<button class='layui-btn layui-btn-sm layui-btn-primary' data-action='{:url("state")}' data-rule="id#{id};deleted#1">删除批次</button>
+<!--{/if}-->
+{else}
+<!--{if auth("remove")}-->
+<button class='layui-btn layui-btn-sm layui-btn-primary' data-action='{:url("state")}' data-confirm="确定要恢复这些数据吗？" data-rule="id#{id};deleted#0">恢复批次</button>
+<!--{/if}-->
+{/if}
+{/block}
+
+{block name="content"}
+<div class="layui-tab layui-tab-card">
+    <ul class="layui-tab-title">
+        {foreach ['index'=>'批次管理','recycle'=>'回 收 站'] as $k=>$v}
+        {if isset($type) and $type eq $k}
+        <li class="layui-this color-green" data-open="{:sysuri('index')}?type={$k}">{$v}</li>
+        {else}
+        <li data-open="{:sysuri('index')}?type={$k}">{$v}</li>
+        {/if}{/foreach}
+    </ul>
+    <div class="layui-tab-content">
+        {include file='source/produce/index-search'}
+        <table data-line="2" id="DataTable" data-url="{:request()->url()}" data-target-search="form.form-search"></table>
+    </div>
+</div>
+
+<script>
+    $(function () {
+        $('#DataTable').layTable({
+            even: true, height: 'full', sort: {field: 'id', type: 'desc'}, cellExpandedMode: 'tips',
+            cols: [[
+                {checkbox: true, fixed: true},
+                {field: 'id', hide: true},
+                {field: 'sort', title: '排序权重', width: 100, align: 'center', sort: true, templet: '#SortInputTpl'},
+                {field: '', title: '生产批次', width: '18%', templet: '#tpl1'},
+                {field: '', title: '绑定产品', width: '22%', templet: '#tpl2'},
+                {field: '', title: '溯源模板', width: '16%', templet: '#tpl3'},
+                {field: '', title: '溯源模板', templet: '#tpl4'},
+                {toolbar: '#toolbar', title: '操作面板', align: 'center', width: 180, fixed: 'right'}
+            ]]
+        });
+    });
+</script>
+
+<script type="text/html" id="SortInputTpl">
+    <div class="padding-top-5">
+        <input type="number" min="0" data-blur-number="0" data-action-blur="{:sysuri()}" data-value="id#{{d.id}};action#sort;sort#{value}" data-loading="false" value="{{d.sort}}" class="layui-input text-center">
+    </div>
+</script>
+
+<script type="text/html" id="tpl1">
+    生产批次：<b class="color-blue">{{ d.batch || '' }}</b><br>
+    所在区域：{{d.addr_prov||''}} {{d.addr_city||''}} {{d.addr_area||''}}
+</script>
+
+<script type="text/html" id="tpl2">
+    {{#if(!d.gname){}}
+    <div class="color-desc">关联产品数据无效！</div>
+    {{#}else{}}
+    <div class="headimg headimg-no pull-left" data-tips-image data-tips-hover data-lazy-src="{{d.gcover||''}}"></div>
+    <div class="nowrap">产品编号：<b>{{ d.gcode || '-' }}</b></div>
+    <div class="nowrap">产品名称：{{ d.gname || '-' }}<span class="color-desc padding-left-5">( {{ showSpec(d.gspec || '') }} )</span></div>
+    {{#}}}
+</script>
+
+<script type="text/html" id="tpl3">
+    模板名称：{{ d.tname || '-' }}<br>
+    模板编号：<b class="color-blue">{{ d.tcode || '-' }}</b>
+</script>
+
+<script type="text/html" id="tpl4">
+    批次备注：{{d.remark||'-'}}<br>
+    创建时间：{{d.create_time||''}}
+</script>
+
+<script type="text/html" id="toolbar">
+    <!--{if auth("edit")}-->
+    <a class="layui-btn layui-btn-sm" data-title="编辑批次" data-modal='{:url("edit")}?id={{d.id}}'>编 辑</a>
+    <!--{else}-->
+    <a class="layui-btn layui-btn-sm layui-btn-primary layui-disabled" data-tips-text="您没有编辑批次的权限哦！">编 辑</a>
+    <!--{/if}-->
+
+    {if isset($type) and $type eq 'index'}
+    <!--{if auth("state")}-->
+    <a class="layui-btn layui-btn-sm layui-btn-danger" data-action="{:url('state')}" data-confirm="确定要移入回收站吗？" data-value="id#{{d.id}};deleted#1">删 除</a>
+    <!--{/if}-->
+    {else}
+    <!--{if auth("state")}-->
+    <a class="layui-btn layui-btn-sm layui-btn-normal" data-action="{:url('state')}" data-value="id#{{d.id}};deleted#0">恢 复</a>
+    <!--{/if}-->
+    {/if}
+</script>
+{/block}

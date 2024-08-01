@@ -1,0 +1,109 @@
+{extend name="main"}
+
+{block name="button"}
+<button data-target-submit class='layui-btn layui-btn-sm'>保存数据</button>
+<button data-target-backup class="layui-btn layui-btn-sm layui-btn-danger" data-confirm="确认要取消编辑吗？">取消编辑</button>
+{/block}
+
+{block name='content'}
+<form action="{:sysuri()}" class="layui-form layui-card" data-auto="true" method="post">
+    <div class="layui-card-body padding-left-40">
+
+        <div class="layui-form-item relative">
+            <span class="help-label label-required-prev"><b>签到模式</b>Checkin Switch</span>
+            <div class="layui-textarea help-checks ta-pl-10">
+                {empty name='data.status'}{assign name='data.status' value='0'}{/empty}
+                {foreach ['关闭','开启'] as $k => $v}
+                {if isset($data.status) and $data.status eq $k}
+                <input name="status" title="{$v}" type="radio" value="{$k}" checked>
+                {else}
+                <input name="status" title="{$v}" type="radio" value="{$k}">
+                {/if}{/foreach}
+            </div>
+        </div>
+
+        <div id="CheckInVueTpl">
+
+            <label class="layui-form-item relative block">
+                <span class="help-label"><b>签到周期</b>Checkin Days</span>
+                <input class="layui-input" type="number" :max="max" :min="1" name="days" v-model.number="days" placeholder="请输入连续天数" required>
+            </label>
+
+            <div class="layui-form-item relative block">
+                <span class="help-label label-required-prev"><b>奖励余额</b>Checkin Reward</span>
+                <div class="layui-textarea ta-p-10 overauto" style="height:250px;">
+                    <div class="layui-row layui-col-space10">
+                        <div class="layui-col-xs6" v-for="(x,i) in data" v-if="i<days">
+                            <div class="layui-input-group">
+                                <div class="layui-input-split layui-input-prefix nowrap font-w7">签到 {{i + 1}} 天奖励</div>
+                                <label><input type="number" step="0.01" min="0" max="1000000" @change="x.balance=formatInput($event,2)" class="layui-input ta-pr-0 text-center" v-model="x.balance"></label>
+                                <div class="layui-input-split layui-input-prefix">元，奖励</div>
+                                <label><input type="number" step="1" min="0" max="1000000" @change="x.integral=formatInput($event)" class="layui-input ta-pr-0 text-center" v-model="x.integral"></label>
+                                <div class="layui-input-split layui-input-suffix">积分</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <label class="layui-hide"><textarea name="items">{{data}}</textarea></label>
+            </div>
+
+            <label class="layui-form-item relative block">
+                <span class="help-label"><b>随机提示</b>每行一条，随机抽取显示</span>
+                <textarea class="layui-textarea" placeholder="请输入随机提示内容" name="tips">{$data.tips|default=''}</textarea>
+            </label>
+        </div>
+
+        <div class="layui-form-item">
+            <span class="help-label label-required-prev"><b>签到规则</b>CheckIn Rule</span>
+            <div class="relative block">
+                <textarea class="layui-hide" name="content" placeholder="请输入签到规则">{$data.content|default=''}</textarea>
+            </div>
+        </div>
+
+        <div class="hr-line-dashed"></div>
+
+        <div class="layui-form-item text-center">
+            <button class="layui-btn" type="submit">保存数据</button>
+            <button class="layui-btn layui-btn-danger" data-confirm="确定要取消编辑吗？" type='button' data-target-backup>取消编辑</button>
+            <label class="layui-hide"><textarea id="DefaultData">{$data.items|default=[]|json_encode}</textarea></label>
+        </div>
+
+    </div>
+
+</form>
+
+<script>
+    let defData = JSON.parse(document.getElementById('DefaultData').value) || [];
+    require(['vue', 'ckeditor'], (Vue) => {
+        window.createEditor('[name=content]')
+        new Vue({
+            el: '#CheckInVueTpl',
+            data() {
+                return {
+                    max: 30,
+                    days: parseInt('{$data.days|default=30}'),
+                    data: JSON.parse(JSON.stringify(defData)) || []
+                }
+            },
+            watch: {
+                days(a, b) {
+                    // 自动处理天数超出
+                    if (b > this.max || b < 1) {
+                        this.days = Math.max(Math.min(b, this.max), 1);
+                    }
+                }
+            },
+            created() {
+                // 初始化配置列表
+                while (this.data.length < this.max) {
+                    this.data.push({balance: 0, integral: 0});
+                }
+            }, methods: {
+                formatInput(e, fixed) {
+                    return Math.max((parseFloat(e.target.value) || 0), 0).toFixed(fixed || 0)
+                }
+            }
+        });
+    });
+</script>
+{/block}

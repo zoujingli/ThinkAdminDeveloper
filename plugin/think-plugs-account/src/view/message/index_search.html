@@ -1,0 +1,68 @@
+<fieldset>
+    <legend>{:lang('条件搜索')}</legend>
+    <form action="{$request->url()}" data-table-id="MessageData" autocomplete="off" class="layui-form layui-form-pane form-search" method="get" onsubmit="return false">
+
+        <div class="layui-form-item layui-inline">
+            <label class="layui-form-label">消息编号</label>
+            <label class="layui-input-inline">
+                <input class="layui-input" name="smsid" placeholder="请输入消息编号" value="{$get.smsid|default=''}">
+            </label>
+        </div>
+
+        <div class="layui-form-item layui-inline">
+            <label class="layui-form-label">发送手机</label>
+            <label class="layui-input-inline">
+                <input class="layui-input" name="phone" placeholder="请输入发送手机" value="{$get.phone|default=''}">
+            </label>
+        </div>
+
+        <div class="layui-form-item layui-inline">
+            <label class="layui-form-label">业务场景</label>
+            <div class="layui-input-inline">
+                <select class="layui-select" name="scene">
+                    <option value="">-- 全部 --</option>
+                    {foreach $scenes as $k => $v}
+                    {if isset($get.scene) and $get.scene eq $k}
+                    <option selected value="{$k}">{$v}</option>
+                    {else}
+                    <option value="{$k}">{$v}</option>
+                    {/if}{/foreach}
+                </select>
+            </div>
+        </div>
+
+        <div class="layui-form-item layui-inline layui-hide">
+            <label class="layui-form-label">短信内容</label>
+            <label class="layui-input-inline">
+                <input class="layui-input" name="content" placeholder="请输入短信内容" value="{$get.content|default=''}">
+            </label>
+        </div>
+
+        <div class="layui-form-item layui-inline">
+            <label class="layui-form-label">执行结果</label>
+            <div class="layui-input-inline">
+                <select class="layui-select" name="status">
+                    <option value="">-- 全部 --</option>
+                    {foreach ['发送失败','发送成功'] as $k => $v}
+                    {if $k.'' eq input('status')}
+                    <option selected value="{$k}">{$v}</option>
+                    {else}
+                    <option value="{$k}">{$v}</option>
+                    {/if}{/foreach}
+                </select>
+            </div>
+        </div>
+
+        <div class="layui-form-item layui-inline">
+            <label class="layui-form-label">发送时间</label>
+            <div class="layui-input-inline">
+                <input class="layui-input" data-date-range name="create_time" placeholder="请选择发送时间" value="{$get.create_time|default=''}">
+            </div>
+        </div>
+
+        <div class="layui-form-item layui-inline">
+            <button class="layui-btn layui-btn-primary"><i class="layui-icon">&#xe615;</i> 搜 索</button>
+        </div>
+
+    </form>
+</fieldset>

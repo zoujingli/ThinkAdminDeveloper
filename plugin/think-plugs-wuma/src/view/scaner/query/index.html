@@ -1,0 +1,27 @@
+{extend name="table"}
+
+{block name="content"}
+<div class="think-box-shadow">
+    {include file='scaner/query/index-search'}
+    <table id="QueryData" data-url="{:sysuri()}" data-target-search="form.form-search"></table>
+</div>
+{/block}
+
+{block name='script'}
+<script>
+    $(function () {
+        // 初始化表格组件
+        $('#QueryData').layTable({
+            even: true, height: 'full', sort: {field: 'id', type: 'desc'}, cols: [[
+                {field: 'id', title: 'ID', align: 'center', width: 80, sort: true},
+                {field: 'encode', title: '商品标签', align: 'center', width: '10%', templet: '<div><code>{{d.encode}}</code></div>'},
+                {field: 'times', title: '查询次数', align: 'center', width: '8%', templet: "<div>第 <b>{{d.times}}</b> 次</div>"},
+                {field: 'gtype', title: '定位方式', align: 'center', width: 80},
+                {field: 'prov', title: '所在区域', align: 'left', width: '16%', templet: "<div>{{d.prov}} - {{d.city}} {{d.area?'-':''}} {{d.area}}</div>"},
+                {field: 'addr', title: '详细位置', align: 'left', width: '16%'},
+                {field: 'create_time', title: '查询时间', minWidth: 170},
+            ]]
+        });
+    });
+</script>
+{/block}

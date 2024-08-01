@@ -1,0 +1,247 @@
+{extend name="main"}
+
+{block name="content"}
+<form class="layui-form layui-card" id="RuleForm" action="{:sysuri()}" data-auto="true" method="post">
+    <div class="layui-card-body" style="width:1024px">
+
+        <label class="layui-form-item block relative">
+            <span class="help-label"><b>赋码批次</b>Assign Batch</span>
+            {if empty($vo.id)}
+            <input class="layui-input" name="batch" maxlength="20" placeholder="请输入赋码批次" required value="{$vo.batch|default=''}">
+            {else}
+            <input class="layui-input think-bg-gray" readonly name="batch" maxlength="20" placeholder="请输入赋码批次" required value="{$vo.batch|default=''}">
+            {/if}
+            <span class="help-label">保存后不能再次修改赋码批次号，建议使用系统默认生成的批次号。</span>
+        </label>
+
+        <div class="layui-form-item">
+            <span class="help-label label-required-prev"><b>物码批次号</b>Coder Batch</span>
+            <!-- {if empty($vo.id) || empty($vo.cbatch)} -->
+            <select class="layui-select" name="cbatch" lay-search lay-filter="CoderBatch" lay-ignore>
+                {foreach $coders as $coder}
+                <option data-type="{$coder.type}" data-max-mid="{$coder.max_mid}" data-mid-min="{$coder.mid_min}" data-min-value="{$coder.min.range_start}" data-max-value="{$coder.min.range_after}" value="{$coder.batch}">
+                    {if $coder.type eq 1}前关联{else}后关联{/if} - {$coder.batch} ( 包含 {$coder.number} 个小码 ) [ {$coder.min.range_start}, {$coder.min.range_after} ] {$coder.remark|default=''}
+                </option>
+                {/foreach}
+            </select>
+            <!-- {else} -->
+            {foreach $coders as $coder}{if isset($vo.cbatch) and $coder.batch eq $vo.cbatch}
+            <div class="layui-input think-bg-gray">
+                <input data-type="{$coder.type}" data-max-mid="{$coder.max_mid}" data-mid-min="{$coder.mid_min}" data-min-value="{$coder.min.range_start}" data-max-value="{$coder.min.range_after}" type="hidden" name="cbatch" value="{$vo.cbatch}">
+                {if $coder.type eq 1}前关联{else}后关联{/if} - {$coder.batch} ( 包含 {$coder.number} 个小码 ) [ {$coder.min.range_start}, {$coder.min.range_after} ] {$coder.remark|default=''}
+            </div>
+            {/if}{/foreach}
+            <!-- {/if} -->
+            <span class="help-label">保存后不能再次修改物码批次数据，首次编辑时必需选择正确的关联物码批次。</span>
+        </div>
+
+        <fieldset id="RangeApp">
+            <legend><span class="layui-badge layui-bg-cyan">物码分区</span><span class="layui-badge layui-bg-gray">步进值：{{ step }}</span></legend>
+            <label class="layui-hide"><textarea class="layui-textarea" name="items">{{JSON.stringify(items)}}</textarea></label>
+            <div class="layui-row layui-col-space10">
+                <div class="layui-col-xs1 text-center help-label"><b class="label-required-prev">起始位置</b></div>
+                <div class="layui-col-xs1 text-center help-label"><b class="label-required-prev">结束位置</b></div>
+                <div class="layui-col-xs1 text-center help-label"><b class="label-required-prev">物码数量</b></div>
+                <div class="layui-col-xs8 help-label"><b class="label-required-prev">关联生产批次</b></div>
+            </div>
+            <div class="layui-row layui-col-space10" v-for="(x, i) in items">
+                <div class="layui-col-xs1">
+                    <label class="layui-form-item block relative">
+                        <input :class="x.lock>0?'think-bg-gray':''" :readonly="!!x.lock" :step="step" :min="minValue" :max="maxValue" type="number" class="layui-input text-center padding-row-0" @change="sync('min',i,x)" v-model="x.min">
+                    </label>
+                </div>
+                <div class="layui-col-xs1">
+                    <label class="layui-form-item block relative">
+                        <input :class="x.lock>0?'think-bg-gray':''" :readonly="!!x.lock" :step="step" :min="minValue-1" :max="maxValue" type="number" class="layui-input text-center padding-row-0" @change="sync('max',i,x)" v-model="x.max">
+                    </label>
+                </div>
+                <div class="layui-col-xs1">
+                    <label class="layui-form-item block relative">
+                        <input :class="x.lock>0?'think-bg-gray':''" :readonly="!!x.lock" :step="step" :min="minNumValue" :max="maxNumValue" type="number" class="layui-input text-center padding-row-0" @change="sync('num',i,x)" v-model="x.num">
+                    </label>
+                </div>
+                <div class="layui-col-xs6">
+                    <label class="layui-form-item block relative">
+                        <select class="layui-select" name="pbatch" v-model="x.batch" lay-search lay-filter="SelectProduce" :data-idx="i" lay-ignore>
+                            <option v-for="item in produces" :value="item.batch" v-if="x.lock<1||x.batch===item.batch" v-text="item.title"></option>
+                        </select>
+                    </label>
+                </div>
+                <div class="layui-col-xs1 text-left nowrap">
+                    <button v-if="x.lock<1 && x.num>step" @click="addRow(i)" type="button" class="layui-btn layui-btn-primary">拆分</button>
+                    <button v-else type="button" class="layui-btn layui-btn-primary layui-disabled">拆分</button>
+                    <button v-if="x.lock<1 && items.length > 1" type="button" class="layui-btn layui-btn-primary" @click="delRow(i)">移除</button>
+                    <button v-else type="button" class="layui-btn layui-btn-primary layui-disabled">移除</button>
+                    <button type="button" @click="x.real<1 && (x.lock=x.lock?0:1),setTimeout('layui.form.render(\'select\')',100)" class="layui-icon layui-btn" :class="[x.lock?'layui-icon-auz layui-btn-danger':'layui-icon-password layui-btn-primary']"></button>
+                </div>
+            </div>
+        </fieldset>
+
+        <div class="hr-line-dashed margin-top-40"></div>
+        {notempty name='vo.id'}<input name="id" type="hidden" value="{$vo.id}">{/notempty}
+
+        <div class="layui-form-item text-center">
+            <button class="layui-btn" type='submit'>保存数据</button>
+            <button class="layui-btn layui-btn-danger" type='button' data-confirm="确定要取消编辑吗？" data-target-backup>取消编辑</button>
+        </div>
+    </div>
+</form>
+
+
+<label class="layui-hide">
+    <textarea id="CoderItemData" class="layui-textarea layui-bg-cyan">{$vo.items|raw|default='[]'}</textarea>
+    <select id="ProduceData" class="layui-select" lay-ignore>
+        {foreach $produces as $produce}
+        <option value="{$produce.batch}">{$produce.batch} ( {$produce.gname|default=''} - {$produce.gspec|default=''|show_gspec} ) - {$produce.tname|default=''}</option>
+        {/foreach}
+    </select>
+</label>
+{/block}
+
+{block name='script'}
+<script>
+    require(['vue'], function (vue) {
+        new vue({
+            el: '#RangeApp',
+            data: {
+                step: 1,
+                items: [],
+                minValue: 0,
+                maxValue: 0,
+                minNumValue: 0,
+                maxNumValue: 0,
+                produces: [],
+            }, created: function () {
+
+                $('select[lay-ignore]').removeAttr('lay-ignore');
+                layui.form.render('select');
+
+                let that = this;
+                // 同步生产批次数据
+                $('select#ProduceData option').map(function () {
+                    that.produces.push({batch: this.value, title: this.innerText});
+                });
+                // 生产批次切换处理
+                layui.form.on('select(SelectProduce)', function (data) {
+                    that.setRow(parseInt(data.elem.dataset.idx), data.value);
+                });
+                // 数据初始化
+                (function ($elem, callable) {
+                    // 监听物码批次切换
+                    layui.form.on('select(CoderBatch)', callable);
+                    // 初始化编辑分区数据
+                    if ($elem.length < 1) $elem = $('input[name="cbatch"]');
+                    callable({elem: $elem.get(), value: $elem.val(), items: JSON.parse($('#CoderItemData').val() || '[]')});
+                })($('select[name=cbatch]'), function (data) {
+                    data.$ele = $(data.elem);
+                    if (data.$ele.prop('tagName').toUpperCase() === 'SELECT') {
+                        data.$ele = data.$ele.find('option[value=' + data.value + ']');
+                    }
+                    if (parseInt(data.$ele.data('type')) === 2) {
+                        that.step = 1;
+                    } else {
+                        that.step = (data.$ele.data('maxMid') || 1) * (data.$ele.data('midMin') || 1);
+                    }
+                    that.minValue = data.$ele.data('minValue'), that.maxValue = data.$ele.data('maxValue');
+                    that.minNumValue = 0, that.maxNumValue = that.maxValue - that.minValue + 1;
+                    if (data.items && data.items.length > 0) {
+                        data.items.forEach(function (item) {
+                            item.real = item.lock || 0;
+                            that.snum(item)
+                        });
+                        that.items = data.items;
+                    } else {
+                        that.items = [that.snum({min: that.minValue, max: that.maxValue, batch: that.produces[0].batch})];
+                    }
+                    setTimeout("layui.form.render()", 200);
+                });
+            }, methods: {
+                snum: function (item) {
+                    item.num = item.max - item.min + 1;
+                    item.lock = item.lock || 0;
+                    item.real = item.real || 0;
+                    return item;
+                },
+                sync: function (ty, idx, item, curr) {
+                    // 调整最小值
+                    if (ty === 'min') if (idx > 0) {
+                        if ((curr = this.items[idx - 1]).lock) {
+                            item.min = curr.max + 1;
+                        } else {
+                            item.num = Math.ceil((item.max - item.min + 1) / this.step) * this.step;
+                            if (item.num <= 0) item.num = this.step;
+                            item.min = item.max - item.num + 1;
+                            if (item.min > item.max) item.min = item.max;
+                            item.min < curr.min + 1 ? item.min = curr.max + 1 : curr.max = item.min - 1;
+                        }
+                    } else {
+                        item.min = this.minValue;
+                    }
+                    // 调整最大值
+                    if (ty === 'max') if (idx + 1 < this.items.length) {
+                        if ((curr = this.items[idx + 1]).lock) {
+                            item.max = curr.min - 1;
+                        } else {
+                            item.num = Math.ceil((item.max - item.min) / this.step) * this.step;
+                            if (item.num <= 0) item.num = this.step;
+                            item.max = item.min + item.num - 1;
+                            if (item.min > item.max) item.max = item.min;
+                            item.max > curr.max - 1 ? item.max = curr.min - 1 : curr.min = parseInt(item.max) + 1;
+                        }
+                    } else {
+                        item.max = this.maxValue;
+                    }
+                    // 数量变化事件
+                    if (ty === 'num') item.num = Math.ceil(item.num / this.step) * this.step;
+                    if (ty === 'num') if (item.num < 1) this.delRow(idx); else if (idx + 1 < this.items.length) {
+                        item.max = parseInt(item.min) + parseInt(item.num) - 1;
+                        if (item.max > this.maxValue) item.max = this.maxValue;
+                        this.sync('max', idx, item);
+                    } else {
+                        item.max = parseInt(item.min) + parseInt(item.num) - 1;
+                        if (item.max > this.maxValue) item.max = this.maxValue;
+                        if (item.max < this.maxValue) {
+                            this.items.push(this.snum({min: item.max + 1, max: this.maxValue, batch: this.produces[0].batch}));
+                            setTimeout("layui.form.render()", 200);
+                        }
+                    }
+                    this.snum(item);
+                    if (this.items[idx - 1]) this.snum(this.items[idx - 1]);
+                    if (this.items[idx + 1]) this.snum(this.items[idx + 1]);
+                },
+                setRow: function (idx, batch) {
+                    this.items[idx].batch = batch;
+                },
+                delRow: function (idx) {
+                    if (this.items.length > 1) {
+                        this.items = this.items.slice(0, idx).concat(this.items.slice(idx + 1));
+                    }
+                    if (idx > 0) {
+                        this.items[idx - 1].max = this.items[idx] ? (this.items[idx].min - 1) : this.maxValue;
+                        this.snum(this.items[idx - 1]);
+                    } else {
+                        this.items[0].min = this.minValue;
+                        this.snum(this.items[0]);
+                    }
+                },
+                addRow: function (idx) {
+                    let one = [], two = [];
+                    if (this.items.length > 0) {
+                        two = this.items.slice(idx + 1);
+                        one = this.items.slice(0, idx + 1);
+                    }
+                    // 最得上级分区
+                    if (one.length > 0) {
+                        one[idx].max = one[idx].min + Math.floor((one[idx].max - one[idx].min + 1) / this.step / 2) * this.step - 1;
+                        this.snum(one[idx]);
+                        let max = two.length > 0 ? two[0].min - 1 : this.maxValue;
+                        one.push(this.snum({min: one[idx].max + 1, max: max, batch: this.produces[0].batch}));
+                    }
+                    this.items = one.concat(two);
+                    setTimeout("layui.form.render()", 200);
+                }
+            }
+        });
+    });
+</script>
+{/block}

@@ -1,0 +1,100 @@
+{extend name="table"}
+
+{block name="button"}
+{if isset($type) and $type eq 'index'}
+<!--{if auth("add")}-->
+<button data-modal='{:url("add")}' data-title="添加仓库" class='layui-btn layui-btn-sm layui-btn-primary'>添加仓库</button>
+<!--{/if}-->
+<!--{if auth("state")}-->
+<a data-confirm="确定要启用该仓库吗？" data-table-id="WhouseTable" data-action="{:url('state')}" data-rule="id#{id};status#0" class='layui-btn layui-btn-sm layui-btn-primary'>批量禁用</a>
+<!--{/if}-->
+{else}
+<!--{if auth("state")}-->
+<a data-confirm="确定要恢复这些仓库吗？" data-table-id="WhouseTable" data-action="{:url('state')}" data-rule="id#{id};status#1" class='layui-btn layui-btn-sm layui-btn-primary'>批量恢复</a>
+<!--{/if}-->
+<!--{if auth("remove")}-->
+<!--<a data-confirm="确定永久删除这些仓库吗？" data-table-id="WhouseTable" data-action='{:url("remove")}' data-rule="id#{id}" class='layui-btn layui-btn-sm layui-btn-primary'>批量删除</a>-->
+<!--{/if}-->
+{/if}
+{/block}
+
+{block name="content"}
+<div class="layui-tab layui-tab-card">
+    <ul class="layui-tab-title">
+        {foreach ['index'=>'仓库管理','recycle'=>'回 收 站'] as $k=>$v}{if isset($type) and $type eq $k}
+        <li data-open="{:url('index')}?type={$k}" class="layui-this color-green">{$v}</li>
+        {else}
+        <li data-open="{:url('index')}?type={$k}">{$v}</li>
+        {/if}{/foreach}
+    </ul>
+    <div class="layui-tab-content">
+        {include file='warehouse/index-search'}
+        <table id="WhouseTable" data-url="{:request()->url()}" data-target-search="form.form-search"></table>
+    </div>
+</div>
+{/block}
+
+{block name='script'}
+<script>
+    $(function () {
+        // 初始化表格组件
+        $('#WhouseTable').layTable({
+            even: true, height: 'full',
+            sort: {field: 'sort', type: 'desc,code desc'}, cellExpandedMode: 'tips',
+            cols: [[
+                {checkbox: true, fixed: true},
+                {field: 'sort', title: '排序权重', align: 'center', width: 100, sort: true, templet: '#SortInputTpl'},
+                {field: 'code', title: '仓库编号', align: 'center', minWidth: 100, sort: true},
+                {field: 'name', title: '仓库名称', align: 'center', minWidth: 100},
+                {
+                    field: 'addr_prov', title: '所在区域', align: 'center', minWidth: 10, templet: function (d) {
+                        return laytpl('<div>{{d.addr_prov}} - {{d.addr_city}} - {{d.addr_area}}{{d.addr_text?" - "+d.addr_text:""}}</div>').render(d);
+                    }
+                },
+                {field: 'status', title: '仓库状态', align: 'center', minWidth: 120, templet: '#StatusSwitchTpl'},
+                {field: 'create_time', title: '创建时间', align: 'center', minWidth: 170, sort: true},
+                {toolbar: '#toolbar', title: '操作面板', align: 'center', minWidth: 100, fixed: 'right'},
+            ]]
+        });
+
+        // 数据状态切换操作
+        layui.form.on('switch(StatusSwitch)', function (obj) {
+            $.form.load("{:url('state')}", {id: obj.value, status: obj.elem.checked > 0 ? 1 : 0}, 'post', function (ret) {
+                if (ret.code < 1) $.msg.error(ret.info, 3, function () {
+                    $('#WhouseTable').trigger('reload');
+                }); else {
+                    $('#WhouseTable').trigger('reload');
+                }
+                return false;
+            }, false);
+        });
+    });
+
+</script>
+
+<!-- 列表排序权重模板 -->
+<script type="text/html" id="SortInputTpl">
+    <input min="0" data-blur-number="0" type="number" data-action-blur="{:sysuri()}" data-value="id#{{d.id}};action#sort;sort#{value}" data-loading="false" value="{{d.sort}}" class="layui-input text-center">
+</script>
+
+<!-- 数据状态切换模板 -->
+<script type="text/html" id="StatusSwitchTpl">
+    <!--{if auth("state")}-->
+    <input type="checkbox" value="{{d.id}}" lay-skin="switch" lay-text="已激活|已禁用" lay-filter="StatusSwitch" {{d.status>0?'checked':''}}>
+    <!--{else}-->
+    {{d.status ? '<b class="color-green">已启用</b>' : '<b class="color-red">已禁用</b>'}}
+    <!--{/if}-->
+</script>
+
+<!-- 数据操作工具条模板 -->
+<script type="text/html" id="toolbar">
+    <!--{if auth("edit")}-->
+    <a class="layui-btn layui-btn-sm" data-title="编辑仓库信息" data-event-dbclick="click" data-modal='{:url("edit")}?id={{d.id}}'>编 辑</a>
+    <!--{/if}-->
+    {if isset($type) and $type neq 'index'}
+    <!--{if auth("remove")}-->
+    <!--<a class="layui-btn layui-btn-sm layui-btn-danger" data-confirm="确定要永久删除此仓库吗？" data-action="{:url('remove')}" data-value="id#{{d.id}}">删 除</a>-->
+    <!--{/if}-->
+    {/if}
+</script>
+{/block}

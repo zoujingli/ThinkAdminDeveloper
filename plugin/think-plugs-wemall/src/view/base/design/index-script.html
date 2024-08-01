@@ -1,0 +1,384 @@
+<label class="layui-form-label layui-hide">
+    <textarea id="EditorData">{$data|json_encode}</textarea>
+    <textarea id="EditorMarks">{$marks|json_encode}</textarea>
+    <!-- <textarea id="EditorData">[]</textarea> -->
+</label>
+
+<script>
+    // require(['https://cdn.jsdelivr.net/npm/vue@2.7.14/dist/vue.js', 'validate', 'vue.sortable'], function (Vue, Validate, Sortable) {
+    require(['vue', 'validate', 'vue.sortable'], function (Vue, Validate, Sortable) {
+        initVueComponents(Vue).component('vuedraggable', Sortable);
+        let EditorData = JSON.parse($('#EditorData').val());
+
+        // 定制基础颜色
+        let D = {
+            image: '__FULL__/static/theme/img/login/bg2.jpg',
+            normalColor: 'rgba(0,0,0,0.6)',
+            borderColor: 'rgba(0,0,0,0.2)',
+            mainBgColor: 'rgba(191,13,13,1)',
+            mainTxColor: 'rgba(255,255,255,1)'
+        }
+
+        // 创建菜单导航页
+        let CreateNewPage = (type) => {
+            if (!PageTypesConfig[type]) {
+                return app.showError('页面 ' + type + ' 不能被创建！');
+            }
+            // 以下为个性页面添加默认组件
+            // lock 为页面锁定状态，锁定后不可再添加组件
+            // limit 为限制当前组件页面，最多可添加数量
+            let items = [], lock = false, define = PageTypesConfig[type];
+            if (type === '购物车') items.push({
+                name: '购物车', type: 'PageCart', top: 1, limit: 1, data: [], lock: lock = true,
+                inputStyle: {vType: 0}, interStyle: false, outerStyle: false,
+            });
+            if (type === '商品分类') items.push({
+                name: '商品分类', type: 'PageCate', top: 3, limit: 1, data: [], lock: lock = true,
+                inputStyle: {vType: 0}, interStyle: false, outerStyle: false,
+            });
+            if (type === '个人中心') items.push({
+                name: '个人中心', type: 'PageCenter', top: 1, limit: 1, data: [], lock: lock = true,
+                interStyle: false, outerStyle: false, inputStyle: {
+                    vPoster: 1,
+                    color: 'rgba(255,255,255,1)', backgroundColor: 'rgba(191,13,13,1)',
+                    vType: 0, vName: '用户区设置', vTypes: '文字颜色,背景颜色,背景图片,背景样式'
+                },
+            });
+            return {
+                type: type, link: {name: '', value: ''}, show: true, style: {}, items: items, lock: lock,
+                foot: {name: define.name, icon: define.icon || {normal: '', active: ''}, style: {}},
+                head: {name: define.title, show: true, placeholder: 60, style: {backgroundColor: 'rgba(191,13,13,1)', color: 'rgba(255,255,255,1)'}},
+            };
+        };
+        // 页面默认配置
+        let PageTypesConfig = {
+            '购物车': {name: '购物车', title: '购物车', icon: {normal: 'https://thinkadmin.top/static/shop/a-cart-normal.png', active: 'https://thinkadmin.top/static/shop/a-cart-active.png'}},
+            '商城首页': {name: '首页', title: '商城首页', icon: {normal: 'https://thinkadmin.top/static/shop/a-home-normal.png', active: 'https://thinkadmin.top/static/shop/a-home-active.png'}},
+            '商品分类': {name: '分类', title: '商品分类', icon: {normal: 'https://thinkadmin.top/static/shop/a-cates-normal.png', active: 'https://thinkadmin.top/static/shop/a-cates-active.png'}},
+            '个人中心': {name: '我的', title: '个人中心', icon: {normal: 'https://thinkadmin.top/static/shop/a-user-normal.png', active: 'https://thinkadmin.top/static/shop/a-user-active.png'}},
+        }
+        // 默认外部样式参数
+        let DefaultOuterStyle = {
+            vTypes: '页面间距,容器宽度,上下内距,左右内距,边框位置,边框样式,边框颜色,边框宽度,边框圆角,背景颜色,背景图片,背景样式',
+            vWidth: 100, vMarginTop: 0, vBorderRadius: 0, vPaddingTopBottom: 0, vPaddingLeftRight: 0,
+            vBorderType: 'trbl', vBorderWidth: 0, borderStyle: 'solid', borderColor: D.borderColor
+        };
+        // 默认内部样式参数
+        let DefaultInterStyle = {
+            vTypes: '容器宽度,上下内距,左右内距,边框位置,边框样式,边框宽度,边框圆角,边框颜色,背景颜色,背景图片,背景样式',
+            vWidth: 100, vBorderRadius: 0, vPaddingTopBottom: 0, vPaddingLeftRight: 0,
+            vBorderType: 'trbl', vBorderWidth: 0, borderStyle: 'solid', borderColor: D.borderColor
+        };
+        // 实例化验证器及 Vue 对象
+        let vali = new Validate(document.forms['DesignForm']), app = new Vue({
+            el: '#TemplateApp', components: {draggable: Sortable}, data: function () {
+                return {
+                    edit: {item: {}, unid: ''}, heigth: 0,
+                    marks: JSON.parse($('#EditorMarks').val()) || [],
+                    defaultCatesTypes: [{name: '默认样式', image: 'https://storage.thinkadmin.top/d/temps/a1/25cb427262b32c9eb678ad376b3501.png'}],
+                    defaultCenterTypes: [{name: '默认样式', image: 'https://storage.thinkadmin.top/d/temps/a1/25cb427262b32c9eb678ad376b3501.png'}],
+                    idx: -9, pdx: 0, item: {}, items: [], page: {head: {style: {}}, style: {}},
+                    navbar: {style: {vActiveColor: '#bf0d0d', vNormalColor: '#666666'}},
+                    pages: [CreateNewPage('商城首页'), CreateNewPage('商品分类'), CreateNewPage('购物车'), CreateNewPage('个人中心')],
+                    tools: [
+                        {
+                            name: '基础组件', items: [
+                                {
+                                    name: '轮播图', icon: 'layui-icon-carousel', type: 'BaseSlider',
+                                    data: [{image: D.image, title: '', link: '', unid: this.guid('img')}],
+                                    interStyle: {}, outerStyle: {
+                                        vTypes: '页面间距,容器宽度,容器高度,上下内距,左右内距,边框位置,边框样式,边框颜色,边框宽度,边框圆角,背景颜色,背景图片,背景样式',
+                                        vHeight: 50
+                                    }
+                                },
+                                {
+                                    name: '商品列表', icon: 'layui-icon-app', type: 'BaseGoods', data: [],
+                                    inputStyle: {vType: 3, vSort: 0, vOrder: 0, vNumber: 6, vMarks: []},
+                                    outerStyle: {
+                                        vTypes: '边框圆角,容器宽度,页面间距,上下内距,左右内距,背景颜色,背景图片,背景样式',
+                                        vWidth: 100, vMarginTop: 0, vBorderRadius: 0
+                                    },
+                                    interStyle: {
+                                        vTypes: '容器宽度,边框圆角,上下内距,左右内距,背景颜色,背景图片,背景样式',
+                                        vWidth: 96, vPaddingLeftRight: 0.5, vPaddingTopBottom: 2
+                                    }
+                                },
+                                {
+                                    name: '导航栏', icon: 'layui-icon-prev-circle', type: 'BaseIcon',
+                                    data: ((items) => {
+                                        for (let i = 0; i < 25; i++) items.push({unid: this.guid('img'), title: '标题', image: D.image});
+                                        return items;
+                                    })([]),
+                                    fontStyle: {
+                                        vTypes: '文字大小,文字粗细,文字行高,文字位置,文字颜色',
+                                        vFontSize: 3, vLineHeight: 8, fontWeight: 400, textAlign: 'center', color: D.normalColor
+                                    },
+                                    inputStyle: {
+                                        vName: '图片设置', vType: 1, vTypes: '页面间距#上 边 距,容器高度,容器宽度2,边框圆角,边框宽度,边框颜色',
+                                        vWidth2: 15, vHeight: 15, vMarginTop: 2,
+                                        vBorderType: 'trbl', vBorderRadius: 1, vBorderWidth: 0, borderStyle: 'solid', borderColor: D.borderColor
+                                    },
+                                    interStyle: {
+                                        vName: '内容器设置',
+                                        vTypes: '页面间距#上 边 距,容器宽度,上下内距,左右内距,边框位置,边框样式,边框颜色,边框宽度,边框圆角,背景颜色,背景图片,背景样式',
+                                        vRow: 1, vCol: 4, vWidth: 100, vPaddingTopBottom: 2, vPaddingLeftRight: 1, vMarginTop: 1,
+                                    },
+                                    outerStyle: {},
+                                },
+                                {
+                                    name: '商品分类', icon: 'layui-icon-slider', type: 'BaseCates', limit: 1,
+                                    data: [],
+                                    fontStyle: {
+                                        vTypes: '文字颜色,文字大小,文字粗细,文字行高,左右间距',
+                                        color: D.mainTxColor, vFontSize: 3, vLineHeight: 5, fontWeight: 400, textAlign: 'left', vMarginLeftRight: 1
+                                    },
+                                    interStyle: {
+                                        vTypes: '文字位置#显示位置,容器宽度,上下内距,左右内距,边框位置,边框样式,边框宽度,边框圆角,边框颜色,背景颜色,背景图片,背景样式',
+                                        vWidth: 96,
+                                    },
+                                    outerStyle: {vPaddingTopBottom: 2, backgroundColor: D.mainBgColor},
+                                },
+                                {
+                                    name: '图片魔方', icon: 'layui-icon-template', type: 'BaseImage',
+                                    data: [
+                                        {unid: this.guid('img'), image: D.image}, {unid: this.guid('img'), image: D.image},
+                                        {unid: this.guid('img'), image: D.image}, {unid: this.guid('img'), image: D.image}
+                                    ],
+                                    inputStyle: {
+                                        vName: '图片设置', vType: 5, vTypes: '左右间距,上下间距,边框圆角,边框宽度,边框颜色',
+                                        vMarginTopBottom: 1, vMarginLeftRight: 1,
+                                        vBorderType: 'trbl', vBorderRadius: 0, vBorderWidth: 0, borderStyle: 'solid', borderColor: D.borderColor
+                                    },
+                                    interStyle: {
+                                        vTypes: '容器宽度,容器高度,上下内距,左右内距,边框位置,边框样式,边框颜色,边框宽度,边框圆角,背景颜色,背景图片,背景样式',
+                                        vHeight: 50, vPaddingTopBottom: 1, vPaddingLeftRight: 1
+                                    },
+                                    outerStyle: {},
+                                },
+                                {
+                                    name: '搜索框', icon: 'layui-icon-search', type: 'BaseSearch', limit: 1, top: 2, data: [],
+                                    outerStyle: {
+                                        vTypes: '边框圆角,容器宽度,页面间距,上下内距,背景颜色,背景图片,背景样式',
+                                        vPaddingTopBottom: 2, backgroundColor: D.mainBgColor
+                                    },
+                                    interStyle: {vWidth: 96},
+                                    inputStyle: {
+                                        vTypes: '左右内距,边框圆角,文字颜色,背景颜色,背景样式',
+                                        color: D.normalColor, vBorderWidth: 0, vPaddingLeftRight: 5, vBorderRadius: 50, vPlaceholder: '请输入商品名称'
+                                    }
+                                },
+                            ]
+                        },
+                        // {
+                        //     name: '营销组件', items: [
+                        //         {name: '活动魔方', icon: 'layui-icon-picture-fine', type: '活动魔方', data: [], outerStyle: {}, interStyle: {vWidth: 90}},
+                        //         {name: '小程序直播', icon: 'layui-icon-video', type: '活动魔方', data: [], outerStyle: {}, interStyle: {vWidth: 90}},
+                        //         {name: '分销二维码', icon: 'layui-icon-release', type: '分销二维码', data: [], outerStyle: {}, interStyle: {vWidth: 90}},
+                        //     ]
+                        // },
+                        {
+                            name: '工具组件', items: [
+                                {
+                                    name: '标题', icon: 'layui-icon-component', type: 'ToolTitle', data: [],
+                                    outerStyle: {}, interStyle: {vWidth: 90}, inputStyle: {
+                                        vTypes: '文字颜色,文字大小,文字粗细,文字行高,文字位置',
+                                        vText: '标题文字', vFontSize: 4, vLineHeight: 10, fontWeight: 400, textAlign: 'left',
+                                    }
+                                },
+                                {
+                                    name: '辅助空白', icon: 'layui-icon-screen-full', type: 'ToolBlank', data: [], outerStyle: {}, interStyle: false,
+                                    inputStyle: {vHeight: 10, vWidth: 100, vBorderType: 'trbl', vBorderRadius: 0, vBorderWidth: 0, borderStyle: 'solid', borderColor: D.borderColor},
+                                },
+                                {
+                                    name: '辅助线', icon: 'layui-icon-slider', type: 'ToolBorder', data: [],
+                                    inputStyle: {borderStyle: 'solid', vBorderWidth: 5, vBorderType: 'b', borderColor: D.borderColor}, outerStyle: {}, interStyle: false
+                                },
+                                {
+                                    name: '文本框', icon: 'layui-icon-tabs', type: 'ToolText', data: [],
+                                    outerStyle: {}, interStyle: {vWidth: 90},
+                                    inputStyle: {
+                                        vText: '文本内容', vFontSize: 4, vLineHeight: 10, fontWeight: 400, textAlign: 'left',
+                                        vTypes: '文字颜色,文字大小,文字粗细,文字行高,文字位置',
+                                    },
+                                },
+                                {
+                                    name: '防伪溯源', disabled: true, icon: 'layui-icon-engine', type: 'ToolWuma', data: [], outerStyle: {}, interStyle: {vWidth: 90}
+                                },
+                                {
+                                    name: '关注公众号', icon: 'layui-icon-login-wechat', type: 'ToolWechat', data: [],
+                                    fontStyle: {
+                                        vTypes: '文字颜色,文字大小,文字粗细,文字行高',
+                                        vFontSize: 3.5, vLineHeight: 6, fontWeight: 400, color: D.normalColor
+                                    },
+                                    inputStyle: {
+                                        vImage: D.image, vTitle: '请长按识别并二维码',
+                                        vTypes: '左右间距,上下间距,边框圆角#图片圆角,容器高度#图片高度,容器宽度2#图片宽度,边框宽度,边框颜色',
+                                        vWidth2: 30, vHeight: 30, vMarginTopBottom: 5, vMarginLeftRight: 0,
+                                        vBorderType: 'trbl', vBorderRadius: 1, vBorderWidth: 0, borderStyle: 'solid', borderColor: D.borderColor
+                                    },
+                                    outerStyle: {}, interStyle: {vPaddingTopBottom: 5}
+                                },
+                            ]
+                        }
+                    ],
+                };
+            },
+            watch: {
+                items: {deep: true, handler: v => app.pages[app.pdx].items = v}
+            },
+            created: function () {
+                if (EditorData.pages) this.pages = this.filterInput();
+                if (EditorData.navbar) this.navbar = EditorData.navbar;
+
+                // 初始化页面数据
+                this.pages.forEach(v => v.unid = v.unid || this.guid('pg'));
+                this.tools.forEach(v => v.items.forEach(x => {
+                    if (typeof x.outerStyle === 'undefined' || x.outerStyle !== false) {
+                        x.outerStyle = Object.assign({}, DefaultOuterStyle, x.outerStyle || {});
+                    }
+                    if (typeof x.interStyle === 'undefined' || x.interStyle !== false) {
+                        x.interStyle = Object.assign({}, DefaultInterStyle, x.interStyle || {});
+                    }
+                }));
+            },
+            mounted: function () {
+                this.pages.some((page, pdx) => page.active ? !!this.setPage(pdx) : false) || this.setPage(0);
+                this.$nextTick(() => {
+                    layui.element.render();
+                    let menu = this.$el.querySelector('div.design-layout-menu');
+                    this.height = menu.offsetHeight + 'px';
+                });
+            },
+            methods: {
+                // 尝试初始合并
+                filterInput() {
+                    let tools = {}
+                    this.pages.map(x => x.items.map(y => tools[y.type] = y))
+                    this.tools.map(x => x.items.map(y => tools[y.type] = y))
+                    return deepMergeObject(EditorData.pages)
+
+                    function deepMergeObject(obj, defa) {
+                        if (Array.isArray(obj)) {
+                            return obj.map(x => deepMergeObject(x, tools[x.type || '-'] || tools[x.name || '-'] || {}))
+                        } else if (typeof obj === "object") {
+                            for (let i in obj) obj[i] = deepMergeObject(obj[i], defa[i] || {})
+                            obj = {...defa, ...obj}
+                        }
+                        return obj;
+                    }
+                },
+                onMove: function (e) {
+                    return !(e.draggedContext.element.top || e.relatedContext.element.top);
+                },
+                addPage: function (type) {
+                    if (this.pages.some(v => v.type === type)) {
+                        this.showError('页面 ' + type + ' 已经存在，不能重复创建！');
+                    } else {
+                        this.pages.push(CreateNewPage(type));
+                    }
+                },
+                addData: function (data, form, prefix) {
+                    data.push(Object.assign({}, form || {}, {unid: this.guid(prefix || 'IMG')}));
+                },
+                // 增加复制组件
+                addCopy: function (tool) {
+                    this.addItem(this.copy(tool, true));
+                },
+                // 增加指定组件
+                addItem: function (tool) {
+                    // 检查初始表单验证
+                    $('.design-layout-form .layui-tab li:first').trigger('click')
+                    if (!vali.checkAllInput()) return this.showError('请完成表单输入');
+                    // 页面锁定状态检查
+                    if (this.page.lock) return this.showError('此页面不能添加组件！');
+                    // 处理组件数量限制
+                    if (tool.limit && tool.limit > 0) {
+                        let count = 0, idx = -1;
+                        this.items.forEach((v, i) => (v.type === tool.type) && ++count && (idx = i));
+                        if (count >= tool.limit) return this.setItem(idx).autoScroll().showError('该组件只能添加 ' + tool.limit + ' 次');
+                    }
+                    // 处理组件位置配置
+                    if (tool.top && tool.top > 0) {
+                        (this.idx = 0) || this.items.some((v, i) => v.top && tool.top >= v.top ? false : (this.idx = i - 1) || true);
+                    } else {
+                        this.items.some((v, i) => v.top ? false : (this.idx < i) && (this.idx = i - 1) || true);
+                    }
+                    this.items.splice(this.idx + 1, 0, this.copy(tool, true));
+                    this.setItem(this.items.length > 1 ? this.idx + 1 : 0).autoScroll();
+                },
+                /*! 切换组件 ( 操作索引，强制更新 ) */
+                setItem: function (idx, force) {
+                    // 检查初始表单验证
+                    if (!force && idx !== this.idx) {
+                        $('.design-layout-form .layui-tab li:first').trigger('click')
+                        if (!vali.checkAllInput()) return this.showError('请完成表单输入');
+                    }
+                    let head = (this.idx = idx) < 0;
+                    this.item = head ? this.page.head : this.items[idx] || {};
+                    this.item.unid = this.item.unid || this.guid('UN');
+                    this.items.forEach((v, i) => v.active = head ? false : i === idx);
+                    return this;
+                },
+                /*! 切换页面 （ 页面编号，选中标题，菜单切换 ）*/
+                setPage: function (pdx, isInit, isMenu) {
+                    // 检查初始表单验证
+                    $('.design-layout-form .layui-tab li:first').trigger('click')
+                    if (!vali.checkAllInput()) return this.showError('请完成表单输入');
+                    this.page = this.pages[this.pdx = pdx] || {};
+                    this.page.items.forEach(v => v.unid = v.unid || this.guid('UN'));
+                    this.pages.forEach((v, i) => v.active = i === pdx);
+                    this.items = this.page.items || [];
+                    if (isMenu) {
+                        this.idx = -2;
+                        this.item = this.page;
+                        this.items.some(v => v.active = false);
+                        return true;
+                    } else {
+                        return (!isInit && this.items.some((v, i) => {
+                            if (v.active) return !!this.setItem(i).autoScroll('instant')
+                        })) || !!this.setItem(-1).autoScroll('instant');
+                    }
+                },
+                /*! 移除组件 ( 对象列表，操作索引，是否组件 ) */
+                moveRm: function (is, ix, co) {
+                    is.splice(ix, 1) && co && this.setItem(ix > 0 ? ix - 1 : (ix <= is.length - 1 ? ix + 1 : -1), true);
+                },
+                /*! 上移组件 ( 对象列表，操作索引，是否组件 ) */
+                moveUp: function (is, ix, co) {
+                    if (ix <= 0) return app.showError('已经是最上一个组件，不能再上移了哦！');
+                    (ix > 0) && (item => {
+                        if (co && item.top) return app.showError('已经是最上一个可移动组件，不能再上移了哦！');
+                        is.splice(ix - 1, 1) && is.splice(ix, 0, item) && co && (this.idx = ix - 1);
+                    })(is[ix - 1]);
+                },
+                /*! 下移组件 ( 对象列表，操作索引，是否组件 ) */
+                moveDn: function (is, ix, co) {
+                    if (ix >= is.length - 1) return app.showError('已经是最后一个组件，不能再下移了哦！');
+                    (item => is.splice(ix + 1, 1) && is.splice(ix, 0, item) && co && (this.idx = ix + 1))(is[ix + 1]);
+                },
+                /*! 链接选择器 ( 数据对象，绑定字段 ) */
+                setLink: function (x, f) {
+                    let that = this;
+                    $.form.modal('{:url("link")}', {}, '链接选择器')
+                    window.setItemValue = function (data, rule) {
+                        that.$set(x, f || 'link', rule);
+                    }
+                },
+                /*! 动态设置全屏 */
+                FullHeightStyle: function () {
+                    let menu = this.$el.querySelector('div.design-layout-view-body');
+                    return {height: (menu.offsetHeight - (Number(this.page.head.placeholder) || 20)) + 'px', position: 'relative'};
+                },
+                /*! 自动滚动 （ 滚动类型 ） */
+                autoScroll: function (type) {
+                    if (this.idx >= 0) this.$nextTick(() => {
+                        let elem = this.$el.querySelector('[sv-element].active');
+                        let body = this.$el.querySelector('div.design-layout-view-body');
+                        setTimeout(() => body.scrollTo({top: elem.offsetTop, behavior: type || 'smooth'}));
+                    });
+                    return this;
+                },
+            }
+        });
+    });
+</script>

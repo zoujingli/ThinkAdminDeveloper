@@ -1,0 +1,139 @@
+{extend name="main"}
+
+{block name="content"}
+<form class='layui-form layui-card' data-auto="true" method="post" style="min-width:1300px">
+    <div class="layui-card-body" id='CertForm'>
+        <div class="flex">
+            <div style="width:504px;height:713px" class="relative notselect shadow-mini">
+                <img alt="img" style="height:100%" width="100%" id="ImageTarget" src='{$vo.image|default="__FULL__/admin/default.jpg"}' :src="image">
+                <div class="absolute-full"><a class="absolute nowrap" v-for="x in items" v-if="x.state==1" :style="point(x)" @mousedown="move($event,x)">{{ x.value }}</a></div>
+            </div>
+            <div class="flex-1">
+                <div class="padding-left-30">
+                    <a class="pull-right" @click="show()">预 览</a>
+                    <label class="layui-form-item block relative label-required-prev">
+                        <span class="help-label"><b>确权证书编号</b>Certificate Code</span>
+                        <input class="layui-input think-bg-gray" name="code" readonly required placeholder="请输入确权证书编号" value='{$vo.code|default=""}'>
+                    </label>
+                    <label class="layui-form-item block relative label-required-prev">
+                        <span class="help-label"><b>确权证书名称</b>Certificate Name</span>
+                        <input class="layui-input" name="name" v-model="items.name.value" required placeholder="请输入确权证书名称" value='{$vo.name|default=""}'>
+                    </label>
+                    <div class="layui-form-item label-required-prev">
+                        <span class="help-label"><b>确权证书底图</b>( 图片尺寸：<strong class="color-text">宽1008px</strong><strong class="color-text margin-left-5">高1426px</strong> )</span>
+                        <label class="block relative">
+                            <input class="layui-input think-bg-gray" readonly v-model="image" name="image">
+                            <a class="layui-icon layui-icon-upload input-right-icon" data-file data-field="image" data-type="png,jpg,jpeg"></a>
+                        </label>
+                    </div>
+                    <div class="layui-row layui-col-space15">
+                        <div class="layui-col-sm12 layui-col-lg6" v-for="(x,k) in items">
+                            <fieldset class="margin-bottom-10 padding-top-5 relative">
+                                <legend><span class="layui-badge layui-bg-blue" v-text="x.name"></span></legend>
+                                <div class="flex nowrap margin-bottom-5">
+                                    <div style="line-height:36px">是否显示：</div>
+                                    <label class="think-radio"><input type="radio" v-model="x.state" value="1" lay-ignore> 是</label>
+                                    <label class="think-radio"><input type="radio" v-model="x.state" value="0" lay-ignore> 否</label>
+                                </div>
+                                <div class="flex nowrap">
+                                    <div style="line-height:38px">字体颜色：</div>
+                                    <div class="inline-block" :data-color-picker="k"></div>
+                                    <div style="line-height:38px;margin-left:10px">字体大小：</div>
+                                    <input style="width:60px" class="layui-input inline-block text-center" type="number" v-model="x.size" min="12" max="50" value="12">
+                                </div>
+                            </fieldset>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <label class="layui-form-item layui-hide relative">
+            <textarea class="layui-textarea" readonly name="content">{{JSON.stringify(items)}}</textarea>
+            <textarea class="layui-textarea" readonly id="EditValue">{$vo.content|default=[]|json_encode}</textarea>
+        </label>
+
+        <div class="hr-line-dashed margin-top-40"></div>
+        {notempty name='vo.id'}<input name="id" type="hidden" value="{$vo.id}">{/notempty}
+
+        <div class="layui-form-item text-center">
+            <button class="layui-btn" type='submit'>保存数据</button>
+            <button class="layui-btn layui-btn-danger" type='button' data-confirm="确认要取消编辑吗？" data-target-backup>取消编辑</button>
+        </div>
+    </div>
+</form>
+
+<script>
+    // 加载插件并显示界面
+    require(['vue'], function (vue) {
+        new vue({
+            el: '#CertForm', data: {
+                items: {
+                    name: {name: '证书名称', value: '证书名称', size: 12, state: 1, point: {x: 38.50, y: 35.0}, color: 'rgba(51,51,51,1)'},
+                    comp: {name: '申请单位', value: '申请单位', size: 12, state: 1, point: {x: 38.50, y: 38.9}, color: 'rgba(51,51,51,1)'},
+                    numb: {name: '证书编号', value: '证书编号', size: 12, state: 1, point: {x: 38.50, y: 42.8}, color: 'rgba(51,51,51,1)'},
+                    prod: {name: '产品名称', value: '产品名称', size: 12, state: 1, point: {x: 38.50, y: 46.7}, color: 'rgba(51,51,51,1)'},
+                    date: {name: '上链时间', value: '上链时间', size: 12, state: 1, point: {x: 38.50, y: 50.6}, color: 'rgba(51,51,51,1)'},
+                    hash: {name: '上链哈希值', value: '上链哈希值', size: 12, state: 1, point: {x: 38.50, y: 54.5}, color: 'rgba(51,51,51,1)'},
+                },
+                image: '{$vo.image|default="https://storage.thinkadmin.top/d/temps/19/faf30ba8cbd513919aa765d90712e9.jpg"}',
+                imageBox: {w: 504, h: 713},
+            }, methods: {
+                point(data) {
+                    return {
+                        top: data.point.y + '%', left: data.point.x + '%',
+                        color: data.color, fontSize: data.size + 'px', fontWeight: 700,
+                    }
+                },
+                show: function () {
+                    let data = {image: this.image, items: JSON.stringify(this.items)};
+                    $.form.load('{:sysuri("show")}', data, 'post', function (ret) {
+                        if (ret.code > 0 && ret.data.base64) {
+                            return $.previewImage(ret.data.base64, '650px'), false;
+                        }
+                    });
+                },
+                move(evt, data) {
+                    let that = this, odiv = evt.target, disY, disX;
+                    // 计算鼠标相对元素的位置
+                    disY = evt.clientY - odiv.offsetTop;
+                    disX = evt.clientX - odiv.offsetLeft;
+                    document.onmousemove = function (e) {
+                        // 计算元素相对位置
+                        let top = e.clientY - disY, left = e.clientX - disX;
+                        if (top < 0 || left < 0 || top > that.imageBox.h - odiv.offsetHeight || left > that.imageBox.w - odiv.offsetWidth) return;
+                        // 写入更新定位坐标
+                        data.point.y = top / that.imageBox.h * 100;
+                        data.point.x = left / that.imageBox.w * 100;
+                    };
+                    document.onmouseup = function () {
+                        document.onmouseup = null;
+                        document.onmousemove = null;
+                    };
+                }
+            }, mounted: function () {
+                let that = this;
+                // 文件上传成功处理
+                $('[data-file]').on('upload.done', function (evt, data) {
+                    that.image = data.file.xurl;
+                });
+                // 初始化颜色选择器
+                $('[data-color-picker]').map(function (idx, elem) {
+                    elem.ky = elem.dataset.colorPicker, elem.id = 'color_' + elem.ky;
+                    layui.colorpicker.render({
+                        size: 'md', alpha: true, format: 'rgb', predefine: true,
+                        elem: '#color_' + elem.ky, color: that.items[elem.ky].color,
+                        change: function (color) {
+                            that.items[elem.ky].color = color;
+                        }
+                    });
+                });
+            }, created: function () {
+                if (parseInt("{$vo.id|default=0}") > 0) {
+                    this.items = JSON.parse($('#EditValue').val());
+                }
+            }
+        });
+    });
+</script>
+{/block}

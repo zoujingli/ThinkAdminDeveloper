@@ -1,0 +1,59 @@
+<fieldset>
+    <legend>{:lang('条件搜索')}</legend>
+    <form action="{:sysuri()}" autocomplete="off" class="layui-form layui-form-pane form-search" method="get" onsubmit="return false">
+
+        <div class="layui-form-item layui-inline">
+            <label class="layui-form-label">代理用户</label>
+            <label class="layui-input-inline">
+                <input class="layui-input" name="agent" placeholder="请输入代理用户" value="{$get.agent|default=''}">
+            </label>
+        </div>
+
+        <div class="layui-form-item layui-inline">
+            <label class="layui-form-label">用户账号</label>
+            <label class="layui-input-inline">
+                <input class="layui-input" name="user" placeholder="请输入用户账号" value="{$get.user|default=''}">
+            </label>
+        </div>
+
+        <div class="layui-form-item layui-inline">
+            <label class="layui-form-label">返佣状态</label>
+            <label class="layui-input-inline">
+                <select class="layui-select" name="status">
+                    <option value=''>- 全部 -</option>
+                    {foreach ['未到账','已到账'] as $k=>$v}
+                    {if isset($get.status) and $get.status eq $k.''}
+                    <option selected value="{$k}">{$v}</option>
+                    {else}
+                    <option value="{$k}">{$v}</option>
+                    {/if}{/foreach}
+                </select>
+            </label>
+        </div>
+
+        <div class="layui-form-item layui-inline">
+            <label class="layui-form-label">订单单号</label>
+            <label class="layui-input-inline">
+                <input class="layui-input" name="order_no" placeholder="请输入订单单号" value="{$get.order_no|default=''}">
+            </label>
+        </div>
+
+        <div class="layui-form-item layui-inline">
+            <label class="layui-form-label">返佣描述</label>
+            <label class="layui-input-inline">
+                <input class="layui-input" name="name" placeholder="请输入返佣描述" value="{$get.name|default=''}">
+            </label>
+        </div>
+
+        <div class="layui-form-item layui-inline">
+            <label class="layui-form-label">返佣时间</label>
+            <div class="layui-input-inline">
+                <input class="layui-input" data-date-range name="create_time" placeholder="请选择返佣时间" value="{$get.create_time|default=''}">
+            </div>
+        </div>
+
+        <div class="layui-form-item layui-inline">
+            <button class="layui-btn layui-btn-primary"><i class="layui-icon">&#xe615;</i> 搜 索</button>
+        </div>
+    </form>
+</fieldset>

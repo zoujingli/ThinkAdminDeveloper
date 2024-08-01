@@ -1,0 +1,92 @@
+{extend name="main"}
+
+{block name="button"}
+<!--{if auth('order')}-->
+<a class="layui-btn layui-btn-sm layui-btn-primary" data-modal="{:url('order')}">{:lang('修改订单配置')}</a>
+<!--{/if}-->
+<!--{if auth('params')}-->
+<a class="layui-btn layui-btn-sm layui-btn-primary" data-modal="{:url('params')}">{:lang('修改商城参数')}</a>
+<!--{/if}-->
+{/block}
+
+{block name="content"}
+<div class="layui-card ta-p-20 shadow">
+    <div class="layui-card-header notselect">
+        <b class="color-text">{:lang('商城参数')}</b>
+    </div>
+    <div class="layui-card-body">
+        <div class="layui-form-item">
+            <div class="help-label"><b>{:lang('商城名称')}</b>Name</div>
+            <label class="relative block">
+                <input readonly value="{$data.base_name|default=''}" placeholder="请设置商城名称" class="layui-input layui-bg-gray">
+            </label>
+            <p class="help-block">请填写商城名称，将会在前端部分内容显示。</p>
+        </div>
+        <label class="layui-form-item relative block">
+            <span class="help-label"><b>{:lang('手机网站')}</b>WapSite</span>
+            <input readonly class="layui-input layui-bg-gray" placeholder="请输入手机网站" value='{$data.base_domain|default=""}'>
+            <span class="help-block"><b>必填，</b>请填写手机网站入口，将使用在生成手机网页端访问链接。</span>
+        </label>
+
+        <div class="layui-form-item">
+            <div class="help-label"><b>{:lang('账户余额')}</b>Balance</div>
+            <div class="layui-input layui-bg-gray flex-align-center">
+                {empty name='data.enable_balance'}
+                <i class="layui-icon layui-icon-error ta-mr-5 color-red"></i>未启用账户余额
+                {else}
+                <i class="layui-icon layui-icon-success color-green ta-mr-5"></i>已启用账户余额
+                {/empty}
+            </div>
+            <span class="help-block">开启账户余额之后，用户会增加余额账户，可以积累余额并可使用余额抵扣支付。</span>
+        </div>
+        <div class="layui-form-item">
+            <div class="help-label"><b>{:lang('账户积分')}</b>Integral</div>
+            <div class="layui-input flex-align-center layui-bg-gray">
+                {empty name='data.enable_integral'}
+                <i class="layui-icon layui-icon-error color-red ta-mr-5"></i>未启用账户积分
+                {else}
+                <i class="layui-icon layui-icon-success color-green ta-mr-5"></i>已启用账户积分
+                {/empty}
+            </div>
+            <span class="help-block">开启账户积分之后，用户会增加积分账户，可以积累积分并可使用积分抵扣支付。</span>
+        </div>
+        <div class="layui-form-item">
+            <div class="help-label"><b>{:lang('下单随减')}</b>Reduction</div>
+            <div class="layui-input flex-align-center layui-bg-gray">
+                {empty name='data.enable_reduct'}
+                <i class="layui-icon layui-icon-error color-red ta-mr-5"></i> 未启用下单随机减免金额
+                {else}
+                <i class="layui-icon layui-icon-success color-green font-s15 ta-mr-5"></i>
+                已启用下单随机减免金额，减免范围 [ {$data.reduct_min|default=0.00} - {$data.reduct_max|default=0.00} ] 元
+                {/empty}
+            </div>
+            <span class="help-block">开启下单随减后，用户每次下单都会随机减免一定金额，最多不会超过订单金额。</span>
+        </div>
+        <div class="layui-form-item ta-mb-0">
+            <div class="layui-row layui-col-space10 portal-block-container notselect ta-mb-0">
+                <div class="help-label"><b>{:lang('内容管理')}</b>Content</div>
+                {foreach $pages as $k => $v}
+                <div class="layui-col-sm4 layui-col-md4 layui-col-lg3">
+                    <!--{if auth('content')}-->
+                    <div class="pointer" data-open="{:url('content')}?code={$k}">
+                        <div class="portal-block-item nowrap think-bg-blue">
+                            <div class="font-s14" style="opacity:0.8">编辑内容</div>
+                            <div class="font-s15" style="opacity:0.8">{$v|default=''}</div>
+                        </div>
+                        <i class="portal-block-icon layui-icon layui-icon-form"></i>
+                    </div>
+                    <!--{else}-->
+                    <div class="portal-block-item nowrap think-bg-violet">
+                        <div class="font-s14" style="opacity:0.6">编辑内容</div>
+                        <div class="font-s15" style="opacity:0.8">{$v|default=''}</div>
+                    </div>
+                    <i class="portal-block-icon layui-icon layui-icon-form"></i>
+                    <!--{/if}-->
+                </div>
+                {/foreach}
+            </div>
+        </div>
+    </div>
+</div>
+<!--{/if}-->
+{/block}

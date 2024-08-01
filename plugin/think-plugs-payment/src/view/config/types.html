@@ -1,0 +1,53 @@
+<style>
+    .integral-input-config input {
+        width: 100px;
+        height: 36px;
+        margin-left: 5px;
+        margin-right: 5px;
+        line-height: 36px;
+        border-top: 0;
+        border-bottom: 0;
+        text-align: center;
+    }
+
+    .integral-input-config .layui-form-label {
+        width: auto;
+        padding-left: 0;
+        padding-right: 0;
+    }
+</style>
+
+<form action="{:sysuri()}" method="post" data-auto="true" class="layui-form layui-card">
+
+    <div class="layui-card-body ta-pl-40">
+        <div class="layui-form-item">
+            <span class="help-label label-required-prev"><b>积分抵扣配置</b>Integral Payment</span>
+            <div class="flex layui-input integral-input-config layui-bg-gray">
+                <span class="layui-form-label">使用</span>
+                <label><input class="layui-input" name="integral" value="{$config.integral|default=1}" type="number" data-blur-number="0" data-value-min="1" step="1" min="1" max="10000"></label>
+                <span class="layui-form-label">积分可抵扣 <b>1</b> 元。</span>
+            </div>
+        </div>
+        <div class="layui-form-item">
+            <span class="help-label label-required-prev"><b>支付方式开关</b>Payment Channel</span>
+            <div class="layui-textarea help-checks layui-bg-gray">
+                {foreach $types as $k => $v}
+                <label class="think-checkbox" data-width style="width:120px" title="{$v.name|lang}">
+                    {empty name='v.status'}
+                    <input type="checkbox" name="types[]" value='{$k}' lay-ignore> {$v.name|lang}
+                    {else}
+                    <input type="checkbox" name="types[]" value='{$k}' lay-ignore checked> {$v.name|lang}
+                    {/empty}
+                </label>
+                {/foreach}
+            </div>
+        </div>
+    </div>
+
+    <div class="hr-line-dashed"></div>
+
+    <div class="layui-form-item text-center">
+        <button class="layui-btn" type='submit'>保存数据</button>
+        <button class="layui-btn layui-btn-danger" type='button' data-confirm="确定要取消编辑吗？" data-close>取消编辑</button>
+    </div>
+</form>

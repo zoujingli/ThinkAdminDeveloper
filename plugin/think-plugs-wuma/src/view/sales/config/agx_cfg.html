@@ -1,0 +1,42 @@
+<form action="{:sysuri()}" class='layui-form layui-card' data-auto="true" method="post">
+
+    <div class="layui-card-body padding-left-40">
+
+        <div class="layui-form-item label-required-prev">
+            <span class="help-label"><b>上传营业执照</b></span>
+            <div class="layui-input">
+                {assign name='vo.business' value='$vo.business??0'}
+                {foreach [0=>'不需上传',1=>'需要上传'] as $k=>$v}
+                <label class="think-radio">
+                    {if $k eq $vo.business}
+                    <input type="radio" name="business" value="{$k}" lay-ignore checked> {$v}
+                    {else}
+                    <input type="radio" name="business" value="{$k}" lay-ignore> {$v}
+                    {/if}
+                </label>
+                {/foreach}
+            </div>
+            <span class="help-block">代理通过 App 添加下级代理时是否需要上传营业执照图片。</span>
+        </div>
+
+        <div class="layui-form-item label-required-prev">
+            <span class="help-label"><b>窜货范围配置</b></span>
+            <div class="layui-input">
+                {assign name='vo.flee' value='$vo.flee??"省级"'}
+                {foreach ['省级','市级','区级'] as $v}{if $vo.flee eq $v}
+                <label class="think-radio"><input checked type="radio" name="flee" value="{$v}" lay-ignore> {$v}</label>
+                {else}
+                <label class="think-radio"><input type="radio" name="flee" value="{$v}" lay-ignore> {$v}</label>
+                {/if}{/foreach}
+            </div>
+            <span class="help-block">当扫码定位省市区与代理授权省市区不一致，会记录窜货记录！</span>
+        </div>
+    </div>
+
+    <div class="hr-line-dashed"></div>
+
+    <div class="layui-form-item text-center margin-top-20">
+        <button class="layui-btn" type="submit">保存配置</button>
+        <button class="layui-btn layui-btn-danger" type='button' data-confirm="确定要取消修改吗？" data-close>取消修改</button>
+    </div>
+</form>

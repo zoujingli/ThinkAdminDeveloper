@@ -1,0 +1,47 @@
+<form action="{:sysuri()}" class='layui-form layui-card' data-auto="true" method="post">
+
+    <div class="layui-card-body ta-pl-40">
+
+        <div class="layui-form-item block relative">
+            <span class="help-label label-required-prev"><b>服务区域</b>Region</span>
+            <select name="alisms_region" class="layui-select">
+                {foreach $regions as $k => $region}
+                {if isset($vo.alisms_region) and $k eq $vo.alisms_region}
+                <option selected value="{$k}">[ {$k} ] {$region.name}</option>
+                {else}
+                <option value="{$k}">[ {$k} ] {$region.name}</option>
+                {/if}{/foreach}
+            </select>
+        </div>
+
+        <label class="layui-form-item block relative">
+            <span class="help-label"><b>阿里云账号</b>AccessKeyId</span>
+            <input class="layui-input" name="alisms_keyid" vali-name="阿里云账号" placeholder="请输入阿里云账号" required value="{$vo.alisms_keyid|default=''}">
+        </label>
+
+        <label class="layui-form-item block relative">
+            <span class="help-label"><b>阿里云密钥</b>AccessKeySecret</span>
+            <input class="layui-input" name="alisms_secret" vali-name="阿里云密钥" placeholder="请输入阿里云密钥" required value="{$vo.alisms_secret|default=''}">
+        </label>
+
+        <label class="layui-form-item block relative">
+            <span class="help-label"><b>短信签名</b>SignName</span>
+            <input class="layui-input" name="alisms_signtx" vali-name="短信签名" placeholder="请输入短信签名" required value="{$vo.alisms_signtx|default=''}">
+        </label>
+
+        {foreach $scenes as $k=>$s}
+        <label class="layui-form-item block relative">
+            <span class="help-label label-required-prev"><b>{$s}</b>{:ucfirst(strtolower($k))} Code</span>
+            <input class="layui-input" required name="alisms_scenes[{$k}]" value="{$vo.alisms_scenes[$k]|default=''}" placeholder="请输入短信模板编号">
+        </label>
+        {/foreach}
+
+    </div>
+
+    <div class="hr-line-dashed"></div>
+
+    <div class="layui-form-item text-center ta-mt-20">
+        <button class="layui-btn" type="submit">保存配置</button>
+        <button class="layui-btn layui-btn-danger" type='button' data-confirm="确定要取消修改吗？" data-close>取消修改</button>
+    </div>
+</form>

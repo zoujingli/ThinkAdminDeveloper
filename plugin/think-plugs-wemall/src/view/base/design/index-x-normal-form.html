@@ -1,0 +1,312 @@
+<!--{literal}-->
+<div v-if="idx>-1" class="layui-tab layui-tab-brief" :key="item.unid">
+    <ul class="layui-tab-title notselect">
+        <li class="layui-this">{{item.name}}</li>
+        <li v-if="item.interStyle || (item.inputStyle && item.inputStyle.vTypes)">容器样式</li>
+        <li v-if="item.outerStyle">组件样式</li>
+    </ul>
+    <div class="layui-tab-content ta-pr-30">
+        <div class="layui-tab-item layui-show notselect">
+
+            <div v-if="item.type==='PageCate'">
+                <div class="color-desc">暂无可配置参数</div>
+            </div>
+
+            <div v-if="item.type==='PageCart'">
+                <div class="color-desc">暂无可配置参数</div>
+            </div>
+
+            <div v-if="item.type==='PageCenter'">
+                <div class="layui-form-item flex">
+                    <span class="design-form-label">我的海报</span>
+                    <div class="flex-1 flex-align-center">
+                        <button v-for="(v,k) in ['隐藏','显示']" :key="v" @click="$set(item.inputStyle,'vPoster',k)"
+                                class="layui-btn layui-btn-sm" :class="item.inputStyle.vPoster===k?'layui-btn-normal':'layui-btn-primary'"
+                                type="button">{{v}}
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <div v-if="item.type==='BaseSearch'">
+                <div class="layui-form-item flex">
+                    <span class="design-form-label">设置图片</span>
+                    <div class="flex-1">
+                        <upload-image :mstyle="item.interStyle" mfield="vLogo" v-model="item.interStyle.vLogo" :showinput="false"></upload-image>
+                    </div>
+                </div>
+                <div class="layui-form-item flex">
+                    <span class="design-form-label">提示文字</span>
+                    <label class="flex-1 relative">
+                        <input class="layui-input" v-model="item.inputStyle.vPlaceholder" placeholder="请输入提示文字">
+                    </label>
+                </div>
+                <div class="layui-form-item flex">
+                    <span class="design-form-label">搜索热词</span>
+                    <div class="flex-1">
+                        <div class="ta-mt-5 color-desc">( 最多支持 10 个，点击右则可移动 )</div>
+                        <div class="ta-mt-5 flex" v-for="(xxx,$index) in item.data">
+                            <label class="flex-1 relative">
+                                <input class="layui-input" v-model="xxx.name" required vali-name="热词" placeholder="请输入热词">
+                            </label>
+                            <div class="ta-pl-10">
+                                <a @click="moveUp(item.data,$index)" class="ta-m-5 layui-btn-primary layui-btn-md inline-block"><i style="transform:rotate(090deg)" class="layui-icon inline-block">&#xe65c;</i></a>
+                                <a @click="moveRm(item.data,$index)" class="ta-m-5 layui-btn-primary color-red layui-btn-md inline-block"><i class="layui-icon layui-icon-close"></i></a>
+                                <a @click="moveDn(item.data,$index)" class="ta-m-5 layui-btn-primary layui-btn-md inline-block"><i style="transform:rotate(270deg)" class="layui-icon inline-block">&#xe65c;</i></a>
+                            </div>
+                        </div>
+                        <div class="ta-mt-5" v-if="item.data.length<10">
+                            <a @click="addData(item.data)">添加热词</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div v-if="item.type==='BaseImage'">
+                <div class="layui-colla-item colla-form-group">
+                    <div class="layui-colla-title">图片布局</div>
+                    <div class="layui-colla-content layui-show text-center">
+                        <button v-for="(v,k) in ['x1','x2','x3','x4','x5','x6']" :key="v" @click="$set(item.inputStyle,'vType',k)"
+                                class="layui-btn layui-btn-sm" :class="item.inputStyle.vType===k?'layui-btn-normal':'layui-btn-primary'"
+                                type="button">
+                            <i class="iconfont" :class="'iconfont-'+v"></i>
+                        </button>
+                    </div>
+                </div>
+                <div class="layui-colla-item colla-form-group">
+                    <div class="layui-colla-title">图片内容</div>
+                    <div class="layui-colla-content layui-show">
+                        <draggable v-model="item.data" v-bind="{group:'BaseImageData',animation:200}" @start="drag=true" @end="drag=false">
+                            <transition-group>
+                                <div class="layui-form-item" v-for="(xx,$index) in item.data" :key="xx.unid"
+                                     v-show="['0','01','012','012','0123','0123'][item.inputStyle.vType].indexOf($index)>-1">
+                                    <div class="flex">
+                                        <div style="padding-top:3px">
+                                            <upload-image :mstyle="xx" mfield="image" v-model="xx.image" :showinput="false"></upload-image>
+                                        </div>
+                                        <div class="flex-1">
+                                            <label class="flex relative">
+                                                <span class="layui-form-label" style="width:3em">标 题</span>
+                                                <input placeholder="选项，请输入标题" v-model="xx.name" class="flex-1 layui-input ">
+                                            </label>
+                                            <div class="flex relative ta-mt-5">
+                                                <span class="layui-form-label" style="width:3em">链 接</span>
+                                                <div class="layui-input-wrap pointer flex-1" @click="setLink(xx)">
+                                                    <label><input type="text" placeholder="必选，请选择链接" class="layui-input" v-model="xx.link"></label>
+                                                    <div class="layui-input-suffix"><i class="layui-icon layui-icon-down"></i></div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div>
+                                            <a @click="moveUp(item.data,$index)" style="margin:0 0 0 5px" class="block layui-btn layui-btn-primary layui-btn-xs"><i style="transform:rotate(090deg)" class="layui-icon inline-block">&#xe65c;</i></a>
+                                            <a sv-handle style="margin:7px 0 0 5px;cursor:move" class="block layui-btn layui-btn-primary layui-btn-xs layui-border-blue"><i class="layui-icon">&#xe714;</i></a>
+                                            <a @click="moveDn(item.data,$index)" style="margin:7px 0 0 5px" class="block layui-btn layui-btn-primary layui-btn-xs"><i style="transform:rotate(270deg)" class="layui-icon inline-block">&#xe65c;</i></a>
+                                        </div>
+                                    </div>
+                                    <hr>
+                                </div>
+                            </transition-group>
+                        </draggable>
+                    </div>
+                </div>
+            </div>
+
+            <div v-if="item.type==='BaseGoods'">
+                <div class="layui-form-item flex">
+                    <span class="design-form-label">展示样式</span>
+                    <div class="flex-1 flex-align-center">
+                        <button v-for="(v,k) in ['x1','x2','x3','x7']" :key="v" @click="$set(item.inputStyle,'vType',k)"
+                                class="layui-btn layui-btn-sm" :class="item.inputStyle.vType===k?'layui-btn-normal':'layui-btn-primary'"
+                                type="button"><i class="iconfont" :class="'iconfont-'+v"></i></button>
+                    </div>
+                </div>
+
+                <div class="layui-form-item flex">
+                    <span class="design-form-label">商品排序</span>
+                    <div class="flex-1 flex-align-center">
+                        <button v-for="(v,k) in ['综合','销量','价格']" :key="v" @click="$set(item.inputStyle,'vSort',k)"
+                                :class="item.inputStyle.vSort===k?'layui-btn-normal':'layui-btn-primary'"
+                                type="button" class="layui-btn layui-btn-sm">{{v}}
+                        </button>
+                    </div>
+                </div>
+
+                <div class="layui-form-item flex">
+                    <span class="design-form-label">排序方式</span>
+                    <div class="flex-1 flex-align-center">
+                        <button v-for="(v,k) in ['倒序','升级']" :key="v" @click="$set(item.inputStyle,'vOrder',k)"
+                                :class="item.inputStyle.vOrder===k?'layui-btn-normal':'layui-btn-primary'"
+                                type="button" class="layui-btn layui-btn-sm">{{v}}
+                        </button>
+                    </div>
+                </div>
+
+                <label class="layui-form-item flex">
+                    <span class="design-form-label">商品数量</span>
+                    <input type="range" min="1" step="1" v-model="item.inputStyle.vNumber" max="60">
+                    <span class="layui-form-label text-left flex-1" style="width:auto">{{item.inputStyle.vNumber}} 个</span>
+                </label>
+
+                <div class="layui-form-item flex">
+                    <span class="design-form-label">过滤标签</span>
+                    <div class="layui-textarea help-checks">
+                        <label class="think-checkbox">
+                            <input v-model="item.inputStyle.vMarks" type="checkbox" value="-" lay-ignore/> 全部
+                        </label>
+                        <label class="think-checkbox" v-for="x in marks">
+                            <input v-model="item.inputStyle.vMarks" type="checkbox" :value="x" lay-ignore/> {{x}}
+                        </label>
+                    </div>
+                </div>
+            </div>
+
+            <div v-if="item.type==='BaseIcon'">
+                <div class="layui-colla-item colla-form-group">
+                    <div class="layui-colla-title">展示样式</div>
+                    <div class="layui-colla-content layui-show text-center">
+                        <layout-setting :mstyle="item.interStyle" mtypes="表格行数,表格列数"></layout-setting>
+                        <div class="layui-form-item">
+                            <div class="color-desc">请点击图片修改对应的内容</div>
+                            <draggable v-model="item.data" v-bind="{group:'BaseImageSlider',animation:200}" @start="drag=true" @end="drag=false">
+                                <transition-group class="flex flex-wrap">
+                                    <div v-for="(x,i) in item.data" v-if="i<item.interStyle.vCol*item.interStyle.vRow" :key="x.unid" style="padding:5px 2px;margin:0;box-sizing:border-box" :style="{width:(100/item.interStyle.vCol)+'%'}">
+                                        <button @click="$set(edit,'item',x) && $set(edit,'unid',item.unid)" class="layui-btn uploadimage" :class="x===edit.item?'active':''" style="width:50px;height:50px" :style="showBgimg(x.image)" type="button"></button>
+                                    </div>
+                                </transition-group>
+                            </draggable>
+                        </div>
+                    </div>
+                </div>
+                <div class="layui-colla-item colla-form-group" v-if="edit.item && edit.unid===item.unid">
+                    <div class="layui-colla-title">图片设置</div>
+                    <div class="layui-colla-content layui-show">
+                        <div class="flex">
+                            <div style="padding-top:3px">
+                                <upload-image :mstyle="edit.item" mfield="image" v-model="edit.item.image" :showinput="false"></upload-image>
+                            </div>
+                            <div class="flex-1">
+                                <label class="flex relative">
+                                    <span class="layui-form-label" style="width:3em">标 题</span>
+                                    <input placeholder="可选，请输入标题" v-model="edit.item.title" class="flex-1 layui-input ">
+                                </label>
+                                <div class="flex relative ta-mt-5">
+                                    <span class="layui-form-label" style="width:3em">链 接</span>
+                                    <div class="layui-input-wrap pointer flex-1" @click="setLink(edit.item)">
+                                        <label><input type="text" placeholder="可选，请选择链接" class="layui-input" v-model="edit.item.link"></label>
+                                        <div class="layui-input-suffix"><i class="layui-icon layui-icon-down"></i></div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div v-if="item.type==='ToolWechat'">
+                <div class="layui-form-item flex">
+                    <span class="design-form-label">设置图片</span>
+                    <div class="flex-1">
+                        <upload-image :mstyle="item.inputStyle" mfield="vImage" v-model="item.inputStyle.vImage" :showinput="false"></upload-image>
+                    </div>
+                </div>
+                <label class="layui-form-item flex">
+                    <span class="design-form-label">提示文字</span>
+                    <input class="layui-input" v-model="item.inputStyle.vTitle" placeholder="请输入提示文字">
+                </label>
+            </div>
+
+            <div v-if="item.type==='BaseSlider'">
+                <draggable v-model="item.data" v-bind="{group:'BaseImageSlider',animation:200}" @start="drag=true" @end="drag=false">
+                    <transition-group>
+                        <div class="layui-form-item ta-mb-10" v-for="(xx,$index) in item.data" :key="xx.unid">
+                            <div class="flex">
+                                <div style="padding-top:3px">
+                                    <upload-image :mstyle="xx" mfield="image" v-model="xx.image" :showinput="false"></upload-image>
+                                </div>
+                                <div class="flex-1">
+                                    <label class="flex relative">
+                                        <span class="layui-form-label" style="width:3em">标 题</span>
+                                        <input placeholder="可选，请输入标题" v-model="xx.title" class="flex-1 layui-input ">
+                                    </label>
+                                    <div class="flex relative ta-mt-5">
+                                        <span class="layui-form-label" style="width:3em">链 接</span>
+                                        <div class="layui-input-wrap pointer flex-1" @click="setLink(xx)">
+                                            <label><input type="text" placeholder="可选，请选择链接" class="layui-input" v-model="xx.link"></label>
+                                            <div class="layui-input-suffix"><i class="layui-icon layui-icon-down"></i></div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div>
+                                    <a @click="moveUp(item.data,$index)" style="margin:0 0 0 5px" class="block layui-btn layui-btn-primary layui-btn-xs"><i style="transform:rotate(090deg)" class="layui-icon inline-block">&#xe65c;</i></a>
+                                    <a v-if="item.data.length>1" @click="moveRm(item.data,$index)" style="margin:7px 0 0 5px" class="block layui-btn layui-btn-primary layui-btn-xs layui-border-red"><i class="layui-icon layui-icon-close"></i></a>
+                                    <a v-else style="margin:7px 0 0 5px" class="block layui-btn layui-btn-primary layui-btn-xs layui-border-red layui-disabled"><i class="layui-icon layui-icon-close"></i></a>
+                                    <a @click="moveDn(item.data,$index)" style="margin:7px 0 0 5px" class="block layui-btn layui-btn-primary layui-btn-xs"><i style="transform:rotate(270deg)" class="layui-icon inline-block">&#xe65c;</i></a>
+                                </div>
+                            </div>
+                            <hr>
+                        </div>
+                    </transition-group>
+                </draggable>
+                <div class="layui-form-item">
+                    <a @click="addData(item.data)">添加图片</a>
+                </div>
+            </div>
+
+            <div v-if="item.type==='ToolTitle'">
+                <div class="layui-form-item flex">
+                    <span class="design-form-label">标题文字</span>
+                    <label class="flex-1 relative">
+                        <input class="layui-input" v-model="item.inputStyle.vText" placeholder="请输入标题文字">
+                    </label>
+                </div>
+            </div>
+
+            <div v-if="item.type==='ToolText'">
+                <div class="layui-form-item flex">
+                    <span class="design-form-label">文本内容</span>
+                    <label class="flex-1 relative">
+                        <textarea class="layui-textarea" v-model="item.inputStyle.vText" placeholder="请输入内容文字"></textarea>
+                    </label>
+                </div>
+            </div>
+
+            <div v-if="item.type==='ToolBorder'">
+                <layout-setting :mstyle="item.inputStyle" mtypes="边框宽度#线条高度,边框颜色#线条颜色,边框样式#线条样式"></layout-setting>
+            </div>
+
+            <div v-if="item.type==='ToolBlank'">
+                <layout-setting :mstyle="item.inputStyle" mtypes="容器宽度,容器高度,边框宽度,边框圆角,边框位置,边框样式,边框颜色,背景颜色,背景图片,背景样式"></layout-setting>
+            </div>
+
+        </div>
+        <div class="layui-tab-item" v-if="item.interStyle || (item.inputStyle && item.inputStyle.vTypes)">
+            <div class="layui-colla-item colla-form-group" v-if="item.fontStyle && item.fontStyle.vTypes">
+                <div class="layui-colla-title">{{item.fontStyle.vName || '文字设置'}}</div>
+                <div class="layui-colla-content layui-show">
+                    <layout-setting :key="item.unid" :mstyle="item.fontStyle" :mtypes="item.fontStyle.vTypes||''"></layout-setting>
+                </div>
+            </div>
+            <div class="layui-colla-item colla-form-group" v-if="item.inputStyle && item.inputStyle.vTypes">
+                <div class="layui-colla-title">{{item.inputStyle.vName || '内容设置'}}</div>
+                <div class="layui-colla-content layui-show">
+                    <layout-setting :key="item.unid" :mstyle="item.inputStyle" :mtypes="item.inputStyle.vTypes||''"></layout-setting>
+                </div>
+            </div>
+            <div class="layui-colla-item colla-form-group" v-if="item.interStyle">
+                <div class="layui-colla-title">{{item.interStyle.vName || '容器设置'}}</div>
+                <div class="layui-colla-content layui-show">
+                    <layout-setting :key="item.unid" :mstyle="item.interStyle" :mtypes="item.interStyle.vTypes||''"></layout-setting>
+                </div>
+            </div>
+        </div>
+        <div class="layui-tab-item" v-if="item.outerStyle">
+            <layout-setting v-if="item.outerStyle" :key="item.unid" :mstyle="item.outerStyle" :mtypes="item.outerStyle.vTypes||''"></layout-setting>
+        </div>
+    </div>
+</div>
+
+<div v-else-if="idx>-1" class="layui-tab layui-tab-brief">
+    {{item.name}} - {{item.type}} 2
+</div>
+
+<!--{/literal}-->

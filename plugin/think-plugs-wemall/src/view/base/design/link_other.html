@@ -1,0 +1,14 @@
+<div>
+    <div class="layui-padding-2">
+        {foreach $list as $vo}
+        <div class="layui-btn layui-btn-primary layui-btn-sm" data-link-btn="{$vo.type}#{$vo.link}">{$vo.name}</div>
+        {/foreach}
+    </div>
+    <script>
+        $('body').off('click', '[data-link-btn]').on('click', '[data-link-btn]', function () {
+            let attr = [this.innerHTML, 'link', this.dataset.linkBtn];
+            window.setItemValue({}, attr.join('#'));
+            $.msg.closeThisModal(this);
+        })
+    </script>
+</div>

@@ -1,0 +1,97 @@
+<form action="{:sysuri()}" class="layui-form layui-card" data-auto="true" method="post">
+    <div class="layui-card-body ta-pl-40">
+
+        <div class="flex">
+            <label class="relative block layui-form-item flex-1">
+                <span class="help-label"><b>商城名称</b>Name</span>
+                <input class="layui-input" name="base_name" placeholder="请输入商城名称" required value='{$vo.base_name|default=""}'>
+                <span class="help-block">名称将显示在前端关于我们及登录页面。</span>
+            </label>
+            <label class="relative block layui-form-item flex-2 ta-ml-15">
+                <span class="help-label"><b>手机网站</b>WapSite</span>
+                <input class="layui-input" pattern="url" name="base_domain" placeholder="请输入手机网站" required value='{$vo.base_domain|default=""}'>
+                <span class="help-block">请填写手机网站入口，如果使用 Hash 方案编译生成手机网页需要以 # 结束。</span>
+            </label>
+        </div>
+
+        <div class="flex">
+            <div class="layui-form-item flex-1">
+                <span class="help-label label-required-prev"><b>账户余额</b>User Balance</span>
+                <div class="layui-textarea help-checks layui-bg-gray ta-pl-15">
+                    {empty name='vo.enable_balance'}{assign name='vo.enable_balance' value='0'}{/empty}
+                    {foreach ['禁用账户余额','启用账户余额'] as $k=>$n}
+                    {if (isset($vo.enable_balance) && $vo.enable_balance eq $k)}
+                    <input checked type="radio" name="enable_balance" value="{$k}" title="{$n}">
+                    {else}
+                    <input type="radio" name="enable_balance" value="{$k}" title="{$n}">
+                    {/if}{/foreach}
+                </div>
+                <span class="help-block">开启账户余额之后，可以积累余额并可使用余额抵扣支付。</span>
+            </div>
+
+            <div class="layui-form-item flex-1 ta-ml-15">
+                <span class="help-label label-required-prev"><b>账户积分</b>User Integral</span>
+                <div class="layui-textarea help-checks layui-bg-gray ta-pl-15">
+                    {empty name='vo.enable_integral'}{assign name='vo.enable_integral' value='0'}{/empty}
+                    {foreach ['禁用账户积分','启用账户积分'] as $k=>$n}
+                    {if (isset($vo.enable_integral) && $vo.enable_integral eq $k)}
+                    <input checked type="radio" name="enable_integral" value="{$k}" title="{$n}">
+                    {else}
+                    <input type="radio" name="enable_integral" value="{$k}" title="{$n}">
+                    {/if}{/foreach}
+                </div>
+                <span class="help-block">开启账户积分之后，可以积累积分并可使用积分抵扣支付。</span>
+            </div>
+        </div>
+
+        {notempty name='enableAndroid'}
+        <div class="flex">
+            <div class="layui-form-item flex-1">
+                <span class="help-label label-required-prev"><b>手机站点</b>WapSite</span>
+                <div class="layui-textarea help-checks layui-bg-gray ta-pl-15">
+                    {empty name='vo.enable_wapsite'}{assign name='vo.enable_wapsite' value='0'}{/empty}
+                    {foreach ['禁用','启用'] as $k=>$n}
+                    {if (isset($vo.enable_wapsite) && $vo.enable_wapsite eq $k)}
+                    <input checked type="radio" name="enable_wapsite" value="{$k}" title="{$n}">
+                    {else}
+                    <input type="radio" name="enable_wapsite" value="{$k}" title="{$n}">
+                    {/if}{/foreach}
+                </div>
+                <span class="help-block">禁用WAP站点后WAP仅可用于注册绑定。</span>
+            </div>
+            <label class="relative block layui-form-item flex-1 ta-ml-15">
+                <span class="help-label"><b>安卓内链</b>URLScheme</span>
+                <input class="layui-input" name="scheme_android" placeholder="请输入安卓内链" value='{$vo.scheme_android|default=""}'>
+                <span class="help-block">系统内部调用该App的专属链接协议。</span>
+            </label>
+            <label class="relative block layui-form-item flex-1 ta-ml-15">
+                <span class="help-label"><b>跳转链接</b>Redirect</span>
+                <input class="layui-input" pattern="url" name="scheme_redirect" placeholder="请输入跳转链接" value='{$vo.scheme_redirect|default=""}'>
+                <span class="help-block">未启用WAP站点时注册完成跳转的地址。</span>
+            </label>
+        </div>
+        {/notempty}
+
+        <div class="layui-form-item">
+            <span class="help-label"><b>应用图标</b>Icon</span>
+            <div class="relative block">
+                <input class="layui-input layui-bg-gray" readonly pattern="url" data-tips-image data-tips-hover placeholder="请上传应用图标" value="{$vo.base_icon|default=''}" name="base_icon">
+                <a class="input-right-icon layui-icon layui-icon-upload-drag" data-file data-type="png,jpg,jpeg,gif" data-field="base_icon"></a>
+            </div>
+            <span class="help-block">请上传应用图标，建议使用 200 x 200 尺寸或同比例图片。</span>
+        </div>
+
+        <label class="layui-form-item relative block">
+            <span class="help-label"><b>版权信息</b>Copyright</span>
+            <textarea class="layui-textarea" name="base_copy">{$vo.base_copy|default="\\n"|raw}</textarea>
+        </label>
+
+    </div>
+
+    <div class="hr-line-dashed"></div>
+
+    <div class="layui-form-item text-center">
+        <button class="layui-btn" type='submit'>保存数据</button>
+        <button class="layui-btn layui-btn-danger" data-close type='button' data-confirm="确定要取消编辑吗？">取消编辑</button>
+    </div>
+</form>

@@ -1,0 +1,113 @@
+{extend name='table'}
+
+{block name="button"}
+<!--{if auth('add')}-->
+<a data-table-id="UserTable" class="layui-btn layui-btn-sm layui-btn-primary" data-modal="{:url('add')}">{:lang('添加用户')}</a>
+<!--{/if}-->
+{/block}
+
+{block name="content"}
+<div class="layui-tab layui-tab-card">
+    <ul class="layui-tab-title">
+        {foreach ['index'=>'用户管理','recycle'=>'回 收 站'] as $k=>$v}
+        {if isset($type) and $type eq $k}
+        <li data-open="{:url('index')}?type={$k}" class="layui-this">{$v}</li>
+        {else}
+        <li data-open="{:url('index')}?type={$k}">{$v}</li>
+        {/if}{/foreach}
+    </ul>
+    <div class="layui-tab-content">
+        {include file='user/create/index_search'}
+        <table id="UserTable" data-line="2" data-url="{:request()->url()}" data-target-search="form.form-search"></table>
+    </div>
+</div>
+
+<script>
+    $(function () {
+        let $table = $('#UserTable').layTable({
+            even: true, height: 'full', sort: {field: 'id', type: 'desc'},
+            cols: [[
+                {field: 'sort', hide: true},
+                {checkbox: true, fixed: true},
+                {
+                    title: '头 像', width: 95, align: 'center', templet: function (d) {
+                        if (!d.user || !d.user.headimg) return '<div class="ta-pt-15">-</div>';
+                        return laytpl('<div>{{-showTableImage(d.headimg,false,"sm")}}</div>').render(d)
+                    }
+                },
+                {
+                    title: '用户账号', minWidth: 180, templet: function (d) {
+                        if (!d.user) return '<div class="ta-pt-15">-</div>';
+                        let tpls = [];
+                        tpls.push('用户姓名：{{d.name||"-"}}')
+                        tpls.push('手机账号：<b class="color-blue">{{d.phone}}</b> {{-d.agentRole}}')
+                        d.agentRole = d.agent_entry > 0 ? '<b class="layui-badge layui-bg-green">推广权益</b>' : '<b class=layui-badge>普通会员</b>';
+                        return laytpl(tpls.join('<br>')).render(d);
+                    }
+                },
+                {
+                    title: '初始佣金', minWidth: 120, templet: function (d) {
+                        if (!d.user) return '<div class="ta-pt-15">-</div>';
+                        let tpls = [];
+                        tpls.push('累计佣金：{{d.rebate_total||"-"}} 元')
+                        tpls.push('剩余佣金：{{d.rebate_usable||"-"}} 元')
+                        return laytpl(tpls.join('<br>')).render(d);
+                    }
+                },
+                {
+                    title: '上级头像', width: 95, align: 'center', templet: function (d) {
+                        if (!d.agent) return '';
+                        return laytpl('<div>{{-showTableImage(d.agent.headimg,false,"sm")}}</div>').render(d);
+                    }
+                },
+                {
+                    title: '上级代理', minWidth: 200, templet: function (d) {
+                        let tpls = [];
+                        if (d.agent) {
+                            tpls.push('姓名：<b class="color-blue">{{d.agent.nickname}}</b>')
+                            tpls.push('账号：<b class="color-blue">{{d.agent.phone}}</b>')
+                        } else {
+                            tpls.push('<div class="color-desc ta-pt-10">未绑定上级</div>')
+                        }
+                        return laytpl(tpls.join('<br>')).render(d);
+                    }
+                },
+                {field: 'status', title: '账号状态', align: 'center', minWidth: 110, width: '5%', templet: '#StatusSwitchTpl'},
+                {toolbar: '#toolbar', title: '操作面板', align: 'center', minWidth: 150, width: '9%', fixed: 'right'}
+            ]]
+        })
+
+        // 数据状态切换操作
+        layui.form.on('switch(StatusSwitch)', function (obj) {
+            let data = {id: obj.value, status: obj.elem.checked > 0 ? 1 : 0};
+            $.form.load("{:url('state')}", data, 'post', function (ret) {
+                let fn = () => $table.trigger('reload');
+                ret.code > 0 ? fn() : $.msg.error(ret.info, 3, fn);
+                return false;
+            }, false);
+        });
+    });
+</script>
+
+<!-- 数据状态切换模板 -->
+<script type="text/html" id="StatusSwitchTpl">
+    <div class="ta-pt-10"></div>
+    <!--{if auth("state")}-->
+    <input type="checkbox" value="{{d.id}}" lay-skin="switch" lay-text="已激活|已禁用" lay-filter="StatusSwitch" {{-d.status>0?'checked':''}}>
+    <!--{else}-->
+    {{-d.status ? '<b class="color-green">已激活</b>' : '<b class="color-red">已禁用</b>'}}
+    <!--{/if}-->
+</script>
+
+<!-- 列表排序权重模板 -->
+<script type="text/html" id="SortInputTpl">
+    <div class="ta-pt-10"></div>
+    <input type="number" min="0" data-blur-number="0" data-action-blur="{:sysuri()}" data-value="id#{{d.id}};action#sort;sort#{value}" data-loading="false" value="{{d.sort}}" class="layui-input text-center">
+</script>
+
+<script type="text/html" id="toolbar">
+    <!--{if auth('edit')}-->
+    <a class="layui-btn layui-btn-sm ta-mr-10 ta-ml-0" data-modal="{:url('edit')}?id={{d.id}}" data-title="编辑用户">编 辑</a>
+    <!--{/if}-->
+</script>
+{/block}

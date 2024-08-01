@@ -1,0 +1,180 @@
+<form action="{:sysuri()}" class="layui-form layui-card" data-auto="true" method="post">
+    <div class="layui-card-body ta-pl-40">
+
+        <div class="layui-form-item flex">
+            <div class="flex-1">
+                <span class="help-label label-required-prev"><b>等级序号</b>Level Serial</span>
+                <select class="layui-select" name="number" lay-filter="number">
+                    {for start="0" end="$max" name="i"}{if isset($vo.number) and $vo.number eq $i}
+                    <option selected value="{$i}">当前 VIP {$vo.number} 等级</option>
+                    {else}
+                    <option value="{$i}">设置 VIP {$i} 等级</option>
+                    {/if}{/for}
+                </select>
+            </div>
+            <label class="flex-3 ta-ml-15 relative">
+                <span class="help-label label-required-prev"><b>等级名称</b>Level Name</span>
+                <input class="layui-input" name="name" placeholder="请输入等级名称" required value="{$vo.name|default=''}">
+            </label>
+        </div>
+
+        <div class="layui-form-item">
+            <span class="help-label"><b>等级图标</b>( 建议上传尺寸为 400x400 的图片或同比例图片 )</span>
+            <div class="relative block">
+                <label>
+                    <input class="layui-input layui-bg-gray" readonly placeholder="请上传等级封面" data-tips-hover data-tips-image name="cover" value='{$vo.cover|default=""}'>
+                </label>
+                <a class="layui-icon layui-icon-upload input-right-icon" data-file data-field="cover" data-type="gif,png,jpg"></a>
+            </div>
+        </div>
+
+        <div class="layui-form-item">
+            <span class="help-label"><b>卡片背景</b>( 建议上传尺寸为 650x330 的图片或同比例图片)</span>
+            <div class="relative block">
+                <label>
+                    <input class="layui-input layui-bg-gray" readonly placeholder="请上传卡片背景" data-tips-hover data-tips-image name="cardbg" value='{$vo.cardbg|default=""}'>
+                </label>
+                <a class="layui-icon layui-icon-upload input-right-icon" data-file data-field="cardbg" data-type="gif,png,jpg"></a>
+            </div>
+        </div>
+
+        <div class="layui-form-item flex">
+            <div class="flex-1">
+                <span class="help-label label-required-prev"><b>团队计数</b>Team Count</span>
+                {empty name='vo.upgrade_team'}{assign name='vo.upgrade_team' value='1'}{/empty}
+                <div class="layui-textarea help-checks layui-bg-gray">
+                    {foreach ['不参与团队计数','参与团队计数'] as $k => $v}
+                    <label class="think-radio">
+                        {if isset($vo.upgrade_team) and $vo.upgrade_team eq $k}
+                        <input name="upgrade_team" type="radio" value="{$k}" checked lay-ignore> {$v}
+                        {else}
+                        <input name="upgrade_team" type="radio" value="{$k}" lay-ignore> {$v}
+                        {/if}
+                    </label>
+                    {/foreach}
+                </div>
+            </div>
+            <div class="flex-1 ta-ml-15">
+                <span class="help-label label-required-prev"><b>升级规则</b>Upgrade Type</span>
+                {empty name='vo.upgrade_type'}{assign name='vo.upgrade_type' value='1'}{/empty}
+                <div class="layui-textarea help-checks layui-bg-gray">
+                    {foreach ['达成任意条件','达成全部条件'] as $k => $v}
+                    <label class="think-radio">
+                        {if isset($vo.upgrade_type) and $vo.upgrade_type eq $k}
+                        <input name="upgrade_type" type="radio" value="{$k}" lay-ignore checked> {$v}
+                        {else}
+                        <input name="upgrade_type" type="radio" value="{$k}" lay-ignore> {$v}
+                        {/if}
+                    </label>
+                    {/foreach}
+                </div>
+            </div>
+        </div>
+
+        <div class="layui-form-item">
+            <span class="help-label label-required-prev"><b>升级条件</b>Upgrade Rules</span>
+            <div class="layui-bg-gray layui-textarea help-checks relative flex flex-wrap ta-p-10">
+                <div class="upgrade-item-group">
+                    {if empty($vo.extra.enter_vip_status)}
+                    <input name="extra.enter_vip_status" type="checkbox" value="1" lay-text="开启 购买入会礼包 升级；">
+                    {else}
+                    <input name="extra.enter_vip_status" type="checkbox" value="1" lay-text="开启 购买入会礼包 升级；" checked>
+                    {/if}
+                </div>
+                {foreach ['order_amount'=>'订单总额'] as $k=>$v}
+                <div class="upgrade-item-group">
+                    {php}$ks=$k."_status";$kn=$k."_number";{/php}
+                    {if isset($vo['extra'][$ks]) and $vo['extra'][$ks] eq 1}
+                    <input name="extra.{$ks}" type="checkbox" value="1" lay-text="开启 {$v}  升级," checked>
+                    {else}
+                    <input name="extra.{$ks}" type="checkbox" value="1" lay-text="开启 {$v}  升级,">
+                    {/if}
+                    <label class="font-s14">
+                        达到 <input class="inline-block text-center min-input"
+                                    name="extra.{$kn}" value="{$vo['extra'][$kn]|default='0.00'}"
+                                    data-blur-number="2" step="0.01" min="0" type="number"> 元；
+                    </label>
+                </div>
+                {/foreach}
+                <div data-level-zero class="layui-hide notselect">默认等级，无需配置升级规则</div>
+            </div>
+
+        </div>
+
+        <label class="layui-form-item">
+            <span class="help-label"><b>系统备注</b>System Remark</span>
+            <textarea class="layui-textarea" name="remark" placeholder="请输入系统备注">{$vo.remark|default=''}</textarea>
+        </label>
+
+    </div>
+
+    <div class="hr-line-dashed"></div>
+    {if isset($vo.id)}<input name='id' type='hidden' value='{$vo.id}'>{/if}
+    {if isset($vo.number)}<input name='old_number' type='hidden' value='{$vo.number}'>{/if}
+
+    <div class="layui-form-item text-center">
+        <button class="layui-btn" type='submit'>保存数据</button>
+        <button class="layui-btn layui-btn-danger" data-close data-confirm="确定要取消编辑吗？" type='button'>取消编辑</button>
+    </div>
+
+</form>
+
+<script>
+    $(function () {
+        let $elem = $('[data-level-zero]');
+        layui.form.on('select(number)', apply);
+        apply({value: parseInt("{$vo.number|default=0}")});
+
+        function apply(data) {
+            data.value > 0 ? $elem.addClass('layui-hide') : $elem.removeClass('layui-hide');
+        }
+    });
+</script>
+
+<style>
+    .upgrade-item-group {
+        width: 48%;
+        color: #5f5f5f;
+    }
+
+    .upgrade-item-group .layui-form-checkbox {
+        margin: 0 0 0 5px !important;
+        padding-left: 20px !important;
+    }
+
+    .upgrade-item-group .layui-form-checkbox > div {
+        padding-right: 0 !important;
+    }
+
+    [data-level-zero] {
+        top: 0;
+        left: 0;
+        right: 0;
+        color: white;
+        bottom: 2px;
+        display: flex;
+        position: absolute;
+        font-size: 20px;
+        font-weight: bold;
+        align-items: center;
+        border-radius: 3px;
+        letter-spacing: 1px;
+        justify-content: center;
+        background: rgba(0, 0, 0, 0.5);
+        text-shadow: #666 1px 1px 3px;
+    }
+
+    .min-input {
+        color: #333;
+        width: 80px;
+        height: 22px;
+        border: 1px solid #d2d2d2;
+        overflow: hidden;
+        position: relative;
+        font-size: 12px;
+        box-sizing: border-box;
+        line-height: 1em;
+        padding-left: 15px;
+        border-radius: 3px;
+    }
+</style>

@@ -1,0 +1,97 @@
+{extend name="table"}
+
+{block name="content"}
+<div class="layui-tab layui-tab-card think-bg-white">
+    <ul class="layui-tab-title">
+        {foreach ['index'=>'评论管理','recycle'=>'回收站'] as $k=>$v}
+        {if isset($type) and $type eq $k}
+        <li class="layui-this" data-open="{:url('index')}?type={$k}">{$v}</li>
+        {else}
+        <li data-open="{:url('index')}?type={$k}">{$v}</li>
+        {/if}{/foreach}
+    </ul>
+    <div class="layui-tab-content">
+        {include file='shop/reply/index_search'}
+        <table id="ReplyTable" data-line="2" data-url="{:request()->url()}" data-target-search="form.form-search"></table>
+    </div>
+</div>
+{/block}
+
+{block name='script'}
+<script>
+
+    $(function () {
+        let $table = $('#ReplyTable').layTable({
+            even: true, height: 'full', sort: {field: 'id', type: 'desc'},
+            cols: [[
+                {field: 'headimg', title: '头 像', width: 70, align: 'center', templet: '<div>{{-showTableImage(d.user_headimg,true,"sm")}}</div>'},
+                {
+                    title: '会员用户', width: 180, templet: function (d) {
+                        let tpls = [];
+                        tpls.push('用户昵称：{{d.user_nickname||d.user_username||"-"}}');
+                        tpls.push('用户手机：<b class="font-code">{{d.user_phone}}</b>');
+                        return laytpl("<div class='nowrap'>" + tpls.join('<br>') + "</div>").render(d);
+                    }
+                },
+                {
+                    title: '评论得分', width: 165, align: 'center', templet: function (d) {
+                        return laytpl('<div data-rate-number="{{d.rate}}"></div>').render(d)
+                    }
+                },
+                {title: '评论内容', field: 'content'},
+                {
+                    title: '评论图片', templet: function (d) {
+                        let tpls = [];
+                        d.images.map(x => {
+                            tpls.push(laytpl("<div class='uploadimage ta-mr-5' data-lazy-src='{{d.x}}' data-tips-hover data-tips-image style='width:40px;height:40px;background-image:url('{{d.x}}')'></div>").render({x: x}))
+                        });
+                        return tpls.length > 0 ? tpls.join('') : '<div class="ta-pt-10">-</div>';
+                    }
+                },
+                {title: '订单编号', field: 'order_no'},
+                {
+                    title: '评论商品', field: 'gcode', templet: function (d) {
+                        return laytpl('{{d.goods_code}}<br>{{d.goods_name}}').render(d)
+                    }
+                },
+                {field: 'status', title: '商品状态', minWidth: 110, width: '5%', align: 'center', templet: '#StatusSwitchTpl'},
+                {field: 'id', sort: true, title: '操作时间', minWidth: 170, templet: "<div>更新时间：{{d.update_time}}<br>评论时间：{{d.create_time}}</div>"},
+                {toolbar: '#ReplyEdit', title: '操作面板', width: 120, align: 'center', fixed: 'right'},
+            ]],
+            done: function () {
+                // 动态显示评分星星
+                $('[data-rate-number]').map(function () {
+                    layui.rate.render({elem: this, half: true, value: Number(this.dataset.rateNumber), readonly: true});
+                })
+            }
+        });
+
+        // 数据状态切换操作
+        layui.form.on('switch(StatusSwitch)', function (obj) {
+            let data = {id: obj.value, status: obj.elem.checked > 0 ? 1 : 0};
+            $.form.load("{:url('state')}", data, 'post', function (ret) {
+                let fn = () => $table.trigger('reload');
+                ret.code < 1 ? $.msg.error(ret.info, 3, fn) : fn();
+                return false;
+            }, false);
+        });
+    });
+</script>
+
+<!-- 数据状态切换模板 -->
+<script type="text/html" id="StatusSwitchTpl">
+    <div class="ta-pt-10 block relative"></div>
+    <!--{if auth("state")}-->
+    <input type="checkbox" value="{{d.id}}" lay-skin="switch" lay-text="显示|隐藏" lay-filter="StatusSwitch" {{-d.status>0?'checked':''}}>
+    <!--{else}-->
+    {{-d.status ? '<b class="color-green">已显示</b>' : '<b class="color-red">已隐藏</b>'}}
+    <!--{/if}-->
+</script>
+
+<!-- 操控面板的模板 -->
+<script type="text/html" id="ReplyEdit">
+    <!--{if auth('edit')}-->
+    <a class="layui-btn layui-btn-sm" data-modal="{:url('edit')}?id={{d.id}}" data-title="修改评论">编 辑</a>
+    <!--{/if}-->
+</script>
+{/block}

@@ -1,0 +1,55 @@
+{extend name="table"}
+
+{block name="content"}
+<div class="think-box-notify">
+    <b>温馨提示：</b>以下数据仅供查询标签码在仓库中的流转历史，不显示虚拟入库及最终代理数据。
+</div>
+<div class="think-box-shadow">
+    {include file='warehouse/history/index-search'}
+    <table id="CodeData" data-url="{:sysuri()}" data-target-search="form.form-search"></table>
+</div>
+{/block}
+
+{block name='script'}
+<script>
+    $(function () {
+        // 初始化表格组件
+        $('#CodeData').layTable({
+            even: true, height: 'full',
+            sort: {field: 'id', type: 'desc'},
+            cols: [[
+                {field: 'id', hide: true, title: 'ID', align: 'center', width: 80, sort: true},
+                {field: '', title: '操作单号', align: 'center', width: 180, templet: '<div>{{d.main.code}}</div>'},
+                {
+                    field: '', title: '入库方式', align: 'center', width: 100, templet: function (d) {
+                        return [
+                            '<b class="color-desc">未知操作</b>',
+                            '<b class="color-blue">按单入库</b>',
+                            '<b class="color-green">直接入库</b>',
+                            '<b class="color-text">调货入库</b>',
+                            '<b class="color-text">按单出库</b>',
+                            '<b class="color-text">直接出库</b>',
+                            '<b class="color-text">调货出库</b>',
+                            '<b class="color-text">关联出库</b>',
+                            '<b class="color-text">直接退货</b>',
+                        ][d.main.main.type];
+                    }
+                },
+                {field: '', title: '仓库名称', align: 'center', minWidth: 200, templet: '<div>{{d.main.main.wcode}} - {{d.main.main.wname}}</div>'},
+                {field: '', title: '产品名称', align: 'center', minWidth: 200, templet: '<div>{{d.main.main.gcode}} - {{d.main.main.gname}} ( {{showSpec(d.main.main.gspec)}} )</div>'},
+                {field: 'code', title: '标签序号', align: 'center', width: 100},
+                {
+                    field: 'status', title: '标签状态', align: 'center', width: 100, templet: function (d) {
+                        return d.deleted > 0 ? '<b class="color-red">退货</b>' : [
+                            '<b class="color-desc">无效</b>',
+                            '<b class="color-blue">有效</div>',
+                            '<b class="color-green">出货</div>',
+                        ][d.status] || '<b class="color-desc">未知</b>';
+                    }
+                },
+                {field: '', title: '操作时间', align: 'center', minWidth: 170, templet: '<div>{{d.main.create_time}}</div>'},
+            ]]
+        });
+    });
+</script>
+{/block}

@@ -1,0 +1,58 @@
+<form action="{:sysuri()}" method="post" data-auto="true" class="layui-form layui-card" data-table-id="PaymentRecordTable">
+
+    <div class="layui-card-body ta-pl-40">
+
+        <div class="layui-row layui-col-space20">
+            <div class="layui-col-xs4">
+                <div class="layui-form-item">
+                    <span class="help-label"><b>业务单号</b>Order No.</span>
+                    <div class="layui-input layui-bg-gray">{$vo.order_no|default=''}</div>
+                </div>
+            </div>
+            <div class="layui-col-xs4">
+                <div class="layui-form-item">
+                    <span class="help-label"><b>交易单号</b>Payment No.</span>
+                    <div class="layui-input layui-bg-gray">{$vo.code|default=''}</div>
+                </div>
+            </div>
+            <div class="layui-col-xs4">
+                <div class="layui-form-item">
+                    <span class="help-label"><b>交易金额</b>Payment Amount</span>
+                    <div class="layui-input layui-bg-gray">{$vo.payment_amount+0} 元</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="layui-form-item">
+            <span class="help-label"><b>支付单据凭证</b>Payment Voucher</span>
+            <div class="layui-textarea">
+                <img alt="img" data-tips-image src="{$vo.payment_images|default=''}" style="width:auto;height:220px">
+            </div>
+        </div>
+
+        <div class="layui-form-item">
+            <span class="help-label label-required-prev"><b>审核操作类型</b>Audit Status</span>
+            <div class="layui-textarea help-checks ta-pl-10">
+                {foreach ['驳回凭证','等待审核','审核通过',] as $k => $v}
+                {if $k eq $vo.audit_status}
+                <input checked name="status" title="{$v}" type="radio" value='{$k}'>
+                {else}
+                <input name="status" title="{$v}" type="radio" value='{$k}'>
+                {/if}{/foreach}
+            </div>
+        </div>
+
+        <label class="layui-form-item relative block">
+            <span class="help-label label-required-prev"><b>订单审核描述</b>Audit Remark</span>
+            <textarea class="layui-textarea" name="remark" placeholder="请输入订单审核描述">{$vo.remark|default='支付凭证已查验'}</textarea>
+        </label>
+
+        <div class="hr-line-dashed"></div>
+        {notempty name='vo.id'}<input name='id' type='hidden' value='{$vo.id}'>{/notempty}
+
+        <div class="layui-form-item text-center">
+            <button class="layui-btn" type='submit'>保存数据</button>
+            <button class="layui-btn layui-btn-danger" data-close data-confirm="确定要取消吗？" type='button'>取消操作</button>
+        </div>
+    </div>
+</form>

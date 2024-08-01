@@ -1,0 +1,35 @@
+<form action="{:sysuri()}" autocomplete="off" class="layui-form layui-form-pane form-search" method="get" onsubmit="return false">
+
+    <div class="layui-form-item layui-inline">
+        <label class="layui-form-label">用户账号</label>
+        <label class="layui-input-inline">
+            <input class="layui-input" name="user" placeholder="请输入用户账号" value="{$get.user|default=''}">
+        </label>
+    </div>
+
+    <div class="layui-form-item layui-inline">
+        <label class="layui-form-label">推广权限</label>
+        <div class="layui-input-inline">
+            <select class="layui-select" name="agent_entry">
+                <option value="">-- 全部 --</option>
+                {foreach ['无推广权限','有推广权限'] as $k=>$v}
+                {if isset($get.agent_entry) and $get.agent_entry eq $k}
+                <option selected value="{$k}">{$v}</option>
+                {else}
+                <option value="{$k}">{$v}</option>
+                {/if}{/foreach}
+            </select>
+        </div>
+    </div>
+
+    <div class="layui-form-item layui-inline">
+        <label class="layui-form-label">添加时间</label>
+        <div class="layui-input-inline">
+            <input class="layui-input" data-date-range name="create_time" placeholder="请选择添加时间" value="{$get.create_time|default=''}">
+        </div>
+    </div>
+
+    <div class="layui-form-item layui-inline">
+        <button class="layui-btn layui-btn-primary"><i class="layui-icon">&#xe615;</i> 搜 索</button>
+    </div>
+</form>

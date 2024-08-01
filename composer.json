@@ -1,0 +1,78 @@
+{
+  "type": "project",
+  "name": "zoujingli/thinkadmin",
+  "license": "MIT",
+  "homepage": "https://thinkadmin.top",
+  "description": "Application Development Framework",
+  "keywords": [
+    "ThinkAdmin",
+    "ThinkLibrary",
+    "WeChatDeveloper"
+  ],
+  "authors": [
+    {
+      "name": "Anyon",
+      "email": "zoujingli@qq.com"
+    }
+  ],
+  "require": {
+    "php": ">7.1",
+    "ext-gd": "*",
+    "ext-json": "*",
+    "ext-openssl": "*",
+    "zoujingli/think-plugs-wuma": "^1.0|@dev",
+    "zoujingli/think-plugs-admin": "^1.0|@dev",
+    "zoujingli/think-plugs-worker": "^1.0|@dev",
+    "zoujingli/think-plugs-center": "^1.0|@dev",
+    "zoujingli/think-plugs-wechat": "^1.0|@dev",
+    "zoujingli/think-plugs-wemall": "^1.0|@dev",
+    "zoujingli/think-plugs-account": "^1.0|@dev",
+    "zoujingli/think-plugs-payment": "^1.0|@dev",
+    "zoujingli/think-plugs-wechat-service": "^1.0|@dev"
+  },
+  "repositories": [
+    {
+      "type": "path",
+      "url": "plugin/think-plugs-wuma"
+    },
+    {
+      "type": "path",
+      "url": "plugin/think-plugs-worker"
+    },
+    {
+      "type": "path",
+      "url": "plugin/think-plugs-wechat"
+    },
+    {
+      "type": "path",
+      "url": "plugin/think-plugs-wechat-service"
+    },
+    {
+      "type": "path",
+      "url": "plugin/think-plugs-admin"
+    },
+    {
+      "type": "path",
+      "url": "plugin/think-plugs-center"
+    },
+    {
+      "type": "path",
+      "url": "plugin/think-plugs-account"
+    },
+    {
+      "type": "path",
+      "url": "plugin/think-plugs-payment"
+    },
+    {
+      "type": "path",
+      "url": "plugin/think-plugs-wemall"
+    }
+  ],
+  "minimum-stability": "dev",
+  "config": {
+    "sort-packages": true,
+    "allow-plugins": {
+      "zoujingli/think-install": true
+    }
+  }
+}

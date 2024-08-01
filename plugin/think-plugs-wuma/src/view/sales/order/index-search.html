@@ -1,0 +1,71 @@
+<fieldset>
+    <legend>{:lang('条件搜索')}</legend>
+    <form action="{:sysuri()}" autocomplete="off" class="layui-form layui-form-pane form-search" method="get" onsubmit="return false">
+
+        <div class="layui-form-item layui-inline">
+            <label class="layui-form-label">调货单号</label>
+            <label class="layui-input-inline">
+                <input class="layui-input" name="code" placeholder="请输入调货单号" value="{$get.code|default=''}">
+            </label>
+        </div>
+
+        <div class="layui-form-item layui-inline">
+            <label class="layui-form-label">产品搜索</label>
+            <label class="layui-input-inline">
+                <input class="layui-input" name="gname" placeholder="请输入产品名称或编号" value="{$get.gname|default=''}">
+            </label>
+        </div>
+
+        <div class="layui-form-item layui-inline">
+            <label class="layui-form-label">收货代理</label>
+            <label class="layui-input-inline">
+                <input class="layui-input" name="agent" placeholder="请输入代理名称或编号" value="{$get.agent|default=''}">
+            </label>
+        </div>
+
+        <div class="layui-form-item layui-inline">
+            <label class="layui-form-label">发货代理</label>
+            <label class="layui-input-inline">
+                <input class="layui-input" name="fromer" placeholder="请输入代理名称或编号" value="{$get.fromer|default=''}">
+            </label>
+        </div>
+
+        <div class="layui-form-item layui-inline">
+            <label class="layui-form-label">创建时间</label>
+            <label class="layui-input-inline">
+                <input data-date-range name="create_time" value="{$get.create_time|default=''}" placeholder="请选择创建时间" class="layui-input">
+            </label>
+        </div>
+
+        <div class="layui-form-item layui-inline">
+            <button class="layui-btn layui-btn-primary"><i class="layui-icon">&#xe615;</i> 搜 索</button>
+            <button type="button" data-form-export="{:url('index')}?type={$type|default=''}" class="layui-btn layui-btn-primary">
+                <i class="layui-icon layui-icon-export"></i> 导 出
+            </button>
+        </div>
+    </form>
+</fieldset>
+
+<script>
+    require(['excel'], function (excel) {
+        excel.bind(function (data) {
+
+            // 设置表格内容
+            data.forEach(function (item, index) {
+                data[index] = [
+                    item.code, (item.fromer || {}).phone || '-', (item.fromer || {}).username || '-',
+                    (item.agent || {}).phone || '-', (item.agent || {}).username || '-',
+                    (item.product || {}).code || '-', (item.product || {}).name || '-', showSpec(item.product_spec || '-'),
+                    item.num_used + item.vir_used, (item.product || {}).unit || '-', item.create_time
+                ];
+            });
+
+            // 设置表头内容
+            data.unshift(['调货单号', '出货代理手机', '出货代理名称', '收货代理手机', '收货代理名称', '产品编号', '产品名称', '产品规格', '产品数量', '产品单位', '调货时间']);
+
+            // 应用表格样式
+            return this.withStyle(data);
+
+        }, '代理调货记录' + layui.util.toDateString(Date.now(), '_yyyyMMdd_HHmmss'));
+    });
+</script>

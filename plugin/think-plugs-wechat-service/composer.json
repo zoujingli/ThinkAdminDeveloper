@@ -1,0 +1,56 @@
+{
+  "type": "think-admin-plugin",
+  "name": "zoujingli/think-plugs-wechat-service",
+  "homepage": "https://thinkadmin.top",
+  "description": "WeChat Service Plugin for ThinkAdmin",
+  "authors": [
+    {
+      "name": "Anyon",
+      "email": "zoujingli@qq.com"
+    }
+  ],
+  "require": {
+    "php": ">=7.1",
+    "ext-json": "*",
+    "ext-openssl": "*",
+    "ext-mbstring": "*",
+    "zoujingli/think-library": "^6.1|@dev",
+    "zoujingli/think-install": "^1.0|@dev",
+    "zoujingli/weopen-developer": "^1.0|@dev"
+  },
+  "autoload": {
+    "psr-4": {
+      "plugin\\wechat\\service\\": "src"
+    }
+  },
+  "extra": {
+    "think": {
+      "services": [
+        "plugin\\wechat\\service\\RegisterService"
+      ]
+    },
+    "config": {
+      "type": "module",
+      "name": "微信开放平台",
+      "description": "微信开放平台管理模块，提供平台配置以及微信授权管理。",
+      "document": "https://thinkadmin.top/plugin/think-plugs-wechat-service.html",
+      "license": [
+        "VIP"
+      ],
+      "platforms": [
+        "wxapp",
+        "wechat"
+      ]
+    },
+    "plugin": {
+      "copy": {
+        "stc/database": "database/migrations"
+      }
+    }
+  },
+  "config": {
+    "allow-plugins": {
+      "zoujingli/think-install": true
+    }
+  }
+}

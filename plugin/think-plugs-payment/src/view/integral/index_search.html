@@ -1,0 +1,41 @@
+<form action="{$request->url()}" autocomplete="off" class="layui-form layui-form-pane form-search" method="get" onsubmit="return false">
+
+    <div class="layui-form-item layui-inline">
+        <label class="layui-form-label">用户账号</label>
+        <label class="layui-input-inline">
+            <input class="layui-input" name="user" placeholder="请输入用户账号" value="{$get.user|default=''}">
+        </label>
+    </div>
+
+    <div class="layui-form-item layui-inline">
+        <label class="layui-form-label">交易单号</label>
+        <label class="layui-input-inline">
+            <input class="layui-input" name="code" placeholder="请输入交易单号" value="{$get.code|default=''}">
+        </label>
+    </div>
+
+    <div class="layui-form-item layui-inline">
+        <label class="layui-form-label">操作名称</label>
+        <label class="layui-input-inline">
+            <input class="layui-input" name="name" placeholder="请输入操作名称" value="{$get.name|default=''}">
+        </label>
+    </div>
+
+    <div class="layui-form-item layui-inline">
+        <label class="layui-form-label">操作备注</label>
+        <label class="layui-input-inline">
+            <input class="layui-input" name="remark" placeholder="请输入操作备注" value="{$get.remark|default=''}">
+        </label>
+    </div>
+
+    <div class="layui-form-item layui-inline">
+        <label class="layui-form-label">创建时间</label>
+        <label class="layui-input-inline">
+            <input class="layui-input" data-date-range name="create_time" placeholder="请选择创建时间" value="{$get.create_time|default=''}">
+        </label>
+    </div>
+
+    <div class="layui-form-item layui-inline">
+        <button class="layui-btn layui-btn-primary"><i class="layui-icon">&#xe615;</i> 搜 索</button>
+    </div>
+</form>

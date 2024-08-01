@@ -1,0 +1,389 @@
+<style>
+    .vip-tags {
+        height: 1.5em;
+        border: 1px solid white;
+        padding: 3px;
+        font-size: 12px;
+        margin-left: 5px;
+        line-height: 1em;
+        font-weight: normal;
+        border-radius: 20px;
+    }
+
+    .design-layout {
+        top: 20px;
+        left: 20px;
+        right: 20px;
+        bottom: 20px;
+        display: flex;
+        position: absolute;
+    }
+
+    .design-layout-menu,
+    .design-layout-form {
+        overflow: auto;
+        background: #fff;
+        border-radius: 3px;;
+    }
+
+    .design-layout-menu {
+        width: 280px;
+    }
+
+    .design-layout-view {
+        flex: 1;
+    }
+
+    .design-layout-form {
+        width: 400px;
+    }
+
+    .design-layout-menu .layui-tab-content {
+        padding: 20px 5px;
+    }
+
+    .design-layout-menu .layui-tab-content .layui-collapse {
+        border-color: #fff;
+    }
+
+    .design-layout-menu .layui-tab-content .layui-colla-title {
+        padding: 0 10px 0 10px;
+        background: none;
+    }
+
+    .design-layout-menu .layui-tab-content .layui-colla-icon {
+        left: unset;
+        right: 20px;
+    }
+
+    .design-layout-menu .layui-tab-content .layui-colla-item {
+        border-color: #fff;
+    }
+
+    .design-layout-menu .layui-tab-content .layui-colla-content {
+        border-color: #fff;
+    }
+
+    .design-layout-menu .layui-colla-content > div {
+        display: flex;
+        flex-wrap: wrap;
+        position: relative;
+    }
+
+    .design-layout-menu .layui-colla-content > div > a {
+        color: #333;
+        width: 33%;
+        padding: 15px 5px;
+        font-size: 12px;
+        box-shadow: none;
+        text-align: center;
+        box-sizing: border-box;
+        line-height: 26px;
+        border-radius: 8px;
+        transition: all 0.2s linear;
+        -o-transition: all 0.2s linear;
+        -moz-transition: all 0.2s linear;
+        -webkit-transition: all 0.2s linear;
+
+    }
+
+    .design-layout-menu .layui-colla-content > div i.layui-icon {
+        color: rgb(84, 144, 250);
+        display: block;
+        font-size: 22px;
+        font-weight: 500;
+        transition: all 0.2s linear;
+        -o-transition: all 0.2s linear;
+        -moz-transition: all 0.2s linear;
+        -webkit-transition: all 0.2s linear;
+    }
+
+    .design-layout-menu .layui-colla-content > div > a:hover {
+        box-shadow: 0 0 5px 3px rgba(0, 0, 0, .1);
+        background-color: #fff;
+    }
+
+    .design-layout-menu .layui-colla-content > div > a:hover i.layui-icon {
+        font-size: 26px;
+    }
+
+    .design-layout-view {
+        height: 100%;
+        margin: 0 auto;
+        position: relative;
+    }
+
+    .design-layout-view-head,
+    .design-layout-view-body,
+    .design-layout-view-foot {
+        width: 100%;
+        margin: 0 auto;
+        position: absolute;
+        overflow-y: scroll;
+        overflow-x: hidden;
+    }
+
+    .design-layout-view-head::-webkit-scrollbar,
+    .design-layout-view-foot::-webkit-scrollbar,
+    .design-layout-view-body::-webkit-scrollbar {
+        width: 1px;
+    }
+
+    .design-layout-view-head > div {
+        width: 400px;
+        margin: 0 auto;
+        min-height: 100%;
+    }
+
+
+    .design-layout-view-body > div,
+    .design-layout-view-foot > div {
+        width: 400px;
+        margin: 0 auto;
+        min-height: 100%;
+        background: white;
+    }
+
+    .design-layout-view-head {
+        top: 0;
+        margin: 0;
+        height: 60px;
+        z-index: 2;
+        position: absolute;
+        text-align: center;
+        box-sizing: border-box;
+    }
+
+    .design-layout-view-head-image {
+        height: 20px;
+        background-image: url("__ROOT__/static/theme/img/wechat/mobile_head.png");
+        background-size: 100%;
+    }
+
+    .design-layout-view-head [sv-element] {
+        background-color: white;
+    }
+
+    .design-layout-view-head [sv-handle] {
+        height: 40px;
+        overflow: hidden;
+        line-height: 40px;
+    }
+
+    .design-layout-view-body {
+        top: 0;
+        z-index: 1;
+        bottom: 56px;
+    }
+
+    .design-layout-view-foot {
+        bottom: 0;
+    }
+
+    .design-layout-view-foot a {
+        flex: 1;
+        color: #333;
+        padding: 10px 5px 5px 5px;
+        font-size: 12px;
+        box-shadow: none;
+        text-align: center;
+        box-sizing: border-box;
+        line-height: 20px;
+        border-radius: 3px;
+        transition: all 0.2s linear;
+        -o-transition: all 0.2s linear;
+        -moz-transition: all 0.2s linear;
+        -webkit-transition: all 0.2s linear;
+    }
+
+    [sv-element] {
+        position: relative;
+        z-index: 1;
+    }
+
+    [sv-element].active {
+        z-index: 2;
+    }
+
+    [sv-element].fadeout {
+        color: rgba(255, 255, 255, 0.01) !important;
+        background-color: rgba(255, 255, 255, 0.01) !important;
+    }
+
+    [sv-element] .layui-tpl-btn {
+        top: 0;
+        right: -60px;
+        z-index: 3;
+        display: none;
+        padding: 0 3px;
+        position: absolute;
+        text-align: center;
+        line-height: 1.5em;
+        border-radius: 4px;
+        background: rgba(0, 0, 0, 0.6);
+        transition: all 0.2s linear;
+        -o-transition: all 0.2s linear;
+        -moz-transition: all 0.2s linear;
+        -webkit-transition: all 0.2s linear;
+        flex-direction: column;
+    }
+
+    [sv-element] .layui-tpl-btn:hover {
+        background: rgba(0, 0, 0, 0.8);
+    }
+
+    [sv-element] .layui-tpl-btn a {
+        color: rgba(255, 255, 255, 0.8);
+        padding: 5px;
+    }
+
+    [sv-element] .layui-tpl-btn a:hover {
+        color: rgba(255, 255, 255, 1.0);
+    }
+
+    [sv-element].active .layui-tpl-btn {
+        display: flex;
+    }
+
+    [sv-element] [sv-handle] {
+        cursor: move;
+        transition: all 0.2s linear;
+        -o-transition: all 0.2s linear;
+        -moz-transition: all 0.2s linear;
+        -webkit-transition: all 0.2s linear;
+    }
+
+    [sv-element] [sv-handle] > div {
+        margin: 0 auto;
+        position: relative;
+        box-sizing: border-box;
+        background: white;
+    }
+
+    [sv-element][sv-drag=forbid] [sv-handle] {
+        cursor: pointer;
+    }
+
+    [sv-element] [sv-handle]:after {
+        top: 0;
+        left: -20px;
+        right: -20px;
+        bottom: 0;
+        content: "";
+        z-index: 2;
+        display: block;
+        position: absolute;
+        border: 6px solid rgba(0, 0, 0, 0);
+        border-top-width: 1px;
+        border-bottom-width: 1px;
+        border-radius: 20px;
+        transition: all 0.2s linear;
+        -o-transition: all 0.2s linear;
+        -moz-transition: all 0.2s linear;
+        -webkit-transition: all 0.2s linear;
+    }
+
+    [sv-element] [sv-handle].not-after a {
+        z-index: 3;
+    }
+
+    [sv-element]:hover [sv-handle]:after {
+        border-color: rgba(236, 80, 234, 0.55);
+    }
+
+    [sv-element].active [sv-handle]:after {
+        border-color: rgba(43, 135, 251, 1);
+        border-top-color: rgba(43, 135, 251, 0);
+        border-bottom-color: rgba(43, 135, 251, 0);
+    }
+
+    [sv-element].active:hover [sv-handle]:after {
+        border-top-color: rgba(236, 80, 234, 0.55);
+        border-bottom-color: rgba(236, 80, 234, 0.55);
+    }
+
+    [sv-element][draggable=true] [sv-handle]:after {
+        border-color: rgba(236, 80, 234, 1);
+    }
+
+    .design-layout .auto-center {
+        margin-left: auto;
+        margin-right: auto;
+    }
+
+    .design-layout .layui-form-item {
+        margin-bottom: 10px;
+    }
+
+    .design-layout .layui-colorpicker {
+        padding: 0;
+        line-height: 36px;
+    }
+
+    .design-layout .design-form-label {
+        float: left;
+        color: #16b777;
+        display: block;
+        min-width: 5em;
+        padding: 9px 5px;
+        position: relative;
+        text-align: right;
+        font-weight: 700;
+        line-height: 20px;
+        white-space: nowrap
+    }
+
+    .design-layout .full-100 {
+        width: 100%;
+        height: 100%;
+    }
+
+    .design-layout .only-bottom-line {
+        border-top: 0 !important;
+        border-left: 0 !important;
+        border-right: 0 !important;
+    }
+
+    .design-layout .colla-form-group {
+        border-width: 0;
+    }
+
+    .design-layout .colla-form-group .layui-colla-title {
+        padding: 0;
+        text-align: center;
+        border-width: 0;
+        border-radius: 5px;
+    }
+
+    .design-layout .colla-form-group .layui-colla-content {
+        padding: 10px 0;
+        border-width: 0;
+    }
+
+    .design-layout button.uploadimage {
+        overflow: unset;
+        border-radius: 3px;
+    }
+
+    .design-layout button.uploadimage.active:after {
+        top: -4px;
+        left: -4px;
+        right: -4px;
+        bottom: -4px;
+        border-radius: 5px;
+        content: '';
+        position: absolute;
+        border: 3px solid rgba(50, 250, 50, 0.5);
+    }
+
+    .design-layout .BaseSearchInput span.headimg {
+        width: 28px;
+        height: 28px;
+        margin: 5px 6px;
+        position: absolute;
+    }
+
+    .design-layout .BaseSearchInput span.headimg + input {
+        padding-left: 40px !important;
+    }
+</style>

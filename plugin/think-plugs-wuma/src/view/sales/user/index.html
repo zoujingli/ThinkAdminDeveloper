@@ -1,0 +1,63 @@
+{extend name="table"}
+
+{block name="button"}
+<!--{if auth("add")}-->
+<button data-modal='{:url("add")}' data-title="添加用户" class='layui-btn layui-btn-sm layui-btn-primary'>添加用户</button>
+<!--{/if}-->
+{/block}
+
+{block name="content"}
+<div class="think-box-shadow">
+    {include file='sales/user/index_search'}
+    <table id="UserData" data-url="{:sysuri()}" data-target-search="form.form-search"></table>
+</div>
+{/block}
+
+{block name='script'}
+<script>
+    $(function () {
+        $('#UserData').layTable({
+            even: true, height: 'full', sort: {field: 'id', type: 'desc'}, cellExpandedMode: 'tips',
+            cols: [[
+                {checkbox: true},
+                {field: 'id', title: 'ID', width: 80, align: 'center', sort: true},
+                {field: 'code', title: '授权编号', minWidth: 170, align: 'center', sort: true},
+                {
+                    field: 'master', title: '账号类型', minWidth: 80, align: 'center', templet: function (d) {
+                        return d.master ? '总部账号' : '普通账号';
+                    }
+                },
+                {field: 'level', title: '等级名称', minWidth: 80, align: 'center', templet: "<div>{{d.levelinfo.name||''}}</div>"},
+                {field: 'phone', title: '代理信息', minWidth: 110, templet: '<div><b class="margin-right-5 color-blue">{{d.phone||""}}</b><span>{{d.username||""}}</span></div>'},
+                {
+                    field: 'upAgent', title: '上级代理', minWidth: 120, templet: function (d) {
+                        if ((d.supAgent = d.supAgent || null)) {
+                            return layui.laytpl('<b class="margin-right-5 color-blue">{{d.phone||""}}</b><span>{{d.username||""}}</span>').render(d.supAgent);
+                        } else {
+                            return '-';
+                        }
+                    }
+                },
+                {field: 'mobile', title: '联系电话', width: 120},
+                {field: 'subAgentCount', title: '下级代理', width: 80, align: 'center'},
+                {field: 'create_time', title: '创建时间', minWidth: 170, align: 'center', sort: true},
+                {toolbar: '#toolbar', title: '操作面板', minWidth: 220, align: 'center', fixed: 'right'}
+            ]]
+        });
+    });
+</script>
+
+<script type="text/html" id="toolbar">
+    <!--{if auth("edit")}-->
+    <a data-title="编辑用户" data-modal='{:url("edit")}?id={{d.id}}' class="layui-btn layui-btn-sm">编 辑</a>
+    <!--{/if}-->
+
+    <!--{if auth("add")}-->
+    <a data-title="添加下级" data-modal='{:url("add")}?from={{d.phone}}' class="layui-btn layui-btn-sm">下 级</a>
+    <!--{/if}-->
+
+    <!--{if auth('remove')}-->
+    <a data-action='{:url("remove")}' data-value="id#{{d.id}}" data-confirm="确认要删除这条记录吗？" class="layui-btn layui-btn-sm layui-btn-danger">删 除</a>
+    <!--{/if}-->
+</script>
+{/block}

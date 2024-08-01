@@ -1,0 +1,111 @@
+<form action="{:sysuri()}" autocomplete="off" class="layui-form layui-form-pane form-search" method="get" onsubmit="return false">
+
+    <div class="layui-form-item layui-inline">
+        <label class="layui-form-label">会员用户</label>
+        <label class="layui-input-inline">
+            <input class="layui-input" name="user_keys" placeholder="请输入手机或昵称" value="{$get.user_keys|default=''}">
+        </label>
+    </div>
+
+    <div class="layui-form-item layui-inline">
+        <label class="layui-form-label">订单单号</label>
+        <label class="layui-input-inline">
+            <input class="layui-input" name="order_no" placeholder="请输入订单单号" value="{$get.order_no|default=''}">
+        </label>
+    </div>
+
+    <div class="layui-form-item layui-inline">
+        <label class="layui-form-label">发货单号</label>
+        <label class="layui-input-inline">
+            <input class="layui-input" name="delivery_count" placeholder="请输入发货单号" value="{$get.delivery_count|default=''}">
+        </label>
+    </div>
+
+    <div class="layui-form-item layui-inline">
+        <label class="layui-form-label">发货状态</label>
+        <label class="layui-input-inline">
+            <select class="layui-select" name="status">
+                <option value="">-- 全部 --</option>
+                {foreach [1=>'等待发货',2=>'已经发货',3=>'已经收货'] as $k=>$v}
+                {if isset($get.status) and $get.status eq $k.''}
+                <option selected value="{$k}">{$v}</option>
+                {else}
+                <option value="{$k}">{$v}</option>
+                {/if}{/foreach}
+            </select>
+        </label>
+    </div>
+
+    <div class="layui-form-item layui-inline">
+        <label class="layui-form-label">创建时间</label>
+        <label class="layui-input-inline">
+            <input class="layui-input" data-date-range name="create_time" placeholder="请选择创建时间" value="{$get.create_time|default=''}">
+        </label>
+    </div>
+
+    <div class="layui-form-item layui-inline">
+        <label class="layui-form-label">发货时间</label>
+        <label class="layui-input-inline">
+            <input class="layui-input" data-date-range name="express_time" placeholder="请选择发货时间" value="{$get.express_time|default=''}">
+        </label>
+    </div>
+
+    <div class="layui-form-item layui-inline">
+        <label class="layui-form-label">收货信息</label>
+        <label class="layui-input-inline">
+            <input class="layui-input" name="user_name" placeholder="请输入收货信息" value="{$get.user_name|default=''}">
+        </label>
+    </div>
+
+    <div class="layui-form-item layui-inline">
+        <label class="layui-form-label">配送地址</label>
+        <label class="layui-input-inline">
+            <input class="layui-input" name="address" placeholder="请输入配送地址" value="{$get.address|default=''}">
+        </label>
+    </div>
+
+    <div class="layui-form-item layui-inline">
+        <button class="layui-btn layui-btn-primary" type="submit"><i class="layui-icon">&#xe615;</i> 搜 索</button>
+        <button class="layui-btn layui-btn-primary" data-form-export="{:url('index')}?type={$type|default=''}" type="button">
+            <i class="layui-icon layui-icon-export"></i> 导 出
+        </button>
+    </div>
+</form>
+
+<script>
+    require(['excel'], function (excel) {
+        excel.bind(function (data) {
+            let rows = [];
+            data.forEach(function (delivery) {
+                delivery.main.items.forEach(function (item) {
+                    rows.push([
+                        item.order_no,
+                        item.gname,
+                        item.gsku,
+                        item.gspec,
+                        item.stock_sales,
+                        item.price_selling,
+                        item.total_selling,
+                        '{$address.name|default=""}',
+                        delivery.user_name,
+                        delivery.user_phone,
+                        delivery.region_prov,
+                        delivery.region_city,
+                        delivery.region_area,
+                        delivery.region_addr,
+                    ]);
+                });
+            });
+
+            // 设置表头内容
+            rows.unshift([
+                '订单号', '商品名称', '商品SKU编码', '商品规格', '数量', '单价', '总额',
+                '寄件方', '收货人', '电话', '省份', '城市', '区', '地址'
+            ]);
+
+            // 应用表格样式
+            return this.withStyle(rows);
+
+        }, '订单发货记录' + layui.util.toDateString(Date.now(), '_yyyyMMdd_HHmmss'));
+    });
+</script>

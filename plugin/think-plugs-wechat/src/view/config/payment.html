@@ -1,0 +1,100 @@
+{extend name="main"}
+
+{block name="button"}
+<!--{if auth("payment_test")}-->
+<button data-modal="{:url('payment_test')}" class='layui-btn layui-btn-sm layui-btn-primary'>微信支付测试</button>
+<!--{/if}-->
+{/block}
+
+{block name="content"}
+<div class="think-box-notify margin-bottom-15">
+    <b>温馨提示：</b>微信商户参数配置，此处交易的商户号需要与微信公众号对接的公众号 APPID 匹配。
+</div>
+
+<form action="{:url('payment_save')}" method="post" data-auto="true" class='layui-form layui-card' lay-filter="payment">
+
+    <div class="layui-card-body padding-left-40" style="max-width:850px">
+
+        <label class="layui-form-item relative block">
+            <span class="help-label"><b>微信商户账号</b>MCH_ID</span>
+            <input name="wechat.mch_id" required vali-name="微信商户号" placeholder="请输入微信商户账号（必填）" value="{:sysconf('wechat.mch_id')}" class="layui-input">
+            <span class="help-block">微信商户账号，需要在微信商户平台获取，MCH_ID 与 APPID 匹配</span>
+        </label>
+
+        <label class="layui-form-item relative block">
+            <span class="help-label"><b>微信商户 V2 密钥</b>MCH_KEY</span>
+            <input name="wechat.mch_key" vali-name="微信商户V2密钥" placeholder="请输入微信商户V2密钥（必填）" maxlength="32" pattern=".{32}" required value="{:sysconf('wechat.mch_key')}" class="layui-input">
+            <span class="help-block">微信商户 V2 密钥，需要在微信商户平台操作设置操作密码并获取商户接口密钥</span>
+        </label>
+
+        <label class="layui-form-item relative block">
+            <span class="help-label"><b>微信商户 V3 密钥</b>MCH_V3_KEY</span>
+            <input name="wechat.mch_v3_key" vali-name="微信商户V3密钥" placeholder="请输入微信商户V3密钥（必填）" maxlength="32" pattern=".{32}" required value="{:sysconf('wechat.mch_v3_key')}" class="layui-input">
+            <span class="help-block">微信商户 V3 密钥，需要在微信商户平台操作设置操作密码并获取商户接口密钥</span>
+        </label>
+
+        <div class="hr-line-dashed"></div>
+
+        <div class="layui-form-item">
+            <span class="help-label label-required-prev"><b>微信商户证书文件</b>MCH_CERT_FILE</span>
+            <div class="margin-top-10">
+                <!-- 'none'=>'暂不使用证书' -->
+                {foreach ['pem'=>'上传 PEM 证书', 'p12'=>'上传 P12 证书'] as $k=>$v}
+                <input type="radio" data-pem-type="{$k}" name="wechat.mch_ssl_type" value="{$k}" title="{$v}" lay-filter="data-mch-type">
+                {/foreach}
+                <p class="help-block font-code">请选择需要上传证书类型，上传 P12 证书会自动转换为 PEM 证书。</p>
+
+                <div class="padding-top-10">
+                    <div data-mch-type="none"></div>
+                    <div data-mch-type="p12" class="layui-tab-item">
+                        <input name="wechat.mch_ssl_p12" value="{$mch_ssl_p12|default=''}" type="hidden">
+                        <button data-file="btn" data-uptype="local" data-safe="true" data-type="p12" data-field="wechat.mch_ssl_p12" type="button" class="layui-btn font-code layui-btn-primary">
+                            <i class="layui-icon layui-icon-vercode"></i> 上传 P12 证书
+                        </button>
+                    </div>
+
+                    <div data-mch-type="pem" class="layui-tab-item">
+                        <input type="hidden" name="wechat.mch_ssl_key" value="{$mch_ssl_key|default=''}">
+                        <button data-file="btn" data-uptype="local" data-safe="true" data-type="pem" data-field="wechat.mch_ssl_key" type="button" class="layui-btn font-code layui-btn-primary margin-right-10">
+                            <i class="layui-icon layui-icon-vercode"></i> 上传 KEY 证书
+                        </button>
+                        <input type="hidden" name="wechat.mch_ssl_cer" value="{$mch_ssl_cer|default=''}">
+                        <button data-file="btn" data-uptype="local" data-safe="true" data-type="pem" data-field="wechat.mch_ssl_cer" type="button" class="layui-btn font-code layui-btn-primary">
+                            <i class="layui-icon layui-icon-vercode"></i> 上传 CERT 证书
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!--{if auth('payment_save')}-->
+        <div class="hr-line-dashed margin-top-30"></div>
+        <div class="layui-form-item text-center">
+            <button class="layui-btn" type="submit">保存配置</button>
+        </div>
+        <!--{/if}-->
+    </div>
+</form>
+{/block}
+
+{block name="script"}
+<script>
+    (function (type) {
+        layui.form.val('payment', {'wechat.mch_ssl_type': type});
+        layui.form.on('radio(data-mch-type)', apply) && apply({value: type});
+        ['wechat.mch_ssl_p12', 'wechat.mch_ssl_key', 'wechat.mch_ssl_cer'].forEach(function (type) {
+            $('input[name="' + type + '"]').on('change', function () {
+                let that = this, $button = $(this).next('button');
+                if (typeof that.value === 'string' && that.value.length > 5) {
+                    $button.removeClass('layui-btn-primary').find('i').addClass('layui-icon-vercode').removeClass('layui-icon-upload-drag');
+                } else {
+                    $button.addClass('layui-btn-primary').find('i').removeClass('layui-icon-vercode').addClass('layui-icon-upload-drag');
+                }
+            }).trigger('change');
+        });
+
+        function apply(data) {
+            return $('[data-mch-type="' + data.value + '"]').show().siblings('[data-mch-type]').hide();
+        }
+    })("{:sysconf('wechat.mch_ssl_type')}" || 'pem');
+</script>
+{/block}

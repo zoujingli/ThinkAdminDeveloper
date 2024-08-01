@@ -1,0 +1,33 @@
+<form action="{:sysuri()}" autocomplete="off" class="layui-form layui-form-pane form-search" method="get" onsubmit="return false">
+    <div class="layui-form-item layui-inline">
+        <label class="layui-form-label">生产批次</label>
+        <label class="layui-input-inline">
+            <input class="layui-input" name="batch" placeholder="请输入批次编号" value="{$get.batch|default=''}">
+        </label>
+    </div>
+
+    <div class="layui-form-item layui-inline">
+        <label class="layui-form-label">产品名称</label>
+        <label class="layui-input-inline">
+            <input class="layui-input" name="gname" placeholder="请输入产品名称或编号" value="{$get.gname|default=''}">
+        </label>
+    </div>
+
+    <div class="layui-form-item layui-inline">
+        <label class="layui-form-label">溯源模板</label>
+        <label class="layui-input-inline">
+            <input class="layui-input" name="tname" placeholder="请输入模板名称或编号" value="{$get.tname|default=''}">
+        </label>
+    </div>
+
+    <div class="layui-form-item layui-inline">
+        <label class="layui-form-label">创建时间</label>
+        <label class="layui-input-inline">
+            <input data-date-range name="create_time" value="{$get.create_time|default=''}" placeholder="请选择创建时间" class="layui-input">
+        </label>
+    </div>
+
+    <div class="layui-form-item layui-inline">
+        <button class="layui-btn layui-btn-primary"><i class="layui-icon">&#xe615;</i> 搜 索</button>
+    </div>
+</form>

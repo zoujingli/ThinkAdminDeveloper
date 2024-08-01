@@ -1,0 +1,53 @@
+{
+  "type": "think-admin-plugin",
+  "name": "zoujingli/think-plugs-worker",
+  "license": "Apache-2.0",
+  "homepage": "https://thinkadmin.top",
+  "description": "Workerman HttpServer for ThinkAdmin",
+  "authors": [
+    {
+      "name": "Anyon",
+      "email": "zoujingli@qq.com"
+    }
+  ],
+  "require": {
+    "php": ">7.1",
+    "workerman/workerman": "^4.1",
+    "zoujingli/think-install": "^1.0|@dev",
+    "zoujingli/think-library": "^6.1|@dev"
+  },
+  "autoload": {
+    "psr-4": {
+      "plugin\\worker\\": "src"
+    }
+  },
+  "extra": {
+    "think": {
+      "services": [
+        "plugin\\worker\\Service"
+      ]
+    },
+    "config": {
+      "type": "service",
+      "name": "基于 Workerman 的通信服务",
+      "document": "https://thinkadmin.top/plugin/think-plugs-worker.html",
+      "license": [
+        "Apache-2.0"
+      ]
+    },
+    "plugin": {
+      "init": {
+        "stc/worker.php": "config/worker.php"
+      },
+      "event": {
+        "src/Script.php": "plugin\\worker\\Script"
+      }
+    }
+  },
+  "minimum-stability": "dev",
+  "config": {
+    "allow-plugins": {
+      "zoujingli/think-install": true
+    }
+  }
+}

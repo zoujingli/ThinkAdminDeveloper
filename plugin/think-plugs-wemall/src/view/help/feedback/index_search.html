@@ -1,0 +1,34 @@
+<form class="layui-form layui-form-pane form-search" action="{:sysuri()}" onsubmit="return false" method="get" autocomplete="off">
+
+    <div class="layui-form-item layui-inline">
+        <label class="layui-form-label">提交用户</label>
+        <div class="layui-input-inline">
+            <input name="username" value="{$get.username|default=''}" placeholder="请输入提交用户" class="layui-input">
+        </div>
+    </div>
+
+    <div class="layui-form-item layui-inline">
+        <label class="layui-form-label">联系电话</label>
+        <div class="layui-input-inline">
+            <input name="phone" value="{$get.phone|default=''}" placeholder="请输入联系电话" class="layui-input">
+        </div>
+    </div>
+
+    <div class="layui-form-item layui-inline">
+        <label class="layui-form-label">问题描述</label>
+        <div class="layui-input-inline">
+            <input name="content" value="{$get.content|default=''}" placeholder="请输入问题描述" class="layui-input">
+        </div>
+    </div>
+
+    <div class="layui-form-item layui-inline">
+        <label class="layui-form-label">创建时间</label>
+        <div class="layui-input-inline">
+            <input data-date-range name="create_time" value="{$get.create_time|default=''}" placeholder="请选择创建时间" class="layui-input">
+        </div>
+    </div>
+
+    <div class="layui-form-item layui-inline">
+        <button class="layui-btn layui-btn-primary"><i class="layui-icon">&#xe615;</i> 搜 索</button>
+    </div>
+</form>

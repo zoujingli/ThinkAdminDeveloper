@@ -1,0 +1,89 @@
+<!--{literal}-->
+<draggable v-model="items" v-bind="{group:'items',animation:200}" :move="onMove" filter="[sv-drag=forbid]" @start="drag=true" @end="drag=false">
+    <transition-group>
+        <div sv-element v-for="(x,$index) in items" :key="x.unid" :sv-drag="x.top?'forbid':''" :class="x.active?'active':''" @click="setItem($index)">
+
+            <div class="layui-tpl-btn layui-anim layui-anim-fadein">
+                <a @click.stop="moveUp(items,$index,true)" v-if="!x.top"><i style="transform:rotate(090deg)" class="layui-icon inline-block layui-icon-return"></i></a>
+                <a @click.stop="moveRm(items,$index,true)" v-if="!x.lock"><i class="layui-icon layui-icon-delete"></i></a>
+                <a @click.stop="addCopy(x)" v-if="!x.lock"><i class="layui-icon layui-icon-list"></i></a>
+                <a @click.stop="moveDn(items,$index,true)" v-if="!x.top"><i style="transform:rotate(270deg)" class="layui-icon inline-block layui-icon-return"></i></a>
+            </div>
+
+            <div sv-handle class="layui-tpl-item layui-anim layui-anim-fadein">
+
+                <div v-if="x.type==='BaseSlider'" :style="showStyle(x.outerStyle)" class="flex-center">
+                    <div class="overhide relative full-height flex-align-center" :style="showStyle(x.interStyle||{})">
+                        <div v-if="x.data.length>0" class="uploadimage shadow-none border-radius-0 full-100" :style="showBgimg(x.data[0].image)"></div>
+                        <div v-if="x.data.length>0" class="text-center absolute" style="bottom:10px;left:0;right:0;">
+                            <div class="inline-block" style="background:rgba(0,0,0,0.5);padding:0 2px;border-radius:10px;line-height:12px;height:15px">
+                                <span v-for="img in x.data" class="inline-block" style="width:5px;height:5px;margin:0 3px;border-radius:50%;background:#fff"></span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div v-else-if="x.type==='BaseCates'" :style="showStyle(x.outerStyle)" class="flex-center">
+                    <div class="flex-align-center relative" :style="showStyle(x.interStyle||{})">
+                        <a :style="showStyle(x.fontStyle||{})">商品分类1</a>
+                        <a :style="showStyle(x.fontStyle||{})">商品分类2</a>
+                        <a :style="showStyle(x.fontStyle||{})">商品分类3</a>
+                    </div>
+                </div>
+
+                <div v-else-if="x.type==='ToolWechat'" :style="showStyle(x.outerStyle)" class="flex-center">
+                    <div class="flex-align-center flex-y" :style="showStyle(x.interStyle||{})">
+                        <div :style="showStyle(x.inputStyle||{},showBgimg(x.inputStyle.vImage||''))" class="uploadimage shadow-none"></div>
+                        <div :style="showStyle(x.fontStyle||{})" class="layui-elip">{{x.inputStyle.vTitle}}</div>
+                    </div>
+                </div>
+
+                {include file='base/design/index-view-icon'}
+                {include file='base/design/index-view-image'}
+                {include file='base/design/index-view-goods'}
+                {include file='base/design/index-view-page-cate'}
+                {include file='base/design/index-view-page-cart'}
+                {include file='base/design/index-view-page-center'}
+
+                <div v-else-if="x.type==='BaseSearch'" :style="showStyle(x.outerStyle)" class="flex-center">
+                    <div class="flex-align-center" :style="showStyle(x.interStyle||{})">
+                        <label class="flex-1 BaseSearchInput" :style="showStyle(x.inputStyle||{})">
+                            <span v-if="x.interStyle.vLogo" :style="showBgimg(x.interStyle.vLogo)" data-lazy-src="__ROOT__/static/theme/img/headimg.png" class="headimg shadow-none"></span>
+                            <input class="layui-input border-0" :placeholder="x.inputStyle.vPlaceholder" style="background:none">
+                        </label>
+                    </div>
+                </div>
+
+                <div v-else-if="x.type==='ToolTitle'" :style="showStyle(x.outerStyle)" class="flex-center">
+                    <div :style="showStyle(x.interStyle||{})">
+                        <div :style="showStyle(x.inputStyle||{})">{{x.inputStyle.vText || ''}}</div>
+                    </div>
+                </div>
+
+                <div v-else-if="x.type==='ToolText'" :style="showStyle(x.outerStyle)" class="flex-center">
+                    <div :style="showStyle(x.interStyle||{})">
+                        <div :style="showStyle(x.inputStyle||{})" v-html="showText(x.inputStyle.vText || '')"></div>
+                    </div>
+                </div>
+
+                <div v-else-if="x.type==='ToolBorder'" :style="showStyle(x.outerStyle)" class="flex-center">
+                    <div class="flex-y" :style="showStyle(x.inputStyle||{})">
+                        <div style="height:0;opacity:0;overflow:hidden;">.</div>
+                    </div>
+                </div>
+
+                <div v-else-if="x.type==='ToolBlank'" :style="showStyle(x.outerStyle)" class="flex-center">
+                    <div :style="showStyle(x.inputStyle||{})"></div>
+                </div>
+
+                <div v-else class="think-bg-white flex-center" :style="showStyle(x.outerStyle)">
+                    <div :style="showStyle(x.interStyle||{})">
+                        <span class="font-code">{{x.type}}</span> - {{x.name}} - 2
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </transition-group>
+</draggable>
+<!--{/literal}-->

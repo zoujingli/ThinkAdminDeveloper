@@ -1,0 +1,8 @@
+<div class="layui-form-item label-required-prev">
+    <span class="help-label"><b>线下支付二维码</b>Payment Qrcode Image</span>
+    <div class="relative block label-required-null">
+        <input class="layui-input think-bg-gray" data-tips-hover data-tips-image readonly name="voucher_qrcode" pattern="url" vali-name="二维码图片" required placeholder="请上传线下支付二维码图片" value='{$vo.content.voucher_qrcode|default=""}'>
+        <a class="layui-icon layui-icon-upload input-right-icon" data-field="voucher_qrcode" data-file data-type="png,jpg,gif"></a>
+        <script>$('[name="voucher_qrcode"]').uploadOneImage()</script>
+    </div>
+</div>

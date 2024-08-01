@@ -1,0 +1,53 @@
+{
+  "type": "think-admin-plugin",
+  "name": "zoujingli/think-plugs-wechat",
+  "license": "MIT",
+  "homepage": "https://thinkadmin.top",
+  "description": "WeChat Plugin for ThinkAdmin",
+  "authors": [
+    {
+      "name": "Anyon",
+      "email": "zoujingli@qq.com"
+    }
+  ],
+  "require": {
+    "php": ">7.1",
+    "ext-json": "*",
+    "ext-openssl": "*",
+    "ext-mbstring": "*",
+    "zoujingli/qrcode": "^1.0|@dev",
+    "zoujingli/think-install": "^1.0|@dev",
+    "zoujingli/think-library": "^6.1|@dev",
+    "zoujingli/wechat-developer": "^1.2|@dev"
+  },
+  "autoload": {
+    "psr-4": {
+      "app\\wechat\\": "src"
+    }
+  },
+  "extra": {
+    "config": {
+      "type": "module",
+      "name": "微信平台管理",
+      "document": "https://thinkadmin.top/plugin/think-plugs-wechat.html",
+      "description": "后台微信对接模块，功能全面的微信基础管理。"
+    },
+    "plugin": {
+      "copy": {
+        "stc/database": "database/migrations"
+      }
+    },
+    "think": {
+      "services": [
+        "app\\wechat\\Service"
+      ]
+    }
+  },
+  "minimum-stability": "dev",
+  "config": {
+    "sort-packages": true,
+    "allow-plugins": {
+      "zoujingli/think-install": true
+    }
+  }
+}

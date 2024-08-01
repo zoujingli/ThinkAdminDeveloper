@@ -1,0 +1,52 @@
+<fieldset>
+    <legend>{:lang('条件搜索')}</legend>
+    <form class="layui-form layui-form-pane form-search" action="{:sysuri()}" onsubmit="return false" method="get" autocomplete="off">
+
+        <div class="layui-form-item layui-inline">
+            <label class="layui-form-label">授权编号</label>
+            <label class="layui-input-inline">
+                <input name="code" value="{$get.code|default=''}" placeholder="请输入授权编号" class="layui-input">
+            </label>
+        </div>
+
+        <div class="layui-form-item layui-inline">
+            <label class="layui-form-label">等级名称</label>
+            <label class="layui-input-inline">
+                <select name="level" class="layui-select">
+                    <option value=''>-- 全部等级 --</option>
+                    {foreach $levels as $level}
+                    {if isset($get.level) and $get.level eq $level.number}
+                    <option selected value="{$level.number}">{$level.name}</option>
+                    {else}
+                    <option value="{$level.number}">{$level.name}</option>
+                    {/if}{/foreach}
+                </select>
+            </label>
+        </div>
+
+        <div class="layui-form-item layui-inline">
+            <label class="layui-form-label">代理搜索</label>
+            <label class="layui-input-inline">
+                <input name="username" value="{$get.username|default=''}" placeholder="请输入代理姓名或手机" class="layui-input">
+            </label>
+        </div>
+
+        <div class="layui-form-item layui-inline">
+            <label class="layui-form-label">上级代理</label>
+            <label class="layui-input-inline">
+                <input name="super" value="{$get.super|default=''}" placeholder="请输入上级代理姓名或手机" class="layui-input">
+            </label>
+        </div>
+
+        <div class="layui-form-item layui-inline">
+            <label class="layui-form-label">创建时间</label>
+            <label class="layui-input-inline">
+                <input data-date-range name="create_time" value="{$get.create_time|default=''}" placeholder="请选择操作时间" class="layui-input">
+            </label>
+        </div>
+
+        <div class="layui-form-item layui-inline">
+            <button type="submit" class="layui-btn layui-btn-primary"><i class="layui-icon">&#xe615;</i> 搜 索</button>
+        </div>
+    </form>
+</fieldset>

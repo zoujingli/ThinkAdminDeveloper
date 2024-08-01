@@ -1,0 +1,11 @@
+<!--{literal}-->
+<div v-else-if="x.type==='BaseIcon'" :style="showStyle(x.outerStyle)" class="flex-center">
+    <div class="flex-between flex-wrap" :style="showStyle(x.interStyle||{})">
+        <div v-for="(xx,i) in x.data" :key="xx.unid" v-if="i<x.interStyle.vCol*x.interStyle.vRow" class="flex-y flex-align-center" :style="{width:(100/x.interStyle.vCol)+'%'}">
+            <div v-if="xx.image" :style="showStyle(x.inputStyle||{},showBgimg(xx.image))" class="uploadimage shadow-none"></div>
+            <div v-if="xx.image" :style="showStyle(showStyle(x.inputStyle||{},{},'vWidth2'),x.fontStyle||{})" class="layui-elip">{{xx.title}}</div>
+            <div v-if="!xx.image"></div>
+        </div>
+    </div>
+</div>
+<!--{/literal}-->

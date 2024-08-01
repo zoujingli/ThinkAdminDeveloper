@@ -1,0 +1,30 @@
+<fieldset>
+    <legend>{:lang('条件搜索')}</legend>
+    <form action="{:sysuri()}" autocomplete="off" class="layui-form layui-form-pane form-search" method="get" onsubmit="return false">
+
+        <div class="layui-form-item layui-inline">
+            <label class="layui-form-label">会员搜索</label>
+            <label class="layui-input-inline">
+                <input class="layui-input" name="user" placeholder="请输入会员搜索" value="{$get.user|default=''}">
+            </label>
+        </div>
+
+        <div class="layui-form-item layui-inline">
+            <label class="layui-form-label">标题内容</label>
+            <label class="layui-input-inline">
+                <input class="layui-input" name="text" placeholder="请输入标题内容" value="{$get.text|default=''}">
+            </label>
+        </div>
+
+        <div class="layui-form-item layui-inline">
+            <label class="layui-form-label">申请时间</label>
+            <div class="layui-input-inline">
+                <input class="layui-input" data-date-range name="create_time" placeholder="请选择申请时间" value="{$get.create_time|default=''}">
+            </div>
+        </div>
+
+        <div class="layui-form-item layui-inline">
+            <button class="layui-btn layui-btn-primary"><i class="layui-icon">&#xe615;</i> 搜 索</button>
+        </div>
+    </form>
+</fieldset>

@@ -1,0 +1,120 @@
+{extend name='full'}
+{block name='body'}
+<div class="iframe-pagination">
+
+    {notempty name='tags'}
+    <div class="layui-btn-group nowrap">
+        <!-- {if empty($get.tags)} -->
+        <a class="layui-btn layui-btn-sm layui-btn-active" onclick="GoPage(1,'')">全部</a>
+        <!-- {else} -->
+        <a class="layui-btn layui-btn-sm layui-btn-primary" onclick="GoPage(1,'')">全部</a>
+        <!-- {/if} -->
+        {foreach $tags as $tag}
+        <!-- {if isset($get.tags) and $get.tags eq $tag.code} -->
+        <a class="layui-btn layui-btn-sm layui-btn-active" onclick="GoPage(1,'{$tag.code}')">{$tag.name|default=''}</a>
+        <!-- {else} -->
+        <a class="layui-btn layui-btn-sm layui-btn-primary" onclick="GoPage(1,'{$tag.code}')">{$tag.name|default=''}</a>
+        <!-- {/if} -->
+        {/foreach}
+    </div>
+    {/notempty}
+
+    <div class="padding-top-15 padding-bottom-30">
+        <!-- {empty name='list'} -->
+        <div class="notdata">没有更多数据</div>
+        <!-- {else} -->
+        <ul class="flex flex-wrap page-box">
+            {foreach $list as $vo}
+            <li class="page-item shadow-mini">
+                <div data-lazy-src="{$vo.cover}"></div>
+                <div class="page-item-name">{$vo.name}</div>
+                <div class="page-item-button">
+                    <a onclick="GoSelect('{$vo.code}')" class="layui-btn layui-btn-xs layui-btn-primary">选择模板</a>
+                </div>
+            </li>
+            {/foreach}
+        </ul>
+        <div id="DataPage"></div>
+        <!-- {/empty} -->
+    </div>
+</div>
+{/block}
+
+{block name='script'}
+<script>
+
+    // 初始化分页
+    layui.laypage.render({
+        curr: parseInt('{$page.current|default=1}'),
+        count: parseInt('{$page.total|default=0}'),
+        limit: parseInt('{$page.limit|default=20}'),
+        jump: function (obj, first) {
+            if (first) return; // 首次不执行
+            GoPage(obj.curr, '{$get.tags|default=""}');
+        }
+    });
+
+    // 加载分页数据
+    function GoPage(curr, tags) {
+        location.href = '{:url("select")}?' + top.$.param({
+            page: curr || 1, tags: tags || ''
+        });
+    }
+
+    // 复制模板数据
+    function GoSelect(code) {
+        top.$.form.href('{:url("copy")}?' + top.$.param({
+            type: 'library', code: code
+        }), document.body);
+        top.layer.close(top.layer.getFrameIndex(window.name));
+    }
+
+</script>
+{/block}
+
+{block name='style'}
+<style>
+    .page-box {
+        margin-right: -15px;
+    }
+
+    .page-item {
+        overflow: hidden;
+        text-align: center;
+        margin-right: 15px;
+        border-radius: 5px;
+        margin-bottom: 20px;
+        padding-bottom: 10px;
+    }
+
+    .page-item [data-lazy-src] {
+        width: 200px;
+        height: 280px;
+    }
+
+    .page-item-name {
+        line-height: 2.5em;
+    }
+
+    .page-item-button {
+        padding-bottom: 5px;
+    }
+
+    #DataPage {
+        left: 0;
+        right: 0;
+        bottom: 10px;
+        position: fixed;
+        text-align: center;
+    }
+
+    #DataPage .layui-laypage {
+        margin-bottom: 0;
+    }
+
+    #DataPage .layui-laypage > a,
+    #DataPage .layui-laypage > span {
+        margin-bottom: 0;
+    }
+</style>
+{/block}

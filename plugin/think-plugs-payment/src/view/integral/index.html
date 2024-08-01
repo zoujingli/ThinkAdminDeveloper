@@ -1,0 +1,103 @@
+{extend name='table'}
+
+{block name="content"}
+<div class="think-box-notify sub-strong-blue" type="info">
+    <strong>积分统计</strong>：<span>累计发放 <b>{$integralTotal|number_format}</b> 积分，已消费 <b>{$integralCount|abs|number_format}</b> 积分，剩余可用 <b>{:number_format($integralTotal+$integralCount)}</b> 积分。</span>
+</div>
+
+<div class="layui-tab layui-tab-card">
+    <ul class="layui-tab-title">
+        {foreach ['index'=>'积分管理','recycle'=>'回 收 站'] as $k=>$v}{if isset($type) and $type eq $k}
+        <li data-open="{:url('index')}?type={$k}" class="layui-this">{$v}</li>
+        {else}
+        <li data-open="{:url('index')}?type={$k}">{$v}</li>
+        {/if}{/foreach}
+    </ul>
+    <div class="layui-tab-content">
+        {include file='integral/index_search'}
+        <table id="IntegralTable" data-line="2" data-url="{:request()->url()}" data-target-search="form.form-search"></table>
+    </div>
+</div>
+
+<script>
+    $(function () {
+        let $table = $('#IntegralTable').layTable({
+            even: true, height: 'full',
+            sort: {field: 'id', type: 'desc'},
+            cols: [[
+                {field: 'id', hide: true},
+                // {checkbox: true, fixed: true},
+                {field: 'headimg', title: '头像', width: 70, align: 'center', templet: '<div>{{-showTableImage(d.user.headimg,true,"sm")}}</div>'},
+                {
+                    field: 'id', title: '用户账号', minWidth: 170, width: '10%', templet: function (d) {
+                        return laytpl('<div>用户昵称：{{d.user.nickname||"-"}}<br>绑定账号：{{d.user.email||d.user.phone||d.user.username||"-"}}</div>').render(d);
+                    }
+                },
+                {
+                    field: 'amount', title: '交易金额', sort: true, minWidth: 180, width: '15%', templet: function (d) {
+                        return laytpl('<div>交易金额：<b class="color-blue">{{Number(d.amount)}}</b> 积分<br>交易单号：<b class="color-blue">{{d.code||"-"}}</b></div>').render(d);
+                    }
+                },
+                {
+                    field: 'unlock', title: '交易状态', minWidth: 190, width: '17%', templet: function (d) {
+                        if (d.cancel) {
+                            d.typeInfo = '<b class="color-desc">已取消</b>';
+                            d.typeLabel = '取消';
+                            d.typeDatetime = d.cancel_time || '-';
+                        } else if (d.unlock) {
+                            d.typeInfo = '<b class="color-green">已生效</b>';
+                            d.typeLabel = '生效';
+                            d.typeDatetime = d.unlock_time || '-';
+                        } else {
+                            d.typeInfo = '<b class="color-blue">锁定中</b>';
+                            d.typeLabel = '锁定';
+                            d.typeDatetime = d.unlock_time || '-';
+                        }
+                        return laytpl('<div>当前状态：{{-d.typeInfo}}<br>{{d.typeLabel}}时间：{{d.typeDatetime}}</div>').render(d);
+                    }
+                },
+                {field: 'name', title: '操作描述', minWidth: 100, templet: '<div>操作名称：{{d.name||"-"}}<br>操作描述：{{d.remark||"-"}}</div>'},
+                {field: 'create_time', title: '操作时间', minWidth: 235, sort: true, templet: '<div>更新时间：{{d.update_time||"-"}}<br>创建时间：{{d.create_time||"-"}}</div>'},
+                {field: 'cancel', title: '状态操作', align: 'center', minWidth: 80, width: '9%', templet: '#StatusSwitchTpl'},
+                {field: 'id', toolbar: '#toolbar', title: '操作面板', align: 'center', minWidth: 80, width: '8%', fixed: 'right'}
+            ]]
+        });
+
+        // 数据状态切换操作
+        layui.form.on('switch(StatusSwitch)', function (obj) {
+            let data = {code: obj.value, cancel: obj.elem.checked > 0 ? 0 : 1};
+            $.form.load("{:url('cancel')}", data, 'post', function (ret) {
+                let fn = () => $table.trigger('reload');
+                ret.code > 0 ? fn() : $.msg.error(ret.info, 3, fn)
+                return false;
+            }, false);
+        });
+    });
+</script>
+
+<!-- 数据状态切换模板 -->
+<script type="text/html" id="StatusSwitchTpl">
+    <div class="ta-pt-10"></div>
+    <!--{if auth("cancel")}-->
+    <input type="checkbox" value="{{d.code}}" lay-skin="switch" lay-text="已激活|已取消" lay-filter="StatusSwitch" {{d.cancel>0?'':'checked'}}>
+    <!--{else}-->
+    {{-d.status ? '<b class="color-green">已激活</b>' : '<b class="color-red">已取消</b>'}}
+    <!--{/if}-->
+</script>
+
+<script type="text/html" id="toolbar">
+    {if isset($type) and $type eq 'index'}
+    <!--{if auth("unlock")}-->
+    {{# if ( d.cancel==0 && d.unlock==0 ){ }}
+    <a class="layui-btn layui-btn-sm layui-btn-normal" data-action='{:url("unlock")}' data-value="code#{{d.code}};unlock#1">解 锁</a>
+    {{# } else if( d.cancel==0 && d.unlock==1 ) { }}
+    <a class="layui-btn layui-btn-sm layui-btn-warm" data-action='{:url("unlock")}' data-value="code#{{d.code}};unlock#0">锁 定</a>
+    {{# } }}
+    <!--{/if}-->
+    {else}
+    <!--{if auth("remove")}-->
+    <a class="layui-btn layui-btn-sm layui-btn-danger" data-confirm="确定要永久删除吗？" data-action="{:url('remove')}" data-value="code#{{d.code}}">删 除</a>
+    <!--{/if}-->
+    {/if}
+</script>
+{/block}

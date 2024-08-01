@@ -1,0 +1,56 @@
+{
+  "type": "think-admin-plugin",
+  "name": "zoujingli/think-plugs-payment",
+  "homepage": "https://thinkadmin.top",
+  "description": "Payment Plugin for ThinkAdmin",
+  "authors": [
+    {
+      "name": "Anyon",
+      "email": "zoujingli@qq.com"
+    }
+  ],
+  "require": {
+    "php": ">7.1",
+    "ext-json": "*",
+    "zoujingli/think-plugs-admin": "^1.0|@dev",
+    "zoujingli/think-plugs-account": "^1.0|@dev"
+  },
+  "require-dev": {
+    "phpunit/phpunit": "*"
+  },
+  "autoload": {
+    "psr-4": {
+      "plugin\\payment\\": "src"
+    }
+  },
+  "autoload-dev": {
+    "psr-4": {
+      "think\\admin\\tests\\": "tests/"
+    }
+  },
+  "extra": {
+    "think": {
+      "services": [
+        "plugin\\payment\\Service"
+      ]
+    },
+    "plugin": {
+      "copy": {
+        "stc/database": "database/migrations"
+      }
+    },
+    "config": {
+      "type": "plugin",
+      "name": "系统支付管理",
+      "document": "https://thinkadmin.top/plugin/think-plugs-payment.html",
+      "license": [
+        "VIP"
+      ]
+    }
+  },
+  "config": {
+    "allow-plugins": {
+      "zoujingli/think-install": true
+    }
+  }
+}

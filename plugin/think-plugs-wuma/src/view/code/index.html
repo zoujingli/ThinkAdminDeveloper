@@ -1,0 +1,151 @@
+{extend name="table"}
+
+{block name='header'}
+<div class="layui-card-header sub-strong-blue">
+    <span class="layui-icon font-s10 color-desc margin-right-5">&#xe65b;</span>{$title|default=''}
+    <div class="pull-right">
+        <!--{if auth("add")}-->
+        <button data-modal='{:url("add")}' data-title="添加物码" class='layui-btn layui-btn-sm layui-btn-primary'>添加物码</button>
+        <!--{/if}-->
+    </div>
+</div>
+{/block}
+
+{block name='content'}
+<div class="layui-tab layui-tab-card">
+    <ul class="layui-tab-title notselect">
+        {foreach ['index'=>'物码管理','recycle'=>'回 收 站'] as $k=>$v}
+        {if isset($type) and $type eq $k}
+        <li data-open="{:sysuri('index')}?type={$k}" class="layui-this color-green">{$v}</li>
+        {else}
+        <li data-open="{:sysuri('index')}?type={$k}">{$v}</li>
+        {/if}{/foreach}
+    </ul>
+    <div class="layui-tab-content">
+        {include file='code/index-search'}
+        <table data-line="3" id="CoderTable" data-url="{:sysuri('index')}" data-target-search="form.form-search"></table>
+    </div>
+</div>
+
+<script>
+    $(function () {
+        $('#CoderTable').layTable({
+            even: true, height: 'full',
+            sort: {field: 'id', type: 'desc'},
+            where: {type: '{$type|default="index"}'},
+            cellExpandedMode: 'tips',
+            cols: [[
+                {field: 'id', hide: true},
+                {field: '', title: '物码信息', templet: '#tpl1'},
+                {field: '', title: '物码规则', templet: '#tpl2'},
+                {field: '', title: '物码分区', templet: '#tpl3'},
+                /*{if auth('state')}*/
+                {field: '', title: '物码状态', width: 110, align: 'center', templet: '#tpl4', fixed: 'right'},
+                /*{/if}*/
+                {toolbar: '#toolbar', title: '操作面板', align: 'center', minWidth: 210, fixed: 'right'}
+            ]]
+        });
+
+        // 数据状态切换操作
+        layui.form.on('switch(StatusSwitch)', function (obj) {
+            var data = {id: obj.value, status: obj.elem.checked > 0 ? 1 : 0};
+            $.form.load("{:url('state')}", data, 'post', function (ret) {
+                if (ret.code < 1) $.msg.error(ret.info, 3, function () {
+                    $('#CoderTable').trigger('reload');
+                }); else {
+                    $('#CoderTable').trigger('reload')
+                }
+                return false;
+            }, false);
+        });
+    });
+</script>
+
+<script type="text/html" id="tpl1">
+    批次：<b>{{ d.batch || '' }}</b><br>
+    模板：{{d.template||'-'}}<br>
+    时间：{{d.create_time||''}}<br>
+</script>
+
+<script type="text/html" id="tpl2">
+    {{#if(d.type===1){}}
+    <span class="layui-badge layui-bg-blue layui-badge-middle pull-left">前关联</span>
+    {{#}else{}}
+    <span class="layui-badge layui-bg-cyan layui-badge-middle pull-left">后关联</span>
+    {{#}}}
+
+    {{#if(d.type===1 && d.max_length>0){}}
+    <div class="nowrap">大码 <b>{{ d.max_length }}</b> 位，每个大码对应 <b>{{ d.max_mid }}</b> 个中码</div>
+    {{#}else if(d.max_number>0){}}
+    <div class="nowrap">大码 <b>{{ d.max_length }}</b> 位，共有 <b>{{ d.max_number }}</b> 个大码</div>
+    {{#}else{}}
+    <div class="nowrap color-desc">无大码，不占用箱码空间</div>
+    {{#}}}
+
+    {{#if(d.type===1 && d.mid_length>0){}}
+    <div class="nowrap">中码 <b>{{ d.mid_length }}</b> 位，每个中码对应 <b>{{ d.mid_min }}</b> 个小码</div>
+    {{#}else if(d.mid_number>0){}}
+    <div class="nowrap">中码 <b>{{ d.mid_length }}</b> 位，共有 <b>{{ d.mid_number }}</b> 个中码</div>
+    {{#}else{}}
+    <div class="nowrap color-desc">无中码，不占用箱码空间</div>
+    {{#}}}
+
+    {{#if(d.number>0){}}
+    <div class="nowrap">防窜 <b>{{ d.min_length }}</b> 位，防伪 <b>{{ d.hex_length }}</b> 位，共 <b>{{ d.number }}</b> 个小码</div>
+    {{#}else{}}
+    <div class="nowrap color-desc">无小码，不生成防窜码和防伪码</div>
+    {{#}}}
+</script>
+
+<script type="text/html" id="tpl3">
+    {{#if(d.max&&layui.type(d.max)==='object'){}}
+    <div>大码：<b>{{ d.max.range_start || '' }}</b> - <b>{{ d.max.range_after || '' }}</b></div>
+    {{#}else{}}
+    <div class="color-desc">大码：无大码</div>
+    {{#}}}
+
+    {{#if(d.mid&&layui.type(d.mid)==='object'){}}
+    <div>中码：<b>{{ d.mid.range_start || '' }}</b> - <b>{{ d.mid.range_after || '' }}</b></div>
+    {{#}else{}}
+    <div class="color-desc">中码：无中码</div>
+    {{#}}}
+
+    {{#if(d.min&&layui.type(d.min)==='object'){}}
+    <div>序号：<b>{{ d.min.range_start || '' }}</b> - <b>{{ d.min.range_after || '' }}</b></div>
+    {{#}else{}}
+    <div class="color-desc">小码：无小码</div>
+    {{#}}}
+</script>
+
+<script type="text/html" id="tpl4">
+    <div class="padding-top-20"></div>
+    <!--{if auth("state")}-->
+    <input type="checkbox" value="{{d.id}}" lay-skin="switch" lay-text="已激活|已禁用" lay-filter="StatusSwitch" {{-d.status>0?'checked':''}}>
+    <!--{else}-->
+    {{-d.status ? '<b class="color-green">已启用</b>' : '<b class="color-red">已禁用</b>'}}
+    <!--{/if}-->
+</script>
+
+<script type="text/html" id="toolbar">
+    <div class="padding-top-10"></div>
+
+    {if auth('template')}
+    <a class="layui-btn layui-btn-sm layui-btn-primary" data-event-dbclick="click" data-title="修改导出模板" data-width="820px" data-modal="{:url('template')}?id={{d.id}}">修改</a>
+    {/if}
+
+    {if auth("queue")}
+    <a class="layui-btn layui-btn-sm" data-queue="{:url('queue')}?batch={{d.batch}}" data-value="id#{{d.id}};status#1">生 成</a>
+    {else}
+    <a class="layui-btn layui-btn-sm layui-btn-disabled" data-tips-text="没有操作权限">生 成</a>
+    {/if}
+
+    {if auth("download")}
+    {{#if(d.exists){}}
+    <a class="layui-btn layui-btn-sm layui-btn-normal" target="_blank" href="{:url('download')}?batch={{d.batch}}">下 载</a>
+    {{#}else{}}
+    <a class="layui-btn layui-btn-sm layui-btn-normal layui-btn-disabled" data-tips-text="物码文件还没有创建哦！">下 载</a>
+    {{#}}}
+    {/if}
+
+</script>
+{/block}

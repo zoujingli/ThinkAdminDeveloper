@@ -1,0 +1,55 @@
+{extend name="table"}
+
+{block name="content"}
+<div class='think-box-shadow'>
+    {include file='sales/stock/index-search'}
+    <table data-line='3' id="HouseTable" data-url="{:sysuri()}" data-target-search="form.form-search"></table>
+</div>
+
+<script>
+    $(function () {
+        $('#HouseTable').layTable({
+            even: true, height: 'full',
+            sort: {field: 'id', type: 'desc'},
+            cols: [[
+                {field: 'id', title: 'ID', hide: true, width: 80},
+                {field: '', title: '仓库名称', width: '33%', templet: '#OrderTpl'},
+                {field: '', title: '产品名称', width: '33%', templet: '#GoodsTpl'},
+                {field: '', title: '库存统计', templet: '#StockTpl'},
+            ]]
+        });
+    });
+</script>
+
+<script type="text/html" id="OrderTpl">
+    <div>代理姓名：{{ d.agent.username || '-' }}</div>
+    <div>代理手机：<b>{{ d.agent.phone || '-' }}</b></div>
+    <div>库存明细：<a data-modal="{:url('show')}?auid={{d.agent.id||0}}&g_code={{d.gcode||'-'}}&g_spec={{d.gspec||'-'}}">查看出入库明细</a></div>
+</script>
+
+<script type="text/html" id="GoodsTpl">
+    {{#if(!d.g){}}
+    <div class="color-desc margin-top-20">关联产品数据无效！</div>
+    {{#}else{}}
+    <div class="headimg headimg-md headimg-no pull-left" data-tips-image data-tips-hover data-lazy-src="{{d.cover||''}}"></div>
+    产品编号：<b class="color-blue">{{ d.g_code || '-' }}</b><br>
+    产品名称：{{d.name||'-'}}<span class="color-desc padding-left-5">({{ showSpec(d.g_spec || '') }})</span><br>
+    产品状态：{{- d.deleted>0?'<b class="color-red">已删除</b>':(d.status<1?'<b class="color-red">已下架</b>':'<b class="color-green">使用中</b>')}}
+    {{#}}}
+</script>
+
+<script type="text/html" id="StockTpl">
+    <div>
+        <span>累计入库：<b class="margin-right-5">{{ d.num_total + d.vir_total }}</b>{{ d.gunit || '' }}</span>
+        <span class="color-desc">（ 扫码 <b class="margin-right-5">{{ d.num_total }}</b>{{ d.gunit || '' }}, 虚拟 <b class="margin-right-5">{{ d.vir_total }}</b>{{ d.gunit || '' }} ）</span>
+    </div>
+    <div>
+        <span>累计出库：<b class="margin-right-5">{{ d.num_count + d.vir_count }}</b>{{ d.gunit || '' }}</span>
+        <span class="color-desc">（ 扫码 <b class="margin-right-5">{{ d.num_count }}</b>{{ d.gunit || '' }}, 虚拟 <b class="margin-right-5">{{ d.vir_count }}</b>{{ d.gunit || '' }} ）</span>
+    </div>
+    <div>
+        <span>现有库存：<b class="margin-right-5">{{ d.num_total + d.vir_total - d.num_count - d.vir_count }}</b> {{ d.gunit || '' }}</span>
+        <span class="color-desc">（ 扫码 <b class="margin-right-5">{{ d.num_total - d.num_count }}</b>{{ d.gunit || '' }}, 虚拟 <b class="margin-right-5">{{ d.vir_total - d.vir_count }}</b>{{ d.gunit || '' }} ）</span>
+    </div>
+</script>
+{/block}

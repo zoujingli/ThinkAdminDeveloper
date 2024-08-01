@@ -1,0 +1,272 @@
+{extend name="main"}
+
+{block name="button"}
+<button data-target-submit class='layui-btn layui-btn-sm'>保存数据</button>
+<button data-target-backup class="layui-btn layui-btn-sm layui-btn-danger" data-confirm="确认要取消编辑吗？">取消编辑</button>
+{/block}
+
+{block name="content"}
+<form action="{:sysuri()}" method="post" data-auto="true" class="layui-form layui-card">
+
+    <div class="layui-card-body ta-pl-40">
+
+        <fieldset class="layui-form-item">
+            <legend class="layui-badge text-left think-bg-violet">用户信息</legend>
+            <div class="flex">
+                <div class="headimg" style="width:138px;height:138px" data-tips-image data-lazy-src="{$vo.user.headimg|default='__ROOT__/static/theme/img/headimg.png'}"></div>
+                <div class="flex-1 ta-ml-15">
+                    <label class="layui-form-item relative block">
+                        <span class="help-label"><b>用户昵称</b>Nickname</span>
+                        <input class="layui-input layui-bg-gray" readonly value="{$vo.user.nickname|default=''}">
+                    </label>
+                    <label class="relative block">
+                        <span class="help-label"><b>用户账号</b>Phone</span>
+                        <input class="layui-input layui-bg-gray" readonly value="{$vo.user.phone|default=''}">
+                    </label>
+                </div>
+            </div>
+        </fieldset>
+
+        <fieldset class="layui-form-item">
+            <legend class="layui-badge text-left think-bg-violet">订单信息</legend>
+            <div class="layui-form-item flex">
+                <label class="ta-mr-10">
+                    <span class="help-label"><b>订单单号</b>OrderCode</span>
+                    <input class="layui-input layui-bg-gray" readonly value="{$vo.order_no|default=''}"/>
+                </label>
+                <label class="ta-mr-10">
+                    <span class="help-label"><b>支付金额</b>Amount</span>
+                    <input class="layui-input layui-bg-gray" readonly value="{$vo.orderinfo.amount_real|default=''}"/>
+                </label>
+                <label class="ta-mr-10">
+                    <span class="help-label"><b>余额消费</b>Balance</span>
+                    <input class="layui-input layui-bg-gray" readonly value="{$vo.orderinfo.amount_balance|default=''}"/>
+                </label>
+                <label class="ta-mr-10">
+                    <span class="help-label"><b>积分消费</b>Integral</span>
+                    <input class="layui-input layui-bg-gray" readonly value="{$vo.orderinfo.amount_integral|default=''}"/>
+                </label>
+            </div>
+            {notempty name='vo.orderinfo.items'}
+            <div class="layui-form-item">
+                <span class="help-label"><b>商品列表</b>Images</span>
+                <div class="layui-textarea ta-p-10 flex flex-wrap" style="min-height:auto;padding-bottom:0!important;">
+                    {foreach $vo.orderinfo.items as $v}
+                    <div class="flex layui-bg-gray ta-p-10 border-radius-5 ta-mr-10 ta-mb-10" style="min-width:400px">
+                        <div data-tips-image data-lazy-src="{$v.gcover}" class="uploadimage" style="width:60px;height:60px"></div>
+                        <div class="flex-1 ta-ml-5">
+                            <div class="ta-p-5 font-s14 font-w7">{$v.gname}</div>
+                            <div class="ta-p-5 color-desc">{$v.gspec|show_gspec}</div>
+                        </div>
+                        <div>
+                            <div class="flex-y">
+                                <div class="text-right">售价 {$v.price_selling} 元</div>
+                                <div class="text-right">x {$v.stock_sales} {$v.gunit}</div>
+                                <div class="text-right">共计 <b>{$v.total_price_selling}</b> 元</div>
+                            </div>
+                        </div>
+                    </div>
+                    {/foreach}
+                </div>
+            </div>
+            {/notempty}
+        </fieldset>
+
+        <fieldset class="layui-form-item">
+            <legend class="text-left">
+                <span class="layui-badge think-bg-purple">售后信息</span>
+                <!-- 流程状态(0已取消,1预订单,2待审核,3待退货,4已退货,5待退款,6已退款,7已完成)-->
+                {if $vo.status eq 0}
+                <span class="layui-badge think-bg-gray">已取消</span>
+                {elseif $vo.status eq 2}
+                <span class="layui-badge think-bg-blue">待审核</span>
+                {elseif $vo.status eq 3}
+                <span class="layui-badge think-bg-blue">待退货</span>
+                {elseif $vo.status eq 4}
+                <span class="layui-badge think-bg-blue">已退货</span>
+                {elseif $vo.status eq 5}
+                <span class="layui-badge think-bg-blue">待退款</span>
+                {elseif $vo.status eq 6}
+                <span class="layui-badge think-bg-green">已退款</span>
+                {elseif $vo.status eq 7}
+                <span class="layui-badge think-bg-green">已完成</span>
+                {/if}
+            </legend>
+            <div class="layui-form-item flex flex-wrap">
+                <label class="ta-mr-10">
+                    <span class="help-label"><b>售后单号</b>Refund Code</span>
+                    <input class="layui-input layui-bg-gray" readonly value="{$vo.code|default=''}"/>
+                </label>
+                <label class="ta-mr-10">
+                    <span class="help-label"><b>售后类型</b>Refund Type</span>
+                    <input class="layui-input layui-bg-gray" readonly value="{$vo.typename|default=''}"/>
+                </label>
+                <label class="ta-mr-10">
+                    <span class="help-label"><b>售后原因</b>Refund Reason</span>
+                    <input class="layui-input layui-bg-gray" readonly value="{$vo.reasonname|default=''}"/>
+                </label>
+                {notempty name='vo.phone'}
+                <label class="ta-mr-10">
+                    <span class="help-label"><b>联系电话</b>Concat Phone</span>
+                    <input class="layui-input layui-bg-gray" readonly value="{$vo.phone|default=''}"/>
+                </label>
+                {/notempty}
+                <label class="ta-mr-10">
+                    <span class="help-label"><b>申请退款</b>Refund Amount</span>
+                    <input class="layui-input layui-bg-gray" readonly value="{$vo.amount|default=''}"/>
+                </label>
+            </div>
+
+            <label class="layui-form-item block">
+                <span class="help-label"><b>申请说明</b>Refund Description</span>
+                <textarea class="layui-textarea layui-bg-gray" readonly>{$vo.content|default=''}</textarea>
+            </label>
+
+            <div class="layui-form-item flex flex-wrap">
+                <label class="ta-mr-10">
+                    <span class="help-label"><b>退货快递</b>Express Name</span>
+                    <input class="layui-input layui-bg-gray" readonly value="{$vo.express_name|default='未填写'}"/>
+                </label>
+                <label class="ta-mr-10">
+                    <span class="help-label"><b>退货单号</b>Express Code</span>
+                    <input class="layui-input layui-bg-gray" readonly value="{$vo.express_no|default='未填写'}"/>
+                </label>
+                <div class="ta-pt-25">
+                    <a class="layui-btn" data-delivery-code="{$vo.express_code}" data-delivery-number="{$vo.express_no}">查询快递</a>
+                </div>
+            </div>
+
+            {notempty name='vo.images'}
+            <div class="layui-form-item">
+                <span class="help-label"><b>说明图片</b>Refund Images</span>
+                <div class="layui-textarea layui-bg-gray help-images upload-image-mdbox">
+                    {foreach $vo.images as $img}
+                    <div data-tips-image data-lazy-src="{$img}" class="uploadimage" style="width:118px;height:118px"></div>
+                    {/foreach}
+                </div>
+            </div>
+            {/notempty}
+        </fieldset>
+
+        <fieldset class="layui-form-item">
+            <legend class="layui-badge text-left think-bg-violet">售后操作</legend>
+            <div class="layui-form-item">
+                <span class="help-label label-required-prev"><b>审核状态</b></span>
+                <div class="layui-textarea" style="min-height:auto;padding:10px 0 13px 18px">
+                    <!-- 流程状态(0已取消,1预订单,2待审核,3待退货,4已退货,5待退款,6已退款,7已完成) -->
+                    {empty name='vo.status'}{assign name='vo.status' value='0'}{/empty}
+                    {php}
+                    if( $vo['status'] > 4 ){
+                    $slist = [5=>'发起退款 ( 不可改金额 )',6=>'已退款 ( 不可改金额 )',7=>'完成 ( 不可改金额 )'];
+                    } else {
+                    $slist = [0=>'驳回',2=>'待审核',3=>'待退货', 4=>'已退货',5=>'去退款 ( 不可改金额 )'];
+                    }
+                    {/php}
+                    {foreach $slist as $k => $v}
+                    {if isset($vo.status) and $k eq $vo.status}
+                    <input name="status" title="{$v}" type="radio" value='{$k}' checked>
+                    {else}
+                    <input name="status" title="{$v}" type="radio" value='{$k}'>
+                    {/if}{/foreach}
+                </div>
+            </div>
+
+            <div class="layui-form-item layui-row layui-col-space15">
+                {foreach $vo.orderinfo.payments as $p}
+                <div class="flex">
+                    <label class="ta-mr-10">
+                        <span class="help-label nowrap"><b>支付单号</b>Payment Code</span>
+                        <input class="layui-input layui-bg-gray" readonly value="{$p.code|default='0.00'}"/>
+                    </label>
+                    <label class="ta-mr-10">
+                        <span class="help-label nowrap"><b>支付类型</b>Payment Type</span>
+                        <input class="layui-input layui-bg-gray" readonly value="{$p.channel_type_name|default='0.00'}"/>
+                    </label>
+                    <label class="ta-mr-10">
+                        <span class="help-label nowrap"><b>支付金额</b>Payment Amount</span>
+                        <input class="layui-input layui-bg-gray" readonly value="{$p.payment_amount|default='0.00'}"/>
+                    </label>
+                    <label class="ta-mr-10">
+                        <span class="help-label nowrap"><b>平台优惠</b>Coupon Amount</span>
+                        <input class="layui-input layui-bg-gray" readonly value="{$p.payment_coupon|default='0.00'}"/>
+                    </label>
+                    <label class="ta-mr-10">
+                        {if $p.channel_type eq 'integral'}
+                        <span class="help-label label-required-prev nowrap"><b>已退积分</b>Refunded Integral</span>
+                        {elseif $p.channel_type eq 'balance'}
+                        <span class="help-label label-required-prev nowrap"><b>已退余额</b>Refunded Balance</span>
+                        {else}
+                        <span class="help-label label-required-prev nowrap"><b>已退金额</b>Refunded Amount</span>
+                        {/if}
+                        <input class="layui-input layui-bg-gray" readonly value="{$p.refund_amount|default='0.00'}"/>
+                    </label>
+                    {php}
+                    // 减掉已退款金额及平台优惠金额
+                    $allowAmount=bcsub(strval($p['payment_amount']??0),strval($p['refund_amount']??0),2);
+                    $allowAmount=bcsub($allowAmount,$p['payment_coupon'],2);
+                    {/php}
+                    {php}$refundAmount=floatval($p['refund_amount'])>0?$p['refund_amount']:$allowAmount;{/php}
+                    <div>
+                        {if $p.channel_type eq 'integral'}
+                        <span class="help-label label-required-prev nowrap"><b>退回积分</b>Refund Integral</span>
+                        {elseif $p.channel_type eq 'balance'}
+                        <span class="help-label label-required-prev nowrap"><b>退回余额</b>Refund Balance</span>
+                        {elseif $p.channel_type eq 'coupon'}
+                        <span class="help-label label-required-prev nowrap"><b>退回优惠券</b>Refund Coupon</span>
+                        {else}
+                        <span class="help-label label-required-prev nowrap"><b>退回金额</b>Refund Amount</span>
+                        {/if}
+                        <input type="hidden" name="pcodes[{$p.code}]" value="{$p.channel_code}">
+                        <input type="hidden" name="ptypes[{$p.code}]" value="{$p.channel_type}">
+
+                        {if $p.channel_type eq 'coupon'}
+                        <div class="layui-input" style="line-height:unset">
+                            <input value="0" type="hidden" name="refunds[{$p.code}]"/>
+                            {if empty($p.refund_status)}
+                            <input checked value="1" type="checkbox" name="refunds[{$p.code}]" title="退回优惠券"/>
+                            {else}
+                            <input checked value="0" type="checkbox" readonly disabled title="已退回优惠券"/>
+                            {/if}
+                        </div>
+                        {else}
+                        <label class="ta-mr-10">
+                            {if $vo['status']<5}
+                            <input class="layui-input" name="refunds[{$p.code}]" type="number" lay-affix="number" min="0" max="{$allowAmount|default=0}" value="{$allowAmount|default=0}"/>
+                            {else}
+                            <input class="layui-input layui-bg-gray" readonly name="refunds[{$p.code}]" type="number" value="{$allowAmount|default=0}"/>
+                            {/if}
+                        </label>
+                        {/if}
+                    </div>
+                </div>
+                {/foreach}
+            </div>
+
+            <label class="layui-form-item relative block">
+                <span class="help-label"><b>操作描述</b></span>
+                <textarea class="layui-textarea" name="remark" placeholder="请输入操作描述">{$vo.remark|default='售后服务'}</textarea>
+            </label>
+
+        </fieldset>
+
+        <div class="hr-line-dashed"></div>
+        {notempty name='vo.id'}<input name='id' type='hidden' value='{$vo.id}'>{/notempty}
+
+        <div class="layui-form-item text-center">
+            <button class="layui-btn" type='submit'>保存修改</button>
+            <button class="layui-btn layui-btn-danger" data-target-backup type='button'>取消编辑</button>
+        </div>
+    </div>
+</form>
+{/block}
+
+{block name='script'}
+<script>
+    $(function () {
+        $('[data-delivery-code]').on('click', function () {
+            let code = this.dataset.deliveryCode || '', number = this.dataset.deliveryNumber || ''
+            $.form.modal('{:url("shop.sender/query")}', {code: code, number: number}, '快递追踪查询')
+        });
+    })
+</script>
+{/block}

@@ -1,0 +1,34 @@
+<form action="{:sysuri()}" autocomplete="off" class="layui-form layui-form-pane form-search" method="get" onsubmit="return false">
+
+    <div class="layui-form-item layui-inline">
+        <label class="layui-form-label">会员用户</label>
+        <label class="layui-input-inline">
+            <input class="layui-input" name="user_keys" placeholder="请输入手机或昵称" value="{$get.user_keys|default=''}">
+        </label>
+    </div>
+
+    <div class="layui-form-item layui-inline">
+        <label class="layui-form-label">订单单号</label>
+        <label class="layui-input-inline">
+            <input class="layui-input" name="order_no" placeholder="请输入订单单号" value="{$get.order_no|default=''}">
+        </label>
+    </div>
+
+    <div class="layui-form-item layui-inline">
+        <label class="layui-form-label">商品搜索</label>
+        <label class="layui-input-inline">
+            <input class="layui-input" name="goods_keys" placeholder="请输入商品名称或编号" value="{$get.goods_keys|default=''}">
+        </label>
+    </div>
+
+    <div class="layui-form-item layui-inline">
+        <label class="layui-form-label">评论时间</label>
+        <label class="layui-input-inline">
+            <input class="layui-input" data-date-range name="create_time" placeholder="请选择申请时间" value="{$get.create_time|default=''}">
+        </label>
+    </div>
+
+    <div class="layui-form-item layui-inline">
+        <button class="layui-btn layui-btn-primary" type="submit"><i class="layui-icon">&#xe615;</i> 搜 索</button>
+    </div>
+</form>

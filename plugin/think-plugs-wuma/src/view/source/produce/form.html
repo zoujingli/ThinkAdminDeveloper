@@ -1,0 +1,92 @@
+<form class="layui-form layui-card" data-table-id="DataTable" action="{:sysuri()}" data-auto="true" method="post" id="RuleForm">
+    <div class="layui-card-body padding-left-40">
+
+        <label class="layui-form-item block relative">
+            <span class="help-label"><b>生产批次</b>Produce Batch</span>
+            <input class="layui-input think-bg-gray" readonly required name="batch" maxlength="20" placeholder="请输入生产批次" value="{$vo.batch|default=''}">
+        </label>
+
+        <!--{notempty name='products'}-->
+        <div class="layui-form-item block relative">
+            <div class="help-label label-required-prev"><b>关联产品</b>Related Products</div>
+            <select class="layui-select" name="ghash" lay-search>
+                {foreach $products as $product}{notempty name='product.items'}
+                <optgroup label="{$product.code} - {$product.name}">
+                    {foreach $product.items as $item}
+                    {if isset($vo.ghash) and $item.ghash eq $vo.ghash}
+                    <option selected value="{$item.ghash}">{$product.code} - {$product.name} # {$item.gspec|show_gspec}</option>
+                    {else}
+                    <option value="{$item.ghash}">{$product.code} - {$product.name} # {$item.gspec|show_gspec}</option>
+                    {/if}
+                    {/foreach}
+                </optgroup>
+                {/notempty}{/foreach}
+            </select>
+        </div>
+        <!--{/notempty}-->
+
+        <!--{notempty name='templates'}-->
+        <label class="layui-form-item block relative">
+            <span class="help-label label-required-prev"><b>溯源模板</b>Trace Template</span>
+            <select class="layui-select" name="tcode" lay-search>
+                {foreach $templates as $tpl}{if isset($vo.tcode) and $tpl.code eq $vo.tcode}
+                <option selected value="{$tpl.code}">{$tpl.code} - {$tpl.name}</option>
+                {else}
+                <option value="{$tpl.code}">{$tpl.code} - {$tpl.name}</option>
+                {/if}{/foreach}
+            </select>
+        </label>
+        <!--{/notempty}-->
+
+        <div class="layui-form-item">
+            <div class="layui-row layui-col-space10 layui-bg-gray">
+                <div class="layui-col-xs4 padding-bottom-0">
+                    <div class="help-label label-required-prev"><b>所在省份</b>Province</div>
+                    <select class="layui-select" lay-filter="addr_prov" name="addr_prov"></select>
+                </div>
+                <div class="layui-col-xs4 padding-bottom-0">
+                    <div class="help-label label-required-prev"><b>所在城市</b>City</div>
+                    <select class="layui-select" lay-filter="addr_city" name="addr_city"></select>
+                </div>
+                <div class="layui-col-xs4 padding-bottom-0">
+                    <div class="help-label label-required-prev"><b>所在区域</b>Area</div>
+                    <select class="layui-select" lay-filter="addr_area" name="addr_area"></select>
+                </div>
+            </div>
+        </div>
+
+        <label class="layui-form-item block relative">
+            <span class="help-label"><b>批次备注</b>Batch remarks</span>
+            <textarea class="layui-textarea" name="remark" placeholder="请输入批次备注">{$vo.remark|default=''|raw}</textarea>
+        </label>
+
+    </div>
+
+    <div class="hr-line-dashed"></div>
+    {notempty name='vo.id'}<input name="id" type="hidden" value="{$vo.id}">{/notempty}
+
+    <div class="layui-form-item text-center">
+        <button class="layui-btn" type='submit'>保存数据</button>
+        <button class="layui-btn layui-btn-danger" type='button' data-confirm="确定要取消编辑吗？" data-close>取消编辑</button>
+    </div>
+</form>
+
+<label class="layui-textarea layui-hide" id="ProductData">
+    <textarea class="layui-textarea">{$products|default=''|json_encode}</textarea>
+</label>
+<script>
+    require(['pcasunzips'], function () {
+
+        $('#RuleForm').parent().css({overflow: 'revert'});
+        /*! 省市区数据处理 */
+        (function (prov, city, area, refresh) {
+            new PCAS("addr_prov", "addr_city", "addr_area", prov, city, area) && refresh();
+            layui.form.on('select(addr_area)', refresh);
+            layui.form.on('select(addr_city)', refresh);
+            layui.form.on('select(addr_prov)', refresh);
+        })('{$vo.addr_prov|default=""}', '{$vo.addr_city|default=""}', '{$vo.addr_area|default=""}', function (data) {
+            $('select:not([lay-ignore])').nextAll('div.layui-form-select').remove();
+            data && data.elem && $(data.elem).trigger('change'), layui.form.render('select');
+        });
+    });
+</script>

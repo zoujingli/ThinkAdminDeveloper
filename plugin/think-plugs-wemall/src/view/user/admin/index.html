@@ -1,0 +1,173 @@
+{extend name='table'}
+
+{block name="button"}
+{if isset($type) and $type eq 'index'}
+<!--{if auth('sync')}-->
+<a data-table-id="UserTable" class="layui-btn layui-btn-sm layui-btn-primary" data-queue="{:url('sync')}">{:lang('刷新数据')}</a>
+<!--{/if}-->
+<!--{if auth('state')}-->
+<a data-confirm="确定要启用该用户吗？" data-table-id="UserTable" data-action="{:url('state')}" data-rule="id#{unid};status#0" class='layui-btn layui-btn-sm layui-btn-primary'>批量禁用</a>
+<!--{/if}-->
+{else}
+<!--{if auth('state')}-->
+<a data-confirm="确定要恢复这些账号吗？" data-table-id="UserTable" data-action="{:url('state')}" data-rule="id#{unid};status#1" class='layui-btn layui-btn-sm layui-btn-primary'>批量恢复</a>
+<!--{/if}-->
+{/if}
+{/block}
+
+{block name="content"}
+<div class="layui-tab layui-tab-card">
+    <ul class="layui-tab-title">
+        {foreach ['index'=>'用户管理','recycle'=>'回 收 站'] as $k=>$v}
+        {if isset($type) and $type eq $k}
+        <li data-open="{:url('index')}?type={$k}" class="layui-this">{$v}</li>
+        {else}
+        <li data-open="{:url('index')}?type={$k}">{$v}</li>
+        {/if}{/foreach}
+    </ul>
+    <div class="layui-tab-content">
+        {include file='user/admin/index_search'}
+        <table id="UserTable" data-line="3" data-url="{:request()->url()}" data-target-search="form.form-search"></table>
+    </div>
+</div>
+
+<script>
+    $(function () {
+        let $table = $('#UserTable').layTable({
+            even: true, height: 'full', sort: {field: 'sort desc,id', type: 'desc'}, cellExpandedMode: 'tips',
+            cols: [[
+                {field: 'sort', hide: true},
+                {checkbox: true, fixed: true},
+                {
+                    title: '头 像', width: 95, align: 'center', templet: function (d) {
+                        if (!d.user || !d.user.headimg) return '';
+                        return laytpl('<div>{{-showTableImage(d.user.headimg,false,"md")}}</div>').render(d)
+                    }
+                },
+                {
+                    title: '用户账号', minWidth: 180, templet: function (d) {
+                        let tpls = [];
+                        tpls.push('关联账号：<b class="color-blue">{{d.user.phone}}</b>')
+                        if (d.entry_agent > 0) {
+                            tpls.push('推广权益：<b class=color-blue>有推广权益</b>')
+                        } else {
+                            tpls.push('推广权益：<b class=color-desc>无推广权益</b>')
+                        }
+                        tpls.push('会员等级：<b class="color-blue">[ VIP{{d.level_code}} ] {{d.level_name||""}}</b>')
+                        return laytpl(tpls.join('<br>')).render(d);
+                    }
+                },
+                {
+                    title: '用户信息', minWidth: 120, templet: function (d) {
+                        let tpls = [];
+                        tpls.push('用户昵称：{{d.user.nickname||"-"}}')
+                        tpls.push('账号编号：{{d.user.code||"-"}}')
+                        tpls.push('注册时间：{{d.user.create_time||"-"}}')
+                        return laytpl(tpls.join('<br>')).render(d);
+                    }
+                },
+                {
+                    title: '上1级头像', width: 95, align: 'center', templet: function (d) {
+                        if (!(d.agent1 && d.user1)) return '';
+                        return laytpl('<div>{{-showTableImage(d.user1.headimg,false,"md")}}</div>').render(d);
+                    }
+                },
+                {
+                    title: '上1级代理', minWidth: 200, templet: function (d) {
+                        let tpls = [], left = '';
+                        if (d.agent1 && d.user1) {
+                            if (d.puids) {
+                                left = '<span class="layui-badge layui-badge-middle flex-center layui-bg-green" style="line-height:13px;padding:0 4px">永久绑定</span>';
+                            } else {
+                                left = '<span class="layui-badge layui-badge-middle flex-center layui-bg-red" style="line-height:14px;padding:3px 4px">临时绑定</span>';
+                            }
+                            tpls.push('账号：<b class="color-blue">{{d.user1.phone}}</b>')
+                            if (d.agent1.entry_agent > 0) {
+                                tpls.push('推广：<b class=color-blue>有推广权益</b>')
+                            } else {
+                                tpls.push('推广：<b class=color-desc>无推广权益</b>')
+                            }
+                            tpls.push('等级：<b class="color-blue">VIP{{d.agent1.level_code}}</b> {{d.agent1.level_name||""}}')
+                        } else {
+                            tpls.push('<div class="color-desc ta-pt-20">未绑定上1级</div>')
+                        }
+                        return laytpl('<div class="flex">' + left + "<div>" + tpls.join('<br>') + "</div></div>").render(d);
+                    }
+                },
+                {
+                    title: '上2级头像', width: 95, align: 'center', templet: function (d) {
+                        if (!(d.agent2 && d.user2 && d.user2.headimg)) return '';
+                        return laytpl('<div>{{-showTableImage(d.user2.headimg,false,"md")}}</div>').render(d);
+                    }
+                },
+                {
+                    title: '上2级代理', minWidth: 180, templet: function (d) {
+                        let tpls = [];
+                        if (d.agent2 && d.user2) {
+                            tpls.push('账号：<b class="color-blue">{{d.user2.phone}}</b>')
+                            if (d.agent2.entry_agent > 0) {
+                                tpls.push('推广：<b class=color-blue>有推广权益</b></b>')
+                            } else {
+                                tpls.push('推广：<b class=color-desc>无推广权益</b></b>')
+                            }
+                            tpls.push('等级：<b class="color-blue">VIP{{d.agent2.level_code}}</b> {{d.agent2.level_name||""}}')
+                        } else {
+                            tpls.push('<div class="color-desc ta-pt-20">未绑定上2级</div>')
+                        }
+                        return laytpl(tpls.join('<br>')).render(d);
+                    }
+                },
+                {field: 'status', title: '账号状态', align: 'center', minWidth: 110, width: '5%', templet: '#StatusSwitchTpl'},
+                {toolbar: '#toolbar', title: '操作面板', align: 'center', minWidth: 150, width: '9%', fixed: 'right'}
+            ]]
+        }).trigger('tool', function (e) {
+            if (e.event === 'view') {
+                $.previewPhonePage('{:url("view")}?unid=' + e.data.unid, '模拟用户登录');
+            }
+        });
+
+        // 数据状态切换操作
+        layui.form.on('switch(StatusSwitch)', function (obj) {
+            let data = {id: obj.value, status: obj.elem.checked > 0 ? 1 : 0};
+            $.form.load("{:url('state')}", data, 'post', function (ret) {
+                let fn = () => $table.trigger('reload');
+                ret.code > 0 ? fn() : $.msg.error(ret.info, 3, fn);
+                return false;
+            }, false);
+        });
+    });
+</script>
+
+<!-- 数据状态切换模板 -->
+<script type="text/html" id="StatusSwitchTpl">
+    <div class="ta-pt-20"></div>
+    <!--{if auth("state")}-->
+    <input type="checkbox" value="{{d.unid}}" lay-skin="switch" lay-text="已激活|已禁用" lay-filter="StatusSwitch" {{-d.user.status>0?'checked':''}}>
+    <!--{else}-->
+    {{-d.status ? '<b class="color-green">已激活</b>' : '<b class="color-red">已禁用</b>'}}
+    <!--{/if}-->
+</script>
+
+<!-- 列表排序权重模板 -->
+<script type="text/html" id="SortInputTpl">
+    <div class="ta-pt-20"></div>
+    <input type="number" min="0" data-blur-number="0" data-action-blur="{:sysuri()}" data-value="id#{{d.id}};action#sort;sort#{value}" data-loading="false" value="{{d.sort}}" class="layui-input text-center">
+</script>
+
+<script type="text/html" id="toolbar">
+    <div class="flex-center full-height flex-wrap" style="margin-top:-5px">
+        <!--{if auth('edit')}-->
+        <a class="layui-btn layui-btn-sm ta-mr-10 ta-ml-0" data-modal="{:url('edit')}?unid={{d.unid}}" data-title="编辑用户">编 辑</a>
+        <!--{/if}-->
+        <!--{if auth('parent')}-->
+        <a class="layui-btn layui-btn-sm ta-mr-10 ta-ml-0" data-modal="{:url('parent')}" data-value="unid#{{d.unid}}" data-title="设置上级代理(不包含自己及下级)">上 级</a>
+        <!--{/if}-->
+        <!--{if auth('view')}-->
+        <a class="layui-btn layui-btn-sm ta-mr-10 ta-ml-0 layui-btn-normal" lay-event="view" data-value="unid#{{d.unid}}" data-title="模拟手机登录">登 录</a>
+        <!--{/if}-->
+        <!--{if auth('user.recharge/add')}-->
+        <a class="layui-btn layui-btn-sm ta-mr-10 ta-ml-0" data-modal="{:url('user.recharge/add')}" data-value="unid#{{d.unid}}" data-title="会员充值">充 值</a>
+        <!--{/if}-->
+    </div>
+</script>
+{/block}

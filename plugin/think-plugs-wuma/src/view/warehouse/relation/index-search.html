@@ -1,0 +1,36 @@
+<fieldset>
+    <legend>{:lang('条件搜索')}</legend>
+    <form action="{:sysuri()}" autocomplete="off" class="layui-form layui-form-pane form-search" method="get" onsubmit="return false">
+        <div class="layui-form-item layui-inline">
+            <label class="layui-form-label">大码数值</label>
+            <label class="layui-input-inline">
+                <input class="layui-input" name="max" value="{$get.max|default=''}" placeholder="请输入大码数值">
+            </label>
+        </div>
+
+        <div class="layui-form-item layui-inline">
+            <label class="layui-form-label">中码数值</label>
+            <label class="layui-input-inline">
+                <input class="layui-input" name="mid" value="{$get.mid|default=''}" placeholder="请输入中码数值">
+            </label>
+        </div>
+
+        <div class="layui-form-item layui-inline">
+            <label class="layui-form-label">小码数值</label>
+            <label class="layui-input-inline">
+                <input class="layui-input" name="min" value="{$get.min|default=''}" placeholder="请输入小码数值">
+            </label>
+        </div>
+
+        <div class="layui-form-item layui-inline">
+            <label class="layui-form-label">录入时间</label>
+            <label class="layui-input-inline">
+                <input data-date-range name="create_time" value="{$get.create_time|default=''}" placeholder="请选择录入时间" class="layui-input">
+            </label>
+        </div>
+
+        <div class="layui-form-item layui-inline">
+            <button class="layui-btn layui-btn-primary"><i class="layui-icon">&#xe615;</i> 搜 索</button>
+        </div>
+    </form>
+</fieldset>

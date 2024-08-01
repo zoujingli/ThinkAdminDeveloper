@@ -1,0 +1,58 @@
+{extend name='table'}
+
+{block name="content"}
+<div class="think-box-notify sub-strong-blue" type="info">
+    <strong>充值统计：</strong>累计已充值 <b>{$total}</b> 元
+</div>
+
+<div class="think-box-shadow">
+    {include file='user/recharge/index_search'}
+    <table id="RechargeTable" data-url="{:request()->url()}" data-target-search="form.form-search"></table>
+</div>
+{/block}
+
+{block name='script'}
+<script>
+    $(function () {
+        let $table = $('#RechargeTable').layTable({
+            even: true, height: 'full',
+            sort: {field: 'id', type: 'desc'},
+            cols: [[
+                {field: 'id', hide: true},
+                {
+                    title: '会员用户', minWidth: 80, width: '20%', templet: function (d) {
+                        return laytpl("<div>{{-showTableImage(d.user.headimg)}} <b>{{d.user.phone}}</b> {{d.user.nickname}}</div>").render(d);
+                    }
+                },
+                {field: 'amount', title: '充值金额', align: 'center', minWidth: 80, width: '15%'},
+                {field: 'name', title: '充值标题', align: 'center', minWidth: 80, width: '15%'},
+                {field: 'remark', title: '充值内容', align: 'center', minWidth: 80},
+                {field: 'create_time', title: '创建时间', align: 'center', minWidth: 170, width: '15%', sort: true},
+                {toolbar: '#toolbar', title: '操作面板', align: 'center', minWidth: 80, width: '10%', fixed: 'right'},
+            ]]
+        });
+
+        // 数据状态切换操作
+        layui.form.on('switch(StatusSwitch)', function (obj) {
+            let data = {id: obj.value, status: obj.elem.checked > 0 ? 1 : 0};
+            $.form.load("{:url('state')}", data, 'post', function (ret) {
+                let fn = () => $table.trigger('reload');
+                ret.code > 0 ? fn() : $.msg.error(ret.info, 3, fn)
+                return false;
+            }, false);
+        });
+    });
+</script>
+
+<!-- 列表排序权重模板 -->
+<script type="text/html" id="SortInputTpl">
+    <input type="number" min="0" data-blur-number="0" data-action-blur="{:sysuri()}" data-value="id#{{d.id}};action#sort;sort#{value}" data-loading="false" value="{{d.sort}}" class="layui-input text-center">
+</script>
+
+<!-- 数据操作工具条模板 -->
+<script type="text/html" id="toolbar">
+    <!--{if auth("remove")}-->
+    <a class="layui-btn layui-btn-danger layui-btn-sm" data-confirm="确定要删除吗?" data-action="{:url('remove')}" data-value="id#{{d.id}}">删 除</a>
+    <!--{/if}-->
+</script>
+{/block}

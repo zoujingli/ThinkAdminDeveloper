@@ -1,0 +1,171 @@
+{extend name="main"}
+
+{block name="button"}
+<button data-target-submit class='layui-btn layui-btn-sm'>保存数据</button>
+<button data-target-backup class="layui-btn layui-btn-sm layui-btn-danger" data-confirm="确认要取消编辑吗？">取消编辑</button>
+{/block}
+
+{block name='content'}
+<form action="{:sysuri()}" method="post" data-auto="true" class="layui-form layui-card" data-table-id="CouponConfigTable">
+    <div class="layui-card-body">
+
+        <label class="layui-form-item relative block">
+            <span class="help-label"><b>卡券名称</b>Coupon Name</span>
+            <input class="layui-input" name="name" placeholder="请输入卡券名称" required value='{$vo.name|default=""}'>
+        </label>
+
+        <div class="layui-form-item">
+            <div class="help-label label-required-prev"><b>卡券图标</b>Coupon Cover</div>
+            <div class="relative block">
+                <label class="label-required-null">
+                    <input class="layui-input layui-bg-gray" readonly data-tips-image data-tips-hover required pattern="url" vali-name="卡券图标" placeholder="请上传卡券图标" value="{$vo.cover|default=''}" name="cover">
+                </label>
+                <a class="layui-icon layui-icon-upload-drag input-right-icon" data-file="btn" data-type="gif,png,jpg,jpeg" data-field="cover"></a>
+            </div>
+        </div>
+
+        <div id="FormCoupon">
+            <!--{notempty name='types'}-->
+            <div class="layui-form-item">
+                <span class="help-label label-required-prev"><b>卡券类型</b>Coupon Type</span>
+                <div class="layui-textarea help-checks layui-bg-gray">
+                    {foreach $types as $k=>$v}
+                    <label class="think-radio">
+                        <input v-model="type" name="type" type="radio" value="{$k}" lay-ignore> {$v}
+                    </label>
+                    {/foreach}
+                </div>
+            </div>
+            <div class="layui-form-item" v-if="type==1" style="display:none" :style="{display:type==1?'block':''}">
+                <span class="help-label label-required-prev">
+                    <b>关联商品</b>Related Goods <a @click="choose" class="ta-ml-15">选择商品</a>
+                </span>
+                <div v-if="list.length>0" class="layui-textarea flex flex-wrap ta-pt-10 ta-pb-0">
+                    <div v-for="x in list" class="flex layui-bg-gray ta-p-10 border-radius-5 ta-mr-10 ta-mb-10 shadow-mini" style="min-width:400px">
+                        <div v-if="x.cover" :data-lazy-src="x.cover" data-tips-hover data-tips-image class="uploadimage" :style="{backgroundImage:'url('+x.cover+')'}" style="width:60px;height:60px"></div>
+                        <div class="flex-1 ta-ml-5">
+                            <div class="ta-p-5 font-w7">{{x.name}}</div>
+                            <div class="ta-p-5 color-desc">{{x.code}}</div>
+                        </div>
+                        <div>
+                            <div class="flex-y text-right">
+                                <a class="layui-icon layui-icon-close color-red" @click="remove(x)"></a>
+                                <div class="ta-mt-15">最低售价 <b>{{Number(x.price)}}</b> 元</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div v-if="list.length<1" class="layui-textarea flex-align-center layui-bg-gray">请选择该卡券关联的商品，<a @click="choose">选择商品</a></div>
+                <label class="layui-hide"><textarea class="layui-textarea" name="extra" readonly>{{JSON.stringify(list)}}</textarea></label>
+            </div>
+            <!--{/notempty}-->
+        </div>
+
+        <div class="layui-form-item">
+            <span class="help-label label-required-prev"><b>使用等级限制</b>Enable Levels</span>
+            <div class="layui-textarea help-checks layui-bg-gray">
+                {empty name='vo.limit_levels'}{php}$vo['limit_levels']=[];{/php}{/empty}
+                {foreach $levels as $l}
+                <label class="think-checkbox">
+                    {if in_array($l.number,$vo.limit_levels)}
+                    <input type="checkbox" name="limit_levels[]" value="{$l.number}" lay-ignore checked> {$l.name}
+                    {else}
+                    <input type="checkbox" name="limit_levels[]" value="{$l.number}" lay-ignore> {$l.name}
+                    {/if}
+                </label>
+                {/foreach}
+            </div>
+        </div>
+
+        <div class="flex flex-wrap">
+            <label class="layui-form-item ta-mr-15">
+                <span class="help-label label-required-prev nowrap"><b>卡券面值</b>Coupon Amount</span>
+                <input class="layui-input" type="number" name="amount" lay-precision="2" lay-affix="number" min="0" placeholder="请输入卡券金额" required value='{$vo.amount|default="0"}'>
+            </label>
+            <label class="layui-form-item ta-mr-15">
+                <span class="help-label label-required-prev nowrap"><b>门槛金额</b>Threshold Amount</span>
+                <input class="layui-input" type="number" name="limit_amount" lay-precision="2" lay-affix="number" min="0" placeholder="请输入卡券金额" required value='{$vo.limit_amount|default="0"}'>
+            </label>
+            <label class="layui-form-item ta-mr-15">
+                <span class="help-label label-required-prev nowrap"><b>有效时间 ( 天 )</b>填 0 永久有效</span>
+                <input class="layui-input" type="number" name="expire_days" lay-affix="number" min="0" placeholder="请输入有效时间" required value='{$vo.expire_days|default="0"}'>
+            </label>
+            <label class="layui-form-item ta-mr-15">
+                <span class="help-label label-required-prev nowrap"><b>每人限领数量</b>填 0 不限制</span>
+                <input class="layui-input" type="number" name="limit_times" lay-affix="number" min="0" placeholder="请输入每人限领数量" required value='{$vo.limit_times|default="0"}'>
+            </label>
+            <label class="layui-form-item ta-mr-15">
+                <span class="help-label label-required-prev nowrap"><b>卡券库存</b>累计已发 {$total_sales|default=0} 张</span>
+                <input class="layui-input" type="number" name="total_stock" lay-affix="number" min="0" placeholder="请输入卡券库存" required value='{$vo.total_stock|default="0"}'>
+            </label>
+        </div>
+
+        <div class="layui-form-item">
+            <span class="help-label label-required-prev"><b>卡券内容</b>Coupon Content</span>
+            <div class="relative block">
+                <textarea class="layui-hide" name="content" placeholder="请输入卡券内容">{$vo.content|default=''}</textarea>
+            </div>
+        </div>
+
+        <div class="layui-form-item">
+            <span class="help-label"><b>系统描述</b>System Remark</span>
+            <label class="relative block">
+                <textarea class="layui-textarea" name="remark" placeholder="请输入系统描述">{$vo.remark|default=''}</textarea>
+            </label>
+        </div>
+
+        <div class="hr-line-dashed"></div>
+        {notempty name='vo.id'}<input name='id' type='hidden' value='{$vo.id}'>{/notempty}
+
+        <div class="layui-form-item text-center">
+            <button class="layui-btn" type="submit">保存数据</button>
+            <button class="layui-btn layui-btn-danger" data-confirm="确定要取消编辑吗？" type='button' data-target-backup>取消编辑</button>
+        </div>
+
+    </div>
+</form>
+
+<label class="layui-hide">
+    <!-- 编辑时来自数据库的默认值-->
+    <textarea id="DefaData" class="layui-textarea">{$vo.extra|default=[]|json_encode}</textarea>
+</label>
+
+<script>
+    $(function () {
+        require(['vue', 'ckeditor'], (Vue) => {
+            window.createEditor('[name=content]')
+            let app = new Vue({
+                el: '#FormCoupon',
+                data: {
+                    type: parseInt('{$vo.type|default=0}'),
+                    list: JSON.parse($('#DefaData').val() || '[]')
+                },
+                methods: {
+                    // 移除该商品
+                    remove(x) {
+                        $.msg.confirm('确认要移除该商品吗？', function () {
+                            app.list.splice(app.list.indexOf(x), 1)
+                        })
+                    },
+                    // 商品选择器
+                    choose() {
+                        $.form.modal('{:url("shop.goods/select")}')
+                        window.setItemValue = (data) => {
+                            if (app.list.some(x => x.code === data.code)) {
+                                $.msg.error('该商品已存在！')
+                            } else {
+                                app.list.push({
+                                    code: data.code,
+                                    name: data.name,
+                                    price: data.price_selling,
+                                    cover: data.cover,
+                                })
+                            }
+                        }
+                    }
+                }
+            })
+        })
+    })
+</script>
+{/block}

@@ -1,0 +1,325 @@
+{extend name="main"}
+
+{block name="content"}
+<form class="layui-form layui-card" id="RuleForm" action="{:sysuri()}" data-auto="true" method="post">
+    <div class="layui-card-body" style="width:1024px">
+
+        <label class="layui-form-item block relative">
+            <span class="help-label"><b>赋码批次</b>Assign Batch</span>
+            <input class="layui-input think-bg-gray" readonly name="batch" maxlength="20" value="{$vo.batch|default=''}">
+        </label>
+
+        <div class="layui-form-item">
+            <span class="help-label"><b>物码批次</b>Coder Batch</span>
+            <div class="layui-input think-bg-gray">
+                {if $vo.coder.type eq 1}前关联{/if}{if $vo.coder.type eq 2}前关联{/if} - {$vo.coder.batch|default=''}
+                ( 包含 {$vo.coder.number} 个小码 ) [ {$vo.coder.min.range_start}, {$vo.coder.min.range_after} ] {$vo.coder.remark|default=''}
+            </div>
+        </div>
+
+        <div class="layui-row layui-col-space15">
+            <div class="layui-col-xs6 padding-col-0">
+                <div class="layui-form-item relative label-required-prev">
+                    <span class="help-label"><b>出货仓库</b>Warehouse</span>
+                    <select class="layui-select" name="wcode" lay-search>
+                        {foreach $warehouses as $a}
+                        <option value="{$a.code}">{$a.code} - {$a.name}</option>
+                        {/foreach}
+                    </select>
+                </div>
+            </div>
+            <div class="layui-col-xs6 padding-col-0">
+                <div class="layui-form-item relative label-required-prev">
+                    <span class="help-label"><b>自动虚拟入库</b>Auto Import</span>
+                    <div class="layui-input">
+                        {foreach ['不自动虚拟入库','需自动虚拟入库'] as $k=>$v}
+                        {assign name='vo.import' value='1'}
+                        <label class="think-radio">
+                            {if $vo.import eq $k}
+                            <input name="import" type="radio" value="{$k}" lay-ignore checked> {$v}
+                            {else}
+                            <input name="import" type="radio" value="{$k}" lay-ignore> {$v}
+                            {/if}
+                        </label>
+                        {/foreach}
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <fieldset id="VueData">
+            <legend><span class="layui-badge layui-bg-cyan">赋码分区</span></legend>
+            <div class="layui-form-item layui-hide">
+                <textarea class="layui-textarea layui-bg-gray" name="items">{{JSON.stringify(ranges)}}</textarea>
+            </div>
+            <div class="layui-row layui-col-space10">
+                <div class="layui-col-xs1 text-center help-label"><b>起始位置</b></div>
+                <div class="layui-col-xs1 text-center help-label"><b>结束位置</b></div>
+                <div class="layui-col-xs1 text-center help-label"><b>物码数量</b></div>
+                <div class="layui-col-xs4 help-label"><b>生产批次</b></div>
+                <div class="layui-col-xs4 help-label"><b>溯源模板</b></div>
+            </div>
+            <div class="layui-row layui-col-space10" v-for="(range,index) in ranges">
+                <div class="layui-col-xs1">
+                    <div class="layui-form-item block relative">
+                        <div class="layui-input think-bg-gray text-center padding-row-0" v-text="range.range_start"></div>
+                    </div>
+                </div>
+                <div class="layui-col-xs1">
+                    <div class="layui-form-item block relative">
+                        <div class="layui-input think-bg-gray text-center padding-row-0" v-text="range.range_after"></div>
+                    </div>
+                </div>
+                <div class="layui-col-xs1">
+                    <div class="layui-form-item block relative">
+                        <div class="layui-input think-bg-gray text-center padding-row-0" v-text="range.range_after-range.range_start+1"></div>
+                    </div>
+                </div>
+                <div class="layui-col-xs4">
+                    <div class="layui-form-item block relative">
+                        <div class="layui-input think-bg-gray nowrap layui-elip">
+                            {{range.pbatch || ''}} ( {{range.gname || ''}} - {{showSpec(range.gspec)}} )
+                        </div>
+                    </div>
+                </div>
+                <div class="layui-col-xs4">
+                    <div class="layui-form-item block relative">
+                        <div class="layui-input think-bg-gray nowrap layui-elip">
+                            {{range.tcode}} - {{range.tname || ''}}
+                        </div>
+                    </div>
+                </div>
+                <div class="layui-col-xs1 text-left nowrap">
+                    <div class="layui-input layui-bg-gray text-center padding-left-0 color-red" v-if="range.lock==2">已锁定</div>
+                    <div class="layui-input layui-bg-gray text-center padding-left-0 color-green" v-else>未锁定</div>
+                </div>
+                <div class="layui-col-xs12">
+                    <div class="layui-row layui-col-space10" v-for="(x,i) in range.items">
+                        <div class="layui-col-xs1">
+                            <label class="layui-form-item block relative" v-if="x.lock<1">
+                                <input v-model.number="x.min" :min="x.vmin" :max="x.max" @change="setSyn(range,x,i,0)" type="number" class="layui-input text-center padding-row-0">
+                            </label>
+                            <div class="layui-form-item relative" v-else>
+                                <div class="layui-input padding-left-0 layui-bg-gray text-center color-blue">{{x.min}}</div>
+                            </div>
+                        </div>
+                        <div class="layui-col-xs1">
+                            <label class="layui-form-item block relative" v-if="x.lock<1">
+                                <input v-model.number="x.max" :min="x.min" :max="x.vmax" @change="setSyn(range,x,i,1)" type="number" class="layui-input text-center padding-row-0">
+                            </label>
+                            <div class="layui-form-item relative" v-else>
+                                <div class="layui-input padding-left-0 layui-bg-gray text-center color-blue">{{x.max}}</div>
+                            </div>
+                        </div>
+                        <div class="layui-col-xs1">
+                            <label class="layui-form-item block relative" v-if="x.lock<1">
+                                <input v-model.number="x.num" :min="1" @change="setNum(range,x,i,1)" type="number" class="layui-input text-center padding-row-0">
+                            </label>
+                            <div class="layui-form-item relative" v-else>
+                                <div class="layui-input padding-left-0 layui-bg-gray text-center color-blue">{{x.num}}</div>
+                            </div>
+                        </div>
+                        <div class="layui-col-xs3">
+                            <div class="layui-form-item relative" v-if="x.lock<2">
+                                <input class="layui-input" placeholder="请选择收货代理" readonly :value="x.agent?(x.aphone+'&ensp;'+x.ausername):''">
+                                <div class="input-right-icon pointer" @click="showAgent(x)">
+                                    <i class="layui-icon layui-icon-user" data-tips-text="选择代理用户"></i>
+                                </div>
+                            </div>
+                            <div class="layui-form-item relative" v-else>
+                                <div class="layui-input layui-bg-gray text-left color-blue">
+                                    {{x.agent ? (x.aphone + '&ensp;' + x.ausername) : ''}}
+                                </div>
+                            </div>
+                        </div>
+                        <div class="layui-col-xs4">
+                            <div v-if="x.lock>1">
+                                <div class="layui-btn layui-btn-disabled">已出货</div>
+                                <div class="layui-btn layui-btn-disabled">删&ensp;&ensp;除</div>
+                            </div>
+                            <div v-else>
+                                <div class="layui-btn layui-btn-primary" v-if="x.lock==0" @click="setLock(x)">确&ensp;&ensp;认</div>
+                                <div class="layui-btn layui-btn-normal" v-if="x.lock==1" @click="setLock(x)">已锁定</div>
+                                <div class="layui-btn layui-btn-primary" @click="moveRm(range,i)">删&ensp;&ensp;除</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="layui-col-xs12" v-if="ranges.length>index+1">
+                    <hr>
+                </div>
+            </div>
+        </fieldset>
+
+        <div class="hr-line-dashed margin-top-40"></div>
+        {notempty name='vo.id'}<input name="id" type="hidden" value="{$vo.id}">{/notempty}
+
+        <div class="layui-form-item text-center">
+            <button class="layui-btn" type='submit'>确认出货</button>
+            <button class="layui-btn layui-btn-danger" type='button' data-confirm="确定要取消编辑吗？" data-target-backup>取消编辑</button>
+        </div>
+    </div>
+</form>
+
+<label class="layui-hide">
+    <textarea id="OuterItemJson" class="layui-textarea layui-bg-cyan">{$vo.outer_items|default='[]'}</textarea>
+    <textarea id="CoderItemJson" class="layui-textarea layui-bg-cyan">{$vo.range|json_encode|default='[]'}</textarea>
+</label>
+
+<script>
+    require(['vue'], function (Vue) {
+        new Vue({
+            el: '#VueData',
+            data: {
+                vmin: parseInt('{$vo.coder.min.range_start|default="0"}'),
+                vmax: parseInt('{$vo.coder.min.range_after|default="0"}'),
+                outers: JSON.parse(document.getElementById('OuterItemJson').value) || [],
+                ranges: JSON.parse(document.getElementById('CoderItemJson').value) || [],
+            },
+            created: function () {
+                this.ranges.forEach(range => {
+                    range.items = [];
+                    this.outers.forEach(r => r.items.forEach(i => range.range_start <= i.min && i.min <= range.range_after && range.items.push(this.setLimit(range, i))));
+                    range.items.length < 1 && this.addRow(range, 0, 'init')
+                });
+            },
+            methods: {
+                // 同步批次计算
+                sync: function (item) {
+                    item.num = item.max - item.min + 1;
+                    item.bnum = item.bmax - item.bmin + 1;
+                    item.vnum = item.vmax - item.vmin + 1;
+                    this.ranges.some((v) => {
+                        if (v.range_start <= item.min && item.min <= v.range_after) {
+                            return Object.assign(item, {ghash: v.ghash, gspec: v.gspec, gname: v.gname, batch: v.pbatch}) !== false;
+                        }
+                    });
+                    return this;
+                },
+                // 标签位置变化
+                setSyn: function (range, item, index, mode) {
+                    if (mode < 1) {
+                        if (item.min > item.max) item.min = item.max;
+                        if (item.min < item.vmin) item.min = item.vmin;
+                        item.num = item.max - item.min + 1;
+                        if (index > 0) {
+                            let prev = range.items[index - 1];
+                            if (prev.lock < 1) this.sync(Object.assign(prev, {max: item.min - 1}));
+                            else if (item.min >= prev.max) this.addRow(range, index, 'prev');
+                            else item.min = prev.max + 1;
+                        } else {
+                            item.vmin = item.max - item.num + 1;
+                            item.min > item.bmin && this.addRow(range, index, 'firs');
+                        }
+                    } else {
+                        if (item.max < item.min) item.max = item.min;
+                        if (item.max > item.vmax) item.max = item.vmax;
+                        item.num = item.max - item.min + 1;
+                        if (range.items.length > index + 1) {
+                            let next = range.items[index + 1];
+                            if (next.lock < 1) this.sync(Object.assign(next, {min: item.max + 1}));
+                            else if (item.max < next.min) this.addRow(range, index + 1, 'next');
+                            else item.max = next.min - 1;
+                        } else {
+                            item.vmax = item.min + item.num - 1;
+                            item.max < item.bmax && this.addRow(range, index + 1, 'last')
+                        }
+                    }
+                    if (item.vmax > item.bmax) item.vmax = item.bmax;
+                    if (item.vmin < item.bmin) item.vmin = item.bmin;
+                    this.sync(item).$forceUpdate();
+                },
+                // 标签数量变化
+                setNum: function (range, item, index, mode) {
+                    if (item.min + item.num > item.vmax) {
+                        item.num = item.vnum;
+                    }
+                    item.max = item.min + item.num - 1;
+                    this.setSyn(range, item, index, mode)
+                },
+                // 切换锁定状态
+                setLock: function (item) {
+                    if ((item.agent || 0) < 1) {
+                        $.msg.tips('请选择代理用户！', 1, () => this.showAgent(item, 1));
+                    } else {
+                        item.lock = item.lock ? 0 : 1;
+                        this.$forceUpdate();
+                    }
+                },
+                // 设置范围限制
+                setLimit: function (range, item) {
+                    return Object.assign(item, {
+                        bmin: range.range_start || 0,
+                        bmax: range.range_after || 0,
+                        vmin: item.vmin < range.range_start ? range.range_start : item.vmin,
+                        vmax: item.vmax > range.range_after ? range.range_after : item.vmax,
+                    });
+                },
+                // 查询代理信息
+                showAgent: function (item, lock) {
+                    let that = this;
+                    window.setItemValue = function (v) {
+                        item.agent = v.id;
+                        item.aphone = v.phone;
+                        item.ausername = v.username;
+                        if (lock) item.lock = lock;
+                        that.$forceUpdate();
+                    };
+                    $.form.modal('{:url("agent/user/select")}', {}, '选择代理', null, true, '', '880px')
+                },
+                // 创建新分区
+                addRow: function (range, index, desc) {
+                    let one = [], two = [], item = {
+                        min: range.range_start || 0,
+                        max: range.range_after || 0,
+                        bmin: range.range_start || 0,
+                        bmax: range.range_after || 0,
+                        vmin: range.range_start || 0,
+                        vmax: range.range_after || 0,
+                        lock: 0,
+                    };
+                    if (range.items.length > 0) {
+                        one = range.items.slice(0, index);
+                        two = range.items.slice(index, range.items.length);
+                    }
+                    console.log(desc, one, two)
+                    if (one.length > 0) {
+                        let prev = one[one.length - 1];
+                        Object.assign(item, {min: prev.max + 1, vmin: (prev.lock > 0 ? prev.max : prev.min) + 1});
+                    }
+                    if (two.length > 0) {
+                        let next = two[0];
+                        Object.assign(item, {max: next.min - 1, vmax: (next.lock > 0 ? next.min : next.max) - 1});
+                    }
+                    if (item.vmin > item.vmax) return; else one.push(item);
+                    range.items = one.concat(two);
+                    return this.sync(item);
+                },
+                // 删除分区对象
+                moveRm: function (range, index) {
+                    let prev, next, done, item = range.items[index];
+                    if (item.lock > 1) return $.msg.tips('已出货！');
+                    if (!done && index > 0 && (prev = range.items[index - 1]).lock < 1) {
+                        Object.assign(prev, {max: item.max, vmax: item.vmax});
+                        done = this.sync(prev) && range.items.splice(index, 1);
+                    }
+                    if (!done && index < range.items.length - 1) {
+                        if ((next = range.items[index + 1]).lock < 1) {
+                            Object.assign(next, {min: item.min, vmin: item.vmin});
+                            done = this.sync(next) && range.items.splice(index, 1);
+                        } else {
+                            range.items.splice(index, 1);
+                            done = !!this.addRow(range, index, 'redo');
+                        }
+                    }
+                    if (!done) {
+                        range.items.splice(index, 1) &&
+                        this.addRow(range, index, 'redo');
+                    }
+                    this.$forceUpdate();
+                }
+            }
+        });
+    });
+</script>
+{/block}

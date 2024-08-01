@@ -1,0 +1,37 @@
+{extend name="main"}
+
+{block name="button"}
+<button data-target-submit class='layui-btn layui-btn-sm'>保存数据</button>
+<button data-target-backup class="layui-btn layui-btn-sm layui-btn-danger" data-confirm="确认要取消编辑吗？">取消编辑</button>
+{/block}
+
+{block name='content'}
+<form action="{:sysuri()}" method="post" class="layui-form layui-card" data-auto="true" data-table-id="ProblemData">
+    <div class="layui-card-body">
+
+        <label class="layui-form-item relative block">
+            <span class="help-label"><b>问题标题</b>Problem Name</span>
+            <input class="layui-input" name="name" placeholder="请输入文章标题" required value='{$vo.name|default=""}'>
+        </label>
+
+        <label class="layui-form-item relative block">
+            <span class="help-label"><b>问题答案</b>Problem Remark</span>
+            <textarea style="height:300px" class="layui-textarea" name="content" placeholder="请输入问题回复" required>{$vo.content|default=''}</textarea>
+        </label>
+
+        <div class="hr-line-dashed"></div>
+        {notempty name='vo.id'}<input name='id' type='hidden' value='{$vo.id}'>{/notempty}
+
+        <div class="layui-form-item text-center">
+            <button class="layui-btn" type="submit">保存数据</button>
+            <button class="layui-btn layui-btn-danger" data-close type='button' data-confirm="确定要取消编辑吗？">取消编辑</button>
+        </div>
+    </div>
+</form>
+
+<script>
+    require(['ckeditor'], function () {
+        window.createEditor('[name=content]', {height: 550});
+    });
+</script>
+{/block}

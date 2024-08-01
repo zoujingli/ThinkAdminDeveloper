@@ -1,0 +1,209 @@
+{extend name="main"}
+
+{block name="content"}
+<form class="layui-form layui-card" action="{:sysuri()}" data-auto="true" method="post">
+    <div class="layui-card-body">
+
+        <label class="layui-form-item block relative">
+            <span class="help-label"><b>区块链编号</b>Blockchain Code</span>
+            <input class="layui-input think-bg-gray" readonly required name="code" placeholder="请输入区块链编号" value="{$vo.code|default=''}">
+        </label>
+
+        <div class="layui-form-item">
+            <span class="help-label"><b>关联确权证书</b>Certificate Name</span>
+            <select class="layui-select" name="scid" lay-search>
+                <option value="">--- 请选择确权证书 ---</option>
+                {foreach $certs as $cert}{if isset($vo.scid) and $vo.scid eq $vo.scid}
+                <option selected value="{$cert.id}">{$cert.code} - {$cert.name}</option>
+                {else}
+                <option value="{$cert.id}">{$cert.code} - {$cert.name}</option>
+                {/if}{/foreach}
+            </select>
+        </div>
+
+        <label class="layui-form-item block relative">
+            <span class="help-label"><b>区块链名称</b>Blockchain Name</span>
+            <input class="layui-input" name="name" placeholder="请输入区块链名称" required value="{$vo.name|default=''}">
+        </label>
+
+        <div class="layui-form-item label-required-prev" id="VueApp">
+            <span class="help-label"><b>区块链流程环节</b>Blockchain Segment</span>
+            <div class="text-center layui-textarea border-radius-5">
+                <div class="padding-20"></div>
+                <div class="padding-5">
+                    <i class="layui-icon layui-icon-diamond color-blue font-s40"></i>
+                </div>
+                <div v-for="(item, idx) in items">
+                    <div class="padding-5">
+                        <div style="transform:rotate(90deg);">
+                            <i class="layui-icon layui-icon-next"></i>
+                        </div>
+                    </div>
+                    <div class="layui-row layui-input margin-top-5 text-center inline-block shadow-inset" style="width:350px">
+                        <div class="layui-col-xs3 text-center">{{ idx + 1 }}</div>
+                        <div class="layui-col-xs6">{{ item.title }}</div>
+                        <div class="layui-col-xs3">
+                            <a @click="form(item)">编辑</a>
+                            <a class="margin-left-10" @click="items.splice(idx,1)">删除</a>
+                        </div>
+                    </div>
+                </div>
+                <div class="padding-5">
+                    <div style="transform:rotate(90deg); ">
+                        <i class="layui-icon layui-icon-next" style="opacity:0.5"></i>
+                    </div>
+                </div>
+                <div>
+                    <div class="color-desc">请添加流程环节</div>
+                    <button @click="form(false)" type="button" class="margin-top-10 layui-btn layui-btn-primary" style="width:200px">添 加</button>
+                </div>
+                <div class="padding-20"></div>
+            </div>
+            <label class='layui-form-item margin-top-10 layui-hide'>
+                <textarea class="layui-textarea layui-bg-cyan" name="data" readonly>{{JSON.stringify(items)}}</textarea>
+            </label>
+        </div>
+
+        <label class="layui-form-item block relative">
+            <span class="help-label"><b>区块链备注</b>Blockchain remarks</span>
+            <textarea class="layui-textarea" name="remark" placeholder="请输入区块链备注">{$vo.remark|default=''|raw}</textarea>
+        </label>
+
+        <div class="hr-line-dashed margin-top-40"></div>
+        {notempty name='vo.id'}<input name="id" type="hidden" value="{$vo.id}">{/notempty}
+
+        <div class="layui-form-item text-center">
+            <button class="layui-btn" type='submit'>保存数据</button>
+            <button class="layui-btn layui-btn-danger" type='button' data-confirm="确定要取消编辑吗？" data-target-backup>取消编辑</button>
+        </div>
+    </div>
+</form>
+
+<div class="layui-hide" id="formset">
+    <form onsubmit="return false" class="layui-form layui-card" method="post" autocomplete="off">
+
+        <div class="layui-card-body padding-left-40">
+
+            <label class="layui-form-item relative block">
+                <span class="help-label"><b>环节名称</b>Name</span>
+                <input type="text" name="title" value='{$vo.title|default=""}' required placeholder="请输入环节名称" class="layui-input">
+            </label>
+
+            <label class="layui-form-item relative block">
+                <span class="help-label"><b>环节内容</b>Content</span>
+                <textarea required placeholder="请输入环节内容" class="layui-textarea" name="content">{$vo.content|default=""}</textarea>
+            </label>
+
+            <label class="layui-form-item relative block">
+                <span class="help-label"><b>录入时间</b>Datetime</span>
+                <input type="text" name="datetime" data-date-input="datetime" value='{:date("Y-m-d H:i:s")}' required placeholder="请输入录入时间" class="layui-input">
+            </label>
+
+            <div class="layui-form-item">
+                <div class="help-label label-required-prev"><b>图片视频</b>Attachment</div>
+                <div class="notselect">
+                    <label class="think-radio">
+                        <input type="radio" name="fileType" lay-ignore value="null"> 无
+                    </label>
+                    <label class="think-radio">
+                        <input type="radio" name="fileType" lay-ignore value="image"> 纯图片
+                    </label>
+                    <label class="think-radio">
+                        <input type="radio" name="fileType" lay-ignore value="video"> 视频
+                    </label>
+                    <label class="think-radio">
+                        <input type="radio" name="fileType" lay-ignore value="imagevideo"> 图片加视频
+                    </label>
+                </div>
+            </div>
+
+            <div class="layui-form-item">
+                <div class="layui-form-item layui-hide" data-upload-type="image">
+                    <span class="help-label label-required-prev"><b>上传图片</b>Upload Image</span>
+                    <label class="block relative label-required-null">
+                        <input class="layui-input layui-bg-gray" name='fileImage' required readonly placeholder="请上传图片文件">
+                        <a data-upload-image-button data-type="png,jpg,gif" class="input-right-icon layui-icon layui-icon-upload"></a>
+                    </label>
+                </div>
+                <div class="layui-form-item layui-hide" data-upload-type="video">
+                    <span class="help-label label-required-prev"><b>上传视频</b>Upload Video</span>
+                    <label class="block relative label-required-null">
+                        <input class="layui-input layui-bg-gray" name="fileVideo" required readonly placeholder="请上传视频文件">
+                        <a data-upload-video-button data-type="mp4" class="input-right-icon layui-icon layui-icon-upload"></a>
+                    </label>
+                </div>
+            </div>
+
+        </div>
+
+        <div class="hr-line-dashed"></div>
+
+        <div class="layui-form-item text-center">
+            <button class="layui-btn" type='submit'>保存数据</button>
+            <button class="layui-btn layui-btn-danger" type='button' data-confirm="确定要取消编辑吗？" data-close>取消编辑</button>
+        </div>
+    </form>
+</div>
+
+<label class="layui-hide">
+    <textarea id="formdata">{$vo.data|default='[]'}</textarea>
+</label>
+
+<script>
+    require(['vue'], function (vue) {
+        window.VueApp = new vue({
+            el: '#VueApp',
+            data: {item: {}, items: []},
+            created: function () {
+                this.items = JSON.parse($('#formdata').val());
+            },
+            methods: {
+                form: function (item) {
+                    this.item = item;
+                    layui.layer.open({
+                        type: 1,
+                        area: '800px',
+                        title: '编辑流程环节',
+                        content: $('#formset').html(),
+                        shadeClose: false,
+                        success: function ($dom, idx) {
+                            // 文件上传切换
+                            $dom.find('input[name=fileType]').on('change', function () {
+                                (function (type, $image, $video) {
+                                    type.indexOf('image') > -1 ? $image.removeClass('layui-hide') : $image.addClass('layui-hide');
+                                    type.indexOf('video') > -1 ? $video.removeClass('layui-hide') : $video.addClass('layui-hide');
+                                })($dom.find('input[name=fileType]:checked').val(), $('[data-upload-type=image]'), $('[data-upload-type=video]'));
+                            });
+                            // 文件上传控制
+                            $dom.find('[data-upload-image-button]').uploadFile(function (ret) {
+                                $(this).prevAll('input').val(ret);
+                            });
+                            $dom.find('[data-upload-video-button]').uploadFile(function (ret) {
+                                $(this).prevAll('input').val(ret);
+                            });
+                            // 动态绑定数据
+                            item ? layui.each(item, function (key, value) {
+                                if (key === 'fileType') $dom.find('[name=fileType][value=' + value + ']').click();
+                                else $dom.find('[name=' + key + ']').val(value)
+                            }) : $dom.find('[name=fileType]:first').click();
+                            // 表单事件处理
+                            $.form.reInit($dom).one('click', '[data-close]', function () {
+                                layer.close(idx);
+                            }).find('form').vali(function (ret) {
+                                return layer.close(idx), VueApp.edit(ret, item), false;
+                            });
+                        }
+                    });
+                },
+                // 增加或更新数据记录
+                edit: function (NEW, OLD) {
+                    OLD ? this.items.forEach(function (item, index) {
+                        if (item === VueApp.item) VueApp.items[index] = NEW;
+                    }) : this.items.push(NEW)
+                    this.$forceUpdate();
+                }
+            }
+        });
+    });
+</script>
+{/block}

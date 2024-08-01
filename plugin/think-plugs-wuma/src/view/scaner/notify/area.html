@@ -1,0 +1,43 @@
+{extend name="table"}
+
+{block name="content"}
+<div class="think-box-shadow">
+    {include file='scaner/notify/area-search'}
+    <table id="QueryData" data-url="{:sysuri()}" data-target-search="form.form-search"></table>
+</div>
+{/block}
+
+{block name='script'}
+<!-- 数据操作工具条模板 -->
+<script type="text/html" id="toolbar">
+    <!-- {if empty($get.prov) && empty($get.city) && empty($get.area)} -->
+    <a class="layui-btn layui-btn-primary layui-btn-sm" data-open='{:url("area")}?prov={{d.agent_prov}}'>查看城市</a>
+    <!-- {elseif !empty($get.prov) && empty($get.city) && empty($get.area)} -->
+    <a class="layui-btn layui-btn-primary layui-btn-sm" data-open='{:url("area")}?prov={{d.agent_prov}}&city={{d.agent_city}}'>查看区域</a>
+    <!-- {else} -->
+    <a class="layui-btn layui-btn-primary layui-btn-sm" data-open='{:url("index")}?region_prov={{d.agent_prov}}&region_city={{d.agent_city}}&region_area={{d.agent_area}}'>查看明细</a>
+    <!-- {/if} -->
+</script>
+
+<script>
+    $(function () {
+        // 初始化表格组件
+        $('#QueryData').layTable({
+            even: true, height: 'full',
+            sort: {field: 'total', type: 'desc'},
+            cols: [[
+                {field: 'agent_prov', title: '省份', align: 'center', minWidth: 200},
+                /* {if !empty($get.prov)} */
+                {field: 'agent_city', title: '城市', align: 'center', minWidth: 200},
+                /* {/if} */
+                /* {if !empty($get.city)} */
+                {field: 'agent_area', title: '区域', align: 'center', minWidth: 200},
+                /* {/if} */
+                {field: 'total', title: '窜货标签', align: 'center', minWidth: 130, sort: true},
+                {field: 'query', title: '扫码次数', align: 'center', minWidth: 130, sort: true},
+                {toolbar: '#toolbar', title: '操作面板', align: 'center', minWidth: 210, fixed: 'right'},
+            ]]
+        });
+    });
+</script>
+{/block}

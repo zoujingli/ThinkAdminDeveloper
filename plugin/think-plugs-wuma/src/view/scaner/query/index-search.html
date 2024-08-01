@@ -1,0 +1,37 @@
+<fieldset>
+    <legend>{:lang('条件搜索')}</legend>
+    <form action="{:sysuri()}" autocomplete="off" class="layui-form layui-form-pane form-search" method="get" onsubmit="return false">
+
+        <div class="layui-form-item layui-inline">
+            <label class="layui-form-label">商品标签</label>
+            <label class="layui-input-inline">
+                <input class="layui-input" name="encode" value="{$get.encode|default=''}" placeholder="请输入商品标签">
+            </label>
+        </div>
+
+        <div class="layui-form-item layui-inline">
+            <label class="layui-form-label">所在区域</label>
+            <label class="layui-input-inline">
+                <input class="layui-input" name="area" value="{$get.area|default=''}" placeholder="请输入所在区域">
+            </label>
+        </div>
+
+        <div class="layui-form-item layui-inline">
+            <label class="layui-form-label">详细地址</label>
+            <label class="layui-input-inline">
+                <input class="layui-input" name="addr" value="{$get.addr|default=''}" placeholder="请输入详细地址">
+            </label>
+        </div>
+
+        <div class="layui-form-item layui-inline">
+            <label class="layui-form-label">查询时间</label>
+            <label class="layui-input-inline">
+                <input data-date-range name="create_time" value="{$get.create_time|default=''}" placeholder="请选择查询时间" class="layui-input">
+            </label>
+        </div>
+
+        <div class="layui-form-item layui-inline">
+            <button class="layui-btn layui-btn-primary"><i class="layui-icon">&#xe615;</i> 搜 索</button>
+        </div>
+    </form>
+</fieldset>

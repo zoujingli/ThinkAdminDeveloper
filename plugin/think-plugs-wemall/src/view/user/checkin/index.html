@@ -1,0 +1,42 @@
+{extend name='table'}
+
+{block name='button'}
+<!--{if auth("config")}-->
+<button class='layui-btn layui-btn-sm layui-btn-primary' data-table-id="DataTable" data-open='{:url("config")}'>签到配置</button>
+<!--{/if}-->
+{/block}
+
+{block name="content"}
+<div class="think-box-shadow">
+    {include file='user/checkin/index_search'}
+    <table id="DataTable" data-url="{:request()->url()}" data-target-search="form.form-search"></table>
+</div>
+{/block}
+
+{block name='script'}
+<script>
+    $(function () {
+        // 初始化表格组件
+        $('#DataTable').layTable({
+            even: true, height: 'full',
+            sort: {field: 'id', type: 'desc'},
+            cols: [[
+                {field: 'id', hide: true},
+                // {checkbox: true, fixed: true},
+                {
+                    title: '会员用户', minWidth: 80, width: '20%', templet: function (d) {
+                        return laytpl("<div>{{-showTableImage(d.user.headimg)}} <b>{{d.user.phone}}</b> {{d.user.nickname}}</div>").render(d);
+                    }
+                },
+                {field: 'date', title: '签到日期', align: 'center', minWidth: 110},
+                {title: '连续签到', align: 'center', minWidth: 110, templet: "<div>连续 {{d.times}} 天</div>"},
+                {title: '奖励规则', align: 'center', minWidth: 110, templet: "<div>第 {{d.timed}} 天</div>"},
+                {title: '签到奖励', align: 'center', minWidth: 110, templet: "<div>奖励 {{Number(d.integral)}} 积分</div>"},
+                {title: '签到奖励', align: 'center', minWidth: 110, templet: "<div>余额 {{Number(d.balance)}} 元</div>"},
+                {field: 'create_time', title: '创建时间', align: 'center', minWidth: 170, sort: true},
+                // {toolbar: '#toolbar', title: '操作面板', align: 'center', minWidth: 140, fixed: 'right'},
+            ]]
+        });
+    });
+</script>
+{/block}

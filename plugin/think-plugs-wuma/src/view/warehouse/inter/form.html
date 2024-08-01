@@ -1,0 +1,77 @@
+<form data-table-id="HouseTable" class="layui-form layui-card" action="{:sysuri()}" data-auto="true" method="post">
+    <div class="layui-card-body padding-left-40">
+
+        <label class="layui-form-item block relative">
+            <span class="help-label"><b>入库单号</b>Order Code</span>
+            <input class="layui-input" name="code" maxlength="20" placeholder="请输入入库单号" required value="{$vo.code|default=''}">
+        </label>
+
+        <div class="layui-form-item">
+            <span class="help-label label-required-prev"><b>入库类型</b>Order Mode</span>
+            <div class="layui-input">
+                {if empty($vo.mode)}{assign name='vo.mode' value='1'}{/if}
+                {foreach [1=>'扫码入库',2=>'虚拟入库'] as $k=>$v}
+                <label class="think-radio">
+                    {if $vo.mode eq $k}
+                    <input checked type="radio" name="mode" value="{$k}" lay-ignore> {$v}
+                    {else}
+                    <input type="radio" name="mode" value="{$k}" lay-ignore> {$v}
+                    {/if}
+                </label>
+                {/foreach}
+            </div>
+        </div>
+
+        <!--{notempty name='products'}-->
+        <div class="layui-form-item block relative">
+            <div class="help-label label-required-prev"><b>关联产品</b>Related Products</div>
+            <select class="layui-select" name="ghash" lay-search>
+                {foreach $products as $product}{notempty name='product.items'}
+                <optgroup label="{$product.code} - {$product.name}">
+                    {foreach $product.items as $item}
+                    {if isset($vo.ghash) and $item.ghash eq $vo.ghash}
+                    <option selected value="{$item.ghash}">{$product.code} - {$product.name} # {$item.gspec|show_gspec}</option>
+                    {else}
+                    <option value="{$item.ghash}">{$product.code} - {$product.name} # {$item.gspec|show_gspec}</option>
+                    {/if}
+                    {/foreach}
+                </optgroup>
+                {/notempty}{/foreach}
+            </select>
+        </div>
+        <!--{/notempty}-->
+
+        <label class="layui-form-item block relative">
+            <b class="color-green">入库数量</b><span class="color-desc margin-left-5">Storage Quantity</span>
+            <input class="layui-input" type="number" name="num_need" maxlength="20" data-blur-number="0" placeholder="请输入入库数量" required value="{$vo.num_need|default='100'}">
+        </label>
+
+        <div class="layui-form-item">
+            <b class="color-green label-required-prev">指定入库仓库</b>
+            <span class="color-desc margin-left-5">Warehouse</span>
+            <select class="layui-select" name="wcode" lay-search>
+                {foreach $warehouses as $v}
+                <option value="{$v.code}">{$v.code}（ {$v.name} ）</option>
+                {/foreach}
+            </select>
+        </div>
+
+        <label class="layui-form-item block">
+            <b class="color-green">入库订单备注</b>
+            <span class="color-desc margin-left-5">Notes of Stock in Order</span>
+            <textarea class="layui-textarea" name="remark" placeholder="请输入入库备注">{$vo.remark|default=''|raw}</textarea>
+        </label>
+
+    </div>
+
+    {notempty name='vo.id'}<input name="id" type="hidden" value="{$vo.id}">{/notempty}
+
+    <div class="layui-form-item text-center">
+        <button class="layui-btn" type='submit'>保存数据</button>
+        <button class="layui-btn layui-btn-danger" type='button' data-confirm="确定要取消编辑吗？" data-close>取消编辑</button>
+    </div>
+</form>
+
+<label class="layui-textarea layui-hide" id="ProductData">
+    <textarea class="layui-textarea">{$products|default=''|json_encode}</textarea>
+</label>

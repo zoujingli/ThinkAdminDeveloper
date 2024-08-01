@@ -1,0 +1,500 @@
+{extend name="main"}
+
+{block name="button"}
+<button data-target-submit class='layui-btn layui-btn-sm'>保存数据</button>
+<button data-target-backup class="layui-btn layui-btn-sm layui-btn-danger" data-confirm="确认要取消编辑吗？">取消编辑</button>
+{/block}
+
+{block name="content"}
+{include file='shop/goods/form_style'}
+<form action="{:sysuri()}" method="post" data-auto="true" class="layui-form layui-card">
+    <div class="layui-card-body">
+
+        <!--{notempty name='marks'}-->
+        <div class="layui-form-item">
+            <span class="help-label label-required-prev"><b>商品标签</b>Goods Mark</span>
+            <div class="layui-textarea help-checks">
+                {foreach $marks as $mark}
+                <label class="think-checkbox">
+                    {if isset($vo.marks) && is_array($vo.marks) && in_array($mark, $vo.marks)}
+                    <input name="marks[]" type="checkbox" value="{$mark}" lay-ignore checked> {$mark}
+                    {else}
+                    <input name="marks[]" type="checkbox" value="{$mark}" lay-ignore> {$mark}
+                    {/if}
+                </label>
+                {/foreach}
+            </div>
+        </div>
+        <!--{/notempty}-->
+
+        <!--{notempty name='cates'}-->
+        <div class="layui-form-item block relative">
+            <span class="help-label label-required-prev"><b>所属分类</b>Category Name</span>
+            <select class="layui-select" lay-search name="cates">
+                {foreach $cates as $cate}{if in_array($cate.id, $vo.cates)}
+                <option selected value="{:arr2str($cate.ids)}">{:join(' ＞ ', $cate.names)}</option>
+                {else}
+                <option value="{:arr2str($cate.ids)}">{:join(' ＞ ', $cate.names)}</option>
+                {/if}{/foreach}
+            </select>
+        </div>
+        <!--{/notempty}-->
+
+        <label class="layui-form-item block relative">
+            <span class="help-label"><b>商品名称</b>Product Name</span>
+            <input class="layui-input" name="name" placeholder="请输入商品名称" vali-name="商品名称" required value="{$vo.name|default=''}">
+        </label>
+
+        <div class="layui-form-item">
+            <span class="help-label label-required-prev"><b>商品封面及轮播图片</b>Cover and Pictures</span>
+            <table class="layui-table">
+                <thead>
+                <tr>
+                    <th class="text-center">商品封面</th>
+                    <th class="full-width">轮播图片 <span class="color-desc font-w1">( 轮播图片推荐的宽高比为 5:3 )</span></th>
+                </tr>
+                <tr>
+                    <td class="text-center text-top ta-p-0">
+                        <div class="help-images">
+                            <input name="cover" data-max-width="500" data-max-height="500" type="hidden" value="{$vo.cover|default=''}">
+                            <script>$('[name="cover"]').uploadOneImage();</script>
+                        </div>
+                    </td>
+                    <td class="text-left ta-p-0">
+                        <div class="help-images">
+                            <input name="slider" data-max-width="2048" data-max-height="1024" type="hidden" value="{$vo.slider|default=''}">
+                            <script>$('[name="slider"]').uploadMultipleImage();</script>
+                        </div>
+                    </td>
+                </tr>
+                </thead>
+            </table>
+        </div>
+
+        <div class="layui-form-item block relative">
+            <span class="help-label label-required-prev"><b>物流配送</b>Express Template</span>
+            <select class="layui-select" name="delivery_code" lay-search>
+                {foreach $deliverys as $delivery}{if isset($vo.delivery_code) and $vo.delivery_code eq $delivery.code}
+                <option selected value="{$delivery.code}">[ {$delivery.code} ] {$delivery.name|default=''}{notempty name='delivery.company'} ( {:join('、',$delivery.company)} ){/notempty}</option>
+                {else}
+                <option value="{$delivery.code}">[ {$delivery.code} ] {$delivery.name|default=''}{notempty name='delivery.company'} ( {:join('、',$delivery.company)} ){/notempty}</option>
+                {/if}{/foreach}
+            </select>
+        </div>
+
+        <div class="goods-item-box">
+            <div class="flex flex-wrap">
+
+                <fieldset class="layui-bg-gray">
+                    <legend><span class="layui-badge think-bg-violet">商品返佣配置</span></legend>
+                    <div class="layui-input">
+                        {empty name='vo.rebate_type'}{assign name='vo.rebate_type' value='0'}{/empty}
+                        {foreach ['普通商品','返佣商品'] as $k => $v}
+                        {if isset($vo.rebate_type) and $vo.rebate_type eq $k}
+                        <input name="rebate_type" title="{$v}" type="radio" value="{$k}" checked>
+                        {else}
+                        <input name="rebate_type" title="{$v}" type="radio" value="{$k}">
+                        {/if}{/foreach}
+                    </div>
+                    <div class="help-block nowrap">分佣计算时会基于线上支付金额进行计算。</div>
+                </fieldset>
+
+                <!--{if isset($agents) and count($agents)>1}-->
+                <fieldset class="layui-bg-gray">
+                    <legend><span class="layui-badge think-bg-violet">赋予推广权限</span></legend>
+                    <div class="font-code">
+                        <select class="layui-select" name="level_agent">
+                            {foreach $agents as $upgrade}
+                            {if isset($vo.level_agent) and $vo.level_agent eq $upgrade.number}
+                            <option value="{$upgrade.number|default=0}" selected>
+                                [ {$upgrade.prefix|default='0'} ] {if $upgrade.number>0}赋予权限，{$upgrade.name|default=''}{else}不赋权限，默认身份{/if}
+                            </option>
+                            {else}
+                            <option value="{$upgrade.number|default=0}">
+                                [ {$upgrade.prefix|default='0'} ] {if $upgrade.number>0}赋予权限，{$upgrade.name|default=''}{else}不赋权限，默认身份{/if}
+                            </option>
+                            {/if}{/foreach}
+                        </select>
+                    </div>
+                    <div class="help-block nowrap">给会员赋予代理身份后可享有推广权益。</div>
+                </fieldset>
+                <!--{/if}-->
+
+                <!--{if isset($upgrades) and count($upgrades)>1}-->
+                <fieldset class="layui-bg-gray notselect">
+                    <legend><span class="layui-badge think-bg-violet">赋予会员权限</span></legend>
+                    <div class="font-code">
+                        <select class="layui-select" name="level_upgrade">
+                            {foreach $upgrades as $upgrade}
+                            {if isset($vo.level_upgrade) and $vo.level_upgrade eq $upgrade.number}
+                            <option value="{$upgrade.number|default=0}" selected>
+                                [ {$upgrade.prefix|default='0'} ] {if $upgrade.number eq 0} 入会礼包，默认等级 {elseif $upgrade.number>0} 升级礼包，{$upgrade.name|default=''}{else} {$upgrade.name|default=''} {/if}
+                            </option>
+                            {else}
+                            <option value="{$upgrade.number|default=0}">
+                                [ {$upgrade.prefix|default='0'} ] {if $upgrade.number eq 0} 入会礼包，默认等级 {elseif $upgrade.number>0} 升级礼包，{$upgrade.name|default=''}{else} {$upgrade.name|default=''} {/if}
+                            </option>
+                            {/if}{/foreach}
+                        </select>
+                    </div>
+                    <span class="help-block">购买商品后可直接升级到该等级。</span>
+                </fieldset>
+
+                <fieldset class="layui-bg-gray notselect">
+                    <legend><span class="layui-badge think-bg-violet">限制购买等级</span></legend>
+                    <div class="font-code">
+                        <select class="layui-select" name="limit_lowvip">
+                            <option value="0">[ - ] 不限等级</option>
+                            {foreach $upgrades as $upgrade}{if $upgrade.number>0}{if isset($vo.limit_lowvip) and $vo.limit_lowvip eq $upgrade.number}
+                            <option value="{$upgrade.number|default=0}" selected>[ {$upgrade.number|default=0} ] 最低等级，{$upgrade.name|default=''}</option>
+                            {else}
+                            <option value="{$upgrade.number|default=0}">[ {$upgrade.number|default=0} ] 最低等级，{$upgrade.name|default=''}</option>
+                            {/if}{/if}{/foreach}
+                        </select>
+                    </div>
+                    <span class="help-block">限制低于该等级的用户不能购买。</span>
+                </fieldset>
+                <!--{else}-->
+                <input type="hidden" name="limit_lowvip" value="0">
+                <input type="hidden" name="level_upgrade" value="-1">
+                <!--{/if}-->
+
+                <fieldset class="layui-bg-gray">
+                    <legend><span class="layui-badge think-bg-violet">限制购买数量</span></legend>
+                    <label>
+                        <input class="layui-input" type="number" data-blur-number="0" lay-affix="number" min="0" name="limit_maxnum" placeholder="请输入商品限购数量" value="{$vo.limit_maxnum|default=0}">
+                        <span class="help-block">限制每人购买数量，为 0 时表示不限制。</span>
+                    </label>
+                </fieldset>
+                <!--{if isset($discounts) and count($discounts)>1}-->
+                <fieldset class="layui-bg-gray">
+                    <legend><span class="layui-badge think-bg-violet">会员折扣方案</span></legend>
+                    <select class="layui-select" name="discount_id" lay-search>
+                        {foreach $discounts as $discount}{if isset($vo.discount_id) and $vo.discount_id eq $discount.id}
+                        <option selected value="{$discount.id|default=0}">{$discount.name|default='0'}</option>
+                        {else}
+                        <option value="{$discount.id|default=0}">{$discount.name|default='0'}</option>
+                        {/if}{/foreach}
+                    </select>
+                    <span class="help-block">当会员等级达到指定等级后可享有折扣。</span>
+                </fieldset>
+                <!--{else}-->
+                <input type="hidden" name="discount_id" value="0">
+                <!--{/if}-->
+            </div>
+        </div>
+
+        <div class="layui-form-item" id="GoodsSpecsEditor">
+            <span class="help-label label-required-prev">
+                <b>商品规格</b><span class="color-red font-s12">( 规格填写后不允许再次增加规格分组，规格图片推荐的宽高比为 5:3，成本价用于计算利润以及发放拥金 )</span>
+            </span>
+            <div class="ta-mb-10" v-for="(x,$index) in specs" :key="$index">
+                <div class="goods-spec-box ta-pr-10" style="background:#ddd">
+                    <span class="text-center goods-spec-name">分组</span>
+                    <label class="label-required-null inline-block">
+                        <input v-model.trim="x.name" @change="trimSpace(x,'name')" vali-name="分组" placeholder="请输入分组名称" required>
+                    </label>
+                    <div class="pull-right flex">
+                        <a class="layui-btn layui-btn-sm layui-btn-primary goods-spec-btn" @click="addSpecVal(x.list)">增加</a>
+                        <a class="layui-btn layui-btn-sm layui-btn-primary goods-spec-btn" @click="upSpecRow(specs,$index)" :class="{false:'layui-btn-disabled'}[$index>0]">上移</a>
+                        <a class="layui-btn layui-btn-sm layui-btn-primary goods-spec-btn" @click="dnSpecRow(specs,$index)" :class="{false:'layui-btn-disabled'}[$index<specs.length-1]">下移</a>
+                        <div style="display:none" :class="{true:'layui-show'}[mode==='add' && specs.length>0]">
+                            <a class="layui-btn layui-btn-sm layui-btn-primary goods-spec-btn" @click="delSpecRow(specs,$index)" v-if="specs.length>1">删除</a>
+                        </div>
+                    </div>
+                </div>
+                <div class="goods-spec-box" v-if="x.list && x.list.length>0">
+                    <label class="label-required-null nowrap" v-for="xx in x.list">
+                        <input lay-ignore @click="xx.check=checkListChecked(x.list,$event.target.checked)" v-model.trim="xx.check" type="checkbox">
+                        <input v-model.trim="xx.name" @change="trimSpace(xx,'name')" vali-name="规格" placeholder="请输入规格" required type="text">
+                        <a class="layui-icon layui-icon-close goods-spec-close" @click="delSpecVal(x.list,$index)" v-if="x.list.length>1"></a>
+                    </label>
+                </div>
+            </div>
+            <div v-if="mode==='add'">
+                <a class="layui-btn layui-btn-sm layui-btn-primary" @click="addSpecRow(specs)" v-if="specs.length<3">增加规则分组</a>
+                <p class="ta-mt-10"><span class="color-red">请完成属性修改后再编辑下面的规格信息，否则规格数据会丢失！</span></p>
+            </div>
+            <table class="layui-table goods-spec-table">
+                <thead>
+                <tr>
+                    <th class="layui-bg-gray" :colspan="specs.length">规格</th>
+                    <th colspan="3">商品价格</th>
+                    {if $enableBalance || $enableIntegral}
+                    {if $enableBalance && $enableIntegral}
+                    <th colspan="2">允许抵扣</th>
+                    {else}
+                    <th colspan="1">允许抵扣</th>
+                    {/if}
+                    {/if}
+                    {if $enableBalance || $enableIntegral}
+                    {if $enableBalance && $enableIntegral}
+                    <th colspan="2">赠送奖励</th>
+                    {else}
+                    <th colspan="1">赠送奖励</th>
+                    {/if}
+                    {/if}
+                    <th colspan="5">其他属性</th>
+                </tr>
+                <tr>
+                    <th class="nowrap layui-bg-gray" v-for="x in specs"><b>{{x.name}}</b></th>
+                    <th class="nowrap" @click="batchSet('cost',2,'请输入商品成本价格')"><b>成本价</b><i class="layui-icon">&#xe63c;</i></th>
+                    <th class="nowrap" @click="batchSet('market',2,'请输入商品市场价格')"><b>市场价</b><i class="layui-icon">&#xe63c;</i></th>
+                    <th class="nowrap" @click="batchSet('selling',2,'请输入商品销售价格')"><b>销售价</b><i class="layui-icon">&#xe63c;</i></th>
+                    {notempty name='enableBalance'}
+                    <th class="nowrap" @click="batchSet('allow_balance',2,'请输入最大余额支付')"><b>余额</b><i class="layui-icon">&#xe63c;</i></th>
+                    {/notempty}
+                    {notempty name='enableIntegral'}
+                    <th class="nowrap" @click="batchSet('allow_integral',0,'请输入最大积分抵扣')"><b>积分</b><i class="layui-icon">&#xe63c;</i></th>
+                    {/notempty}
+                    {notempty name='enableBalance'}
+                    <th class="nowrap" @click="batchSet('balance',2,'请输入赠送账户余额')"><b>余额</b><i class="layui-icon">&#xe63c;</i></th>
+                    {/notempty}
+                    {notempty name='enableIntegral'}
+                    <th class="nowrap" @click="batchSet('integral',2,'请输入赠送用户积分')"><b>积分</b><i class="layui-icon">&#xe63c;</i></th>
+                    {/notempty}
+                    <th class="nowrap" @click="batchSet('virtual',0,'请输入虚拟销量数值')"><b>虚拟销量</b><i class="layui-icon">&#xe63c;</i></th>
+                    <th class="nowrap" @click="batchSet('express',0,'请输入快递计费系数')"><b>快递系数</b><i class="layui-icon">&#xe63c;</i></th>
+                    <th class="nowrap" width="9%" @click="batchSet('gsku',null,'请输入商品SKU代码')"><b>商品SKU</b> <i class="layui-icon">&#xe63c;</i></th>
+                    <th class="nowrap" width="6%">规格图片</th>
+                    <th class="nowrap" width="6%"><b>销售状态</b></th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr v-for="(item,hash) in items" :key="hash">
+                    <td class="layui-bg-gray nowrap text-center" v-if="s.check" v-for="s in item.s">{{s.name}}</td>
+                    <td><label><input class="layui-input" @blur="syncSet(hash)" v-model.trim="item.v.cost"></label></td>
+                    <td><label><input class="layui-input" @blur="syncSet(hash)" v-model.trim="item.v.market"></label></td>
+                    <td><label><input class="layui-input" @blur="syncSet(hash)" v-model.trim="item.v.selling"></label></td>
+                    {notempty name='enableBalance'}
+                    <td><label><input class="layui-input" @blur="syncSet(hash)" v-model.trim="item.v.allow_balance"></label></td>
+                    {/notempty}
+                    {notempty name='enableIntegral'}
+                    <td><label><input class="layui-input" @blur="syncSet(hash)" v-model.trim="item.v.allow_integral"></label></td>
+                    {/notempty}
+                    {notempty name='enableBalance'}
+                    <td><label><input class="layui-input" @blur="syncSet(hash)" v-model.trim="item.v.balance"></label></td>
+                    {/notempty}
+                    {notempty name='enableIntegral'}
+                    <td><label><input class="layui-input" @blur="syncSet(hash)" v-model.trim="item.v.integral"></label></td>
+                    {/notempty}
+                    <td><label><input class="layui-input" @blur="syncSet(hash)" v-model.trim="item.v.virtual"></label></td>
+                    <td><label><input class="layui-input" @blur="syncSet(hash)" v-model.trim="item.v.express"></label></td>
+                    <td><label><input class="layui-input font-code" v-model.trim="item.v.gsku"></label></td>
+                    <td class="upload-image-xs ta-p-0 text-center">
+                        <upload-image v-model.trim="item.v.image" :showinput="false"></upload-image>
+                    </td>
+                    <td class="layui-bg-gray"><label class="think-checkbox"><input lay-ignore v-model.trim="item.v.status" type="checkbox"></label></td>
+                </tr>
+                </tbody>
+            </table>
+            <p class="color-desc">请注意商品的 sku 在系统中仅作为显示之用，系统会根据规格生成哈希值作为商品唯一区别码！</p>
+            <label class="layui-hide">
+                <textarea class="layui-textarea" name="specs">{{JSON.stringify(specs)}}</textarea>
+                <textarea class="layui-textarea" name="items">{{JSON.stringify(attrs)}}</textarea>
+            </label>
+        </div>
+
+        <label class="layui-form-item block">
+            <span class="help-label"><b>商品简介描述</b></span>
+            <textarea class="layui-textarea" name="remark" placeholder="请输入商品简介描述">{$vo.remark|default=''|raw}</textarea>
+        </label>
+
+        <div class="layui-form-item block">
+            <span class="help-label label-required-prev"><b>商品富文本详情</b></span>
+            <textarea class="layui-hide" name="content">{$vo.content|default=''|raw}</textarea>
+        </div>
+
+        <div class="hr-line-dashed ta-mt-40"></div>
+        <input name="code" type="hidden" value="{$vo.code}">
+
+        <div class="layui-form-item text-center">
+            <button class="layui-btn layui-btn-danger" type="button" data-target-backup>取消编辑</button>
+            <button class="layui-btn" type="submit">保存商品</button>
+        </div>
+    </div>
+</form>
+{/block}
+
+{block name='script'}
+<label class="layui-hide">
+    <textarea id="GoodsSpecs">{$vo.specs|raw|default=''}</textarea>
+    <textarea id="GoodsItems">{$vo.items|raw|default=''}</textarea>
+</label>
+
+<script>
+    /*! 加载扩展插件 */
+    require(['md5', 'vue', 'ckeditor'], function (md5, Vue) {
+        // 创建富文本
+        window.createEditor('[name=content]', {height: 500});
+        // 图片上传组件
+        Vue.component('UploadImage', {
+            data: () => ({eid: Math.random().toString().replace('0.', 'up')}),
+            model: {prop: 'mvalue', event: 'change'}, props: {mvalue: {type: String, default: ''}},
+            template: '<input class="layui-hide" v-model="mvalue" :id="eid" readonly>',
+            mounted: function () {
+                this.$nextTick(() => $('#' + this.eid).uploadOneImage().on('change', e => this.$emit('change', e.target.value)));
+            }
+        });
+        // 字段格式规则
+        let rules = {
+            image: '_',
+            cost: '(parseFloat(_)||0).toFixed(2)',
+            market: '(parseFloat(_)||0).toFixed(2)',
+            selling: '(parseFloat(_)||0).toFixed(2)',
+            balance: '(parseFloat(_)||0).toFixed(2)',
+            integral: '(parseFloat(_)||0).toFixed(0)',
+            express: '(parseFloat(_)||0).toFixed(0)',
+            virtual: '(parseFloat(_)||0).toFixed(0)',
+            allow_balance: '(parseFloat(_)||0).toFixed(2)',
+            allow_integral: '(parseFloat(_)||0).toFixed(0)',
+        };
+        // 历史及缓存数据
+        let cache = {};
+        layui.each(JSON.parse($('#GoodsItems').val() || '{}') || {}, function (k, v) {
+            for (let i in v) setValue(k, i, v[i]);
+        });
+        // 创建 Vue2 实例
+        let app = new Vue({
+            el: '#GoodsSpecsEditor', data: () => ({
+                mode: '{$mode|default="add"}', items: {}, attrs: {},
+                specs: JSON.parse($('#GoodsSpecs').val() || '[]') || []
+            }),
+            created: function () {
+                this.specs.length < 1 && addSpecRow(this.specs);
+            },
+            watch: {
+                specs: {
+                    deep: true, immediate: true, handler: function (values) {
+                        // 笛卡尔积生成商品SKU多规格算法
+                        let items = {}, attrs = [], list = values.reduce((a, b) => {
+                            let res = [];
+                            a.map(x => b.list.map(y => y.check && res.push(x.concat(Object.assign({group: b.name}, y)))));
+                            return res;
+                        }, [[]]);
+                        // 初始化商品规格同步变量值
+                        list.map(function (cols) {
+                            let keys = [], specs = [], unids = [];
+                            cols.map(v => keys.push(v.group + '::' + v.name) && specs.push(v) && unids.push(v.unid));
+                            let hash = md5.hash("{$vo.code}#" + unids.sort().join(';')), values = {
+                                hash: hash,
+                                spec: keys.join(';;'),
+                                gsku: getValue(hash, 'gsku', withRandString(14, 'S')),
+                                image: getValue(hash, 'image', ''),
+                                status: !!getValue(hash, 'status', 1),
+                                cost: getValue(hash, 'cost', '0.00'),
+                                market: getValue(hash, 'market', '0.00'),
+                                selling: getValue(hash, 'selling', '0.00'),
+                                balance: getValue(hash, 'balance', '0.00'),
+                                integral: getValue(hash, 'integral', '0'),
+                                express: getValue(hash, 'express', '1'),
+                                virtual: getValue(hash, 'virtual', '0'),
+                                allow_balance: getValue(hash, 'allow_balance', '0.00'),
+                                allow_integral: getValue(hash, 'allow_integral', '0'),
+                            };
+                            items[hash] = {s: specs, v: values};
+                            attrs.push(values)
+                        })
+                        this.attrs = attrs;
+                        this.items = items;
+                    }
+                }
+            },
+            methods: {
+                /*! 同步格式化值 */
+                syncSet: function (hash) {
+                    let v = this.items[hash].v;
+                    for (let k in v) v[k] = setValue(hash, k, v[k])
+                },
+                /*! 批量设置数值 */
+                batchSet: function (name, fixed, title) {
+                    let min = (0 / Math.pow(10, parseInt(fixed))).toFixed(fixed), max = (999999).toFixed(fixed);
+                    layer.prompt({
+                        title: title || (fixed === null ? '请输入内容' : '请输入数量【 取值范围：1 - 999999 】'),
+                        formType: 0, value: fixed === null ? '' : min, success: function ($el) {
+                            $el.find('.layui-layer-input').attr({'data-value-min': min, 'data-value-max': max, 'data-blur-number': fixed});
+                        }
+                    }, function (value, index) {
+                        if (fixed !== null) value = (parseFloat(value) || 0).toFixed(fixed);
+                        for (let i in app.items) app.items[i].v[name] = value;
+                        layer.close(index) || app.$forceUpdate()
+                    });
+                },
+                /*! 去除空白字符 */
+                trimSpace: function (x, i) {
+                    return x[i] = (x[i] || '').replace(/[\s,;'"]+/ig, '');
+                },
+                /*! 判断规则选择 */
+                checkListChecked: function (data, check) {
+                    for (let i in data) if (data[i].check) return check;
+                    return true;
+                },
+                /*! 下移整行规格分组 */
+                dnSpecRow: function (items, index) {
+                    index + 1 < items.length && (item => items.splice(index + 1, 1) && items.splice(index, 0, item))(items[index + 1]);
+                },
+                /*! 上移整行规格分组 */
+                upSpecRow: function (items, index) {
+                    index > 0 && (item => items.splice(index - 1, 1) && items.splice(index, 0, item))(items[index - 1]);
+                },
+                /*! 增加整行规格分组 */
+                addSpecRow: function (data) {
+                    addSpecRow(data);
+                },
+                /*! 移除整行规格分组 */
+                delSpecRow: function (items, index) {
+                    items.splice(index, 1);
+                },
+                /*! 增加分组的属性 */
+                addSpecVal: function (data) {
+                    addSpecVal(data);
+                },
+                /*! 移除分组的属性 */
+                delSpecVal: function (data, $index) {
+                    data.splice($index, 1);
+                },
+            }
+        })
+
+        /*! 动态设置内容 */
+        function setValue(hash, name, value, filter) {
+            filter = filter || rules[name] || null;
+            if (typeof filter === 'string' && filter.indexOf('_') > -1) {
+                value = eval(filter.replace('_', "'" + value + "'"));
+            }
+            cache[hash] = cache[hash] || {};
+            return cache[hash][name] = value;
+        }
+
+        /*！动态读取内容 */
+        function getValue(hash, name, value) {
+            let _cache = cache[hash] || {};
+            if (typeof _cache[name] === 'undefined') {
+                setValue(hash, name, value, '_')
+                _cache = cache[hash] || {};
+            }
+            return _cache[name];
+        }
+
+        // 创建分组
+        function addSpecRow(data) {
+            data.push({name: '规格分组' + (data.length || ''), list: addSpecVal([])})
+        }
+
+        // 创建规格
+        function addSpecVal(data) {
+            data.push({name: '规格属性' + (data.length || ''), unid: withRandString(16), check: true});
+            return data;
+        }
+
+        // 随机字符串
+        function withRandString(length, prefix) {
+            return (function (time, code) {
+                code += parseInt(time.substring(0, 1)) + parseInt(time.substring(1, 2)) + time.substring(2);
+                while (code.length < length) code += (Math.random()).toString().replace('.', '');
+                return code.substring(0, length);
+            })(Date.now().toString(), prefix || '')
+        }
+    });
+</script>
+{/block}

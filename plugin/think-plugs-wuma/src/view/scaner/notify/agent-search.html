@@ -1,0 +1,54 @@
+<fieldset>
+    <legend>{:lang('条件搜索')}</legend>
+    <form action="{:sysuri()}" autocomplete="off" class="layui-form layui-form-pane form-search" method="get" onsubmit="return false">
+
+        <div class="layui-form-item layui-inline">
+            <label class="layui-form-label">代理用户</label>
+            <label class="layui-input-inline">
+                <input class="layui-input" name="username" value="{$get.username|default=''}" placeholder="请输入代理用户">
+            </label>
+        </div>
+
+        <!-- {notempty name='levels'} -->
+        <div class="layui-form-item layui-inline">
+            <label class="layui-form-label">等级名称</label>
+            <label class="layui-input-inline">
+                <select name="level" class="layui-select">
+                    <option value="">-- 全部 --</option>
+                    {foreach $levels as $t}
+                    {if isset($vo.level) and $t.status>0 and $vo.level eq $t.number}
+                    <option selected value="{$t.number}">{$t.name}</option>
+                    {else}
+                    <option value="{$t.number}">{$t.name}</option>
+                    {/if}{/foreach}
+                </select>
+            </label>
+        </div>
+        <!-- {/notempty} -->
+
+        <div class="layui-form-item layui-inline">
+            <label class="layui-form-label">授权省份</label>
+            <label class="layui-input-inline">
+                <input class="layui-input" name="region_prov" value="{$get.region_prov|default=''}" placeholder="请输入授权省份">
+            </label>
+        </div>
+
+        <div class="layui-form-item layui-inline">
+            <label class="layui-form-label">授权城市</label>
+            <label class="layui-input-inline">
+                <input class="layui-input" name="region_city" value="{$get.region_city|default=''}" placeholder="请输入授权城市">
+            </label>
+        </div>
+
+        <div class="layui-form-item layui-inline">
+            <label class="layui-form-label">授权区域</label>
+            <label class="layui-input-inline">
+                <input class="layui-input" name="region_area" value="{$get.region_area|default=''}" placeholder="请输入授权区域">
+            </label>
+        </div>
+
+        <div class="layui-form-item layui-inline">
+            <button class="layui-btn layui-btn-primary"><i class="layui-icon">&#xe615;</i> 搜 索</button>
+        </div>
+    </form>
+</fieldset>

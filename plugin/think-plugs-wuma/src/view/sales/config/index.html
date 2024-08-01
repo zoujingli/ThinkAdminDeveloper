@@ -1,0 +1,44 @@
+{extend name="main"}
+
+{block name="button"}
+<!--{if auth('agxcfg')}-->
+<a class="layui-btn layui-btn-sm layui-btn-primary" data-modal="{:url('agxcfg')}">代理配置</a>
+<!--{/if}-->
+{/block}
+
+{block name="content"}
+<div class="layui-card padding-20 shadow">
+    <div class="layui-card-header notselect">
+        <b>代理参数配置</b>
+    </div>
+    <div class="layui-card-body">
+        <div class="layui-form-item label-required-prev">
+            <span class="help-label"><b>要求上传营业执照</b></span>
+            <div class="layui-input think-bg-gray">
+                {empty name='agxdata.business'}
+                <b class="color-red">不需要上传营业执照</b>
+                {else}
+                <b class="color-blue">需要上传营业执照</b>
+                {/empty}
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="layui-card padding-20 shadow layui-hide">
+    <div class="layui-card-header notselect">
+        <b>小程序配置</b>
+    </div>
+    <div class="layui-card-body">
+        <label class="layui-form-item block relative">
+            <span class="help-label"><b>小程序 AppId</b></span>
+            <input class="layui-input think-bg-gray" readonly value="{:sysconf('data.saas_minapp_appid')}">
+        </label>
+
+        <label class="layui-form-item block relative">
+            <span class="help-label"><b>小程序密钥 AppSecret</b></span>
+            <input class="layui-input think-bg-gray" readonly value="{:sysconf('data.saas_minapp_appkey')}">
+        </label>
+    </div>
+</div>
+{/block}

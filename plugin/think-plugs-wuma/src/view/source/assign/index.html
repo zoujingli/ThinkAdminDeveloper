@@ -1,0 +1,105 @@
+{extend name="table"}
+
+{block name="button"}
+<!--{if auth("add")}-->
+<button class='layui-btn layui-btn-sm layui-btn-primary' data-open='{:url("add")}'>添加批次</button>
+<!--{/if}-->
+{/block}
+
+{block name="content"}
+<div class="think-box-shadow">
+    {include file='source/assign/index-search'}
+    <table id="BatchData" data-line="2" data-url="{:sysuri()}" data-target-search="form.form-search"></table>
+</div>
+
+<script>
+    $(function () {
+        // 初始化表格组件
+        let $table = $('#BatchData').layTable({
+            even: true, height: 'full', sort: {field: 'id', type: 'desc'}, cellExpandedMode: 'tips',
+            cols: [[
+                {field: 'id', hide: true},
+                // {checkbox: true, fixed: true},
+                {title: '关联批次', align: 'left', width: '22%', templet: '#tpl1'},
+                {title: '关联分区', align: 'left', width: '35%', templet: '#tpl2'},
+                {title: '关联类型', minWidth: 230, templet: '#tpl3'},
+                /* {if auth('edit') || auth('auto')} */
+                {title: '操作面板', align: 'center', minWidth: 160, width: '16%', toolbar: '#toolbar', fixed: 'right'},
+                /* {/if} */
+            ]]
+        });
+
+        // 数据状态切换操作
+        layui.form.on('switch(StatusSwitch)', function (obj) {
+            let data = {id: obj.value, status: obj.elem.checked > 0 ? 1 : 0};
+            $.form.load("{:url('state')}", data, 'post', function (ret) {
+                ret.code > 0 ? $table.trigger('reload') : $.msg.error(ret.info, 3, function () {
+                    $table.trigger('reload');
+                });
+                return false;
+            }, false);
+        });
+    });
+</script>
+
+<script type="text/html" id="tpl1">
+    {{# if(d.coder.type===1){ }}
+    <span class="layui-badge layui-badge-middle layui-bg-blue pull-left" style="line-height:14px;zoom:0.8">前关联</span>
+    {{# }else{ }}
+    <span class="layui-badge layui-badge-middle layui-bg-green pull-left" style="line-height:14px;zoom:0.8">后关联</span>
+    {{# } }}
+    <div class="nowrap">
+        赋码批次：{{d.batch}}<br>
+        物码批次：{{d.cbatch}}
+    </div>
+</script>
+
+<script type="text/html" id="tpl2">
+    {{# if(d.range.length>0) {}}
+    <div class="layui-badge layui-badge-middle layui-bg-cyan code-range-icon pull-left">{{ d.total || 0 }}</div>
+    <div class="nowrap"><b>产品：</b>{{ d.range[0].gname }} # {{ showSpec(d.range[0].gspec) }}</div>
+    <div class="nowrap"><b>分区：</b><b>{{ d.range[0].range_start }}</b> - <b>{{ d.range[0].range_after }}</b> # {{ d.range[0].gcode }}</div>
+    {{#}else{}}
+    <div class="layui-badge layui-badge-middle layui-bg-cyan code-range-icon pull-left">0</div>
+    <div class="nowrap"><b>产品：</b><span class="color-desc">无有效记录</span></div>
+    <div class="nowrap"><b>分区：</b><span class="color-desc">无有效记录</span></div>
+    {{#}}}
+</script>
+
+<script type="text/html" id="tpl3">
+    赋码类型：{{d.type?'关联赋码':'区间赋码'}}
+    <!-- {if auth('mode')} -->
+    <a class="ta-ml-10" data-confirm="切换模式会丢失区间数据，确认？" data-load="{:url('mode')}?batch={{d.batch}}">切换模式</a>
+    <!-- {/if} -->
+    <br>
+    创建时间：{{d.create_time}}
+</script>
+
+<script type="text/html" id="toolbar">
+    {{# if(d.type==0){ }}
+    <!--{if auth('edit')}-->
+    <a class="layui-btn layui-btn-sm" data-open='{:url("edit")}?id={{d.id}}'>编 辑</a>
+    <!--{/if}-->
+    {{# }else{ }}
+    <a class="layui-btn layui-btn-sm">切 换</a>
+    {{# } }}
+
+    <!--{if auth('unlock')}-->
+    <a class="layui-btn layui-btn-sm layui-btn-normal" data-confirm="确认重置锁定分区吗？<br>重置操作会根据已使用标签码重新生成分区。" data-load='{:url("unlock")}?batch={{d.batch}}'>解 锁</a>
+    <!--{/if}-->
+</script>
+
+<style>
+    .code-range-icon {
+        width: 30px;
+        height: 30px;
+        cursor: pointer;
+        padding: 0;
+        display: inline-block;
+        margin-top: 5px;
+        text-align: center;
+        line-height: 30px !important;
+        border-radius: 50%;
+    }
+</style>
+{/block}

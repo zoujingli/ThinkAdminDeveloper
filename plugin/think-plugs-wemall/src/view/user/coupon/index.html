@@ -1,0 +1,59 @@
+{extend name='table'}
+
+{block name="button"}
+<!--{if auth('user.coupon.config/index')}-->
+<a data-table-id="CouponTable" class="layui-btn layui-btn-sm layui-btn-primary" data-open="{:url('user.coupon.config/index')}">{:lang('卡券配置')}</a>
+<!--{/if}-->
+{/block}
+
+{block name="content"}
+<div class="think-box-shadow">
+    {include file='user/coupon/index_search'}
+    <table id="CouponTable" data-line="2" data-url="{:request()->url()}" data-target-search="form.form-search"></table>
+</div>
+
+<script>
+    $(function () {
+        $('#CouponTable').layTable({
+            even: true, height: 'full',
+            sort: {field: 'id', type: 'desc'},
+            cols: [[
+                {field: 'id', hide: true},
+                {fixed: true, checkbox: true},
+                {
+                    title: '用户头像', width: 80, align: 'center', templet: function (d) {
+                        return laytpl('<div>{{-showTableImage(d.user_headimg,true,"sm")}}</div>').render(d)
+                    }
+                },
+                {
+                    title: '用户账号', templet: function (d) {
+                        let tpls = [];
+                        tpls.push('账号昵称：<b>{{d.user_nickname}}</b>')
+                        tpls.push('账号手机：<b class="color-blue">{{d.user_phone}}</b>')
+                        return laytpl(tpls.join('<br>')).render(d);
+                    }
+                },
+                {
+                    title: '卡券信息', templet: function (d) {
+
+                        let tpls = [];
+                        let type = ['未使用', '已使用'][d.used] || '异常';
+                        d.style = ['layui-bg-blue', 'layui-bg-green'][d.used] || '';
+                        tpls.push('卡券金额：<b class="color-text">{{d.coupon.amount}}</b> 元')
+                        tpls.push('卡券编号：{{d.code||"-"}}')
+                        return laytpl("<div class='flex'><div class='layui-badge layui-badge-middle flex-center {{d.style}}' style='line-height:14px;zoom:0.8'>" + type + "</div><div>" + tpls.join('<br>') + "</div></div>").render(d);
+                    }
+                },
+                {
+                    title: '领取时间', templet: function (d) {
+                        let tpls = [];
+                        tpls.push('卡券类型：{{d.type_name||"-"}}')
+                        tpls.push('领取时间：{{d.create_time}}')
+                        return laytpl(tpls.join('<br>')).render(d);
+                    }
+                },
+            ]]
+        });
+    });
+</script>
+{/block}

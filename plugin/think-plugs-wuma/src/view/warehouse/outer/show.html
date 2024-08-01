@@ -1,0 +1,62 @@
+<div class='think-box-shadow'>
+    {include file='warehouse/outer/show-search'}
+    <table data-line='2' id="ShowTable" data-url="{:sysuri()}" data-target-search="form.form-search"></table>
+</div>
+
+<script>
+    $(function () {
+        $('#ShowTable').layTable({
+            even: true, height: 'full',
+            sort: {field: 'id', type: 'desc'},
+            where: {code: '{$get.code|default=""}'},
+            cols: [[
+                {field: 'id', title: 'ID', hide: true, width: 80},
+                {field: '', title: '出库数据', width: '27%', templet: '#ShowImportTpl'},
+                {field: '', title: '关联产品', width: '26%', templet: '#ShowGoodsTpl'},
+                {field: '', title: '出库仓库', width: '24%', templet: '#ShowHouseTpl'},
+                {field: '', title: '出库操作', templet: '#ShowUserTpl'},
+            ]]
+        });
+    });
+</script>
+
+<script type="text/html" id="ShowImportTpl">
+    {{#if(d.mode==1){}}
+    <span class="layui-badge layui-bg-blue layui-badge-middle pull-left">扫码</span>
+    {{#}else{}}
+    <span class="layui-badge layui-bg-cyan layui-badge-middle pull-left">虚拟</span>
+    {{#}}}
+    <div></div>
+    <div>出库单号：<b>{{ d.code }}</b></div>
+    {{#if(d.number>0){ }}
+    {{d.type===3 ? '调入' : '出库' }}数量：<b>{{ d.number || '' }}</b>
+    {{#}else{}}调出数量：<b>{{ d.number || '' }}</b>{{#}}}
+    {{#if(d.main){}}
+    <span class="margin-row-5">{{ d.main.product.unit || '件' }}</span>
+    {{#if(d.main.type===1){ }}<span class="layui-badge layui-bg-orange">按单出库</span>{{#}}}
+    {{#if(d.main.type===2){ }}<span class="layui-badge layui-bg-blue">直接出库</span>{{#}}}
+    {{#if(d.main.type===3){ }}<span class="layui-badge layui-bg-red">仓库调度</span>{{#}}}
+    {{#if(d.main.status===1){ }}<span class="layui-badge layui-bg-blue">待出库</span>{{#}}}
+    {{#if(d.main.status===2){ }}<span class="layui-badge layui-bg-green">已完成</span>{{#}}}
+    {{#}}}
+</script>
+
+<script type="text/html" id="ShowGoodsTpl">
+    {{#if(!d.main||!d.main.product){}}
+    <div class="color-desc">关联产品数据无效！</div>
+    {{#}else{}}
+    <div class="headimg headimg-no margin-top-5 pull-left" data-tips-image data-tips-hover data-lazy-src="{{d.main.product.cover||''}}"></div>
+    产品编号：<b class="color-blue">{{ d.main.product_code || '-' }}</b><br>
+    产品名称：{{ d.main.product.name || '-' }}<span class="color-desc padding-left-5">( {{ showSpec(d.main.gspec || '') }} )</span><br>
+    {{#}}}
+</script>
+
+<script type="text/html" id="ShowHouseTpl">
+    <div>仓库名称：{{ d.main.warehouse.name || '-' }}</div>
+    <div>仓库编号：<b>{{ d.main.warehouse.code || '-' }}</b></div>
+</script>
+
+<script type="text/html" id="ShowUserTpl">
+    <div>操作用户：{{ d.user ? d.user.nickname : '-' }}</div>
+    <div>操作时间：<b>{{ d.create_time || '-' }}</b></div>
+</script>

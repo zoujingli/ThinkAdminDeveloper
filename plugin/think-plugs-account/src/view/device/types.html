@@ -1,0 +1,22 @@
+<form action="{:sysuri()}" method="post" data-auto="true" class="layui-form layui-card">
+    <div class="layui-card-body ta-pl-40">
+
+        {foreach $types as $k=>$v}
+        <label class="think-checkbox" data-width style="width:120px" title="{$v.name|lang}">
+            {empty name='v.status'}
+            <input type="checkbox" name="types[]" value='{$k}' lay-ignore> {$v.name|lang}
+            {else}
+            <input type="checkbox" name="types[]" value='{$k}' lay-ignore checked> {$v.name|lang}
+            {/empty}
+        </label>
+        {/foreach}
+    </div>
+
+    <div class="hr-line-dashed"></div>
+    {notempty name='vo.id'}<input type='hidden' value='{$vo.id}' name='id'>{/notempty}
+
+    <div class="layui-form-item text-center">
+        <button class="layui-btn" type='submit'>保存数据</button>
+        <button class="layui-btn layui-btn-danger" type='button' data-confirm="确定要取消编辑吗？" data-close>取消编辑</button>
+    </div>
+</form>

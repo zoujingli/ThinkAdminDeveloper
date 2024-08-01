@@ -1,0 +1,75 @@
+<!--{literal}-->
+<div v-else-if="x.type==='BaseImage'" class="flex-center" :style="showStyle(x.outerStyle)">
+    <div class="flex-y" :style="showStyle(x.interStyle||{})">
+        <div v-if="x.inputStyle.vType===0" class="flex-1 flex">
+            <div :style="showStyle(x.inputStyle||{})" class="flex-1">
+                <bg-image v-model="x.data[0].image"></bg-image>
+            </div>
+        </div>
+        <div v-if="x.inputStyle.vType===1" class="flex-x">
+            <div :style="showStyle(x.inputStyle||{})" class="flex-1">
+                <bg-image v-model="x.data[0].image"></bg-image>
+            </div>
+            <div :style="showStyle(x.inputStyle||{})" class="flex-1">
+                <bg-image v-model="x.data[1].image"></bg-image>
+            </div>
+        </div>
+        <div v-if="x.inputStyle.vType===2" class="flex-x">
+            <div :style="showStyle(x.inputStyle||{})" class="flex-1">
+                <bg-image v-model="x.data[0].image"></bg-image>
+            </div>
+            <div :style="showStyle(x.inputStyle||{})" class="flex-1">
+                <bg-image v-model="x.data[1].image"></bg-image>
+            </div>
+            <div :style="showStyle(x.inputStyle||{})" class="flex-1">
+                <bg-image v-model="x.data[2].image"></bg-image>
+            </div>
+        </div>
+        <div v-if="x.inputStyle.vType===3" class="flex-1 flex-x">
+            <div :style="showStyle(x.inputStyle||{})" class="flex-1">
+                <bg-image v-model="x.data[0].image"></bg-image>
+            </div>
+            <div class="flex-1 flex-y">
+                <div :style="showStyle(x.inputStyle||{})" class="flex-1">
+                    <bg-image v-model="x.data[1].image"></bg-image>
+                </div>
+                <div :style="showStyle(x.inputStyle||{})" class="flex-1">
+                    <bg-image v-model="x.data[2].image"></bg-image>
+                </div>
+            </div>
+        </div>
+        <div v-if="x.inputStyle.vType===4" class="flex-1 flex">
+            <div :style="showStyle(x.inputStyle||{})" class="flex-1">
+                <bg-image v-model="x.data[0].image"></bg-image>
+            </div>
+            <div :style="showStyle(x.inputStyle||{})" class="flex-1">
+                <bg-image v-model="x.data[1].image"></bg-image>
+            </div>
+            <div :style="showStyle(x.inputStyle||{})" class="flex-1">
+                <bg-image v-model="x.data[2].image"></bg-image>
+            </div>
+            <div :style="showStyle(x.inputStyle||{})" class="flex-1">
+                <bg-image v-model="x.data[3].image"></bg-image>
+            </div>
+        </div>
+        <div v-if="x.inputStyle.vType===5" class="flex-1 flex-y">
+            <div class="flex-1 flex-x">
+                <div class="flex-1" :style="showStyle(x.inputStyle||{})">
+                    <bg-image v-model="x.data[0].image"></bg-image>
+                </div>
+                <div class="flex-1" :style="showStyle(x.inputStyle||{})">
+                    <bg-image v-model="x.data[1].image"></bg-image>
+                </div>
+            </div>
+            <div class="flex-1 flex-x">
+                <div class="flex-1" :style="showStyle(x.inputStyle||{})">
+                    <bg-image v-model="x.data[2].image"></bg-image>
+                </div>
+                <div class="flex-1" :style="showStyle(x.inputStyle||{})">
+                    <bg-image v-model="x.data[3].image"></bg-image>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<!--{/literal}-->

@@ -1,0 +1,160 @@
+{extend name="main"}
+
+{block name="content"}
+<div class="think-box-notify">
+    <strong>颜色说明：</strong>
+    <b class="layui-badge layui-bg-green">绿色</b>表示全部选中，
+    <b class="layui-badge layui-bg-blue">蓝色</b>表示部分选中，
+    <b class="layui-badge layui-bg-orange">橙色</b>表示未选中。
+</div>
+<div class="think-box-shadow" id="TruckForm">
+
+    <div class="layui-card border-line">
+        <div class="layui-card-header layui-bg-gray border-bottom-line">
+            <b class="color-green">全国</b><span class="font-s12 color-desc ta-ml-10">配送省份</span>
+            <a class="pull-right notselect" ng-click="SetAllChecked(items)">全选</a>
+        </div>
+        <div class="layui-card-body">
+            <div class="layui-btn layui-btn-radius ta-ml-0 ta-mr-5 ta-mb-5" ng-class="x.style" ng-click="SetActiveProv(x)" ng-repeat="x in items">
+                <label class="think-checkbox ta-mr-0"><input ng-change="SetChangeCity(x,x.status)" ng-model="x.status" type="checkbox" lay-ignore></label><span ng-bind="x.name"></span>
+            </div>
+        </div>
+    </div>
+
+    <div class="layui-card border-line">
+        <div class="layui-card-header layui-bg-gray border-bottom-line">
+            <b class="color-green" ng-bind="prov.name"></b><span class="font-s12 color-desc ta-ml-10">配送城市</span>
+            <a class="pull-right notselect" ng-click="SetAllChecked(prov.subs)">全选</a>
+        </div>
+        <div class="layui-card-body">
+            <div class="layui-btn layui-btn-radius ta-ml-0 ta-mr-5 ta-mb-5" ng-class="x.style" ng-click="SetActiveCity(x)" ng-repeat="x in prov.subs">
+                <label class="think-checkbox ta-mr-0"><input ng-change="SetChangeCity(x,x.status)" ng-model="x.status" type="checkbox" lay-ignore></label><span ng-bind="x.name"></span>
+            </div>
+        </div>
+    </div>
+
+    <div class="layui-card border-line">
+        <div class="layui-card-header layui-bg-gray border-bottom-line">
+            <b class="color-green" ng-bind="city.name"></b><span class="font-s12 color-desc ta-ml-10">配送区域</span>
+            <a class="pull-right notselect" ng-click="SetAllChecked(city.subs)">全选</a>
+        </div>
+        <div class="layui-card-body">
+            <div class="layui-btn layui-btn-radius ta-ml-0 ta-mr-5 ta-mb-5" ng-class="x.style" ng-repeat="x in city.subs">
+                <label class="think-checkbox ta-mr-0"><input ng-change="SetChangeCity(x,x.status)" ng-model="x.status" type="checkbox" lay-ignore></label><span ng-bind="x.name"></span>
+            </div>
+        </div>
+    </div>
+
+    <div class="hr-line-dashed ta-mt-40"></div>
+    <div class="layui-form-item text-center">
+        <button class="layui-btn layui-btn-danger" type="button" data-target-backup>取消修改</button>
+        <button class="layui-btn" ng-click="Confirm()">确定修改</button>
+    </div>
+</div>
+
+<label class="layui-hide">
+    <textarea class="layui-textarea" id="RegionData">{$citys|json_encode|raw}</textarea>
+</label>
+
+<script>
+    require(['angular'], function () {
+        let app = angular.module('TruckForm', []).run(callback);
+        let data = document.getElementById('RegionData').value || '[]';
+        angular.bootstrap(document.getElementById(app.name), [app.name]);
+
+        function callback($rootScope) {
+            $rootScope.items = angular.fromJson(data);
+            $rootScope.prov = $rootScope.items[0] || {subs: []};
+            $rootScope.city = $rootScope.prov.subs[0] || [];
+
+            /*! 数据显示状态转换 */
+            $rootScope.items.forEach(function (prov) {
+                prov.status = !!prov.status;
+                if (prov.subs) prov.subs.forEach(function (city) {
+                    (city.prov = prov) && (city.status = !!city.status);
+                    if (city.subs) city.subs.forEach(function (area) {
+                        (area.prov = prov) && (area.city = city) && (area.status = !!area.status);
+                    });
+                });
+                applyStyle(prov);
+            });
+
+            /*! 数据样式切换 */
+            function applyStyle(item) {
+                if (item.subs) {
+                    let t1 = 0, c1 = 0;
+                    item.subs.forEach(item => {
+                        if (item.subs) {
+                            let t2 = 0, c2 = 0;
+                            item.subs.forEach(item => {
+                                ++t1 && ++t2 && item.status && ++c1 && ++c2;
+                                item.style = item.status ? '' : 'layui-btn-warm';
+                            });
+                            item.style = c2 === 0 ? 'layui-btn-warm' : (t2 > c2) ? 'layui-btn-normal' : '';
+                        } else {
+                            ++t1 && item.status && ++c1;
+                            item.style = item.status ? '' : 'layui-btn-warm';
+                        }
+                    });
+                    item.style = c1 === 0 ? 'layui-btn-warm' : (t1 > c1 ? 'layui-btn-normal' : '');
+                } else {
+                    item.style = item.status ? '' : 'layui-btn-warm';
+                }
+                return item;
+            }
+
+            /*! 切换下级区域选中状态 */
+            $rootScope.SetChangeCity = function (item, status) {
+                item.status = status;
+                if (item.subs) item.subs.forEach(item => {
+                    item.status = status;
+                    if (item.subs) item.subs.forEach(item => item.status = status);
+                });
+                if (item.city && item.city.subs) {
+                    item.city.status = item.city.subs.some(function (area) {
+                        if (area.status) return true;
+                    });
+                }
+                if (item.prov && item.prov.subs) {
+                    item.prov.status = item.prov.subs.some(function (city) {
+                        if (city.status) return true;
+                    });
+                }
+                applyStyle(item.prov || item);
+            };
+
+            /*! 设置数据全选 */
+            $rootScope.SetAllChecked = function (items) {
+                items.forEach(item => $rootScope.SetChangeCity(item, true));
+            };
+
+            /*! 切换显示省份对象 */
+            $rootScope.SetActiveProv = function (prov) {
+                $rootScope.prov = prov;
+                $rootScope.city = prov.subs[0];
+            };
+
+            /*! 切换显示城市对象 */
+            $rootScope.SetActiveCity = function (city) {
+                $rootScope.city = city;
+            };
+
+            /*! 确认并更新到数据库 */
+            $rootScope.Confirm = function () {
+                let nos = [], oks = [];
+                $rootScope.items.forEach(function (prov) {
+                    prov.status ? oks.push(prov.id) : nos.push(prov.id);
+                    if (prov.subs) prov.subs.forEach(function (city) {
+                        city.status ? oks.push(city.id) : nos.push(city.id);
+                        if (city.subs) city.subs.forEach(function (area) {
+                            area.status ? oks.push(area.id) : nos.push(area.id);
+                        });
+                    });
+                });
+                /*! 提交数据并返回结果 */
+                $.form.load('{:url("region")}', {nos: nos.join(','), oks: oks.join(',')}, 'post');
+            };
+        }
+    });
+</script>
+{/block}

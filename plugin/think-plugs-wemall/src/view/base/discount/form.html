@@ -1,0 +1,50 @@
+<form action="{:sysuri()}" method="post" data-auto="true" class="layui-form layui-card" data-table-id="DiscountTable">
+    <div class="layui-card-body ta-pl-40">
+
+        <label class="layui-form-item block relative">
+            <span class="help-label"><b>方案名称</b>Scheme Name</span>
+            <input class="layui-input" name="name" placeholder="请输入方案名称" required value="{$vo.name|default=''}">
+        </label>
+
+        <div class="layui-form-item label-required-prev">
+            <span class="help-label"><b>会员等级</b>User Level</span>
+
+            <table class="layui-table" lay-skin="line">
+                <thead>
+                <tr class="layui-bg-gray">
+                    <th class="text-left">会员等级</th>
+                    <th class="text-right">售价比例 ( 0.00% - 100.00% )</th>
+                </tr>
+                </thead>
+                <tbody>
+                {foreach $levels as $level}
+                <tr>
+                    <td class="nowrap sub-span-blue">[ <span>VIP{$level.number|default='0'}</span> ] {$level.name|default=''}</td>
+                    <td class="nowrap ta-p-0 text-right">
+                        {php} $key = '_level_' . $level['number']; {/php}
+                        <div class="layui-input-group pull-right">
+                            <label><input type="number" lay-affix="number" min="0.00" max="100" step="0.0001" lay-precision="4" name="_level_{$level.number}" value="{$vo[$key]??'100.0000'}" class="layui-input text-center"></label>
+                            <div class="layui-input-suffix">%</div>
+                        </div>
+                    </td>
+                </tr>
+                {/foreach}
+                </tbody>
+            </table>
+        </div>
+
+        <label class="layui-form-item block relative">
+            <span class="help-label"><b>方案备注</b>Scheme Remark</span>
+            <textarea class="layui-textarea" name="remark" placeholder="请输入方案备注">{$vo.remark|default=''}</textarea>
+        </label>
+
+        <div class="hr-line-dashed"></div>
+        {notempty name='vo.id'}<input name='id' type='hidden' value='{$vo.id}'>{/notempty}
+
+        <div class="layui-form-item text-center">
+            <button class="layui-btn" type='submit'>保存数据</button>
+            <button class="layui-btn layui-btn-danger" data-close data-confirm="确定要取消编辑吗？" type='button'>取消编辑</button>
+        </div>
+    </div>
+
+</form>

@@ -1,0 +1,81 @@
+<!--{literal}-->
+<div v-else-if="x.type==='PageCenter'" class="flex-center flex-y layui-border-box">
+    <div class="flex-y" :style="showStyle(x.inputStyle||{})">
+        <div class="flex-x ta-mt-20 ta-mb-10" :style="{paddingTop:page.head.show?'30px':'10px'}">
+            <div class="headimg ta-ml-30" style="width:60px;height:60px" data-lazy-src="__ROOT__/static/theme/img/headimg.png"></div>
+            <div class="flex-5 ta-ml-10 ta-pt-5">
+                <div class="font-s14 font-w7 flex">
+                    <span>用户昵称</span>
+                    <span class="vip-tags">超级会员</span>
+                </div>
+                <div class="font-s12">绑定手机号</div>
+            </div>
+            <div>
+                <a class="absolute" style="right:20px" :style="[{color:x.inputStyle.color}]">
+                    <i class="layui-icon layui-icon-set"></i>
+                </a>
+            </div>
+        </div>
+        <div class="flex-x ta-mt-10 ta-mb-10">
+            <div class="flex-1 flex-y flex-center">
+                <b class="font-s16">9998</b><span>余额</span>
+            </div>
+            <div class="flex-1 flex-y flex-center">
+                <b class="font-s16">8889</b><span>积分</span>
+            </div>
+            <div class="flex-1 flex-y flex-center">
+                <b class="font-s16">99</b><span>足迹</span>
+            </div>
+            <div class="flex-1 flex-y flex-center">
+                <b class="font-s16">12</b><span>收藏</span>
+            </div>
+        </div>
+    </div>
+
+    <div class="ta-p-20 full-width">
+        <div style="border:1px solid rgba(0,0,0,0.1);border-radius:5px">
+            <div class="ta-p-10">
+                <b class="font-s14 color-desc">订单中心</b>
+                <a class="pull-right">查看部分 <i class="layui-icon layui-icon-next font-s12"></i></a>
+            </div>
+            <div class="flex-x" style="border-top:1px solid #eee">
+                <div class="flex-1 flex-y flex-center ta-p-10">
+                    <b class="font-s16">1</b><span>待付款</span>
+                </div>
+                <div class="flex-1 flex-y flex-center ta-p-10">
+                    <b class="font-s16">2</b><span>待发货</span>
+                </div>
+                <div class="flex-1 flex-y flex-center ta-p-10">
+                    <b class="font-s16">1</b><span>待收货</span>
+                </div>
+                <div class="flex-1 flex-y flex-center ta-p-10">
+                    <b class="font-s16">0</b><span>待评论</span>
+                </div>
+                <div class="flex-1 flex-y flex-center ta-p-10">
+                    <b class="font-s16">0</b><span>售后/退款</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="ta-pl-20 ta-pr-20 ta-pb-20 full-width">
+        <div style="border:1px solid rgba(0,0,0,0.1);border-radius:5px">
+            <div class="ta-p-10"><b class="font-s14 color-desc">我的权益</b></div>
+            <div class="flex-x ta-p-10" style="border-top:1px solid #eee" v-if="x.inputStyle.vPoster">我的海报</div>
+            <div class="flex-x ta-p-10" style="border-top:1px solid #eee">我的推广</div>
+            <div class="flex-x ta-p-10" style="border-top:1px solid #eee">我的返利</div>
+            <div class="flex-x ta-p-10" style="border-top:1px solid #eee">收货地址</div>
+            <div class="flex-x ta-p-10" style="border-top:1px solid #eee">售后退款</div>
+        </div>
+    </div>
+
+    <div class="ta-pl-20 ta-pr-20 ta-pb-20 full-width">
+        <div style="border:1px solid rgba(0,0,0,0.1);border-radius:5px">
+            <div class="ta-p-10"><b class="font-s14 color-desc">帮助中心</b></div>
+            <div class="flex-x ta-p-10" style="border-top:1px solid #eee">常见问题</div>
+            <div class="flex-x ta-p-10" style="border-top:1px solid #eee">反馈建议</div>
+            <div class="flex-x ta-p-10" style="border-top:1px solid #eee">工单问题</div>
+        </div>
+    </div>
+</div>
+<!--{/literal}-->

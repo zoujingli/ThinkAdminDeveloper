@@ -1,0 +1,91 @@
+{extend name='table'}
+
+{block name="button"}
+<button class='layui-btn layui-btn-sm layui-btn-danger' onclick="$.form.reload(!layui.data('design',null))">重 置</button>
+<!--{if auth("add")}-->
+<button class='layui-btn layui-btn-sm' data-target-submit data-title="添加折扣">保 存</button>
+<!--{/if}-->
+{/block}
+
+{block name="content"}
+{include file="base/design/index-style"}
+<form id="DesignForm" method="post" data-auto action="{:url('save')}" class="ta-p-20 layui-anim layui-anim-fadein">
+    <div class="design-layout" id="TemplateApp">
+        <div class="design-layout-menu shadow-mini">
+            <div class="layui-tab layui-tab-brief">
+                <ul class="layui-tab-title notselect">
+                    <li class="layui-this">组件库</li>
+                    <li class="layui-hide">页面链接</li>
+                </ul>
+                <div class="layui-tab-content">
+                    <div class="layui-tab-item layui-show notselect">
+                        <div class="layui-collapse">
+                            <div class="layui-colla-item" v-for="x in tools">
+                                <div class="layui-colla-title">{{x.name}}</div>
+                                <div class="layui-colla-content layui-show">
+                                    <div class="flex">
+                                        <template v-for="xx in x.items">
+                                            <a v-if="xx.disabled===true" class="color-desc">
+                                                <i v-if="xx.icon" class="layui-icon color-desc" :class="xx.icon"></i> {{xx.name}}
+                                            </a>
+                                            <a v-else @click="addItem(xx)">
+                                                <i v-if="xx.icon" class="layui-icon" :class="xx.icon"></i> {{xx.name}}
+                                            </a>
+                                        </template>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="layui-tab-item">内容-2</div>
+                </div>
+            </div>
+        </div>
+
+        <div class='design-layout-view'>
+            <div class="design-layout-view-head">
+                <div class="notselect">
+                    <div class="design-layout-view-head-image"></div>
+                    <div sv-element :class="[idx===-1?'active':'',page.head.show!==false||page.head.placeholder>0?'':'fadeout']" :style="showStyle(page.head.style)">
+                        <div sv-handle class="think-elips-1 pointer font-s14" @click="setPage(pdx,true)">{{page.head.name || ''}}</div>
+                    </div>
+                </div>
+            </div>
+            <div class='design-layout-view-body' :style="{paddingTop:(Number(page.head.placeholder)||20)+'px'}">
+                <div :style="showStyle(page.style)">
+                    <div style="height:0;opacity:0;overflow:hidden">防止 MarginTop 合并影响到父容器</div>
+                    {include file='base/design/index-view'}
+                </div>
+            </div>
+            <div class="design-layout-view-foot">
+                <div sv-element :class="idx===-2?'active':''">
+                    <div sv-handle class="notselect flex pointer not-after" @click="setPage(pdx,false,true)" :style="navbar.style">
+                        <a v-for="(x,$index) in pages" v-if="x.show" :key="x.unid" :class="x.active?'active':''" @click="setPage($index,false,true)">
+                            <span class="headimg headimg-ss headimg-no block auto-center" v-if="x.active && x.foot.icon.active" :style="showBgimg(x.foot.icon.active)"></span>
+                            <span class="headimg headimg-ss headimg-no block auto-center" v-if="!x.active && x.foot.icon.normal" :style="showBgimg(x.foot.icon.normal)"></span>
+                            <span :style="showColor(x.active?(navbar.style.vActiveColor||''):(navbar.style.vNormalColor||''))">{{x.foot.name}}</span>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class='design-layout-form shadow-mini'>
+            {include file='base/design/index-x-head-form'}
+            {include file='base/design/index-x-normal-form'}
+            {include file='base/design/index-x-navbar-form'}
+        </div>
+
+        <label class="layui-hide layui-form-label">
+            <textarea name="pages">{{JSON.stringify(pages)}}</textarea>
+            <textarea name="navbar">{{JSON.stringify(navbar)}}</textarea>
+        </label>
+
+    </div>
+</form>
+
+{/block}
+{block name='script'}
+{include file="base/design/index-init"}
+{include file="base/design/index-script"}
+{/block}

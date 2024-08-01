@@ -1,0 +1,68 @@
+<form data-table-id="HouseTable" class="layui-form layui-card" action="{:sysuri()}" data-auto="true" method="post">
+    <div class="layui-card-body padding-left-40">
+
+        <label class="layui-form-item block relative">
+            <span class="help-label"><b>出库单号</b>Order Code</span>
+            <input class="layui-input" name="code" maxlength="20" placeholder="请输入出库单号" required value="{$vo.code|default=''}">
+        </label>
+
+        <div class="layui-form-item">
+            <span class="help-label label-required-prev"><b>出库仓库</b>Warehouse</span>
+            <select class="layui-select" name="wcode" lay-search>
+                {foreach $warehouses as $v}
+                <option value="{$v.code}">{$v.code}（ {$v.name} ）</option>
+                {/foreach}
+            </select>
+        </div>
+
+        <!--{notempty name='products'}-->
+        <div class="layui-form-item block relative">
+            <div class="help-label label-required-prev"><b>关联产品</b>Related Products</div>
+            <select class="layui-select" name="ghash" lay-search>
+                {foreach $products as $product}{notempty name='product.items'}
+                <optgroup label="{$product.code} - {$product.name}">
+                    {foreach $product.items as $item}
+                    {if isset($vo.ghash) and $item.ghash eq $vo.ghash}
+                    <option selected value="{$item.ghash}">{$product.code} - {$product.name} # {$item.gspec|show_gspec}</option>
+                    {else}
+                    <option value="{$item.ghash}">{$product.code} - {$product.name} # {$item.gspec|show_gspec}</option>
+                    {/if}
+                    {/foreach}
+                </optgroup>
+                {/notempty}{/foreach}
+            </select>
+        </div>
+        <!--{/notempty}-->
+
+        <label class="layui-form-item block relative">
+            <span class="help-label"><b>出库数量</b>Storage Quantity</span>
+            <input class="layui-input" type="number" name="num_need" maxlength="20" data-blur-number="0" placeholder="请输入出库数量" required value="{$vo.num_need|default='100'}">
+        </label>
+
+        <div class="layui-form-item">
+            <span class="help-label label-required-prev"><b>收货代理</b>Agent User</span>
+            <select class="layui-select" name="auid" lay-search>
+                {foreach $agents as $agent}
+                <option value="{$agent.id}">{$agent.username}（ {$agent.phone} ）</option>
+                {/foreach}
+            </select>
+        </div>
+
+        <label class="layui-form-item block">
+            <span class="help-label"><b>出库订单备注</b>Notes of Stock in Order</span>
+            <textarea class="layui-textarea" name="remark" placeholder="请输入出库备注">{$vo.remark|default=''|raw}</textarea>
+        </label>
+
+    </div>
+
+    {notempty name='vo.id'}<input name="id" type="hidden" value="{$vo.id}">{/notempty}
+
+    <div class="layui-form-item text-center">
+        <button class="layui-btn" type='submit'>保存数据</button>
+        <button class="layui-btn layui-btn-danger" type='button' data-confirm="确定要取消编辑吗？" data-close>取消编辑</button>
+    </div>
+</form>
+
+<label class="layui-textarea layui-hide" id="ProductData">
+    <textarea class="layui-textarea">{$products|default=''|json_encode}</textarea>
+</label>

@@ -1,0 +1,61 @@
+<form action="{:sysuri()}" class="layui-form layui-card" data-auto="true" method="post">
+    <div class="layui-card-body ta-pl-40">
+
+        <fieldset class="layui-form-item">
+            <legend><span class="layui-badge think-bg-violet">原始资料</span></legend>
+            <div class="layui-row layui-col-space15">
+                <div class="layui-col-xs3">
+                    <div class="headimg headimg-no" style="width:138px;height:138px" data-tips-image data-lazy-src="{$vo.user.headimg|default='__ROOT__/static/theme/img/headimg.png'}"></div>
+                </div>
+                <div class="layui-col-xs9">
+                    <label class="layui-form-item relative block">
+                        <span class="help-label"><b>用户昵称</b>Nickname</span>
+                        <input class="layui-input layui-bg-gray" readonly value="{$vo.user.nickname|default=''}">
+                    </label>
+                    <label class="relative block">
+                        <span class="help-label"><b>用户账号</b>Phone</span>
+                        <input class="layui-input layui-bg-gray" readonly value="{$vo.user.phone|default=''}">
+                    </label>
+                </div>
+            </div>
+        </fieldset>
+
+        <fieldset class="layui-form-item">
+            <legend><span class="layui-badge think-bg-violet">用户资料</span></legend>
+            <div class="layui-row layui-col-space10">
+                <div class="layui-col-xs4 ta-pt-0 ta-pb-0">
+                    <label class="layui-form-item block">
+                        <span class="help-label"><b>手机号码</b>User Phone</span>
+                        <input class="layui-input" name="user.phone" placeholder="请输入手机号" required value="{$vo.user.phone|default=''}">
+                    </label>
+                </div>
+                <div class="layui-col-xs4 ta-pt-0 ta-pb-0">
+                    <label class="layui-form-item block">
+                        <span class="help-label"><b>用户昵称</b>Nickname</span>
+                        <input class="layui-input" name="user.nickname" placeholder="请输入用户昵称" required value="{$vo.user.nickname|default=''}">
+                    </label>
+                </div>
+                <div class="layui-col-xs4 ta-pt-0 ta-pb-0">
+                    <label class="layui-form-item block">
+                        <span class="help-label"><b>登录密码</b>Password</span>
+                        <input class="layui-input" name="user.password" placeholder="请输入登录密码，不填写则修改">
+                    </label>
+                </div>
+            </div>
+            <label class="layui-form-item">
+                <span class="help-label"><b>用户备注</b>User Remark</span>
+                <textarea class="layui-textarea" name="user.remark" placeholder="请输入等级描述">{$vo.user.remark|default=''}</textarea>
+            </label>
+        </fieldset>
+    </div>
+
+    <div class="hr-line-dashed"></div>
+    {if isset($vo.id)}<input name='id' type='hidden' value='{$vo.id}'>{/if}
+    {if isset($vo.unid)}<input name='unid' type='hidden' value='{$vo.unid}'>{/if}
+
+    <div class="layui-form-item text-center">
+        <button class="layui-btn" type='submit'>保存数据</button>
+        <button class="layui-btn layui-btn-danger" data-close data-confirm="确定要取消编辑吗？" type='button'>取消编辑</button>
+    </div>
+
+</form>

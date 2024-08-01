@@ -1,0 +1,50 @@
+<form action="{:sysuri()}" data-table-id="QueryData" class="layui-form layui-card" data-auto="true" method="post">
+    <div class="layui-card-body padding-left-40">
+
+        <label class="layui-form-item block relative">
+            <span class="help-label"><b>流程编号</b>Blockchain Code</span>
+            <input class="layui-input layui-disabled" readonly value="{$vo.code|default=''}">
+        </label>
+
+        <label class="layui-form-item block relative">
+            <span class="help-label"><b>流程名称</b>Blockchain Name</span>
+            <input class="layui-input layui-disabled" readonly placeholder="请输入流程名称" value="{$vo.name|default=''}">
+        </label>
+
+        <div class="layui-form-item">
+            <span class="help-label"><b>流程环节</b>Blockchain Segment</span>
+            <div style="max-height:300px" class="overauto">
+                {foreach $vo.data as $item}
+                <div class="layui-card border-radius-0 margin-bottom-15" style="border:1px solid #EEE">
+                    <div class="layui-card-header layui-bg-gray font-w7" style="padding:0 15px">{$item.title}</div>
+                    <div class="layui-card-body layui-bg-gray" style="padding:10px 15px">{$item.content}</div>
+                    {if stripos($item.fileType,'image')!==false}
+                    <img src="{$item.fileImage}" alt="img" class="full-width">
+                    {/if}
+                    {if stripos($item.fileType,'video')!==false}
+                    <video x5-video-player-type="h5" controls class="full-width">
+                        <source src="{$item.fileVideo}" type="video/mp4">
+                    </video>
+                    {/if}
+                    <div style="padding:5px 15px">{$item.datetime}</div>
+                </div>
+                {/foreach}
+            </div>
+        </div>
+
+        <label class="layui-form-item block relative">
+            <span class="help-label"><b>流程备注</b>Blockchain Remark</span>
+            <textarea class="layui-textarea layui-disabled" readonly placeholder="请输入流程备注">{$vo.remark|default=''|raw}</textarea>
+        </label>
+
+    </div>
+
+    <div class="hr-line-dashed"></div>
+    {notempty name='vo.id'}<input name="id" type="hidden" value="{$vo.id}">{/notempty}
+    {notempty name='vo.code'}<input name="code" type="hidden" value="{$vo.code}">{/notempty}
+
+    <div class="layui-form-item text-center">
+        <button class="layui-btn" type='submit'>确认上链</button>
+        <button class="layui-btn layui-btn-danger" type='button' data-confirm="确定要取消编辑吗？" data-close>取消编辑</button>
+    </div>
+</form>

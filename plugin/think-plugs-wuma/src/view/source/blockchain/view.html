@@ -1,0 +1,53 @@
+<form action="{:sysuri()}" class="layui-form layui-card" data-auto="true" method="post">
+    <div class="layui-card-body padding-left-40 padding-bottom-20">
+
+        {notempty name='vo.hash'}
+        <label class="layui-form-item block relative">
+            <span class="color-green font-w7">流程HASH值</span>
+            <span class="color-desc margin-left-5">Blockchain Hash</span>
+            <input class="layui-input think-bg-gray" readonly value="{$vo.hash|default=''}">
+        </label>
+        {/notempty}
+
+        <label class="layui-form-item block relative">
+            <span class="color-green font-w7">流程编号</span>
+            <span class="color-desc margin-left-5">Blockchain Code</span>
+            <input class="layui-input think-bg-gray" readonly value="{$vo.code|default=''}">
+        </label>
+
+        <label class="layui-form-item block relative">
+            <span class="color-green font-w7">流程名称</span>
+            <span class="color-desc margin-left-5">Blockchain Name</span>
+            <input class="layui-input think-bg-gray" readonly value="{$vo.name|default=''}">
+        </label>
+
+        <div class="layui-form-item">
+            <span class="color-green font-w7">流程环节</span>
+            <span class="color-desc margin-left-5">Blockchain Segment</span>
+            <div style="max-height:350px;overflow:auto">
+                {foreach $vo.data as $item}
+                <div class="layui-card border-radius-0 margin-bottom-15" style="border:1px solid #EEE">
+                    <div class="layui-card-header layui-bg-gray font-w7" style="padding:0 15px">{$item.title}</div>
+                    <div class="layui-card-body " style="padding:10px 15px">{$item.content|nl2br|raw}</div>
+                    {if stripos($item.fileType,'image')!==false}
+                    <img src="{$item.fileImage}" alt="img" class="full-width">
+                    {/if}
+                    {if stripos($item.fileType,'video')!==false}
+                    <video x5-video-player-type="h5" controls class="full-width">
+                        <source src="{$item.fileVideo}" type="video/mp4">
+                    </video>
+                    {/if}
+                    <div class="layui-bg-gray" style="padding:5px 15px">{$item.datetime}</div>
+                </div>
+                {/foreach}
+            </div>
+        </div>
+
+        <label class="layui-form-item block relative">
+            <span class="font-w7 color-green">流程备注</span>
+            <span class="color-desc margin-left-5">Blockchain Remark</span>
+            <textarea class="layui-textarea think-bg-gray" readonly placeholder="请输入流程备注">{$vo.remark|default=''|raw}</textarea>
+        </label>
+
+    </div>
+</form>

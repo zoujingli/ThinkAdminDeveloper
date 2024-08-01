@@ -1,0 +1,67 @@
+<form action="{:sysuri()}" method="post" data-auto="true" class="layui-form layui-card">
+    <div class="layui-card-body ta-pl-40">
+
+        <label class="layui-form-item block relative">
+            <span class="help-label"><b>认证有效时间</b>Expire Time</span>
+            <input class="layui-input" name="expire" type="number" vali-name="认证有效时间" data-blur-number="0" min="0" required value="{$data.expire|default='3600'}">
+            <span class="help-block">设置为 0 表示永不过期，建议设置有效时间达到系统自动回收令牌。</span>
+        </label>
+
+        <div class="layui-form-item block relative">
+            <span class="help-label label-required-prev"><b>登录自动注册</b>Auto Register</span>
+            <div class="layui-textarea help-checks">
+                {empty name='data.disRegister'}{php}$data['disRegister']=0;{/php}{/empty}
+                {foreach ['启用自动注册','禁止自动注册'] as $k=>$v}
+                <label class="think-radio">
+                    {if isset($data.disRegister) and $data.disRegister eq $k}
+                    <input type="radio" name="disRegister" value="{$k}" lay-ignore checked> {$v}
+                    {else}
+                    <input type="radio" name="disRegister" value="{$k}" lay-ignore> {$v}
+                    {/if}
+                </label>
+                {/foreach}
+            </div>
+            <span class="help-block">启用自动登录时，通过验证码登录时账号不存在会自动创建！</span>
+        </div>
+
+        <label class="layui-form-item block relative">
+            <span class="help-label"><b>默认昵称前缀</b>NickName Prefix</span>
+            <input class="layui-input" name="userPrefix" vali-name="默认昵称前缀" placeholder="请输入默认昵称前缀" required maxlength="20" value="{$data.userPrefix|default='用户'}">
+            <span class="help-block">用户绑定账号后会自动使用此前缀与手机号后4位拼接为新默认昵称。</span>
+        </label>
+
+        <div class="layui-form-item block relative">
+            <span class="help-label label-required-prev"><b>默认用户头像</b>Default Headimg</span>
+            <div class="layui-input-wrap">
+                <label class="relative label-required-null">
+                    <input class="layui-input layui-bg-gray" data-tips-hover data-tips-image readonly name="headimg" vali-name="用户默认头像" required value="{$data.headimg|default=''}">
+                </label>
+                <i class="input-right-icon pointer layui-icon layui-icon-upload" data-file data-type="gif,jpg,png,jpeg" data-field="headimg"></i>
+            </div>
+            <span class="help-block">当用户未设置头像时，自动使用此头像设置的图片链接。</span>
+        </div>
+
+        <div class="layui-form-item block relative">
+            <span class="help-label label-required-prev"><b>开放接口通道</b>Interface Types</span>
+            <div class="layui-textarea help-checks">
+                {foreach $types as $k=>$v}
+                <label class="think-checkbox" data-width style="width:120px" title="{$v.name|lang}">
+                    {empty name='v.status'}
+                    <input type="checkbox" name="types[]" value='{$k}' lay-ignore> {$v.name|lang}
+                    {else}
+                    <input type="checkbox" name="types[]" value='{$k}' lay-ignore checked> {$v.name|lang}
+                    {/empty}
+                </label>
+                {/foreach}
+            </div>
+        </div>
+    </div>
+
+    <div class="hr-line-dashed"></div>
+    {notempty name='vo.id'}<input type='hidden' value='{$vo.id}' name='id'>{/notempty}
+
+    <div class="layui-form-item text-center">
+        <button class="layui-btn" type='submit'>保存数据</button>
+        <button class="layui-btn layui-btn-danger" type='button' data-confirm="确定要取消编辑吗？" data-close>取消编辑</button>
+    </div>
+</form>

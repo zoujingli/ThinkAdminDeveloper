@@ -1,0 +1,52 @@
+<form action="{:sysuri()}" method="post" data-auto="true" class="layui-form layui-card">
+    <div class="layui-card-body padding-left-40">
+
+        <fieldset class="layui-form-item">
+            <legend><span class="layui-badge think-bg-violet">用户资料</span></legend>
+            <div class="layui-row layui-col-space15">
+                <div class="layui-col-xs3">
+                    <div class="headimg headimg-no shadow-inset" style="width:138px;height:138px" data-tips-image data-lazy-src="{$user.headimg|default='__ROOT__/static/theme/img/headimg.png'}"></div>
+                </div>
+                <div class="layui-col-xs9">
+                    <label class="layui-form-item relative block">
+                        <span class="help-label"><b>用户昵称</b>Nickname</span>
+                        <input class="layui-input layui-bg-gray" readonly value="{$user.nickname|default=''}">
+                    </label>
+                    <label class="relative block">
+                        <span class="help-label"><b>用户账号</b>Phone</span>
+                        <input class="layui-input layui-bg-gray" readonly value="{$user.phone|default=''}">
+                    </label>
+                </div>
+            </div>
+        </fieldset>
+
+        <fieldset class="layui-form-item">
+            <legend><span class="layui-badge think-bg-violet">余额充值</span></legend>
+
+            <label class="layui-form-item relative block">
+                <span class="help-label"><b>充值单号</b>Code</span>
+                <input class="layui-input layui-bg-gray" name="code" placeholder="请输入充值单号" readonly required value="{$vo.code|default=''}">
+            </label>
+
+            <label class="layui-form-item relative block">
+                <span class="help-label label-required-prev"><b>充值余额</b>Amount</span>
+                <input class="layui-input" name="amount" min="0" step="0.01" type="number" lay-affix="number" lay-precision="2" placeholder="请输入充值账户余额" required value="{$vo.amount|default='0.00'}">
+            </label>
+
+            <label class="layui-form-item relative block">
+                <span class="help-label"><b>充值备注</b>Remark</span>
+                <textarea class="layui-textarea" name="remark" required vali-name="充值备注" placeholder="请输入余额充值备注">{$vo.remark|default='后台充值'}</textarea>
+            </label>
+
+        </fieldset>
+    </div>
+
+    <div class="hr-line-dashed"></div>
+    <input name='unid' type='hidden' value='{$vo.unid|default=$user.id}'>
+    {notempty name='vo.id'}<input name='id' type='hidden' value='{$vo.id}'>{/notempty}
+
+    <div class="layui-form-item text-center">
+        <button class="layui-btn" type='submit'>保存数据</button>
+        <button class="layui-btn layui-btn-danger" data-close data-confirm="确定要取消编辑吗？" type='button'>取消编辑</button>
+    </div>
+</form>

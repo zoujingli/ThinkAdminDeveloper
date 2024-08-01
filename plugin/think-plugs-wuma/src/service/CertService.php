@@ -1,0 +1,70 @@
+<?php
+
+// +----------------------------------------------------------------------
+// | Wuma Plugin for ThinkAdmin
+// +----------------------------------------------------------------------
+// | 版权所有 2022~2024 ThinkAdmin [ thinkadmin.top ]
+// +----------------------------------------------------------------------
+// | 官方网站: https://thinkadmin.top
+// +----------------------------------------------------------------------
+// | 免责声明 ( https://thinkadmin.top/disclaimer )
+// | 收费插件 ( https://thinkadmin.top/fee-introduce.html )
+// +----------------------------------------------------------------------
+// | gitee 代码仓库：https://gitee.com/zoujingli/think-plugs-wuma
+// | github 代码仓库：https://github.com/zoujingli/think-plugs-wuma
+// +----------------------------------------------------------------------
+
+declare (strict_types=1);
+
+namespace plugin\wuma\service;
+
+use think\admin\Exception;
+use think\admin\Service;
+use think\admin\Storage;
+
+/**
+ * 证书图片生成服务
+ * @class CertService
+ * @package plugin\wuma\service
+ */
+class CertService extends Service
+{
+    /**
+     * 绘制证书图片
+     * @param string $target
+     * @param array $items
+     * @return string
+     * @throws \think\admin\Exception
+     */
+    public static function create(string $target, array $items): string
+    {
+        $file = Storage::down($target)['file'];
+        if (empty($file) || !file_exists($file) || filesize($file) < 10) {
+            throw new Exception('读取图片模板失败！');
+        }
+        // 加载背景图
+        [$sw, $wh] = getimagesize($file);
+        [$tw, $th] = [intval(504 * 1.5), intval(713 * 1.5)];
+        $font = __DIR__ . '/extra/font01.ttf';
+        $target = imagecreatetruecolor($tw, $th);
+        $source = imagecreatefromstring(file_get_contents($file));
+        imagecopyresampled($target, $source, 0, 0, 0, 0, $tw, $th, $sw, $wh);
+        foreach ($items as $item) if ($item['state']) {
+            [$x, $y] = [intval($tw * $item['point']['x'] / 100), intval($th * $item['point']['y'] / 100)];
+            if (preg_match('|^rgba\(\s*([\d.]+),\s*([\d.]+),\s*([\d.]+),\s*([\d.]+)\)$|', $item['color'], $matchs)) {
+                [, $r, $g, $b, $a] = $matchs;
+                $black = imagecolorallocatealpha($target, intval($r), intval($g), intval($b), (1 - $a) * 127);
+            } else {
+                $black = imagecolorallocate($target, 0x00, 0x00, 0x00);
+            }
+            imagefttext($target, $item['size'], 0, $x, intval($y + $item['size'] / 2 + 16), $black, $font, $item['value']);
+        }
+        ob_start();
+        imagepng($target);
+        $base64 = base64_encode(ob_get_contents());
+        ob_end_clean();
+        imagedestroy($target);
+        imagedestroy($source);
+        return "data:image/png;base64,{$base64}";
+    }
+}

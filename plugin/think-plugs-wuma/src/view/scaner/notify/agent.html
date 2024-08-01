@@ -1,0 +1,47 @@
+{extend name="table"}
+
+{block name="content"}
+<div class="think-box-shadow">
+    {include file='scaner/notify/agent-search'}
+    <table id="QueryData" data-url="{:sysuri()}" data-target-search="form.form-search"></table>
+</div>
+{/block}
+
+{block name='script'}
+<!-- 数据操作工具条模板 -->
+<script type="text/html" id="toolbar">
+    <!--{if auth('index')}-->
+    <a class="layui-btn layui-btn-primary layui-btn-sm" data-open='{:url("index")}?phone={{d.agent.phone}}'>查看窜货明细</a>
+    <!--{/if}-->
+</script>
+
+<script>
+    $(function () {
+        // 初始化表格组件
+        $('#QueryData').layTable({
+            even: true, height: 'full',
+            sort: {field: 'total', type: 'desc'},
+            cols: [[
+                {
+                    field: '', title: '代理', align: 'center', minWidth: 200, templet: function (d) {
+                        return laytpl('<b class="color-blue margin-right-5">{{d.phone}}</b><span>{{d.username}}</span>').render(d.agent);
+                    }
+                },
+                {
+                    field: '', title: '等级名称', align: 'center', minWidth: 120, templet: function (d) {
+                        return laytpl('<span>{{d.levelinfo.name}}</span>').render(d.agent);
+                    }
+                },
+                {
+                    field: '', title: '授权区域', align: 'left', minWidth: 180, templet: function (d) {
+                        return laytpl('<span>{{d.agent_prov}} - {{d.agent_city}} - {{d.agent_area}}</span>').render(d);
+                    }
+                },
+                {field: 'total', title: '窜货标签', align: 'center', minWidth: 130, sort: true},
+                {field: 'query', title: '扫码次数', align: 'center', minWidth: 130, sort: true},
+                {toolbar: '#toolbar', title: '操作面板', align: 'center', minWidth: 210, fixed: 'right'},
+            ]]
+        });
+    });
+</script>
+{/block}

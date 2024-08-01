@@ -1,0 +1,59 @@
+{
+  "type": "think-admin-plugin",
+  "name": "zoujingli/think-plugs-account",
+  "homepage": "https://thinkadmin.top",
+  "description": "Account Plugin for ThinkAdmin",
+  "authors": [
+    {
+      "name": "Anyon",
+      "email": "zoujingli@qq.com"
+    }
+  ],
+  "require": {
+    "php": ">7.1",
+    "ext-gd": "*",
+    "ext-curl": "*",
+    "ext-json": "*",
+    "zoujingli/think-install": "^1.0|@dev",
+    "zoujingli/think-library": "^6.1|@dev"
+  },
+  "require-dev": {
+    "phpunit/phpunit": "^7.0|*"
+  },
+  "autoload": {
+    "psr-4": {
+      "plugin\\account\\": "src"
+    }
+  },
+  "autoload-dev": {
+    "psr-4": {
+      "think\\admin\\tests\\": "tests/"
+    }
+  },
+  "extra": {
+    "think": {
+      "services": [
+        "plugin\\account\\Service"
+      ]
+    },
+    "plugin": {
+      "copy": {
+        "stc/database": "database/migrations"
+      }
+    },
+    "config": {
+      "type": "plugin",
+      "name": "用户账号管理",
+      "document": "https://thinkadmin.top/plugin/think-plugs-account.html",
+      "license": [
+        "VIP"
+      ]
+    }
+  },
+  "minimum-stability": "dev",
+  "config": {
+    "allow-plugins": {
+      "zoujingli/think-install": true
+    }
+  }
+}

@@ -1,0 +1,38 @@
+{extend name="main"}
+
+{block name="content"}
+<div class="flex-x">
+    <div class="laytable-links">
+        {foreach $types as $type}
+        <div class="text-center ta-p-5 nowrap">
+            <a data-table-load="{$type.link}">{$type.name}</a>
+        </div>
+        {/foreach}
+    </div>
+    <div class="flex-1 laytable-pagination relative" id="TableLinks" style="height:600px"></div>
+</div>
+
+<script>
+    $(function () {
+        $.base.onEvent('click', '[data-table-load]', function () {
+            $(this).parent().addClass('active').siblings().removeClass('active');
+            $.form.load(this.dataset.tableLoad, {}, 'get', function (ret) {
+                return $('.laytable-pagination').html(ret) && false;
+            });
+        });
+        $('.laytable-links [data-table-load]:first').trigger('click');
+    });
+</script>
+
+<style>
+    .laytable-links {
+        min-width: 8em;
+        line-height: 28px;
+    }
+
+    .laytable-links .active {
+        color: #2b87fb;
+        font-weight: bold;
+    }
+</style>
+{/block}

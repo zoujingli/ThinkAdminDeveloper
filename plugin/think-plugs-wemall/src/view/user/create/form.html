@@ -1,0 +1,95 @@
+<form action="{:sysuri()}" class="layui-form layui-card" data-auto="true" method="post">
+    <div class="layui-card-body ta-pl-40">
+
+        <div class="flex">
+            <label class="layui-form-item block relative flex-1">
+                <span class="help-label"><b>用户姓名</b>User Name</span>
+                <input class="layui-input" name="name" placeholder="请输入用户姓名" required value="{$vo.name|default=''}">
+                <span class="help-block">用户默认昵称，如果用户不存在则会使用该名称来创建。</span>
+            </label>
+            <div class="layui-form-item flex-1 ta-ml-15">
+                <span class="help-label label-required-prev"><b>用户头像</b>User Headimg</span>
+                <div class="block relative">
+                    <input class="layui-input" name="headimg" data-tips-image-hover vali-name="头像地址" placeholder="请输入用户头像地址" pattern="url" required value="{$vo.headimg|default=''}">
+                    <a class="input-right-icon layui-icon layui-icon-upload" data-field="headimg" data-type="gif,png,jpg,jpeg" data-file="image"></a>
+                    <span class="help-block">用户默认头像，如果用户不存在则使用此头像。</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="flex">
+            <label class="layui-form-item block relative flex-1">
+                <span class="help-label"><b>手机号码</b>User Phone</span>
+                <input class="layui-input" name="phone" pattern="mobile" maxlength="11" vali-name="手机号码" placeholder="请输入手机号码" required value="{$vo.phone|default=''}">
+                <span class="help-block">用户登录唯一账号，用于系统登录及其他关联字段。</span>
+            </label>
+            <label class="layui-form-item block relative flex-1 ta-ml-15">
+                <span class="help-label"><b>登录密码</b>User Password</span>
+                <input class="layui-input" name="password" placeholder="请输入登录密码" pattern="^.{6,}$" required value="{$vo.password|default='123456'}">
+                <span class="help-block">用户默认登录密码，设置后用户可以使用此密码登录</span>
+            </label>
+        </div>
+
+        <div class="flex">
+            <label class="layui-form-item block relative flex-1">
+                <span class="help-label label-required-prev"><b>累计佣金</b>Rebate Total</span>
+                <input class="layui-input" type="number" lay-affix="number" min="0" step="0.01" lay-precision="2" name="rebate_total" placeholder="请输入累计佣金" required value="{$vo.rebate_total|default='0.00'}">
+                <span class="help-block">将会在用户返佣记录里面创建一条记录，体现为初始佣金值。</span>
+            </label>
+            <label class="layui-form-item block relative flex-1 ta-ml-15">
+                <span class="help-label label-required-prev"><b>佣金记录描述</b>Rebate Total Remark</span>
+                <input class="layui-input" name="rebate_total_desc" placeholder="请输入佣金记录描述" required value="{$vo.rebate_total_desc|default='用户初始化结算佣金'}">
+                <span class="help-block">创建初始佣金记录显示的记录描述内容。</span>
+            </label>
+
+        </div>
+        <div class="flex">
+            <label class="layui-form-item block relative flex-1">
+                <span class="help-label label-required-prev"><b>剩余佣金</b>Rebate Usable</span>
+                <input class="layui-input" type="number" lay-affix="number" min="0" step="0.01" lay-precision="2" name="rebate_usable" placeholder="请输入剩余佣金" required value="{$vo.rebate_usable|default='0.00'}">
+                <span class="help-block">在用户提现记录创建已提现金额（ 累计佣金 减去 剩余佣金 ）</span>
+            </label>
+            <label class="layui-form-item block relative flex-1 ta-ml-15">
+                <span class="help-label label-required-prev"><b>提现记录描述</b>Rebate Usable Remark</span>
+                <input class="layui-input" name="rebate_usable_desc" placeholder="请输入佣金记录描述" required value="{$vo.rebate_usable_desc|default='用户初始化结算佣金提现'}">
+                <span class="help-block">创建初始提现记录显示的记录描述内容。</span>
+            </label>
+        </div>
+
+        <div class="flex">
+            <label class="layui-form-item block relative flex-1">
+                <span class="help-label"><b>上级手机</b>Parant Phone</span>
+                <input class="layui-input" name="agent_phone" pattern="mobile" maxlength="11" placeholder="可选，请输入上级手机" value="{$vo.agent_phone|default=''}">
+                <span class="help-block">自动绑定该手机所属用户为当前用户的上级，不存在请勿填写。</span>
+            </label>
+
+            <div class="layui-form-item block relative flex-1 ta-ml-15">
+                <span class="help-label label-required-prev"><b>代理权限</b>Agent Role</span>
+                <div class="layui-input help-checks">
+                    {empty name='vo.agent_entry'}{assign name='vo.agent_entry' value='0'/}{/empty}
+                    {foreach ['无代理权限','有代理权限'] as $k=>$v}
+                    <label class="think-radio">
+                        {if $vo.agent_entry eq $k}
+                        <input type="radio" lay-ignore name="agent_entry" value="{$k}" checked/> {$v}
+                        {else}
+                        <input type="radio" lay-ignore name="agent_entry" value="{$k}"/> {$v}
+                        {/if}
+                    </label>
+                    {/foreach}
+                </div>
+                <span class="help-block">佣有代理权限才能发展下级并获得佣金返利。</span>
+            </div>
+
+        </div>
+
+    </div>
+
+    <div class="hr-line-dashed"></div>
+    {if isset($vo.id)}<input name='id' type='hidden' value='{$vo.id}'>{/if}
+
+    <div class="layui-form-item text-center">
+        <button class="layui-btn" type='submit'>保存数据</button>
+        <button class="layui-btn layui-btn-danger" data-close data-confirm="确定要取消编辑吗？" type='button'>取消编辑</button>
+    </div>
+
+</form>

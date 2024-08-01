@@ -1,0 +1,185 @@
+<style>
+    .upload-image-xs {
+        padding: 2px !important;
+    }
+
+    .upload-image-xs .uploadimage {
+        width: 30px;
+        height: 30px;
+        margin: 0;
+    }
+
+    .upload-image-xs .uploadimage span:first-child {
+        display: none !important;
+    }
+
+    .goods-item-box fieldset {
+        width: 260px;
+        height: 80px;
+        padding: 15px 20px;
+        display: inline-block;
+        margin: 0 15px 15px 0;
+    }
+
+    .goods-spec-box {
+        position: relative;
+        margin: 0 10px 10px 0;
+        background: #EEEEEE;
+        vertical-align: middle;
+    }
+
+    .goods-spec-name {
+        z-index: 2;
+        width: 40px;
+        color: #fff;
+        height: 25px;
+        position: absolute;
+        background: #999;
+        line-height: 26px;
+    }
+
+
+    .goods-spec-btn {
+        height: 28px;
+        margin-left: 5px !important;
+        line-height: 28px !important;
+    }
+
+    .goods-spec-box {
+        margin: 0;
+        padding: 10px 0 5px 10px;
+        position: relative;
+    }
+
+    .goods-spec-box label {
+        display: inline-block;
+        position: relative;
+        margin-right: 10px;
+        margin-bottom: 5px;
+    }
+
+
+    .goods-spec-box input:not([type=checkbox]) {
+        width: 120px;
+        border: 1px solid #999;
+        display: inline-block !important;
+        z-index: 1;
+        position: relative;
+        line-height: 24px;
+        padding-left: 45px;
+        padding-right: 5px;
+    }
+
+    .goods-spec-box input[type=checkbox] {
+        width: 40px;
+        height: 26px;
+        border: none;
+        cursor: pointer;
+        z-index: 2;
+        position: absolute;
+        appearance: none;
+        -webkit-appearance: none;
+    }
+
+    .goods-spec-box input[type=checkbox]:after,
+    .goods-spec-box input[type=checkbox]:before {
+        top: 1px;
+        left: 1px;
+        width: 40px;
+        height: 24px;
+        position: absolute;
+    }
+
+    .goods-spec-box input[type=checkbox]:before {
+        content: '';
+        background: #c9c9c9;
+    }
+
+    .goods-spec-box input[type=checkbox]:after {
+        color: #999;
+        content: '\e63f';
+        font-size: 16px;
+        text-align: center;
+        line-height: 24px;
+        font-family: 'layui-icon', serif;
+    }
+
+    .goods-spec-box input[type=checkbox]:checked:after {
+        color: #333;
+        content: '\e605';
+    }
+
+    .goods-spec-box label .goods-spec-close {
+        top: 5px;
+        right: 5px;
+        width: 16px;
+        bottom: 3px;
+        height: 16px;
+        z-index: 2;
+        color: white;
+        display: none;
+        position: absolute;
+        font-size: 12px;
+        text-align: center;
+        box-sizing: border-box;
+        background: rgba(252, 24, 24, 0.6);
+        line-height: 16px;;
+        border-radius: 50%;
+    }
+
+    .goods-spec-box label .goods-spec-close:hover {
+        color: white;
+        background: rgba(252, 24, 24, 1.0);
+    }
+
+    .goods-spec-box label:hover .goods-spec-close {
+        display: inline-block;
+    }
+
+    .goods-spec-table {
+        margin-top: 10px;
+    }
+
+    .goods-spec-table tr th {
+        padding: 9px 0;
+        text-align: center;
+    }
+
+    .goods-spec-table tr th .layui-icon {
+        font-size: 13px;
+        margin-left: 3px;
+    }
+
+    .goods-spec-table tr td {
+        padding: 9px 6px;
+    }
+
+    .goods-spec-table tr td:has(input) {
+        padding: 0;
+    }
+
+    .goods-spec-table tr td:last-child {
+        text-align: center;
+    }
+
+    .goods-spec-table tr td:last-child label {
+        margin: 0;
+        width: 100%;
+        height: 100%;
+        display: block;
+    }
+
+    .goods-spec-table tr td label {
+        margin: 0;
+        padding: 0;
+    }
+
+    .goods-spec-table tr td label input.layui-input {
+        border: none;
+        width: 100%;
+        height: 38px !important;
+        text-align: center;
+        line-height: 38px !important;
+        padding-left: 0;
+    }
+</style>

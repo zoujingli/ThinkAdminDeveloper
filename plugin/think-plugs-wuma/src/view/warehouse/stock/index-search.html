@@ -1,0 +1,23 @@
+<fieldset>
+    <legend>{:lang('条件搜索')}</legend>
+    <form action="{:sysuri()}" autocomplete="off" class="layui-form layui-form-pane form-search" method="get" onsubmit="return false">
+
+        <div class="layui-form-item layui-inline">
+            <label class="layui-form-label">仓库名称</label>
+            <label class="layui-input-inline">
+                <input class="layui-input" name="wname" placeholder="请输入仓库名称或编号" value="{$get.wname|default=''}">
+            </label>
+        </div>
+
+        <div class="layui-form-item layui-inline">
+            <label class="layui-form-label">产品名称</label>
+            <label class="layui-input-inline">
+                <input class="layui-input" name="gname" placeholder="请输入产品名称或编号" value="{$get.gname|default=''}">
+            </label>
+        </div>
+
+        <div class="layui-form-item layui-inline">
+            <button class="layui-btn layui-btn-primary"><i class="layui-icon">&#xe615;</i> 搜 索</button>
+        </div>
+    </form>
+</fieldset>

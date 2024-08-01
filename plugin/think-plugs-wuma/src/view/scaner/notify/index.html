@@ -1,0 +1,57 @@
+{extend name="table"}
+
+{block name="content"}
+<div class="think-box-shadow">
+    {include file='scaner/notify/index-search'}
+    <table id="QueryData" data-url="{:sysuri()}" data-target-search="form.form-search"></table>
+</div>
+{/block}
+
+{block name='script'}
+<script>
+    $(function () {
+        // 初始化表格组件
+        $('#QueryData').layTable({
+            even: true, height: 'full',
+            sort: {field: 'id', type: 'desc'},
+            where: {
+                phone: '{$get.phone|default=""}',
+                region_prov: '{$get.region_prov|default=""}',
+                region_city: '{$get.region_city|default=""}',
+                region_area: '{$get.region_area|default=""}',
+            },
+            cols: [[
+                {field: 'id', title: 'ID', align: 'center', width: 60, sort: true},
+                {
+                    field: 'encode', title: '商品标签', align: 'center', width: '10%', templet: function (d) {
+                        return laytpl("<code>{{d.encode||'-'}}</code>").render(d);
+                    }
+                },
+                {field: 'type', title: '窜货规则', align: 'center', width: '5%'},
+                {
+                    field: 'mins', title: '产品信息', width: '15%', templet: function (d) {
+                        return laytpl('<div><b class="color-blue">{{d.product_code}}</b> - {{d.product_name}}</div>').render(d.info);
+                    }
+                },
+                {
+                    field: 'agent', title: '代理', width: '10%', templet: function (d) {
+                        return laytpl('<b class="color-blue margin-right-5">{{d.phone}}</b><span>{{d.username}}</span>').render(d.agent);
+                    }
+                },
+                {
+                    field: 'agent', title: '代理授权区域', width: '12%', templet: function (d) {
+                        return laytpl('<span>{{d.agent_prov}} - {{d.agent_city}} - {{d.agent_area}}</span>').render(d);
+                    }
+                },
+                {
+                    field: 'prov', title: '查询地理区域', width: '12%', templet: function (d) {
+                        return laytpl('<span>{{d.prov}} - {{d.city}} {{d.area?"-":""}} {{d.area}}</span>').render(d);
+                    }
+                },
+                {field: 'addr', title: '查询详细位置', width: '15%'},
+                {field: 'create_time', title: '查询时间', align: 'center', minWidth: 170},
+            ]]
+        });
+    });
+</script>
+{/block}

@@ -1,0 +1,91 @@
+{extend name="table"}
+
+{block name="button"}
+{if auth("warehouse.batch/index")}
+<button class='layui-btn layui-btn-sm layui-btn-primary' data-open='{:url("warehouse.batch/index")}'>批次出库</button>
+{/if}
+{if auth("add")}
+<button data-table-id="HouseTable" class='layui-btn layui-btn-sm layui-btn-primary' data-modal='{:url("add")}'>按单出库</button>
+{/if}
+{/block}
+
+{block name="content"}
+<div class='think-box-shadow'>
+    {include file='warehouse/outer/index-search'}
+    <table data-line='2' id="HouseTable" data-url="{:sysuri()}" data-target-search="form.form-search"></table>
+</div>
+
+<script>
+    $(function () {
+        $('#HouseTable').layTable({
+            even: true, height: 'full',
+            sort: {field: 'id', type: 'desc'},
+            cols: [[
+                {field: 'id', title: 'ID', hide: true, width: 80},
+                {field: '', title: '出库单号', width: '18%', templet: '#OrderTpl'},
+                {field: '', title: '产品数据', width: '18%', templet: '#GoodsTpl'},
+                {field: '', title: '出库状态', width: '16%', templet: '#StockTpl'},
+                {field: '', title: '出库仓库', width: '16%', templet: '#HouseTpl'},
+                {field: '', title: '收贷代理', width: '15%', templet: '#UserTpl'},
+                {toolbar: '#toolbar', title: '操作面板', align: 'center', minWidth: 140, fixed: 'right'}
+            ]]
+        });
+    });
+</script>
+
+<script type="text/html" id="OrderTpl">
+    {{#if(d.mode==1){}}
+    <span class="layui-badge layui-bg-blue layui-badge-middle pull-left">扫码</span>
+    {{#}else{}}
+    <span class="layui-badge layui-bg-cyan layui-badge-middle pull-left">虚拟</span>
+    {{#}}}
+    <div class="text-middle inline-block text-left">
+        <div>出库单号：<b>{{ d.code }}</b></div>
+        <div>出库数量：<b>{{ d.num_need + d.vir_need }}</b><span class="margin-row-5">{{ d.gunit || '件' }}</span>( 已出库 <b>{{ d.num_used + d.vir_used }}</b><span class="margin-left-5">{{ d.gunit || '件' }}</span> )</div>
+    </div>
+</script>
+
+<script type="text/html" id="GoodsTpl">
+    {{# if(!d.gcode){ }}
+    <div class="color-desc">关联产品数据无效！</div>
+    {{# }else{ }}
+    <div class="headimg headimg-no pull-left" data-tips-image data-tips-hover data-lazy-src="{{d.gcover||''}}"></div>
+    <div class="inline-block text-left">
+        <div>产品编号：<b class="color-blue">{{ d.gcode || '-' }}</b></div>
+        <div>产品名称：{{ d.gname || '-' }}<span class="color-desc padding-left-5">( {{ showSpec(d.gspec || '') }} )</span></div>
+    </div>
+    {{# } }}
+</script>
+
+<script type="text/html" id="StockTpl">
+    出库状态：{{-d.status === 1?'<b class="color-text">待出库</b>':'<b class="color-green">已出库</b>'}}
+    {{# if(d.type === 4){ }}<span class="layui-badge layui-bg-cyan margin-left-5">按单出库</span>{{# } }}
+    {{# if(d.type === 5){ }}<span class="layui-badge layui-bg-blue margin-left-5">直接出库</span>{{# } }}
+    {{# if(d.type === 6){ }}<span class="layui-badge layui-bg-purple margin-left-5">调货出库</span>{{# } }}
+    {{# if(d.type === 7){ }}<span class="layui-badge layui-bg-red margin-left-5">关联出库</span>{{# } }}
+    <div>创建时间：{{ d.create_time || '' }}</div>
+</script>
+
+<script type="text/html" id="HouseTpl">
+    <div>仓库名称：{{ d.wname || '-' }}</div>
+    <div>仓库编号：<b>{{ d.wcode || '-' }}</b></div>
+</script>
+
+<script type="text/html" id="UserTpl">
+    {{# if(d.agent && d.agent.username){ }}
+    <div>代理姓名：{{ d.agent.username || '-' }}</div>
+    <div>代理手机：<b>{{ d.agent.phone || '-' }}</b></div>
+    {{# }else{ }}
+    <div class="color-desc margin-top-10">无代理信息</div>
+    {{# } }}
+</script>
+
+<script type="text/html" id="toolbar">
+    {if auth('show')}
+    <a class="layui-btn layui-btn-sm layui-btn-normal" data-width="1080px" data-modal="{:url('show')}?code={{d.code}}" data-title="出库详情">详 情</a>
+    <!--{/if}-->
+    <!--{if auth('remove')}-->
+    <a class="layui-btn layui-btn-sm layui-btn-danger" data-confirm="撤销后不能恢复，请谨慎操作！" data-action="{:url('remove')}" data-value="code#{{d.code}}">撤 销</a>
+    <!--{/if}-->
+</script>
+{/block}

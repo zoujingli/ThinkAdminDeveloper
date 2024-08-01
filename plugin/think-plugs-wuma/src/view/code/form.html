@@ -1,0 +1,256 @@
+<style>
+    #RuleForm .layui-form-label {
+        color: #098;
+        width: 100px;
+        padding: 8px;
+        font-weight: 700;
+    }
+
+    #RuleForm .layui-form-label + .layui-input-block {
+        margin-left: 100px;
+    }
+</style>
+
+<form class="layui-form layui-card layui-form-pane" data-table-id="CoderTable" action="{:sysuri()}" data-auto="true" method="post">
+    <div class="layui-card-body padding-left-40 transition" id="RuleForm">
+
+        <div class="layui-row layui-col-space15">
+            <div class="layui-col-xs6">
+                <label class="layui-form-label label-required notselect">物码套件组合</label>
+                <div class="layui-input-block">
+                    <div class="layui-input padding-left-15">
+                        <label class="think-checkbox notselect" v-if="type===1">
+                            <input checked :checked="type===1" onclick="this.checked=true" type="checkbox" value="1" name="is_min" lay-ignore> 防伪
+                        </label>
+                        <label class="think-checkbox notselect" v-if="type===2">
+                            <input v-model="check.min" type="checkbox" value="1" name="is_min" lay-ignore> 小码
+                        </label>
+                        <label class="think-checkbox notselect">
+                            <input v-model="check.mid" type="checkbox" value="1" name="is_mid" lay-ignore> 中码
+                        </label>
+                        <label class="think-checkbox notselect">
+                            <input v-model="check.max" type="checkbox" value="1" name="is_max" lay-ignore> 大码
+                        </label>
+                    </div>
+                </div>
+            </div>
+            <div class="layui-col-xs6">
+                <label class="layui-form-label label-required notselect">物码关联类型</label>
+                <div class="layui-input-block">
+                    <div class="layui-input padding-left-15">
+                        {foreach [1=>'前关联',2=>'后关联'] as $k => $v}
+                        <label class="think-radio notselect">
+                            <input v-model.number="type" type="radio" value="{$k}" name="type" lay-ignore> {$v}
+                        </label>
+                        {/foreach}
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="layui-row layui-col-space15" v-if="check.max">
+            <div class="layui-col-xs6">
+                <label class="layui-form-label label-required notselect">大 码 长 度</label>
+                <div class="layui-input-block">
+                    <select class="layui-input" name="max_length" v-model="maxLength" data-name="maxLength" lay-filter="CodeLength" lay-ignore>
+                        <option v-for="n in maxLengths" :value="n">{{ n }} 位数字</option>
+                    </select>
+                </div>
+            </div>
+            <div class="layui-col-xs6" v-if="type===1">
+                <label class="layui-form-label label-required notselect">对应中码比值</label>
+                <div class="layui-input-block">
+                    <input name="max_mid" min="1" v-model.number="maxmid" @change="number" class="layui-input" value="{$vo.max_mid|default=6}" data-blur-number="0" data-value-min="0" type='number'>
+                </div>
+            </div>
+            <div class="layui-col-xs6" v-if="type===2">
+                <label class="layui-form-label label-required notselect">生成大码数量</label>
+                <div class="layui-input-block">
+                    <input name="max_number" class="layui-input" value="{$vo.max_number|default=1000}" data-blur-number="0" data-value-min="0" type='number'>
+                </div>
+            </div>
+        </div>
+
+        <div class="layui-row layui-col-space15" v-if="check.mid">
+            <div class="layui-col-xs6">
+                <label class="layui-form-label label-required notselect">中 码 长 度</label>
+                <div class="layui-input-block">
+                    <select class="layui-input" name="mid_length" v-model="midLength" data-name="midLength" lay-filter="CodeLength" lay-ignore>
+                        <option v-for="n in midLengths" :value="n">{{ n }} 位数字</option>
+                    </select>
+                </div>
+            </div>
+            <div class="layui-col-xs6" v-if="type===1">
+                <label class="layui-form-label label-required notselect">对应小码比值</label>
+                <div class="layui-input-block">
+                    <input name="mid_min" min="1" v-model.number="midmin" @change="number" class="layui-input" value="{$vo.mid_min|default=12}" data-blur-number="0" data-value-min="0" type='number'>
+                </div>
+            </div>
+            <div class="layui-col-xs6" v-if="type===2">
+                <label class="layui-form-label label-required notselect">生成中码数量</label>
+                <div class="layui-input-block">
+                    <input name="mid_number" class="layui-input" value="{$vo.mid_number|default=1000}" data-blur-number="0" data-value-min="0" type='number'>
+                </div>
+            </div>
+        </div>
+
+        <div class="layui-row layui-col-space15" v-if="check.min||type===1">
+            <div class="layui-col-xs6">
+                <label class="layui-form-label label-required notselect">防伪码长度</label>
+                <div class="layui-input-block">
+                    <select class="layui-input" name="hex_length" v-model="hexLength" data-name="hexLength" lay-filter="CodeLength" lay-ignore>
+                        <option v-for="n in hexLengths" :value="n">{{ n }} 位数字加字母</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="layui-col-xs6" v-if="type===1">
+                <label class="layui-form-label label-required notselect">生成小码数量</label>
+                <div class="layui-input-block margin-right-0">
+                    <input name="number" class="layui-input" @change="number" :min="step" :step="step" v-model.number="minNumber" value="{$vo.number|default=0}" data-value-min="1" data-blur-number="0" type='number'>
+                </div>
+            </div>
+
+            <div class="layui-col-xs6" v-if="type===2">
+                <label class="layui-form-label label-required notselect">生成小码数量</label>
+                <div class="layui-input-block margin-right-0">
+                    <input name="number" class="layui-input" @change="number" :step="step" v-model.number="minNumber" value="{$vo.number|default=0}" data-value-min="0" data-blur-number="0" type='number'>
+                </div>
+            </div>
+        </div>
+
+        <div class="layui-row layui-col-space15" v-if="check.min||type===1">
+            <div class="layui-col-xs6">
+                <label class="layui-form-label label-required notselect">防窜码长度</label>
+                <div class="layui-input-block">
+                    <select v-model="minLength" name="min_length" class="layui-input" data-name="minLength" lay-filter="CodeLength" lay-ignore>
+                        <option v-for="n in minLengths" :value="n">{{ n }} 位数字</option>
+                    </select>
+                </div>
+            </div>
+            <div class="layui-col-xs6">
+                <label class="layui-form-label label-required notselect">指定序号长度</label>
+                <div class="layui-input-block">
+                    <select v-model="snsLength" class="layui-input" name="sns_length" data-name='snsLength' lay-filter="CodeLength" lay-ignore>
+                        <option v-for="n in snsLengths" :value="n">{{ n }} 位数字</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+
+        <div class="layui-row layui-col-space15" v-if="check.min||type===1">
+            <div class="layui-col-xs6">
+                <label class="layui-form-label label-required notselect">验证码长度</label>
+                <div class="layui-input-block">
+                    <select v-model="verLength" name="ver_length" class="layui-input" data-name="verLength" lay-filter="CodeLength" lay-ignore>
+                        <option v-for="n in verLengths" :value="n">{{ n }} 位数字</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+
+        <div class="layui-row layui-col-space15">
+            <div class="layui-col-xs12">
+                <label class="layui-form-label notselect">物 码 描 述</label>
+                <div class="layui-input-block">
+                    <textarea placeholder="请输入物码描述" class="layui-textarea" name="remark">{$vo.remark|default=""}</textarea>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="hr-line-dashed"></div>
+    {if isset($vo['id'])}<input type='hidden' value='{$vo.id}' name='id'>{/if}
+    {if isset($vo['batch'])}<input type='hidden' value='{$vo.batch}' name='batch'>{/if}
+
+    <div class="layui-form-item text-center">
+        <button class="layui-btn" type='submit'>保存数据</button>
+        <button class="layui-btn layui-btn-danger" type='button' data-confirm="确定要取消编辑吗？" data-close>取消编辑</button>
+    </div>
+</form>
+
+<script>
+    $('.layui-layer-content').css('overflow', 'revert');
+    require(['vue'], function (vue) {
+        var app = new vue({
+            el: '#RuleForm',
+            data: {
+                step: 1,
+                type: parseInt('{$vo.type|default=1}'),
+                snsLength: parseInt('{$vo.sns_length|default=10}'),
+                snsLengths: [10, 11, 12, 13, 14, 15, 16, 17, 18, 19],
+                hexLength: parseInt('{$vo.hex_length|default=12}'),
+                hexLengths: [10, 11, 12, 13, 14, 15, 16, 17, 18, 19],
+                minLength: parseInt('{$vo.min_length|default=12}'),
+                minLengths: [10, 11, 12, 13, 14, 15, 16, 17, 18, 19],
+                midLength: parseInt('{$vo.mid_length|default=10}'),
+                midLengths: [10, 11, 12, 13, 14, 15, 16, 17, 18, 19],
+                maxLength: parseInt('{$vo.max_length|default=10}'),
+                maxLengths: [10, 11, 12, 13, 14, 15, 16, 17, 18, 19],
+                verLength: parseInt('{$vo.ver_length|default=4}'),
+                verLengths: [4, 6, 8],
+                maxmid: parseInt('{$vo.max_mid|default=10}'),
+                midmin: parseInt('{$vo.mid_min|default=12}'),
+                minNumber: parseInt('{$vo.number|default=1080}'),
+                check: {
+                    min: true,
+                    mid: !!parseInt('{$vo.is_mid|default=1}'),
+                    max: !!parseInt('{$vo.is_max|default=1}'),
+                },
+            },
+            watch: {
+                type: function () {
+                    this.render();
+                    if (v === 1) {
+                        this.check.mid = true;
+                        this.check.max && (this.check.mid = true);
+                        this.check.mid || (this.check.max = false);
+                    }
+                },
+                'check.min': {
+                    deep: true, handler: function () {
+                        this.render();
+                    }
+                },
+                'check.mid': {
+                    deep: true, handler: function (v) {
+                        this.type === 1 && (v || (this.check.max = v));
+                        this.render();
+                    }
+                },
+                'check.max': {
+                    deep: true, handler: function (v) {
+                        this.type === 1 && (v && (this.check.mid = v));
+                        this.render();
+                    }
+                }
+            },
+            methods: {
+                number: function () {
+                    if (this.type === 1 && this.check.max && this.check.mid) {
+                        this.step = this.maxmid * this.midmin;
+                        this.minNumber = Math.ceil(this.minNumber / this.step) * this.step;
+                    } else if (this.type === 1 && this.check.mid) {
+                        this.step = this.midmin;
+                        this.minNumber = Math.ceil(this.minNumber / this.step) * this.step;
+                        if (this.minNumber < this.step) this.minNumber = this.step;
+                    } else {
+                        this.step = 1;
+                    }
+                },
+                render: function () {
+                    $('select[lay-ignore]').removeAttr('lay-ignore');
+                    setTimeout("layui.form.render('select')", 10);
+                    this.number();
+                },
+            },
+            created: function () {
+                this.render();
+                // 同步绑定 layui.select 结果数据
+                layui.form.on('select(CodeLength)', function (data) {
+                    app[data.elem.dataset.name] = data.value;
+                });
+            }
+        });
+    });
+</script>

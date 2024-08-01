@@ -1,0 +1,38 @@
+<form class="layui-form layui-card" data-table-id="UserTable" action="{:sysuri()}" data-auto="true" method="post">
+    <div class="layui-card-body padding-left-40">
+
+        <div class="layui-form-item">
+            <label class="block relative">
+                <span class="help-label label-required-prev"><b>登录账号</b>Username</span>
+                {if isset($vo) and isset($vo.username)}
+                <input disabled value='{$vo.username|default=""}' class="layui-input layui-disabled">
+                {else}
+                <input name="username" value='{$vo.username|default=""}' required pattern="^.{4,}$" placeholder="请输入登录账号" class="layui-input">
+                {/if}
+            </label>
+            <span class="help-block">登录账号不能重复，账号创建后不能再次修改</span>
+        </div>
+
+        <div class="layui-form-item block relative">
+            <label class="block relative">
+                <span class="help-label"><b>账号昵称</b>Nickname</span>
+                <input name="nickname" value='{$vo.nickname|default=""}' required placeholder="请输入账号昵称" class="layui-input">
+            </label>
+            <span class="help-block">账号昵称用于显示区分，请尽量保持唯一不要重复</span>
+        </div>
+
+        <label class="layui-form-item block relative">
+            <span class="help-label"><b>账号描述</b>User Remark</span>
+            <textarea placeholder="请输入账号描述" class="layui-textarea" name="remark">{$vo.remark|default=""}</textarea>
+        </label>
+
+    </div>
+
+    <div class="hr-line-dashed"></div>
+    {notempty name='vo.id'}<input type='hidden' value='{$vo.id}' name='id'>{/notempty}
+
+    <div class="layui-form-item text-center">
+        <button class="layui-btn" type='submit'>保存数据</button>
+        <button class="layui-btn layui-btn-danger" type='button' data-confirm="确定要取消编辑吗？" data-close>取消编辑</button>
+    </div>
+</form>

@@ -1,0 +1,44 @@
+<fieldset>
+    <legend>{:lang('条件搜索')}</legend>
+    <form action="{:sysuri()}" autocomplete="off" class="layui-form layui-form-pane form-search" method="get" onsubmit="return false">
+
+        <div class="layui-form-item layui-inline">
+            <label class="layui-form-label">赋码批次</label>
+            <label class="layui-input-inline">
+                <input class="layui-input" name="batch" placeholder="请输入赋码批次号" value="{$get.batch|default=''}">
+            </label>
+        </div>
+
+        <div class="layui-form-item layui-inline">
+            <label class="layui-form-label">物码批次</label>
+            <label class="layui-input-inline">
+                <input class="layui-input" name="cbatch" placeholder="请输入物码批次号" value="{$get.cbatch|default=''}">
+            </label>
+        </div>
+
+        <div class="layui-form-item layui-inline">
+            <label class="layui-form-label">防伪溯源</label>
+            <label class="layui-input-inline">
+                <input class="layui-input" name="encode" placeholder="请输入防伪溯源" value="{$get.encode|default=''}">
+            </label>
+        </div>
+
+        <div class="layui-form-item layui-inline">
+            <label class="layui-form-label">标签序号</label>
+            <label class="layui-input-inline">
+                <input class="layui-input" name="minValue" placeholder="请输入标签小码" value="{$get.minValue|default=''}">
+            </label>
+        </div>
+
+        <div class="layui-form-item layui-inline">
+            <label class="layui-form-label">创建时间</label>
+            <label class="layui-input-inline">
+                <input data-date-range name="create_time" value="{$get.create_time|default=''}" placeholder="请选择创建时间" class="layui-input">
+            </label>
+        </div>
+
+        <div class="layui-form-item layui-inline">
+            <button class="layui-btn layui-btn-primary"><i class="layui-icon">&#xe615;</i> 搜 索</button>
+        </div>
+    </form>
+</fieldset>

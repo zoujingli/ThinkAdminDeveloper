@@ -1,0 +1,72 @@
+<form action="{:sysuri()}" id="WareForm" data-table-id="WhouseTable" class="layui-form layui-card" data-auto="true" method="post">
+    <div class="layui-card-body padding-left-40">
+
+        <label class="layui-form-item block relative">
+            <span class="help-label"><b>仓库编号</b>Warehouse Code</span>
+            <!--{if isset($vo.id)}-->
+            <input class="layui-input think-bg-gray" readonly name="code" required value="{$vo.code|default=''}">
+            <!--{else}-->
+            <input class="layui-input" name="code" placeholder="请输入仓库编号" required value="{$vo.code|default=''}">
+            <!--{/if}-->
+        </label>
+
+        <label class="layui-form-item block relative">
+            <span class="help-label"><b>仓库名称</b>Warehouse Name</span>
+            <input class="layui-input" name="name" placeholder="请输入仓库名称" required value="{$vo.name|default=''}">
+        </label>
+
+        <div class="layui-form-item block relative">
+            <div class="help-label label-required-prev"><b>仓库地址</b>Warehouse Address</div>
+            <div class="layui-row layui-col-space10 layui-bg-gray">
+                <div class="layui-col-xs2">
+                    <span class="font-s10 color-desc">所在省份 Province</span>
+                    <select class="layui-select" lay-filter="addr_prov" name="addr_prov"></select>
+                </div>
+                <div class="layui-col-xs2">
+                    <span class="font-s10 color-desc">所在城市 City</span>
+                    <select class="layui-select" lay-filter="addr_city" name="addr_city"></select>
+                </div>
+                <div class="layui-col-xs2">
+                    <span class="font-s10 color-desc">所在区域 Area</span>
+                    <select class="layui-select" lay-filter="addr_area" name="addr_area"></select>
+                </div>
+                <div class="layui-col-xs6">
+                    <span class="font-s10 color-desc">详情地址 Address</span>
+                    <input class="layui-input" placeholder="请输入详细地址" name="addr_text" value="{$vo.addr_text|default=''}">
+                </div>
+            </div>
+        </div>
+
+        <label class="layui-form-item block relative">
+            <span class="help-label"><b>仓库负责人</b>Warehouse Person</span>
+            <input class="layui-input" name="person" placeholder="请输入仓库负责人" required value="{$vo.person|default=''}">
+        </label>
+
+        <label class="layui-form-item block">
+            <span class="help-label"><b>仓库简介备注</b>Warehouse Remark</span>
+            <textarea class="layui-textarea" name="remark" placeholder="请输入仓库简介备注">{$vo.remark|default=''|raw}</textarea>
+        </label>
+
+    </div>
+
+    {notempty name='vo.id'}<input name="id" type="hidden" value="{$vo.id}">{/notempty}
+
+    <div class="layui-form-item text-center">
+        <button class="layui-btn" type='submit'>保存数据</button>
+        <button class="layui-btn layui-btn-danger" type='button' data-confirm="确定要取消编辑吗？" data-close>取消编辑</button>
+    </div>
+</form>
+
+<script>
+    $('#WareForm').parent().css('overflow', 'revert');
+    require(['pcasunzips'], function () {
+        /*! 省市区数据处理 */
+        (function (prov, city, area, call) {
+            new PCAS("addr_prov", "addr_city", "addr_area", prov, city, area), call();
+            form.on('select(addr_area)', call), form.on('select(addr_city)', call), form.on('select(addr_prov)', call);
+        })('{$vo.addr_prov|default=""}', '{$vo.addr_city|default=""}', '{$vo.addr_area|default=""}', function (data) {
+            $('select:not([lay-ignore])').nextAll('div.layui-form-select').remove();
+            data && data.elem && $(data.elem).trigger('change'), layui.form.render('select');
+        });
+    });
+</script>

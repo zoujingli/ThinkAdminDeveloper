@@ -1,0 +1,38 @@
+{extend name="main"}
+
+{block name="button"}
+<button data-target-submit class='layui-btn layui-btn-sm'>保存数据</button>
+<button data-target-backup class="layui-btn layui-btn-sm layui-btn-danger" data-confirm="确认要取消编辑吗？">取消编辑</button>
+{/block}
+
+{block name='content'}
+<form action="{:sysuri()}?code={$get.code|default=''}" method="post" data-auto="true" class="layui-form layui-card">
+    <div class="layui-card-body">
+
+        <label class="layui-form-item relative block">
+            <span class="help-label"><b>内容标题</b>Name</span>
+            <input class="layui-input" name="name" placeholder="请输入内容标题" required value='{$data.name|default=""}'>
+        </label>
+
+        <div class="layui-form-item label-required-prev">
+            <span class="help-label"><b>富文本内容</b>Content</span>
+            <textarea class="layui-hide" name="content">{$data.content|default=""}</textarea>
+        </div>
+
+        <div class="hr-line-dashed"></div>
+        <input type="hidden" name="code" value="{$get.code|default=''}">
+
+        <div class="layui-form-item text-center">
+            <button class="layui-btn" type="submit">保存数据</button>
+            <button class="layui-btn layui-btn-danger" data-confirm="确定要取消编辑吗？" data-target-backup type='button'>取消编辑</button>
+        </div>
+
+    </div>
+</form>
+
+<script>
+    require(['ckeditor'], function () {
+        window.createEditor('[name=content]', {height: 540});
+    });
+</script>
+{/block}

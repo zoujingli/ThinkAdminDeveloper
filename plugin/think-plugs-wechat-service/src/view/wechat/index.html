@@ -1,0 +1,91 @@
+{extend name="table"}
+
+{block name="button"}
+<!--{if isset($type) and $type eq 'index' and auth("queue")}-->
+<button data-confirm="确定要同步授权微信吗？" data-queue="{:url('queue')}" class='layui-btn layui-btn-sm layui-btn-primary'>同步授权微信</button>
+<!--{/if}-->
+{/block}
+
+{block name="content"}
+<div class="layui-tab layui-tab-card think-bg-white">
+    <ul class="layui-tab-title">
+        {foreach ['index'=>'公众号','recycle'=>'回收站'] as $k=>$v}
+        {if isset($type) and $type eq $k}
+        <li class="layui-this" data-open="{:url('index')}?type={$k}">{$v}</li>
+        {else}
+        <li data-open="{:url('index')}?type={$k}">{$v}</li>
+        {/if}{/foreach}
+    </ul>
+    <div class="layui-tab-content">
+        {include file='wechat/index_search'}
+        <table id="WechatTable" data-line="3" data-url="{$request->url()}" data-target-search="form.form-search"></table>
+    </div>
+</div>
+{/block}
+
+{block name='script'}
+<script>
+    $(function () {
+        let $table = $('#WechatTable').layTable({
+            even: true, height: 'full',
+            sort: {field: 'auth_time', type: 'desc'},
+            cols: [[
+                {
+                    field: 'total', sort: true, minWidth: 350, title: '接口信息', templet: function (d) {
+                        let line = [];
+                        line.push('公众号APPID：<b>{{d.authorizer_appid}}</b>，已请求 <b class="color-blue">{{d.total}}</b> 次')
+                        line.push('平台接口密钥：<b>{{-d.appkey||"<span class=\'color-desc font-w4\'>未生成平台接口密钥, 请稍候授权绑定</span>"}}</b>')
+                        line.push('消息推送地址：{{d.appuri||"未配置消息推送地址"}}')
+                        return laytpl('<div class="flex flex-align-center"><div class="ta-pr-10">{{-showTableImage(d.user_headimg, false, "md")}}</div><div>' + line.join('<br>') + '</div></div>').render(d)
+                    }
+                },
+                {
+                    field: 'auth_time', sort: true, minWidth: 350, title: '公众号信息', templet: function (d) {
+                        let line = [];
+                        line.push('{{-d.user_nickname||"<span class=color-desc>未获取到微信昵称</span>"}} <span class="color-desc">( {{d.user_company}} )</span>')
+                        line.push('于 <span class="color-blue">{{layui.util.toDateString(d.auth_time*1000, "yyyy年MM月dd日 HH:mm:ss")}}</span> 完成授权')
+                        if (d.service_verify === '未认证') {
+                            line.push("<b>{{d.user_name||'-'}}</b> / <b>{{d.service_type||'-'}}</b> / <b class='color-red'>未认证</b>")
+                        } else {
+                            line.push("<b>{{d.user_name||'-'}}</b> / <b>{{d.service_type||'-'}}</b> / <b class='color-green'>已认证</b>")
+                        }
+                        return laytpl('<div class="flex flex-align-center"><div><img alt="" class="headimg headimg-md headimg-no" referrerpolicy="no-referrer" data-tips-hover data-tips-image src="{{d.qrcode_url}}"></div><div>' + line.join('<br>') + '</div></div>').render(d)
+                    }
+                },
+                {toolbar: '#toolbar', title: '操作面板', minWidth: 280, fixed: 'right'},
+            ]]
+        });
+
+
+        // 数据状态切换操作
+        layui.form.on('switch(StatusSwitch)', function (obj) {
+            let data = {id: obj.value, status: obj.elem.checked > 0 ? 1 : 0};
+            $.form.load("{:url('state')}", data, 'post', function (ret) {
+                let fn = () => $table.trigger('reload');
+                ret.code > 0 ? fn() : $.msg.error(ret.info, 3, fn)
+                return false;
+            }, false);
+        });
+    });
+</script>
+
+<!-- 数据操作工具条模板 -->
+<script type="text/html" id="toolbar">
+
+    <div class="ta-pt-10"></div>
+    <!--{if auth("state")}-->
+    <input type="checkbox" value="{{d.id}}" lay-skin="switch" lay-text="已激活|已禁用" lay-filter="StatusSwitch" {{-d.status>0?'checked':''}}>
+    <!--{/if}-->
+
+    <span class="ta-ml-5"></span>
+
+    <!--{if auth("sync")}-->
+    <a class="layui-btn layui-btn-sm" data-action="{:url('sync')}" data-value="appid#{{d.authorizer_appid}}">同 步</a>
+    <!--{/if}-->
+
+    <!--{if auth("clear")}-->
+    <a class="layui-btn layui-btn-sm layui-btn-normal" data-confirm="每个微信每个月有10次清零机会，请谨慎使用！" data-action='{:url("clear")}' data-value="appid#{{d.authorizer_appid}}">清 零</a>
+    <!--{/if}-->
+
+</script>
+{/block}

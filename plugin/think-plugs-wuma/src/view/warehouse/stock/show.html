@@ -1,0 +1,62 @@
+{block name="content"}
+<div class="think-box-shadow">
+    <div class="layui-bg-gray border-line border-radius-5 margin-bottom-15 padding-20">
+        <div class="layui-row">
+            <div class="layui-col-xs6">
+                <div class="layui-form-item">
+                    <b>产品编号：</b><b>{$goods.gcode|default=''}</b>
+                </div>
+                <div class="layui-form-item">
+                    <b>产品名称：</b><b class="color-blue">{$goods.gname|default=''}</b>
+                    <span class="margin-left-5">{$goods.gspec|show_gspec}</span>
+                </div>
+                <div>
+                    <b>所属仓库：</b><b class="color-blue">{$warehouse.name|default=''}</b>
+                    <span class="margin-left-5">{$warehouse.code|default=''}</span>
+                </div>
+            </div>
+            <div class="layui-col-xs6 sub-strong-blue">
+                <div class="layui-form-item">
+                    <span>累计入库<b class="margin-row-5">{$stock.num_total+$stock.vir_total}</b>{$goods.gunit|default=''}</span>
+                    <span class="color-desc font-s12">（ 扫码<b class="margin-row-5">{$stock.num_total}</b>{$goods.gunit|default=''}, 虚拟<b class="margin-row-5">{$stock.vir_total}</b>{$goods.gunit|default=''} ）</span>
+                </div>
+                <div class="layui-form-item">
+                    <span>累计出库<b class="margin-row-5">{$stock.num_count+$stock.vir_count}</b>{$goods.gunit|default=''}</span>
+                    <span class="color-desc font-s12">（ 扫码<b class="margin-row-5">{$stock.num_count}</b>{$goods.gunit|default=''}, 虚拟<b class="margin-row-5">{$stock.vir_count}</b>{$goods.gunit|default=''} ）</span>
+                </div>
+                <div>
+                    <span>现有库存<b class="margin-row-5">{$stock.num_total+$stock.vir_total-$stock.num_count-$stock.vir_count}</b>{$goods.gunit|default=''}</span>
+                    <span class="color-desc font-s12">（ 扫码<b class="margin-row-5">{$stock.num_total-$stock.num_count}</b>{$goods.gunit|default=''}, 虚拟<b class="margin-row-5">{$stock.vir_total-$stock.vir_count}</b>{$goods.gunit|default=''} ）</span>
+                </div>
+            </div>
+        </div>
+    </div>
+    <table id="StockData" data-url="{:request()->url()}" data-target-search="form.form-search"></table>
+</div>
+<script>
+    $(function () {
+        $('#StockData').layTable({
+            even: true, height: 'full', loading: true,
+            sort: {field: 'id', type: 'desc'},
+            cols: [[
+                {
+                    field: 'type', title: '操作类型', align: 'center', templet: function (d) {
+                        let types = ['', '订单入库', '直接入库', '调货入库', '订单出库', '直接出库', '调货出库', '关联出库', '直接退货'];
+                        return (types[d.type] ?? '未知操作') + (d.mode === 1 ? ' ( 扫码 )' : ' ( 虚拟 )');
+                    }
+                },
+                {field: 'code', title: '操作编号', minWidth: 160, sort: true, align: 'center'},
+                {field: 'create_time', title: '操作时间', minWidth: 170, align: 'center', sort: true},
+                {
+                    field: 'num_need', title: '操作数量', align: 'right', templet: function (d) {
+                        return laytpl('<span><b class="{{d.class}} font-s16 margin-right-5">{{d.step}} {{d.gnum}}</b> {{d.unit}}</span>').render({
+                            gnum: d.vir_used + d.num_used, step: d.type < 3 ? '+' : '-',
+                            unit: '{$goods.gunit|default=""}', class: d.type < 3 ? 'color-blue' : 'color-red'
+                        });
+                    }
+                },
+            ]]
+        });
+    });
+</script>
+{/block}

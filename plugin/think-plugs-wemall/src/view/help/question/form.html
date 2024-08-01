@@ -1,0 +1,94 @@
+{extend name="main"}
+
+{block name="button"}
+<button data-target-submit class='layui-btn layui-btn-sm'>保存数据</button>
+<button data-target-backup class="layui-btn layui-btn-sm layui-btn-danger" data-confirm="确认要取消编辑吗？">取消编辑</button>
+{/block}
+
+{block name='content'}
+<link rel="stylesheet" href="__ROOT__/public/static/plugs/ckeditor5/content.css">
+
+<form action="{:sysuri()}" class="layui-card layui-form" data-auto="true" method="post">
+    <div class="layui-card-body">
+
+        <fieldset class="layui-form-item" style="max-width:600px">
+            <div class="layui-row layui-col-space15">
+                <div class="layui-col-xs3">
+                    <div class="headimg" style="width:138px;height:138px" data-tips-image data-lazy-src="{$vo.user_headimg|default='__ROOT__/static/theme/img/headimg.png'}"></div>
+                </div>
+                <div class="layui-col-xs9">
+                    <label class="layui-form-item relative block">
+                        <span class="help-label"><b>用户昵称</b>Nickname</span>
+                        <input class="layui-input layui-bg-gray" readonly value="{$vo.user_nickname|default=''}">
+                    </label>
+                    <label class="relative block">
+                        <span class="help-label"><b>用户账号</b>Phone</span>
+                        <input class="layui-input layui-bg-gray" readonly value="{$vo.user_phone|default=''}">
+                    </label>
+                </div>
+            </div>
+        </fieldset>
+
+        <div class="layui-timeline ta-mt-20">
+            <div class="layui-timeline-item">
+                <i class="layui-icon layui-timeline-axis">&#xe63f;</i>
+                <div class="layui-timeline-content layui-text">
+                    <h3 class="layui-timeline-title">提交工单<span class="font-s12 ta-ml-10">{$vo.create_time}</span></h3>
+                    <div class="layui-input layui-bg-gray ta-mt-10"><b>工单标题：</b>{$vo.name|default=""}</div>
+                    {notempty name='vo.phone'}
+                    <div class="layui-input layui-bg-gray ta-mt-10"><b>联系电话：</b>{$vo.phone|default=""}</div>
+                    {/notempty}
+                    <div class="layui-textarea layui-bg-gray ta-mt-10 ck-content"><b>工单内容：</b>{$vo.content}</div>
+                    {notempty name='vo.images'}
+                    <div class="ta-mt-10 color-desc">
+                        <span>工单图片：</span>
+                        <div class="layui-textarea help-images layui-bg-gray">
+                            {foreach $vo.images as $img}
+                            <div class="uploadimage upload-image-lgbox" data-tips-image data-lazy-src="{$img}"></div>
+                            {/foreach}
+                        </div>
+                    </div>
+                    {/notempty}
+                </div>
+            </div>
+            {foreach $vo.comments as $c}
+            <div class="layui-timeline-item">
+                <i class="layui-icon layui-timeline-axis">&#xe63f;</i>
+                <div class="layui-timeline-content layui-text">
+                    <h3 class="layui-timeline-title">
+                        {if $c.unid>0} 用户回复<span class="font-s12 ta-ml-10">{$c.create_time}</span>{/if}
+                        {if $c.reply_by>0} 后台回复<span class="font-s12 ta-ml-10">{$c.create_time}</span>{/if}
+                    </h3>
+                    <div class="layui-textarea layui-bg-gray ck-content">{$c.content|raw}</div>
+                </div>
+            </div>
+            {/foreach}
+
+            <div class="layui-timeline-item">
+                <i class="layui-icon layui-timeline-axis">&#xe756;</i>
+                <div class="layui-timeline-content layui-text">
+                    <h3 class="layui-timeline-title">立即回复</h3>
+                    <label>
+                        <textarea class="layui-hide" name="content" placeholder="请输入回复内容"></textarea>
+                    </label>
+                </div>
+            </div>
+        </div>
+
+        <div class="hr-line-dashed"></div>
+        {notempty name='vo.id'}<input type='hidden' value='{$vo.id}' name='id'>{/notempty}
+
+        <div class="layui-form-item text-center">
+            <button class="layui-btn" type='submit'>保存数据</button>
+            <button class="layui-btn layui-btn-danger" type='button' data-target-backup data-confirm="确定要取消编辑吗？">取消编辑</button>
+        </div>
+    </div>
+</form>
+
+<script>
+    require(['ckeditor'], function () {
+        $('input[name="cover"]').uploadOneImage();
+        window.createEditor('[name=content]', {height: 395});
+    });
+</script>
+{/block}

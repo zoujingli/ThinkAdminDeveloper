@@ -1,0 +1,56 @@
+<form class="layui-form layui-form-pane form-search" action="{$request->url()}" onsubmit="return false" method="get" autocomplete="off">
+    <div class="layui-form-item layui-inline">
+        <label class="layui-form-label">公众号ID</label>
+        <div class="layui-input-inline">
+            <input name="authorizer_appid" value="{$get.authorizer_appid|default=''}" placeholder="请输入APPID" class="layui-input">
+        </div>
+    </div>
+    <div class="layui-form-item layui-inline">
+        <label class="layui-form-label">微信名称</label>
+        <div class="layui-input-inline">
+            <input name="user_nickname" value="{$get.user_nickname|default=''}" placeholder="请输入微信名称" class="layui-input">
+        </div>
+    </div>
+    <div class="layui-form-item layui-inline">
+        <label class="layui-form-label">公司名称</label>
+        <div class="layui-input-inline">
+            <input name="user_company" value="{$get.user_company|default=''}" placeholder="请输入公司名称" class="layui-input">
+        </div>
+    </div>
+    <div class="layui-form-item layui-inline">
+        <label class="layui-form-label">认证类型</label>
+        <div class="layui-input-inline">
+            <select name="service_type" class="layui-select">
+                <option value="">- 全部 -</option>
+                {foreach ['订阅号','服务号','小程序'] as $v}
+                {if isset($get.service_type) and $get.service_type eq $v.''}
+                <option selected value="{$v}">{$v}</option>
+                {else}
+                <option value="{$v}">{$v}</option>
+                {/if}{/foreach}
+            </select>
+        </div>
+    </div>
+    <div class="layui-form-item layui-inline">
+        <label class="layui-form-label">认证状态</label>
+        <div class="layui-input-inline">
+            <select name="service_verify" class="layui-select">
+                <option value="">- 全部 -</option>
+                {foreach ['已认证','未认证'] as $v}{if isset($get.service_verify) and $get.service_verify eq $v.''}
+                <option selected value="{$v}">{$v}</option>
+                {else}
+                <option value="{$v}">{$v}</option>
+                {/if}{/foreach}
+            </select>
+        </div>
+    </div>
+    <div class="layui-form-item layui-inline">
+        <label class="layui-form-label">授权时间</label>
+        <div class="layui-input-inline">
+            <input data-date-range name="create_at" value="{$get.create_at|default=''}" placeholder="请选择授权时间" class="layui-input">
+        </div>
+    </div>
+    <div class="layui-form-item layui-inline">
+        <button class="layui-btn layui-btn-primary"><i class="layui-icon">&#xe615;</i> 搜 索</button>
+    </div>
+</form>

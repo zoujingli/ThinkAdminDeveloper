@@ -1,0 +1,53 @@
+{extend name="table"}
+
+{block name="button"}
+<!--{if auth("remove")}-->
+<button data-action='{:url("remove")}' data-table-id="CodeData" data-rule="id#{id}" data-confirm="确定要批量删除权限吗？" class='layui-btn layui-btn-sm layui-btn-primary'>批量删除</button>
+<!--{/if}-->
+{/block}
+
+{block name="content"}
+<div class="think-box-shadow">
+    {include file='warehouse/replace/index-search'}
+    <table id="CodeData" data-url="{:sysuri()}" data-target-search="form.form-search"></table>
+</div>
+{/block}
+
+{block name='script'}
+<script>
+    $(function () {
+        // 初始化表格组件
+        $('#CodeData').layTable({
+            even: true, height: 'full',
+            sort: {field: 'id', type: 'desc'},
+            cols: [[
+                {checkbox: true, fixed: true},
+                {field: 'id', title: 'ID', align: 'center', width: 80, sort: true},
+                {field: 'type', title: '标签类型', align: 'center', minWidth: 140, templet: '<div>{{d.type.toUpperCase()}}</div>'},
+                {field: 'source', title: '损坏标签', align: 'center', minWidth: 140, templet: '<div><code>{{d.source}}</code></div>'},
+                {field: 'target', title: '代替标签', align: 'center', minWidth: 140, templet: '<div><code>{{d.target}}</code></div>'},
+                {
+                    field: 'lock', title: '状态', align: 'center', minWidth: 140, templet: function (d) {
+                        return d.lock > 0 ? '<span class="color-green">已使用</span>' : '<span class="color-blue">未使用</span>';
+                    }
+                },
+                {field: 'create_time', title: '录入时间', align: 'center', minWidth: 170, sort: true},
+                {toolbar: '#toolbar', title: '操作面板', align: 'center', minWidth: 100, fixed: 'right'},
+            ]]
+        });
+    });
+
+</script>
+
+
+<!-- 数据操作工具条模板 -->
+<script type="text/html" id="toolbar">
+    <!--{if auth("remove")}-->
+    {{# if (d.lock<1) { }}
+    <a class="layui-btn layui-btn-danger layui-btn-sm" data-confirm="确定要删除权限吗?" data-action="{:url('remove')}" data-value="id#{{d.id}}">删 除</a>
+    {{# } else { }}
+    <a class="layui-btn layui-btn-primary layui-btn-sm" data-value="id#{{d.id}}">已使用</a>
+    {{# } }}
+    <!--{/if}-->
+</script>
+{/block}

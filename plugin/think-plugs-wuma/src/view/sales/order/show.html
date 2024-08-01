@@ -1,0 +1,69 @@
+<div class="think-box-shadow">
+    <div class="layui-bg-gray border-line border-radius-5 margin-bottom-15 padding-20">
+        <div class="layui-row">
+            <div class="layui-col-xs6">
+                <div class="layui-form-item">
+                    <b>产品名称：</b><b class="color-blue">{$data.product.name|default=''}</b>
+                    <span class="margin-left-5">( {$data.product_spec|show_goods_spec} )</span>
+                </div>
+                <div>
+                    <b>调货代理：</b><b class="color-blue">{$data.agent.username|default=''}</b>
+                    <span class="margin-left-5">{$data.agent.phone|default=''}</span>
+                </div>
+            </div>
+            <div class="layui-col-xs6">
+                <div class="layui-form-item">
+                    <span>本次调货共<b class="margin-row-5 color-blue">{$data.num_used+$data.vir_used}</b>{$data.product.unit|default=''}</span>
+                </div>
+                <div>
+                    {notempty name='data.fromer'}
+                    <b>发货代理：</b><b class="color-blue">{$data.fromer.username|default=''}</b>
+                    <span class="margin-left-5">{$data.fromer.phone|default=''}</span>
+                    {else}
+                    <div class="color-desc">无发货代理</div>
+                    {/notempty}
+                </div>
+            </div>
+        </div>
+    </div>
+    {notempty name='data.nums'}
+    <style>
+        .sup-right-badge {
+            margin: -7px 0 0 -10px;
+            display: inline-block;
+            position: absolute;
+            text-align: center;
+            z-index: 3;
+            padding: 2px;
+            font-size: 11px;
+            min-width: 14px;
+            min-height: 14px;
+            line-height: 14px;
+        }
+    </style>
+    {foreach ['MAX'=>'大码','MID'=>'中码','MIN'=>'小码'] as $k=>$v}
+    <fieldset class="think-bg-gray relative padding-right-0">
+        <legend><span class="layui-badge think-bg-violet">{$v}</span></legend>
+        <div class="flex flex-wrap flex flex-align-center flex-justify-center" style="max-height:300px;overflow:auto">
+            {assign name='tmCount' value='0'}
+            {foreach $data.nums as $nums}{foreach $nums.nums as $num}
+            {if $k eq $num.type or ($k eq 'MIN' && in_array($num.type,['NUM',"ENC"]))}
+            {assign name='tmCount' value='$tmCount+$num.count'}
+            <div class="nowrap relative margin-right-10 margin-bottom-5 margin-top-5">
+                <div class="layui-badge layui-bg-black" style="z-index: 2">{$num.code}</div>
+                <sup class="layui-bg-red border-radius sup-right-badge">{$num.count}</sup>
+            </div>
+            {/if}{/foreach}{/foreach}
+            {if $tmCount>0}
+            <span class="shadow absolute" style="right:0;bottom:0;background:wheat;border-radius:3px;padding:2px 5px;z-index:500">
+                共<b class="color-blue padding-row-5">{$tmCount}</b> {$data.product.unit|default=''}
+            </span>
+            {else}
+            <div class="color-desc text-center padding-5 padding-top-0">无对应数据</div>
+            {/if}
+        </div>
+    </fieldset>
+    {/foreach}
+
+    {/notempty}
+</div>

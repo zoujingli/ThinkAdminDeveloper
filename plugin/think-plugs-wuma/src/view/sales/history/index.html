@@ -1,0 +1,88 @@
+{extend name="main"}
+
+{block name='content'}
+
+<div class="think-box-shadow">
+    <label class="layui-hide">
+        <textarea id="codes" class="layui-textarea">{$items|json_encode}</textarea>
+    </label>
+
+    {include file='sales/history/index_search'}
+
+    <div class="layui-row">
+        <div class="layui-col-xs3">
+            <div id="ptree"></div>
+        </div>
+        <div class="layui-col-xs9">
+            <table id="UserData" data-url="{:sysuri()}"></table>
+        </div>
+    </div>
+</div>
+
+
+<script>
+    $(function () {
+
+        var max, mid, min, one, two;
+        var text = $('#codes').val();
+        var data = [], items = JSON.parse(text);
+
+        for (max in items) {
+            one = {id: max, title: max, spread: true, children: []};
+            for (mid in items[max]) {
+                two = {id: mid, title: mid, spread: true, children: []};
+                for (min in items[max][mid]) two.children.push({
+                    id: items[max][mid][min],
+                    title: 'Seq.' + items[max][mid][min]
+                });
+                two.title += " ( " + two.children.length + " )";
+                one.children.push(two);
+            }
+            one.title += " ( " + one.children.length + " )";
+            data.push(one);
+        }
+
+        // 基本演示
+        layui.tree.render({
+            accordion: true,
+            id: 'ptree', elem: '#ptree', data: data, click: function (obj) {
+                $('#UserData').trigger('reload', {where: {code: obj.data.id}});
+            }
+        });
+
+        $('#UserData').layTable({
+            even: true, height: 'full',
+            where: {code: 0},
+            cols: [[
+                {
+                    field: 'code', title: '操作顺序', align: 'center', minWidth: 80, templet: function (d) {
+                        return d.LAY_INDEX + 1;
+                    }
+                },
+                {field: 'code', title: '标签序号', align: 'center', minWidth: 120, templet: '<div>Seq.{{d.code}}</div>'},
+                {
+                    field: 'agent_username', title: '代理', align: 'center', minWidth: 170, templet: function (d) {
+                        return layui.laytpl('<div><b class="margin-right-5 color-blue">{{d.phone}}</b>{{d.username}}</div>').render(d.agent);
+                    }
+                },
+                {
+                    field: 'status', title: '标签状态', align: 'center', minWidth: 50, templet: function (d) {
+                        if (d.deleted) return '<b class="color-red">已撤消</b>';
+                        return ['<b class="color-blue">已转出</b>', '<b class="color-green">暂存中</b>'][d.status] || 0;
+                    }
+                },
+                {
+                    field: 'pdata', title: '转入时间', align: 'center', minWidth: 170, templet: function (d) {
+                        return d.pdata.create_time;
+                    }
+                },
+                {
+                    field: 'pdata', title: '转出时间', align: 'center', minWidth: 170, templet: function (d) {
+                        return d.status_at;
+                    }
+                },
+            ]]
+        });
+    });
+</script>
+{/block}

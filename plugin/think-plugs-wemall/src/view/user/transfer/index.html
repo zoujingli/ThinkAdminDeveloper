@@ -1,0 +1,92 @@
+{extend name='table'}
+
+{block name="button"}
+<!--{if auth('sync')}-->
+<a data-table-id="TransterTable" class="layui-btn layui-btn-sm layui-btn-primary" data-queue="{:url('sync')}">{:lang('后台打款')}</a>
+<!--{/if}-->
+
+<!--{if auth('payment')}-->
+<a data-table-id="TransterTable" class="layui-btn layui-btn-sm layui-btn-primary" data-modal="{:url('payment')}">{:lang('商户配置')}</a>
+<!--{/if}-->
+
+<!--{if auth('config')}-->
+<a data-table-id="TransterTable" class="layui-btn layui-btn-sm layui-btn-primary" data-modal="{:url('config')}" data-width="900px">{:lang('提现配置')}</a>
+<!--{/if}-->
+{/block}
+
+{block name="content"}
+<div class="think-box-notify sub-strong-blue" type="info">
+    <strong>提现统计：</strong>累计已发起提现 <b>{$transfer.0|default=0.00}</b> 元（ 待转账 <b>{$transfer.3|default='0.00'}</b> 元，待审核 <b>{$transfer.2|default='0.00'}</b> 元 ），累计已提现 <b>{$transfer.1|default=0.00}</b> 元。
+</div>
+
+<div class="think-box-shadow">
+    {include file='user/transfer/index_search'}
+    <table id="TransterTable" data-line="2" data-url="{:request()->url()}" data-target-search="form.form-search"></table>
+</div>
+
+<script>
+    $(function () {
+        $('#TransterTable').layTable({
+            even: true, height: 'full', sort: {field: 'id', type: 'desc'},
+            cols: [[
+                {field: 'id', hide: true},
+                {checkbox: true, fixed: true},
+                {
+                    title: '代理头像', width: 95, align: 'center', templet: function (d) {
+                        if (!d.user || !d.user.headimg) return '';
+                        return laytpl('<div>{{-showTableImage(d.user.headimg,true,"sm")}}</div>').render(d)
+                    }
+                },
+                {
+                    title: '代理账号', templet: function (d) {
+                        let tpls = [];
+                        tpls.push('账号昵称：<b>{{d.user.nickname}}</b>')
+                        tpls.push('账号手机：<b class="color-blue">{{d.user.phone}}</b>')
+                        return laytpl(tpls.join('<br>')).render(d);
+                    }
+                },
+                {
+                    title: '提现信息', templet: function (d) {
+                        let tpls = [];
+                        let type = ['失败', '待审核', '已审核', '打款中', '已打款', '已收款'][d.status] || '异常';
+                        d.style = ['red', 'blue', 'blue', 'blue', 'blue', 'green'][d.status] || '';
+                        tpls.push('提现单号：<b>{{d.code||"-"}}</b>')
+                        tpls.push('提现金额：<b class="color-blue">{{Number(d.amount)}}</b> 元，手续费 <b class="color-blue">{{Number(d.charge_amount)}}</b> 元')
+                        return laytpl("<div class='flex'><div class='layui-badge layui-badge-middle flex-center layui-bg-{{d.style}}' style='line-height:15px;zoom:0.8'>" + type + "</div><div>" + tpls.join('<br>') + "</div></div>").render(d);
+                    }
+                },
+                {
+                    title: '提现时间', templet: function (d) {
+                        let tpls = [];
+                        tpls.push('提现类型：{{d.type_name||"-"}}')
+                        tpls.push('提现时间：{{d.create_time}}')
+                        return laytpl(tpls.join('<br>')).render(d);
+                    }
+                },
+                {
+                    title: '状态描述', templet: function (d) {
+                        let tpls = [];
+                        tpls.push('变更描述：<b>{{d.change_desc}}</b>')
+                        tpls.push('变更时间：<b>{{d.change_time}}</b>')
+                        return laytpl(tpls.join('<br>')).render(d);
+                    }
+                },
+                {toolbar: '#toolbar', title: '操作面板', align: 'center', minWidth: 160, width: '9%', fixed: 'right'}
+            ]]
+        });
+    });
+</script>
+
+<script type="text/html" id="toolbar">
+
+    <!-- 提现状态(0失败,1待审核,2已审核,3打款中,4已打款,5已收款) -->
+    <!--{if auth('audit')}-->
+    {{# if(d.status>1){  }}
+    <a class="layui-btn layui-btn-sm layui-btn-normal" data-title="提现打款" data-modal="{:url('audit')}" data-value="code#{{d.code}}">打 款</a>
+    {{# }else{ }}
+    <a class="layui-btn layui-btn-sm layui-btn-normal" data-title="提现审核" data-modal="{:url('audit')}" data-value="code#{{d.code}}">审 核</a>
+    {{# } }}
+    <!--{/if}-->
+
+</script>
+{/block}

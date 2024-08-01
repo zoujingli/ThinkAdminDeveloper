@@ -1,0 +1,36 @@
+<fieldset>
+    <legend>{:lang('条件搜索')}</legend>
+    <form action="{:sysuri()}" autocomplete="off" class="layui-form layui-form-pane form-search" method="get" onsubmit="return false">
+
+
+        <div class="layui-form-item layui-inline">
+            <label class="layui-form-label">窜货省份</label>
+            <label class="layui-input-inline">
+                <input class="layui-input" name="prov" value="{$get.prov|default=''}" placeholder="请输入窜货省份">
+            </label>
+        </div>
+
+
+        {if !empty($get.prov)}
+        <div class="layui-form-item layui-inline">
+            <label class="layui-form-label">窜货城市</label>
+            <label class="layui-input-inline">
+                <input class="layui-input" name="city" value="{$get.city|default=''}" placeholder="请输入窜货城市">
+            </label>
+        </div>
+        {/if}
+
+        {if !empty($get.city)}
+        <div class="layui-form-item layui-inline">
+            <label class="layui-form-label">窜货区域</label>
+            <label class="layui-input-inline">
+                <input class="layui-input" name="area" value="{$get.area|default=''}" placeholder="请输入窜货区域">
+            </label>
+        </div>
+        {/if}
+
+        <div class="layui-form-item layui-inline">
+            <button class="layui-btn layui-btn-primary"><i class="layui-icon">&#xe615;</i> 搜 索</button>
+        </div>
+    </form>
+</fieldset>

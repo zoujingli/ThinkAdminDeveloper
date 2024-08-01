@@ -1,0 +1,70 @@
+<!--{literal}-->
+<div v-if="idx===-2" class="layui-tab layui-tab-brief">
+    <ul class="layui-tab-title notselect">
+        <li class="layui-this">底部菜单</li>
+        <li>样式设置</li>
+    </ul>
+    <div class="layui-tab-content">
+        <div class="layui-tab-item layui-show notselect">
+            <div class=" layui-form-item">注意：菜单导航项图标不支持在小程序上替换。</div>
+            <hr>
+            <draggable v-model="pages" v-bind="{group:'pages',animation:200}" @start="drag=true" @end="drag=false">
+                <transition-group>
+                    <div v-for="(x,$index) in pages" :key="x.unid">
+                        <div class="flex-x">
+                            <div class="flex-2">类型：<span class="color-green">{{x.type}}</span></div>
+                            <div class="flex-1 text-right"><a @click="setPage($index)">编辑页面</a></div>
+                            <label class="flex-2 think-checkbox text-right layui-hide" style="margin:0 0 4px">
+                                <!-- 暂时不开发隐藏菜单，如果合并隐藏了将彻底失败底部菜单控制 -->
+                                <input type="checkbox" @click="x.show=this.checked=!this.checked" :checked="x.show" lay-ignore> 显示在导航条
+                            </label>
+                        </div>
+                        <div class="flex">
+                            <div style="padding-top:3px">
+                                <upload-image :mstyle="x.foot.icon" mfield="normal" v-model="x.foot.icon.normal" :showinput="false"></upload-image>
+                            </div>
+                            <div style="padding:3px 0 0 10px">
+                                <upload-image :mstyle="x.foot.icon" mfield="active" v-model="x.foot.icon.active" :showinput="false"></upload-image>
+                            </div>
+                            <div class="flex-1">
+                                <label class="relative flex">
+                                    <span class="design-form-label" style="min-width:2.5em">名称</span>
+                                    <input class="layui-input flex-1" v-model="x.foot.name" placeholder="请输入名称">
+                                </label>
+                                <div class="relative flex ta-mt-5">
+                                    <span class="design-form-label" style="min-width:2.5em">链接</span>
+                                    <div class="layui-input-wrap pointer flex-1" @click="setLink(x.link,'value')">
+                                        <label><input type="text" placeholder="可选，请选择链接" class="layui-input" v-model="x.link.value"></label>
+                                        <div class="layui-input-suffix"><i class="layui-icon layui-icon-down"></i></div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div>
+                                <a @click="moveUp(pages,$index)" style="margin:0 0 0 5px" class="block layui-btn layui-btn-primary layui-btn-xs"><i style="transform:rotate(090deg)" class="layui-icon inline-block">&#xe65c;</i></a>
+                                <a sv-handle style="margin:7px 0 0 5px;cursor:move" class="block layui-btn layui-btn-primary layui-btn-xs layui-border-blue"><i class="layui-icon">&#xe714;</i></a>
+                                <a @click="moveDn(pages,$index)" style="margin:7px 0 0 5px" class="block layui-btn layui-btn-primary layui-btn-xs"><i style="transform:rotate(270deg)" class="layui-icon inline-block">&#xe65c;</i></a>
+                            </div>
+                        </div>
+                        <hr>
+                    </div>
+                </transition-group>
+            </draggable>
+        </div>
+        <div class="layui-tab-item">
+            <div class="layui-form-item flex">
+                <span class="design-form-label">默认文字</span>
+                <div class="flex-1">
+                    <color-picker :mstyle="navbar.style" mfield="vNormalColor" mtype="hex"></color-picker>
+                </div>
+            </div>
+            <div class="layui-form-item flex">
+                <span class="design-form-label">选中文字</span>
+                <div class="flex-1">
+                    <color-picker :mstyle="navbar.style" mfield="vActiveColor" mtype="hex"></color-picker>
+                </div>
+            </div>
+            <layout-setting :mstyle="navbar.style" mtypes="背景颜色,背景图片,背景样式"></layout-setting>
+        </div>
+    </div>
+</div>
+<!--{/literal}-->

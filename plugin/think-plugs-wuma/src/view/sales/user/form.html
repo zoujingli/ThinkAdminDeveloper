@@ -1,0 +1,145 @@
+<form id="UserForm" class="layui-form layui-card" action="{:sysuri()}" data-auto="true" method="post">
+    <div class="layui-card-body padding-left-40">
+
+        <fieldset>
+            <legend><span class="layui-badge layui-bg-cyan">基本信息</span></legend>
+            <div class="layui-form-item layui-row layui-col-space10">
+                <div class="layui-col-xs4">
+                    <label class="relative block">
+                        <span class="help-label"><b>授权编号</b></span>
+                        <input name="code" value='{$vo.code|default=""}' maxlength="20" required placeholder="请输入授权编号" class="layui-input">
+                    </label>
+                </div>
+                <div class="layui-col-xs4">
+                    <label class="relative block">
+                        <span class="help-label"><b>代理姓名</b></span>
+                        <input name="username" value='{$vo.username|default=""}' maxlength="20" required placeholder="请输入代理姓名" class="layui-input">
+                    </label>
+                </div>
+                <div class="layui-col-xs4">
+                    <label class="relative block">
+                        <span class="help-label"><b>代理手机</b></span>
+                        <input name="phone" value='{$vo.phone|default=""}' maxlength="20" pattern="^[\w\-]+$" required placeholder="请输入代理手机" class="layui-input">
+                    </label>
+                </div>
+                <div class="layui-col-xs4">
+                    <label class="relative block">
+                        <span class="help-label"><b>联系电话</b></span>
+                        <input name="mobile" value="{$vo.mobile|default=''}" placeholder="请输入联系电话" class="layui-input">
+                    </label>
+                </div>
+                <div class="layui-col-xs4">
+                    <label class="relative block">
+                        <span class="help-label"><b>身份证号</b></span>
+                        <input name="userid" value='{$vo.userid|default=""}' placeholder="请输入身份证号" class="layui-input">
+                    </label>
+                </div>
+                <div class="layui-col-xs4">
+                    <label class="relative block">
+                        <span class="help-label"><b>登录密码</b></span>
+                        {if empty($vo.id)}
+                        <input name="password" required placeholder="请输入登录密码" class="layui-input">
+                        {else}
+                        <input name="password" placeholder="请输入登录密码" class="layui-input">
+                        {/if}
+                    </label>
+                </div>
+            </div>
+        </fieldset>
+
+        <fieldset>
+            <legend><span class="layui-badge layui-bg-cyan">授权信息</span></legend>
+            <div class="layui-form-item layui-row layui-col-space10">
+                <div class="layui-col-xs3">
+                    <label class="relative block">
+                        <span class="help-label label-required-prev"><b>等级名称</b></span>
+                        <select name="level" class="layui-select">
+                            {foreach $levels as $t}
+                            {if isset($vo.level) and $t.status>0 and $vo.level eq $t.number}
+                            <option selected value="{$t.number}">{$t.name}</option>
+                            {else}
+                            <option value="{$t.number}">{$t.name}</option>
+                            {/if}{/foreach}
+                        </select>
+                    </label>
+                </div>
+                <div class="layui-col-xs3">
+                    <div class="relative block">
+                        <span class="help-label label-required-prev"><b>账号类型</b></span>
+                        <select class="layui-select" name="master">
+                            {empty name='vo.master'}{assign name='vo.master' value='0'}{/empty}
+                            {foreach ['普通账号','总部账号'] as $k=>$v}{if $vo.master eq $k}
+                            <option selected value="{$k}">{$v}</option>
+                            {else}
+                            <option value="{$k}">{$v}</option>
+                            {/if}{/foreach}
+                        </select>
+                    </div>
+                </div>
+                <div class="layui-col-xs3">
+                    <label class="relative block">
+                        <span class="help-label"><b>上级代理</b></span>
+                        <input name="super_phone" pattern="phone" maxlength="11" value='{$vo.super_phone|default=""}' placeholder="请输入手机" class="layui-input">
+                    </label>
+                </div>
+                <div class="layui-col-xs3">
+                    <label class="relative block">
+                        <span class="help-label"><b>授权时间</b></span>
+                        {if empty($vo.date_start) or empty($vo.date_after)}
+                        <input data-date-range="date" name="date" value='' required placeholder="请选择授权时间" class="layui-input">
+                        {else}
+                        <input data-date-range="date" name="date" value='{$vo.date_start|default=""} - {$vo.date_after|default=""}' required placeholder="请选择授权时间" class="layui-input">
+                        {/if}
+                    </label>
+                </div>
+                <div class="layui-col-xs12">
+                    <span class="help-label label-required-prev">
+                        <b>代理区域</b> ( 溯源查询会根据代理授权区域进行窜货识别 )
+                    </span>
+                    <div class="layui-row layui-col-space10">
+                        <div class="layui-col-xs2">
+                            <span class="color-desc font-s12">所在省份</span>
+                            <select name="region_prov" lay-filter="region_prov"></select>
+                        </div>
+                        <div class="layui-col-xs2">
+                            <span class="color-desc font-s12">所在城市</span>
+                            <select name="region_city" lay-filter="region_city"></select>
+                        </div>
+                        <div class="layui-col-xs2">
+                            <span class="color-desc font-s12">所在区域</span>
+                            <select name="region_area" lay-filter="region_area"></select>
+                        </div>
+                        <div class="layui-col-xs6">
+                            <label class="relative block">
+                                <span class="color-desc font-s12">详细地址</span>
+                                <input placeholder="请输入详细地址" name="region_address" value='{$vo.region_address|default=""}' class="layui-input">
+                            </label>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </fieldset>
+    </div>
+
+    <div class="hr-line-dashed"></div>
+    {notempty name='vo.id'}<input type='hidden' value='{$vo.id}' name='id'>{/notempty}
+
+    <div class="layui-form-item text-center">
+        <button class="layui-btn" type='submit'>保存数据</button>
+        <button class="layui-btn layui-btn-danger" type='button' data-confirm="确定要取消编辑吗？" data-close>取消编辑</button>
+    </div>
+</form>
+<script>
+    require(['pcasunzips'], function () {
+        /*! 重置弹层处理 */
+        $('#UserForm').parents('.layui-layer-content').css({overflow: 'revert'});
+        (function (refresh) {
+            /*! 省市区数据处理 */
+            new PCAS("region_prov", "region_city", "region_area", '{$vo.region_prov|default=""}', '{$vo.region_city|default=""}', '{$vo.region_area|default=""}');
+            layui.form.on('select(region_area)', refresh), layui.form.on('select(region_city)', refresh), layui.form.on('select(region_prov)', refresh), refresh();
+        })(function (data) {
+            $('select:not([lay-ignore])').nextAll('div.layui-form-select').remove();
+            data && data.elem && $(data.elem).trigger('change'), layui.form.render('select');
+        });
+    });
+</script>

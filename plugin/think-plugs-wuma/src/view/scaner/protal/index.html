@@ -1,0 +1,27 @@
+{extend name="main"}
+
+{block name="button"}
+<a class='layui-btn layui-btn-sm layui-btn-primary' target="_blank" href="{:url('@datav/index')}">全屏显示</a>
+{/block}
+
+{block name="tbody"}
+<div class="layui-card-html full-height">
+    <iframe class="shadow datav" src="{:url('@datav/index')}"></iframe>
+</div>
+{/block}
+
+{block name='style'}
+<style>
+    iframe.datav {
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        width: 100%;
+        height: 100%;
+        border: none;
+        padding: 0;
+        border-radius: 5px;
+    }
+</style>
+{/block}

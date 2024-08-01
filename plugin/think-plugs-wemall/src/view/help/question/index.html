@@ -1,0 +1,73 @@
+{extend name='table'}
+
+{block name="button"}
+<!--{if auth("remove")}-->
+<button data-action='{:url("remove")}' data-table-id="QuestionData" data-rule="id#{id}" data-confirm="确定要批量删除问题吗？" class='layui-btn layui-btn-sm layui-btn-primary'>批量删除</button>
+<!--{/if}-->
+{/block}
+
+{block name="content"}
+
+<div class="think-box-shadow">
+    {include file='help/question/index_search'}
+    <table id="QuestionData" data-url="{$request->url()}" data-target-search="form.form-search"></table>
+</div>
+
+{/block}
+
+{block name='script'}
+<script>
+    $(function () {
+        // 初始化表格组件
+        let $table = $('#QuestionData').layTable({
+            even: true, height: 'full',
+            sort: {field: 'sort desc,id', type: 'desc'},
+            cols: [[
+                {checkbox: true, fixed: true}, {field: 'sort', hide: true},
+                // {field: 'sort', title: '排序权重', align: 'center', width: 100, sort: true, templet: '#SortInputTpl'},
+                {
+                    title: '提交用户', minWidth: 200, width: '10%', templet: function (d) {
+                        return showTableImage(d.user_headimg, true, '', (d.user_nickname || '') + " " + (d.user_phone || ''));
+                    }
+                },
+                {field: 'name', title: '工单标题', align: 'left', minWidth: 140},
+                {field: 'content', title: '工单内容', align: 'left', minWidth: 180, templet: '<div>{{d.content||"-"}}</div>'},
+                {
+                    field: 'status', title: '工单状态', align: 'center', width: 110, templet: function (d) {
+                        //状态：0取消,1新工单,2后台回复,3前台回复,4已完结
+                        return ['取消', '新工单', '后台回复', '前台回复', '已完结'][d.status] || '未知';
+                    }
+                },
+                {field: 'phone', title: '联系电话', align: 'left', minWidth: 100, width: '10%'},
+                {field: 'create_time', title: '创建时间', align: 'center', minWidth: 170, width: '10%', sort: true},
+                {toolbar: '#toolbar', title: '操作面板', align: 'center', minWidth: 150, width: '10%', fixed: 'right'},
+            ]]
+        });
+
+        // 数据状态切换操作
+        layui.form.on('switch(StatusSwitch)', function (obj) {
+            let data = {id: obj.value, status: obj.elem.checked > 0 ? 1 : 0};
+            $.form.load("{:url('state')}", data, 'post', function (ret) {
+                let fn = () => $table.trigger('reload');
+                ret.code > 0 ? fn() : $.msg.error(ret.info, 3, fn);
+                return false;
+            }, false);
+        });
+    });
+</script>
+
+<!-- 列表排序权重模板 -->
+<script type="text/html" id="SortInputTpl">
+    <input type="number" min="0" data-blur-number="0" data-action-blur="{:sysuri()}" data-value="id#{{d.id}};action#sort;sort#{value}" data-loading="false" value="{{d.sort}}" class="layui-input text-center">
+</script>
+
+<!-- 数据操作工具条模板 -->
+<script type="text/html" id="toolbar">
+    <!--{if auth('edit')}-->
+    <a class="layui-btn layui-btn-primary layui-btn-sm" data-open='{:url("edit")}?id={{d.id}}'>回 复</a>
+    <!--{/if}-->
+    <!--{if auth("remove")}-->
+    <a class="layui-btn layui-btn-danger layui-btn-sm" data-confirm="确定要删除问题吗?" data-action="{:url('remove')}" data-value="id#{{d.id}}">删 除</a>
+    <!--{/if}-->
+</script>
+{/block}

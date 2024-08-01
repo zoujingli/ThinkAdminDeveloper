@@ -1,0 +1,127 @@
+{extend name="table"}
+
+{block name="button"}
+<!--{if auth("add")}-->
+<button class='layui-btn layui-btn-sm layui-btn-primary' data-open='{:url("add")}'>添加流程</button>
+<!--{/if}-->
+
+{if isset($type) and $type eq 'index'}
+<!--{if auth("remove")}-->
+<button class='layui-btn layui-btn-sm layui-btn-primary' data-action='{:url("remove")}' data-rule="code#{key};deleted#1">删除流程</button>
+<!--{/if}-->
+{else}
+<!--{if auth("remove")}-->
+<button class='layui-btn layui-btn-sm layui-btn-primary' data-action='{:url("remove")}' data-confirm="确定要恢复这些数据吗？" data-rule="code#{key};deleted#0">恢复流程</button>
+<!--{/if}-->
+{/if}
+{/block}
+
+{block name="content"}
+<div class="layui-tab layui-tab-card think-bg-white">
+    <ul class="layui-tab-title">
+        {foreach ['index'=>'流程管理','recycle'=>'回 收 站'] as $k=>$v}
+        {if isset($type) and $type eq $k}
+        <li class="layui-this color-green" data-open="{:sysuri('index')}?type={$k}">{$v}</li>
+        {else}
+        <li data-open="{:sysuri('index')}?type={$k}">{$v}</li>
+        {/if}{/foreach}
+    </ul>
+    <div class="layui-tab-content">
+        {include file='source/blockchain/index-search'}
+        <table id="QueryData" data-url="{:sysuri()}" data-target-search="form.form-search"></table>
+    </div>
+</div>
+{/block}
+
+
+{block name='script'}
+<script>
+    $(function () {
+        // 初始化表格组件
+        let $table = $('#QueryData').layTable({
+            even: true, height: 'full',
+            sort: {field: 'sort desc,code', type: 'desc'},
+            where: {type: '{$type|default="index"}'},
+            cellExpandedMode: 'tips',
+            cols: [[
+                {checkbox: true, fixed: true},
+                {field: 'sort', title: '排序权重', align: 'center', width: 100, sort: true, templet: '#SortInputTpl'},
+                {field: 'code', title: '流程编号', align: 'center', width: '18%'},
+                {field: 'name', title: '流程名称', align: 'center', width: '20%'},
+                {
+                    field: 'status', title: '上链状态', align: 'center', width: '10%', templet: function (d) {
+                        if (d.status === 0) return '<b class="color-red">已禁用</b>';
+                        if (d.status === 1) return '<b class="color-blue">未上链</b>';
+                        if (d.status === 2) return '<b class="color-green">已上链</b>';
+                    }
+                },
+                {field: 'create_time', title: '创建时间', align: 'center', width: '15%'},
+                {toolbar: '#toolbar', title: '操作面板', align: 'center', minWidth: 265, fixed: 'right'},
+            ]]
+        });
+
+        // 数据状态切换操作
+        layui.form.on('switch(StatusSwitch)', function (obj) {
+            let data = {id: obj.value, status: obj.elem.checked > 0 ? 1 : 0};
+            $.form.load("{:url('state')}", data, 'post', function (ret) {
+                ret.code > 0 ? $table.trigger('reload') : $.msg.error(ret.info, 3, function () {
+                    $table.trigger('reload');
+                });
+                return false;
+            }, false);
+        });
+    });
+</script>
+
+
+<!-- 列表排序权重模板 -->
+<script type="text/html" id="SortInputTpl">
+    <input type="number" min="0" data-blur-number="0" data-action-blur="{:sysuri()}" data-value="id#{{d.id}};action#sort;sort#{value}" data-loading="false" value="{{d.sort}}" class="layui-input text-center">
+</script>
+
+<!-- 数据状态切换模板 -->
+<script type="text/html" id="StatusSwitchTpl">
+    <!--{if auth("state")}-->
+    <input type="checkbox" value="{{d.id}}" lay-skin="switch" lay-text="已激活|已禁用" lay-filter="StatusSwitch" {{d.status>0?'checked':''}}>
+    <!--{else}-->
+    {{d.status ? '<b class="color-green">已启用</b>' : '<b class="color-red">已禁用</b>'}}
+    <!--{/if}-->
+</script>
+
+<!-- 数据操作工具条模板 -->
+<script type="text/html" id="toolbar">
+    <!--{if auth("view")}-->
+    <a class="layui-btn layui-btn-sm" data-title="查看流程" data-modal='{:url("view")}?id={{d.id}}'>查 看</a>
+    <!--{else}-->
+    <a class="layui-btn layui-btn-sm layui-btn-primary layui-disabled">查 看</a>
+    <!--{/if}-->
+
+    <!--{if auth("edit")}-->
+    {{# if (d.status===2){ }}
+    <a class="layui-btn layui-btn-sm layui-btn-disabled">编 辑</a>
+    {{# }else{ }}
+    <a class="layui-btn layui-btn-sm" data-title="编辑流程" data-open='{:url("edit")}?id={{d.id}}'>编 辑</a>
+    {{# } }}
+    <!--{else}-->
+    <a class="layui-btn layui-btn-sm layui-btn-primary layui-disabled" data-tips-text="您没有编辑流程的权限哦！">编 辑</a>
+    <!--{/if}-->
+
+    {if isset($type) and $type eq 'index'}
+    <!--{if auth("hash")}-->
+    {{# if (d.status===2){ }}
+    <a class="layui-btn layui-btn-sm layui-btn-disabled">上 链</a>
+    {{# }else{ }}
+    <a class="layui-btn layui-btn-sm layui-btn-primary" data-modal="{:url('hash')}?id={{d.id}}" data-title="流程上链">上 链</a>
+    {{# } }}
+    <!--{/if}-->
+
+    <!--{if auth("state")}-->
+    <a class="layui-btn layui-btn-sm layui-btn-danger" data-action="{:url('state')}" data-confirm="确定要移入回收站吗？" data-value="id#{{d.id}};deleted#1">删 除</a>
+    <!--{/if}-->
+    {else}
+    <!--{if auth("state")}-->
+    <a class="layui-btn layui-btn-sm layui-btn-normal" data-action="{:url('state')}" data-value="id#{{d.id}};deleted#0">恢 复</a>
+    <!--{/if}-->
+    {/if}
+</script>
+{/block}

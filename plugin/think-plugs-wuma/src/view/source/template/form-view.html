@@ -1,0 +1,229 @@
+<!--{literal}-->
+<draggable v-model="items" @start="drag=true" @end="drag=false">
+    <div v-for="(x,$index) in items" :class="item===x?'active':''" sv-element>
+        <div class="layui-tpl-btn shadow">
+            <a @click="itemEd($index)" class="layui-icon">&#xe614;</a>
+            <a @click="moveUp(items,$index)" class="layui-icon">&#xe619;</a>
+            <a @click="moveDn(items,$index)" class="layui-icon">&#xe61a;</a>
+            <a @click="itemRm(items,$index)" class="layui-icon">&#xe640;</a>
+        </div>
+        <div class="layui-tpl-item" sv-handle @click="itemEd($index)">
+            <!-- 图片组件 -->
+            <div v-if="x.name==='图片'" class="transition think-bg-white">
+                <div class="layui-card-body padding-5">
+                    <!-- 一图 -->
+                    <div class="layui-row" v-if="x.type==1">
+                        <div class="layui-col-xs12 text-center" v-for="(item,index) in x.data" v-if="index==0">
+                            <img data-error="false" :src="item.image" style="max-width:100%;height:auto">
+                        </div>
+                    </div>
+                    <!-- 二图 -->
+                    <div class="layui-row layui-col-space5" v-if="x.type==2">
+                        <div class="layui-col-xs6" v-for="(item,index) in x.data" v-if="index<2">
+                            <img data-error="false" :src="item.image" style="max-width:100%;height:auto">
+                        </div>
+                    </div>
+                    <!-- 三图 -->
+                    <div class="flex" v-if="x.type==3">
+                        <div v-for="(item,index) in x.data" v-if="index==0" class="flex-1">
+                            <img data-error="false" :src="item.image" style="max-width:97%;min-height:100%;">
+                        </div>
+                        <div class="flex-1">
+                            <div v-for="(item,index) in x.data" v-if="index<3 && index>0">
+                                <img data-error="false" :src="item.image" style="max-width:99%;height:49%" v-if="index==1">
+                                <img data-error="false" :src="item.image" style="max-width:99%;height:49%;margin-top:5px" v-if="index==2">
+                            </div>
+                        </div>
+                    </div>
+                    <!-- 四图 -->
+                    <div class="layui-row layui-col-space5" v-if="x.type==4">
+                        <div class="layui-col-xs3" v-for="(item,index) in x.data">
+                            <img data-error="false" :src="item.image" style="max-width:100%;height:auto">
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 轮播图组件 -->
+            <div v-if="x.name==='轮播图'" class="transition think-bg-white">
+                <img data-error="false" v-if="x.items.length>0" :src="x.items[0].image" style="max-width:100%;max-height:100%">
+                <div class="text-center" v-if="x.items.length>0">
+                    <div class="absolute inline-block" style="background:rgba(0,0,0,0.5);padding:0 2px;border-radius:10px;margin-top:-30px;line-height:12px;height:15px">
+                        <span v-for="img in x.items" class="inline-block" style="width:5px;height:5px;margin:0 3px;border-radius:50%;background:#fff"></span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 二维码组件 -->
+            <div v-if="x.name==='二维码'" class="transition think-bg-white">
+                <div class="text-center padding-30">
+                    <img data-error="false" :src="x.image" style="width:60%;height:auto">
+                    <pre v-text="x.content" class="layui-elip" style="white-space:normal"></pre>
+                </div>
+            </div>
+
+            <!-- 防仿信息组件 -->
+            <div v-if="x.name==='防伪信息'" class="transition think-bg-white">
+                <div class="layui-card layui-bg-gray">
+                    <div class="layui-card-header" :style="mainStyle()" v-text="x.title"></div>
+                    <div class="layui-card-body padding-top-0">
+                        <div>防伪编码：-</div>
+                        <div>查询次数：{{ x.count || 1 }}</div>
+                        <div>验证次数：-</div>
+                        <div>查询结果：{{ x.success }}</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 防仿信息组件 -->
+            <div v-if="x.name==='标签序号'" class="transition think-bg-white">
+                <div class="layui-card layui-bg-gray">
+                    <div class="layui-card-header" :style="mainStyle()" v-text="x.title"></div>
+                    <div class="layui-card-body">
+                        <div>xxxxxxxxxxxx</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 表格组件 -->
+            <div v-if="x.name==='表格'" class="transition think-bg-white">
+                <table class="layui-table margin-0" lay-size="sm">
+                    <caption class="text-left padding-10" :style="mainStyle()" v-text="x.title"></caption>
+                    <tbody>
+                    <tr v-for="item in x.data">
+                        <td v-text="item.title"></td>
+                        <td style="white-space:pre-wrap;word-break:normal" v-text="item.content"></td>
+                        <td style="white-space:pre-wrap;word-break:normal" v-if="x.type==3" v-text="item.type"></td>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- 按钮组件 -->
+            <div v-if="x.name==='按钮'" class="transition think-bg-white">
+                <div class="layui-card">
+                    <div class="layui-card-header" :style="mainStyle()" v-text="x.title"></div>
+                    <div class="layui-card-body">
+                        <div style="border-bottom:1px solid #e8e8e8;padding:10px 0" v-for="item in x.data" v-if="x.type==2" v-text="item.title"></div>
+                        <div class="layui-row layui-col-space15" v-if="x.type==3">
+                            <div class="layui-col-xs3 text-center" v-for="item in x.data">
+                                <img data-error="false" :src="item.img" style="border-radius:10px;width:50px;height:50px;">
+                                <p class="layui-elip" v-text="item.title"></p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 文本组件 -->
+            <div v-if="x.name==='文本'" class="transition think-bg-white">
+                <pre class="padding-10" v-text="x.content||'请输入文本内容'"></pre>
+            </div>
+
+            <!-- 分隔线组件 -->
+            <div v-if="x.name==='分割线'" class="transition think-bg-white">
+                <div :style="'border:'+x.type+' '+x.width+'px '+x.color"></div>
+            </div>
+
+            <!-- 视频组件 -->
+            <div v-if="x.name==='视频'" class="transition think-bg-white">
+                <video class="full-width block" x5-video-player-type="h5" controls autoplay loop muted :src="x.src"></video>
+            </div>
+
+            <!-- 图文说明 -->
+            <div v-if="x.name==='图文说明'" class="transition think-bg-white">
+                <div class="layui-card">
+                    <div class="layui-card-header" :style="mainStyle()" v-text="x.data.title"></div>
+                    <div class="layui-card-body" v-for="ite in x.data.list">
+                        <b v-text="ite.title"></b>
+                        <pre v-text="ite.content"></pre>
+                        <div v-if="ite.fileType==='image'">
+                            <img data-error="false" :src="ite.fileImage" style="max-width:100%;max-height:100%">
+                        </div>
+                        <div v-if="ite.fileType==='video'">
+                            <video class="full-width block" x5-video-player-type="h5" controls autoplay loop muted :src="ite.fileVideo"></video>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 物流信息 -->
+            <div v-if="x.name==='物流信息'" class="transition think-bg-white">
+                <div class="layui-card">
+                    <div class="layui-card-header layui-elip" v-text="x.title">物流信息</div>
+                    <div class="layui-card-body">
+                        <div style="border-bottom:1px solid #e8e8e8;padding:10px 0">出货时间：-</div>
+                        <div style="border-bottom:1px solid #e8e8e8;padding:10px 0">所属代理：-</div>
+                        <div style="border-bottom:1px solid #e8e8e8;padding:10px 0">销售地区：-</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 区块链溯源 -->
+            <div v-if="x.name==='区块链溯源'" class="transition think-bg-white">
+                <div class="layui-card">
+                    <div class="layui-card-header" :style="mainStyle()" v-text="x.title"></div>
+                    <div class="layui-card-body text-center"><span class="color-desc">不可预览内容</span></div>
+                </div>
+            </div>
+
+            <!-- 云监控 -->
+            <div v-if="x.name==='云监控'" class="transition think-bg-white">
+                <div class="layui-card">
+                    <div class="layui-card-header" :style="mainStyle()" v-if="x.title" v-text="x.title"></div>
+                    <div class="layui-card-body text-center" style="padding:30px 0;background:#efefef">
+                        <div class="color-blue layui-elip" v-text="x.devicename"></div>
+                        <div class="color-desc">直播视频内容不可预览</div>
+                    </div>
+                    <div class="layui-card-body" v-if="x.remark">
+                        <span style="word-break:break-all;white-space:normal" v-text="x.remark"></span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 产品信息 -->
+            <div v-if="x.name==='产品信息'" class="transition think-bg-white">
+                <div class="layui-card">
+                    <div class="layui-card-header" :style="mainStyle()" v-text="x.title"></div>
+                    <div class="layui-card-body text-center"><span class="color-desc">不可预览内容</span></div>
+                </div>
+            </div>
+
+            <!-- 代理信息 -->
+            <div v-if="x.name==='代理信息'" class="transition think-bg-white">
+                <div class="layui-card">
+                    <div class="layui-card-header" :style="mainStyle()" v-text="x.title"></div>
+                    <div class="layui-card-body text-center"><span class="color-desc">不可预览内容</span></div>
+                </div>
+            </div>
+
+            <!-- 代理信息 -->
+            <div v-if="x.name==='芯媒体'" class="transition think-bg-white">
+                <div class="layui-card">
+                    <div class="layui-card-header" :style="mainStyle()" v-text="x.title"></div>
+                    <div class="layui-card-body padding-0">
+                        <img data-error="false" :src="x.image" style="width:100%;height:auto;display:block">
+                    </div>
+                </div>
+            </div>
+
+            <!-- 通用溯源 -->
+            <div v-if="x.name==='通用溯源'" class="transition think-bg-white">
+                <div class="layui-card">
+                    <div class="layui-card-header" :style="mainStyle()" v-text="x.data.title"></div>
+                    <div class="layui-card-body" v-for="d in x.data.list">
+                        <div style="white-space:normal" v-text="d.title"></div>
+                        <pre v-text="d.content"></pre>
+                        <div v-if="d.fileType==='image'">
+                            <img data-error="false" :src="d.fileImage" style="max-width:100%;max-height:100%">
+                        </div>
+                        <div v-if="d.fileType==='video'">
+                            <video class="full-width block" :src="d.fileVideo" x5-video-player-type="h5" controls autoplay loop muted></video>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</draggable>
+<!--{/literal}-->

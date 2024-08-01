@@ -1,0 +1,45 @@
+{extend name='table'}
+
+{block name="button"}
+<!--{if auth('config')}-->
+<a class="layui-btn layui-btn-sm layui-btn-primary" data-modal="{:url('config')}">短信配置</a>
+<!--{/if}-->
+{/block}
+
+{block name="content"}
+<div class="think-box-shadow">
+    {include file='message/index_search'}
+    <label class="layui-hide"><textarea id="SecensData">{$secens|default=''|json_encode}</textarea></label>
+    <table id="MessageData" data-url="{:sysuri()}"></table>
+    <script>
+
+        let secens = JSON.parse(document.getElementById('SecensData').value || '{}');
+
+        function showScene(scene) {
+            return secens[scene] || scene;
+        }
+
+        $(function () {
+            $('#MessageData').layTable({
+                even: true, height: 'full', loading: true,
+                sort: {field: 'id', type: 'desc'},
+                cols: [[
+                    {field: 'id', hide: true},
+                    {field: 'smsid', title: '消息编号', sort: true, minWidth: 100, width: '12%', align: 'center'},
+                    {field: 'type', title: '短信类型', sort: true, minWidth: 90, width: '8%', align: 'center'},
+                    {field: 'phone', title: '发送手机', sort: true, minWidth: 100, width: '10%', align: 'center'},
+                    {field: 'scene', title: '业务场景', align: 'center', minWidth: 100, width: '8%', templet: '<div>{{-showScene(d.scene_name)}}</div>'},
+                    {field: 'params', title: '短信内容', align: 'center'},
+                    {field: 'result', title: '返回结果', align: 'center'},
+                    {
+                        field: 'status', title: '执行结果', minWidth: 80, width: '8%', sort: true, align: 'center', templet: function (d) {
+                            return ['<b class="color-red">失败</b>', '<b class="color-green">成功</b>'][d.status];
+                        }
+                    },
+                    {field: 'create_time', title: '发送时间', width: 170, align: 'center', sort: true},
+                ]]
+            });
+        });
+    </script>
+</div>
+{/block}

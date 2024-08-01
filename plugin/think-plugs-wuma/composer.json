@@ -1,0 +1,58 @@
+{
+  "type": "think-admin-plugin",
+  "name": "zoujingli/think-plugs-wuma",
+  "homepage": "https://thinkadmin.top",
+  "description": "Wuma Plugin for ThinkAdmin",
+  "authors": [
+    {
+      "name": "Anyon",
+      "email": "zoujingli@qq.com"
+    }
+  ],
+  "require": {
+    "php": ">7.1",
+    "ext-gd": "*",
+    "ext-json": "*",
+    "ext-bcmath": "*",
+    "zoujingli/think-plugs-admin": "^1.0|@dev",
+    "zoujingli/think-plugs-wemall": "^1.0|@dev"
+  },
+  "require-dev": {
+    "phpunit/phpunit": "^7.0|*"
+  },
+  "autoload": {
+    "psr-4": {
+      "plugin\\wuma\\": "src"
+    }
+  },
+  "extra": {
+    "think": {
+      "services": [
+        "plugin\\wuma\\Service"
+      ]
+    },
+    "config": {
+      "type": "module",
+      "name": "物码标签管理",
+      "document": "https://thinkadmin.top/plugin/think-plugs-wuma.html",
+      "description": "防伪溯源管理模块，提供标签生成及出入库管理。",
+      "license": [
+        "FEE"
+      ]
+    },
+    "plugin": {
+      "copy": {
+        "stc/database": "database/migrations"
+      },
+      "event": {
+        "src/Script.php": "plugin\\wuma\\Script"
+      }
+    }
+  },
+  "minimum-stability": "dev",
+  "config": {
+    "allow-plugins": {
+      "zoujingli/think-install": true
+    }
+  }
+}

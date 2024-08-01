@@ -1,0 +1,84 @@
+{extend name="table"}
+
+{block name="content"}
+<div class='think-box-shadow'>
+    {include file='sales/order/index-search'}
+    <table data-line='2' id="HouseTable" data-url="{:sysuri()}" data-target-search="form.form-search"></table>
+</div>
+
+<script>
+    $(function () {
+        $('#HouseTable').layTable({
+            even: true, height: 'full',
+            sort: {field: 'id', type: 'desc'},
+            cols: [[
+                {field: 'id', title: 'ID', hide: true, width: 80},
+                {field: '', title: '调货单号', width: '20%', templet: '#OrderTpl'},
+                {field: '', title: '产品数据', templet: '#GoodsTpl'},
+                {field: '', title: '调货状态', width: '18%', templet: '#StockTpl'},
+                {field: '', title: '收货代理', width: '18%', templet: '#UserTpl'},
+                {field: '', title: '发货代理', width: '18%', templet: '#FromerTpl'},
+                /* {if auth('show')} */
+                {toolbar: '#toolbar', title: '操作面板', align: 'center', minWidth: 100, fixed: 'right'}
+                /* {/if} */
+            ]]
+        });
+    });
+</script>
+
+<script type="text/html" id="OrderTpl">
+    {{#if(d.mode==1){}}
+    <span class="layui-badge layui-bg-blue layui-badge-middle pull-left">扫码</span>
+    {{#}else{}}
+    <span class="layui-badge layui-bg-cyan layui-badge-middle pull-left">虚拟</span>
+    {{#}}}
+    <div class="text-middle inline-block text-left">
+        <div>调货单号：<b>{{ d.code }}</b></div>
+        <div>调货数量：<b>{{ d.num_need + d.vir_need }}</b><span class="margin-row-5">{{ d.gunit || '件' }}</span>( 已调货 <b>{{ d.num_used + d.vir_used }}</b><span class="margin-left-5">{{ d.gunit || '件' }}</span> )</div>
+    </div>
+</script>
+
+<script type="text/html" id="GoodsTpl">
+    {{#if(!d.product){}}
+    <div class="color-desc">关联产品数据无效！</div>
+    {{#}else{}}
+    <div class="headimg headimg-no pull-left" data-tips-image data-tips-hover data-lazy-src="{{d.product.cover||''}}"></div>
+
+    <div>产品编号：<b class="color-blue">{{ d.product_code || '-' }}</b></div>
+    <div>产品名称：{{ d.product.name || '-' }}<span class="color-desc padding-left-5">( {{ showSpec(d.product_spec || '') }} )</span></div>
+
+    {{#}}}
+</script>
+
+<script type="text/html" id="StockTpl">
+    调货状态：{{-d.status === 1?'<b class="color-text">待调货</b>':'<b class="color-green">已调货</b>'}}
+    {{#if(d.type === 1){}}<span class="layui-badge layui-bg-cyan margin-left-5">按单调货</span>{{#}}}
+    {{#if(d.type === 2){}}<span class="layui-badge layui-bg-blue margin-left-5">直接调货</span>{{#}}}
+    {{#if(d.type === 3){}}<span class="layui-badge layui-bg-red margin-left-5">仓库调度</span>{{#}}}
+    <div>创建时间：{{ d.create_time || '' }}</div>
+</script>
+
+<script type="text/html" id="FromerTpl">
+    {{# if(d.fromer && d.fromer.username){ }}
+    <div>代理姓名：{{ d.fromer.username || '-' }}</div>
+    <div>代理手机：<b>{{ d.fromer.phone || '-' }}</b></div>
+    {{# }else{ }}
+    <div class="color-desc margin-top-10">无代理信息</div>
+    {{# } }}
+</script>
+
+<script type="text/html" id="UserTpl">
+    {{# if(d.agent && d.agent.username){ }}
+    <div>代理姓名：{{ d.agent.username || '-' }}</div>
+    <div>代理手机：<b>{{ d.agent.phone || '-' }}</b></div>
+    {{# }else{ }}
+    <div class="color-desc margin-top-10">无代理信息</div>
+    {{# } }}
+</script>
+
+<script type="text/html" id="toolbar">
+    {if auth('show')}
+    <a class="layui-btn layui-btn-sm layui-btn-normal" data-modal="{:url('show')}?code={{d.code}}" data-title="调货详情">详 情</a>
+    <!--{/if}-->
+</script>
+{/block}

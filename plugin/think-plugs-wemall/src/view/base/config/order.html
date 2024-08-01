@@ -1,0 +1,151 @@
+<form action="{:sysuri()}" class="layui-form layui-card" data-auto="true" method="post">
+    <div class="layui-card-body ta-pl-40">
+
+        <div class="layui-form-item ">
+            <div class="flex">
+                <div>
+                    <span class="help-label label-required-prev"><b>下单随减</b>Order Reduction</span>
+                    <div class="layui-input help-checks ta-pl-15 flex flex-align-center layui-bg-gray">
+                        {empty name='vo.enable_reduct'}{assign name='vo.enable_reduct' value='0'}{/empty}
+                        {foreach ['禁用','启用'] as $k=>$n}{if (isset($vo.enable_reduct) && $vo.enable_reduct eq $k)}
+                        <input checked type="radio" name="enable_reduct" value="{$k}" title="{$n}">
+                        {else}
+                        <input type="radio" name="enable_reduct" value="{$k}" title="{$n}">
+                        {/if}{/foreach}
+                    </div>
+                </div>
+                <div class="ta-ml-15 flex-1">
+                    <span class="help-label label-required-prev"><b>减免金额</b></span>
+                    <label class="layui-input layui-bg-gray layui-input-group ta-pl-0">
+                        <span class="layui-input-prefix">从</span>
+                        <input class="layui-input border-0 text-center" type="number" lay-affix="number" step="0.01" lay-precision="2" min="0" name="reduct_min" value='{$vo.reduct_min|default="0.00"}'>
+                        <span class="layui-input-suffix">元至</span>
+                        <input class="layui-input border-0 text-center" type="number" lay-affix="number" step="0.01" lay-precision="2" min="0" name="reduct_max" value='{$vo.reduct_max|default="0.00"}'>
+                        <span class="layui-input-suffix">元</span>
+                    </label>
+                </div>
+            </div>
+            <span class="help-block">开启下单随减后，用户每次下单都会随机减免一定金额，最多不会超过订单金额。</span>
+        </div>
+
+        <div class="layui-form-item">
+            <div class="flex">
+                <div>
+                    <span class="help-label label-required-prev"><b>自动清除</b>Auto Remove</span>
+                    <div class="layui-input help-checks ta-pl-15 flex flex-align-center layui-bg-gray">
+                        {empty name='vo.remove_auto'}{assign name='vo.remove_auto' value='0'}{/empty}
+                        {foreach ['禁用','启用'] as $k=>$n}{if (isset($vo.remove_auto) && $vo.remove_auto eq $k)}
+                        <input checked type="radio" name="remove_auto" value="{$k}" title="{$n}">
+                        {else}
+                        <input type="radio" name="remove_auto" value="{$k}" title="{$n}">
+                        {/if}{/foreach}
+                    </div>
+                </div>
+                <label class="ta-ml-15 block relative">
+                    <span class="help-label label-required-prev"><b>延时执行</b>填写 0 立即清理订单</span>
+                    <label class="layui-input-group layui-bg-gray">
+                        <input class="layui-input text-center" name="remove_time" type="number" lay-affix="number" lay-precision="2" step="0.01" min="0" placeholder="请输入延时时间" value="{$vo.remove_time|default='0'}"/>
+                        <span class="layui-input-suffix layui-input-split nowrap">小时</span>
+                    </label>
+                </label>
+                <label class="ta-ml-15 block relative flex-1">
+                    <span class="help-label"><b>自动清理描述</b></span>
+                    <input name="remove_text" class="layui-input" placeholder="请输入自动清理描述" value="{$vo.remove_text|default=''}"/>
+                </label>
+            </div>
+            <span class="help-block">开启自动清理后，当订单已经取消并没有支付信息时会根据配置自动清除！</span>
+        </div>
+
+        <div class="layui-form-item">
+            <div class="flex">
+                <div>
+                    <span class="help-label label-required-prev"><b>自动取消</b>Auto Cancel</span>
+                    <div class="layui-input help-checks ta-pl-15 flex flex-align-center layui-bg-gray">
+                        {empty name='vo.cancel_auto'}{assign name='vo.cancel_auto' value='0'}{/empty}
+                        {foreach ['禁用','启用'] as $k=>$n}{if (isset($vo.cancel_auto) && $vo.cancel_auto eq $k)}
+                        <input checked type="radio" name="cancel_auto" value="{$k}" title="{$n}">
+                        {else}
+                        <input type="radio" name="cancel_auto" value="{$k}" title="{$n}">
+                        {/if}{/foreach}
+                    </div>
+                </div>
+                <label class="ta-ml-15 block relative">
+                    <span class="help-label label-required-prev"><b>延时执行</b>不支持立即取消订单</span>
+                    <label class="layui-input-group layui-bg-gray">
+                        <input class="layui-input text-center" name="cancel_time" type="number" lay-affix="number" lay-precision="2" step="0.01" min="0.01" placeholder="请输入延时时间" value="{$vo.cancel_time|default='0.5'}"/>
+                        <span class="layui-input-suffix layui-input-split nowrap">小时</span>
+                    </label>
+                </label>
+                <label class="ta-ml-15 block relative flex-1">
+                    <span class="help-label"><b>自动取消描述</b></span>
+                    <input name="cancel_text" class="layui-input" placeholder="请输入自动取消描述" value="{$vo.cancel_text|default=''}"/>
+                </label>
+            </div>
+            <span class="help-block">开启自动取消后，当订单在指定时间内未完成支付时会自动取消订单并返还商品库存！</span>
+        </div>
+
+        <div class="layui-form-item">
+            <div class="flex">
+                <div>
+                    <span class="help-label label-required-prev"><b>自动签收</b>Auto Receipt</span>
+                    <div class="layui-input help-checks ta-pl-15 flex flex-align-center layui-bg-gray">
+                        {empty name='vo.receipt_auto'}{assign name='vo.receipt_auto' value='0'}{/empty}
+                        {foreach ['禁用','启用'] as $k=>$n}{if (isset($vo.receipt_auto) && $vo.receipt_auto eq $k)}
+                        <input checked type="radio" name="receipt_auto" value="{$k}" title="{$n}">
+                        {else}
+                        <input type="radio" name="receipt_auto" value="{$k}" title="{$n}">
+                        {/if}{/foreach}
+                    </div>
+                </div>
+                <label class="ta-ml-15 block relative">
+                    <span class="help-label label-required-prev"><b>延时执行</b>填写 0 立即完成签收</span>
+                    <label class="layui-input-group layui-bg-gray">
+                        <input class="layui-input text-center" name="receipt_time" type="number" lay-affix="number" lay-precision="2" step="0.01" min="0" placeholder="请输入延时时间" value="{$vo.receipt_time|default='0'}"/>
+                        <span class="layui-input-suffix layui-input-split nowrap">小时</span>
+                    </label>
+                </label>
+                <label class="ta-ml-15 block relative flex-1">
+                    <span class="help-label"><b>自动签收描述</b></span>
+                    <input name="receipt_text" class="layui-input" placeholder="请输入自动签收描述" value="{$vo.receipt_text|default=''}"/>
+                </label>
+            </div>
+            <span class="help-block">开启自动签收后，当订单发货后会根据配置自动完成订单签收！</span>
+        </div>
+
+        <div class="layui-form-item ">
+            <div class="flex">
+                <div>
+                    <span class="help-label label-required-prev"><b>自动评论</b>Auto Comment</span>
+                    <div class="layui-input help-checks ta-pl-15 flex flex-align-center layui-bg-gray">
+                        {empty name='vo.comment_auto'}{assign name='vo.comment_auto' value='0'}{/empty}
+                        {foreach ['禁用','启用'] as $k=>$n}{if (isset($vo.comment_auto) && $vo.comment_auto eq $k)}
+                        <input checked type="radio" name="comment_auto" value="{$k}" title="{$n}">
+                        {else}
+                        <input type="radio" name="comment_auto" value="{$k}" title="{$n}">
+                        {/if}{/foreach}
+                    </div>
+                </div>
+                <div class="ta-ml-15">
+                    <span class="help-label label-required-prev"><b>延时执行</b>填写 0 立即完成评论</span>
+                    <label class="layui-input-group layui-bg-gray">
+                        <input class="layui-input text-center" name="comment_time" type="number" lay-affix="number" lay-precision="2" step="0.01" min="0" placeholder="请输入延时时间" value="{$vo.comment_time|default='0'}"/>
+                        <span class="layui-input-suffix layui-input-split nowrap">小时</span>
+                    </label>
+                </div>
+                <label class="ta-ml-15 block relative flex-1">
+                    <span class="help-label"><b>自动评论内容</b></span>
+                    <input name="comment_text" class="layui-input" placeholder="请输入自动评论内容" value="{$vo.comment_text|default=''}"/>
+                </label>
+            </div>
+            <span class="help-block">开启自动评论后，当订单确认签收后会根据配置自动完成订单评论！</span>
+        </div>
+
+    </div>
+
+    <div class="hr-line-dashed"></div>
+
+    <div class="layui-form-item text-center">
+        <button class="layui-btn" type='submit'>保存数据</button>
+        <button class="layui-btn layui-btn-danger" data-close type='button' data-confirm="确定要取消编辑吗？">取消编辑</button>
+    </div>
+</form>

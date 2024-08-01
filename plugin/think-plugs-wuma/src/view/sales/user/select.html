@@ -1,0 +1,36 @@
+<div class="iframe-pagination">
+    {include file='sales/user/select_search'}
+    <table id="AgentSelectData" data-url="{:sysuri()}"></table>
+</div>
+
+<script>
+    $(function () {
+        // 初始化表格组件
+        $('#AgentSelectData').layTable({
+            even: true, height: 'full',
+            sort: {field: 'id', type: 'desc'},
+            cols: [[
+                {field: 'id', title: 'ID', width: 80, align: 'center', sort: true},
+                {field: 'level', title: '等级名称', minWidth: 100, align: 'center', templet: "<div>{{d.levelinfo.name||''}}</div>"},
+                {field: 'phone', title: '代理手机', minWidth: 100, align: 'center'},
+                {field: 'username', title: '代理姓名', minWidth: 100, align: 'center'},
+                {field: 'status', title: '状态', align: 'center', width: 80, templet: '#AgentStatusSwitchTpl'},
+                {field: 'create_time', title: '创建时间', minWidth: 170, align: 'center', sort: true},
+                {toolbar: '#toolbar', title: '操作', align: 'center', width: 100}
+            ]]
+        }).trigger('tool', function (item) {
+            window.setItemValue(item.data);
+            $.layTable.closeThisModal(this);
+        });
+    });
+</script>
+
+<!-- 操作工具条模板 -->
+<script type="text/html" id="toolbar">
+    <a class="layui-btn layui-btn-sm" lay-event="select">选 择</a>
+</script>
+
+<!-- 数据状态切换模板 -->
+<script type="text/html" id="AgentStatusSwitchTpl">
+    {{-d.status ? '<b class="color-green">已激活</b>' : '<b class="color-red">已禁用</b>'}}
+</script>

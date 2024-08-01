@@ -1,0 +1,63 @@
+<div class="think-box-shadow relative shadow-none">
+    {include file='user/admin/parent_search'}
+    <table id="UserTableSelect" data-line="3" data-url="{:request()->url()}" data-target-search="form.form-search"></table>
+</div>
+
+<script>
+    $(function () {
+        $('#UserTableSelect').layTable({
+            even: true, height: 'full',
+            sort: {field: 'id', type: 'desc'},
+            cols: [[
+                {field: 'id', hide: true},
+                {
+                    title: '用户头像', width: 90, align: 'center', templet: function (d) {
+                        if (!d.user || !d.user.headimg) return '';
+                        return laytpl('<div>{{-showTableImage(d.user.headimg,false,"md")}}</div>').render(d)
+                    }
+                },
+                {
+                    title: '用户账号', minWidth: 180, templet: function (d) {
+                        let tpls = [];
+                        tpls.push('关联账号：<b class="color-blue">{{d.user.phone}}</b>')
+                        if (d.level_agent > 0) {
+                            tpls.push('推广权益：<b class=color-blue>有推广权益</b></b>')
+                        } else {
+                            tpls.push('推广权益：<b class=color-desc>无推广权益</b></b>')
+                        }
+                        tpls.push('会员等级：<b class="color-blue">[ VIP{{d.level_code}} ] {{d.level_name||""}}</b>')
+                        return laytpl(tpls.join('<br>')).render(d);
+                    }
+                },
+                {
+                    title: '用户姓名', templet: function (d) {
+                        let tpls = [];
+                        tpls.push('用户姓名：{{d.user.username||"-"}}')
+                        tpls.push('用户昵称：{{d.user.nickname||"-"}}')
+                        tpls.push('注册时间：{{d.user.create_time||"-"}}')
+                        return laytpl(tpls.join('<br>')).render(d);
+                    }
+                },
+                {toolbar: '#SelectUserToolbar', title: '操作面板', align: 'center', width: 100, fixed: 'right'}
+            ]]
+        }).trigger('tool', function (ev) {
+            let that = this, data = {puid: ev.data.unid, unid: parseInt("{$get.unid|default=0}")};
+            $.form.load('{:url("parent")}', data, 'post', function (ret) {
+                ret.code < 1 ? $.msg.error(ret.info) : $.msg.success(ret.info, 3, function () {
+                    $.msg.closeThisModal(that), $.form.reload();
+                })
+                return false;
+            });
+        });
+    });
+</script>
+
+<!-- 操作工具条模板 -->
+<script type="text/html" id="SelectUserToolbar">
+    <div class="ta-pt-10"></div>
+    {{# if (typeof checkItemValue !== 'function' || checkItemValue(d.id)){ }}
+    <a class="layui-btn layui-btn-sm" lay-event="select">选 择</a>
+    {{# }else{ }}
+    <a class="layui-btn layui-btn-sm layui-btn-disabled">已 选</a>
+    {{# } }}
+</script>

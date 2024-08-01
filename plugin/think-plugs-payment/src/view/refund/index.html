@@ -1,0 +1,140 @@
+{extend name="table"}
+
+{block name="button"}
+<!--{if auth("queue")}-->
+<!--<button class='layui-btn layui-btn-sm layui-btn-primary' data-queue='{:url("queue")}'>刷新领取次数</button>-->
+<!--{/if}-->
+{/block}
+
+{block name="content"}
+<div class="{$mode==='modal'?'':'think-box-shadow'}">
+    {include file='refund/index_search'}
+    <table id="PaymentRecordTable" data-url="{:request()->url()}" data-line="3"></table>
+</div>
+{/block}
+
+{block name='script'}
+<script>
+    $(function () {
+        $('#PaymentRecordTable').layTable({
+            even: true, height: 'full',
+            sort: {field: 'id', type: 'desc'},
+            cols: [[
+                /* {if $mode neq 'modal'} */
+                {field: 'headimg', title: '头像', width: 85, align: 'center', templet: '<div>{{-showTableImage(d.user.headimg,true,"md")}}</div>'},
+                {
+                    field: 'id', title: '用户账号', minWidth: 170, templet: function (d) {
+                        let tpls = [];
+                        tpls.push('用户昵称：{{d.user.nickname||"-"}}');
+                        tpls.push('绑定账号：{{d.user.phone||d.user.email||d.user.username||"-"}}');
+                        tpls.push('用户编号：{{d.user.code||"-"}}');
+                        return laytpl(tpls.join('<br>')).render(d);
+                    }
+                },
+                /* {/if} */
+                {
+                    field: '', title: '订单内容', minWidth: 100, templet: function (d) {
+                        let tpls = [];
+                        tpls.push('订单名称：<b class="color-blue">{{d.record.order_name||"-"}}</b>');
+                        tpls.push('订单编号：<b class="color-blue">{{d.record.order_no}}</b>');
+                        if (d.record.payment_status) {
+                            tpls.push('订单金额：<b class="color-blue">需支付 {{d.record.order_amount}}</b> 元 ( 已付 <b class="color-blue">{{d.record.payment_amount}}</b> 元 )');
+                        } else {
+                            if (d.record.payment_amount > 0) {
+                                tpls.push('订单金额：<b class="color-blue">需支付 {{d.record.order_amount}}</b> 元 ( 待审 <b class="color-blue">{{d.record.payment_amount}}</b> 元 )');
+                            } else {
+                                tpls.push('订单金额：<b class="color-blue">需支付 {{d.record.order_amount}}</b> 元');
+                            }
+                        }
+                        return laytpl(tpls.join('<br>')).render(d);
+                    }
+                },
+                {
+                    field: 'name', title: '支付描述', minWidth: 100, templet: function (d) {
+                        if (d.record.payment_status) {
+                            d.typeInfo = '<b class="color-green">已支付</b>';
+                        } else if (d.record.channel_type === 'voucher') {
+                            if (d.record.audit_status === 1) {
+                                d.typeInfo = '<b class="color-blue">待审核</b>';
+                            } else if (d.record.audit_status === 2) {
+                                d.typeInfo = '<b class="color-green">已完成</b>';
+                            } else if (d.record.audit_status === 0) {
+                                d.typeInfo = '<b class="color-red">已拒绝</b>';
+                            }
+                        } else {
+                            d.typeInfo = '<b class="color-blue">待支付</b>';
+                        }
+                        let tpls = [];
+
+                        tpls.push('支付类型：{{d.record.channel_type_name||"-"}} {{-d.typeInfo}}');
+                        tpls.push('交易单号：<b class="color-blue">{{d.record.payment_trade||"-"}}</b>');
+                        tpls.push('操作描述：{{d.record.payment_remark||"-"}}');
+                        return laytpl(tpls.join('<br>')).render(d);
+                    }
+                },
+
+                {
+                    field: 'name', title: '退款内容', minWidth: 100, templet: function (d) {
+                        if (d.record.payment_status) {
+                            d.typeInfo = '<b class="color-green">已支付</b>';
+                        } else if (d.record.channel_type === 'voucher') {
+                            if (d.record.audit_status === 1) {
+                                d.typeInfo = '<b class="color-blue">待审核</b>';
+                            } else if (d.record.audit_status === 2) {
+                                d.typeInfo = '<b class="color-green">已完成</b>';
+                            } else if (d.record.audit_status === 0) {
+                                d.typeInfo = '<b class="color-red">已拒绝</b>';
+                            }
+                        } else {
+                            d.typeInfo = '<b class="color-blue">待支付</b>';
+                        }
+                        let tpls = [];
+
+                        tpls.push('支付类型：{{d.record.channel_type_name||"-"}} {{-d.typeInfo}}');
+                        tpls.push('交易单号：<b class="color-blue">{{d.code||"-"}}</b>');
+                        tpls.push('操作描述：{{d.refund_remark||"-"}}');
+                        return laytpl(tpls.join('<br>')).render(d);
+                    }
+                },
+                {
+                    field: 'id', title: '操作时间', minWidth: 100, sort: true, templet: function (d) {
+                        if (d.payment_status) {
+                            d.typeLabel = '支付';
+                            d.typeDatetime = d.payment_time || '-';
+                        } else {
+                            d.typeLabel = '生成';
+                            d.typeDatetime = d.create_time || '-';
+                        }
+                        let tpls = [];
+                        tpls.push('{{d.typeLabel}}时间：{{d.typeDatetime}}');
+                        tpls.push('更新时间：{{d.update_time||"-"}}');
+                        tpls.push('创建时间：{{d.create_time||"-"}}');
+                        return laytpl(tpls.join('<br>')).render(d)
+                    }
+                },
+                /* {if auth("audit")} */
+                {field: 'id', toolbar: '#toolbarPayment', title: '操作面板', align: 'center', minWidth: 80, width: '10%', fixed: 'right'}
+                /* {/if} */
+            ]]
+        });
+    });
+</script>
+
+<script type="text/html" id="toolbarPayment">
+    <!--{if auth("audit")}-->
+    {{# if(d.channel_type === 'voucher'){ }}
+
+    {{# if(d.audit_status === 1){ }}
+    <a class="layui-btn layui-btn-sm ta-mt-20" data-modal="{:url('audit')}" data-value="id#{{d.id}}" data-title="支付凭证审核">凭证审核</a>
+    {{# } else if(d.audit_status === 0){ }}
+    <a class="layui-btn layui-btn-sm ta-mt-20 layui-disabled">已经拒绝</a>
+    {{# } else if(d.audit_status === 2){ }}
+    <a class="layui-btn layui-btn-sm ta-mt-20 layui-disabled">已经通过</a>
+    {{# } }}
+
+    {{#}else{ }}
+    <a class="layui-btn layui-btn-sm ta-mt-20 layui-disabled">无需操作</a>
+    {{# } }}
+    <!--{/if}-->
+</script>
+{/block}

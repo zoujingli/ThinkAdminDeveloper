@@ -1,0 +1,102 @@
+{extend name="table"}
+
+{block name="button"}
+<!--{if auth("add")}-->
+<button class='layui-btn layui-btn-sm layui-btn-primary' data-table-id="LevelTable" data-modal="{:url('add')}">添加等级</button>
+<!--{/if}-->
+{/block}
+
+{block name="content"}
+<div class="think-box-shadow">
+    {include file='base/agent/index_search'}
+    <table id="LevelTable" data-url="{:request()->url()}" data-target-search="form.form-search"></table>
+</div>
+{/block}
+
+{block name='script'}
+<script>
+
+    $(function () {
+        let $table = $('#LevelTable').layTable({
+            even: true, height: 'full',
+            sort: {field: 'number', type: 'asc'},
+            cols: [[
+                {field: 'number', title: '序号', align: "center", minWidth: 70, width: '5%', sort: true},
+                {field: 'cover', title: '图标', width: 70, align: 'center', templet: '<div>{{-$.layTable.showImage(d.cover)}}</div>'},
+                {field: 'name', title: '等级名称', align: 'center', minWidth: 80, width: '12%'},
+                {
+                    title: '升级规则', align: 'center', minWidth: 80, templet: function (d) {
+                        return d.upgrade_type === 1 ? '<span class="color-green">全部达成</span>' : '<span class="color-blue">任意条件</span>';
+                    }
+                },
+                {
+                    title: '团队总人数', align: 'center', minWidth: 80, templet: function (d) {
+                        return d.extra.teams_total_status ? laytpl('<b>{{d.extra.teams_total_number}}</b> 人').render(d) : '-';
+                    }
+                },
+                {
+                    title: '直属团队人数', align: 'center', minWidth: 80, templet: function (d) {
+                        return d.extra.teams_direct_status ? laytpl('<b>{{d.extra.teams_direct_number}}</b> 人').render(d) : '-';
+                    }
+                },
+                {
+                    title: '间接团队人数', align: 'center', minWidth: 80, templet: function (d) {
+                        return d.extra.teams_indirect_status ? laytpl('<b>{{d.extra.teams_indirect_number}}</b> 人').render(d) : '-';
+                    }
+                },
+                {
+                    title: '团队总额', align: 'center', minWidth: 80, templet: function (d) {
+                        return d.extra.amount_total_status ? laytpl('<b>{{d.extra.amount_total_number}} 元</b>').render(d) : '-';
+                    }
+                },
+                {
+                    title: '直属团队总额', align: 'center', minWidth: 80, templet: function (d) {
+                        return d.extra.amount_direct_status ? laytpl('<b>{{d.extra.amount_direct_number}}</b> 元').render(d) : '-';
+                    }
+                },
+                {
+                    title: '间接团队总额', align: 'center', minWidth: 80, templet: function (d) {
+                        return d.extra.amount_indirect_status ? laytpl('<b>{{d.extra.amount_indirect_number}} 元</b>').render(d) : '-';
+                    }
+                },
+                {field: 'status', title: '等级状态', align: 'center', minWidth: 110, width: '8%', templet: '#StatusSwitchTpl'},
+                {toolbar: '#toolbar', title: '操作面板', align: 'center', minWidth: 150, fixed: 'right'},
+            ]]
+        });
+
+        // 数据状态切换操作
+        layui.form.on('switch(StatusSwitch)', function (obj) {
+            let data = {id: obj.value, status: obj.elem.checked > 0 ? 1 : 0};
+            $.form.load("{:url('state')}", data, 'post', function (ret) {
+                let fn = () => $table.trigger('reload');
+                ret.code > 0 ? fn() : $.msg.error(ret.info, 3, fn)
+                return false;
+            }, false);
+        });
+    });
+</script>
+
+<!-- 列表排序权重模板 -->
+<script type="text/html" id="SortInputTpl">
+    <input type="number" min="0" data-blur-number="0" data-action-blur="{:sysuri()}" data-value="id#{{d.id}};action#sort;sort#{value}" data-loading="false" value="{{d.sort}}" class="layui-input text-center">
+</script>
+
+<!-- 数据状态切换模板 -->
+<script type="text/html" id="StatusSwitchTpl">
+    <!--{if auth("state")}-->
+    <input type="checkbox" value="{{d.id}}" lay-skin="switch" lay-text="已激活|已禁用" lay-filter="StatusSwitch" {{-d.status>0?'checked':''}}>
+    <!--{else}-->
+    {{-d.status ? '<b class="color-green">已启用</b>' : '<b class="color-red">已禁用</b>'}}
+    <!--{/if}-->
+</script>
+
+<!-- 数据操作工具条模板 -->
+<script type="text/html" id="toolbar">
+    <!--{if auth('edit')}-->
+    <a class="layui-btn layui-btn-primary layui-btn-sm" data-table-id="LevelTable" data-title="编辑等级" data-modal='{:url("edit")}?id={{d.id}}'>编 辑</a>
+    <!--{/if}-->
+    <!--{if auth("remove")}-->
+    <a class="layui-btn layui-btn-danger layui-btn-sm" data-confirm="确定要删除等级吗?" data-action="{:url('remove')}" data-value="id#{{d.id}}">删 除</a>
+    <!--{/if}-->
+</script>
+{/block}

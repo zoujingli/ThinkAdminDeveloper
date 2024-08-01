@@ -1,0 +1,53 @@
+{
+  "type": "think-admin-plugin",
+  "name": "zoujingli/think-plugs-wemall",
+  "homepage": "https://thinkadmin.top",
+  "description": "WeMall Plugin for ThinkAdmin",
+  "authors": [
+    {
+      "name": "Anyon",
+      "email": "zoujingli@qq.com"
+    }
+  ],
+  "require": {
+    "php": ">7.1",
+    "ext-json": "*",
+    "zoujingli/think-plugs-account": "^1.0|@dev",
+    "zoujingli/think-plugs-payment": "^1.0|@dev"
+  },
+  "autoload": {
+    "files": [
+      "./src/helper.php"
+    ],
+    "psr-4": {
+      "plugin\\wemall\\": "src"
+    }
+  },
+  "extra": {
+    "think": {
+      "services": [
+        "plugin\\wemall\\Service"
+      ]
+    },
+    "config": {
+      "type": "module",
+      "name": "分销商城管理",
+      "document": "https://thinkadmin.top/plugin/think-plugs-wemall.html",
+      "description": "分销商城管理模块，提供完整多端商城系统功能。",
+      "license": [
+        "VIP"
+      ]
+    },
+    "plugin": {
+      "copy": {
+        "stc/database": "database/migrations"
+      }
+    }
+  },
+  "minimum-stability": "dev",
+  "config": {
+    "allow-plugins": {
+      "zoujingli/think-install": true
+    }
+  }
+}
