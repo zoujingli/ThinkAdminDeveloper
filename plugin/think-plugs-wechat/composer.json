@@ -34,8 +34,10 @@
     },
     "plugin": {
       "copy": {
+        "src": "!app/wechat",
         "stc/database": "database/migrations"
-      }
+      },
+      "clear": true
     },
     "think": {
       "services": [
