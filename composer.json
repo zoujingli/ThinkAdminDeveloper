@@ -70,10 +70,6 @@
     {
       "type": "path",
       "url": "plugin/think-library"
-    },
-    {
-      "type": "path",
-      "url": "plugin/ip2region"
     }
   ],
   "minimum-stability": "dev",
