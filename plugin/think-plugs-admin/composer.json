@@ -31,16 +31,18 @@
         "app\\admin\\Service"
       ]
     },
-    "plugin": {
-      "copy": {
-        "stc/database": "database/migrations"
-      }
-    },
     "config": {
       "type": "module",
       "name": "系统后台管理",
       "document": "https://thinkadmin.top/plugin/think-plugs-admin.html",
       "description": "后台基础管理模块，系统账号及安全配置管理。"
+    },
+    "plugin": {
+      "copy": {
+        "src": "!app/admin",
+        "stc/database": "database/migrations"
+      },
+      "clear": true
     }
   },
   "prefer-stable": true,
