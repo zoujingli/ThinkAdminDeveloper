@@ -17,7 +17,7 @@ composer update --optimize-autoloader
 # 运行本地测试环境，启用 8088 商品
 php think run --host 127.0.0.1 --port 8088
 
-# 打开浏览器访问网站 ( Windows )
+# 打开浏览器访问网站 ( Windows ) 
 start http://127.0.0.1:8088
 ```
 

@@ -1,0 +1,29 @@
+name: Clear Release
+
+on:
+  workflow_dispatch:
+
+jobs:
+  delete:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.x'
+
+      - name: Install PyGithub
+        run: pip install PyGithub
+
+      - name: Delete all GitHub tags
+        run: |
+          # 获取所有 tag 的列表  
+          TAGS=$(git ls-remote --tags origin | cut -f2 | cut -d'/' -f3)
+          
+          # 循环遍历所有 tag 并删除  
+          for TAG in $TAGS; do
+            curl -s -X DELETE "https://api.github.com/repos/${{ github.repository }}/git/refs/tags/$TAG" -H "Authorization: token ${{ secrets.TOKEN }}"
+          done
