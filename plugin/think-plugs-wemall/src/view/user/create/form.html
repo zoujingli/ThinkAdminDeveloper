@@ -33,7 +33,7 @@
         <div class="flex">
             <label class="layui-form-item block relative flex-1">
                 <span class="help-label label-required-prev"><b>累计佣金</b>Rebate Total</span>
-                <input class="layui-input" type="number" lay-affix="number" min="0" step="0.01" lay-precision="2" name="rebate_total" placeholder="请输入累计佣金" required value="{$vo.rebate_total|default='0.00'}">
+                <input class="layui-input" type="number" min="0" step="0.01" lay-affix="number" lay-precision="2" name="rebate_total" placeholder="请输入累计佣金" required value="{$vo.rebate_total|default='0.00'}">
                 <span class="help-block">将会在用户返佣记录里面创建一条记录，体现为初始佣金值。</span>
             </label>
             <label class="layui-form-item block relative flex-1 ta-ml-15">
@@ -41,8 +41,8 @@
                 <input class="layui-input" name="rebate_total_desc" placeholder="请输入佣金记录描述" required value="{$vo.rebate_total_desc|default='用户初始化结算佣金'}">
                 <span class="help-block">创建初始佣金记录显示的记录描述内容。</span>
             </label>
-
         </div>
+
         <div class="flex">
             <label class="layui-form-item block relative flex-1">
                 <span class="help-label label-required-prev"><b>剩余佣金</b>Rebate Usable</span>
