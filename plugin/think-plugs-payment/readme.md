@@ -22,6 +22,10 @@
 
 **待办事项**：未来子支付单将支持独立的退款操作。目前，积分抵扣、余额支付、凭证支付以及微信支付退款操作已得到支持。敬请期待更多更新与优化。
 
+### 加入我们
+
+我们的代码仓库已移至 **Github**，而 **Gitee** 则仅作为国内镜像仓库，方便广大开发者获取和使用。若想提交 **PR** 或 **ISSUE** 请在 [ThinkAdminDeveloper](https://github.com/zoujingli/ThinkAdminDeveloper) 仓库进行操作，如果基础仓库操作或提交问题不会也不能处理。
+
 ### 开放接口
 
 接口文档：https://thinkadmin.apifox.cn
