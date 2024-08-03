@@ -12,6 +12,10 @@
 
 今后，**ThinkAdmin** 将把微信开放平台的基础功能统一集中在此插件中，实现功能的集中管理和深度优化。目前，该插件已全面集成 **公众号** 和 **小程序** 管理等核心接口，为您的微信开发工作提供强大的后盾。无论您是希望高效开发公众号、小程序等应用，还是执行其他微信开放平台的操作，此插件都将是您不可或缺的好帮手。
 
+### 加入我们
+
+我们的代码仓库已移至 **Github**，而 **Gitee** 则仅作为国内镜像仓库，方便广大开发者获取和使用。若想提交 **PR** 或 **ISSUE** 请在 [ThinkAdminDeveloper](https://github.com/zoujingli/ThinkAdminDeveloper) 仓库进行操作，如果基础仓库操作或提交问题不会也不能处理。
+
 ### 开放接口
 
 此插件支持 [**ThinkPlugsWechat**](https://thinkadmin.top/plugin/think-plugs-wechat.html) 应用插件远程调用，需要增加配置`sysconf('wechat.service_jsonrpc')`远程调用的 **JSON-RPC** 接口地址；
