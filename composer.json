@@ -69,6 +69,10 @@
     },
     {
       "type": "path",
+      "url": "plugin/think-plugs-static"
+    },
+    {
+      "type": "path",
       "url": "plugin/think-library"
     }
   ],

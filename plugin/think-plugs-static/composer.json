@@ -1,0 +1,52 @@
+{
+  "type": "think-admin-plugin",
+  "name": "zoujingli/think-plugs-static",
+  "license": "MIT",
+  "description": "Static Files for ThinkAdmin",
+  "authors": [
+    {
+      "name": "Anyon",
+      "email": "zoujingli@qq.com"
+    }
+  ],
+  "require": {
+    "php": ">=7.1",
+    "zoujingli/think-install": "^1.0||dev-master"
+  },
+  "extra": {
+    "plugin": {
+      "copy": {
+        "stc/think": "!think",
+        "stc/public/index.php": "!public/index.php",
+        "stc/public/static/plugs": "!public/static/plugs",
+        "stc/public/static/theme": "!public/static/theme",
+        "stc/public/static/admin.js": "!public/static/admin.js",
+        "stc/public/static/login.js": "!public/static/login.js"
+      },
+      "init": {
+        "stc/class/Index.php": "app/index/controller/Index.php",
+        "stc/config/app.php": "config/app.php",
+        "stc/config/cache.php": "config/cache.php",
+        "stc/config/cookie.php": "config/cookie.php",
+        "stc/config/database.php": "config/database.php",
+        "stc/config/lang.php": "config/lang.php",
+        "stc/config/log.php": "config/log.php",
+        "stc/config/phinx.php": "config/phinx.php",
+        "stc/config/route.php": "config/route.php",
+        "stc/config/session.php": "config/session.php",
+        "stc/config/view.php": "config/view.php",
+        "stc/public/router.php": "public/router.php",
+        "stc/public/robots.txt": "public/robots.txt",
+        "stc/public/.htaccess": "public/.htaccess",
+        "stc/public/static/extra/style.css": "public/static/extra/style.css",
+        "stc/public/static/extra/script.js": "public/static/extra/script.js"
+      },
+      "clear": true
+    }
+  },
+  "config": {
+    "allow-plugins": {
+      "zoujingli/think-install": true
+    }
+  }
+}
