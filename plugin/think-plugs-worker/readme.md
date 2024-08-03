@@ -11,11 +11,13 @@
 
 **提示：** 默认支持以 HTTP 方式直接启动 ThinkAdmin 项目，无需配置 Nginx 或 Apache 环境，访问速度提升 N 倍。
 
-代码主仓库放在 **Gitee**，**Github** 仅为镜像仓库用于发布 **Composer** 包。
-
 **注意：** 该插件支持 `Workerman` 或 `Gateway` 两种运行方式，默认只安装了 `Workerman` 组件，如果需要使用 `Gateway` 组件，请另行安装。
 配置文件的根配置参数是启动 **http** 服务进程，用来运行 **ThinkAdmin v6** 程序。
 如果需要使用其他协议，请使用并修改 `customs` 配置或追加配置，并通过指定 `--custom name` 配置名来启动对应服务进程。
+
+### 加入我们
+
+我们的代码仓库已移至 **Github**，而 **Gitee** 则仅作为国内镜像仓库，方便广大开发者获取和使用。若想提交 **PR** 或 **ISSUE** 请在 [ThinkAdminDeveloper](https://github.com/zoujingli/ThinkAdminDeveloper) 仓库进行操作，如果基础仓库操作或提交问题不会也不能处理。
 
 ### 安装插件
 
