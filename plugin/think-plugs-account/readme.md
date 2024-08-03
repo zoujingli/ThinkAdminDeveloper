@@ -36,6 +36,10 @@
 
 - 若需取消终端账号与用户账号的关联，可调用 `$account->unbind()` 方法。一旦关联被取消，该终端账号便可重新绑定其他用户账号，实现灵活的用户账号管理。
 
+### 加入我们
+
+我们的代码仓库已移至 **Github**，而 **Gitee** 则仅作为国内镜像仓库，方便广大开发者获取和使用。若想提交 **PR** 或 **ISSUE** 请在 [ThinkAdminDeveloper](https://github.com/zoujingli/ThinkAdminDeveloper) 仓库进行操作，如果基础仓库操作或提交问题不会也不能处理。
+
 ### 开放接口
 
 通过用户登录接口，换取 **JWT-TOKEN** 内容，之后接口需要在每次请求的头部 **header** 加上 **Api-Token** 字段并带上之后获取到的值。
