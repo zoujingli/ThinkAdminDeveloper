@@ -13,9 +13,11 @@
 
 此外，我们还对插件机制进行了优化，替换了原有的 **ThinkPlugsSimpleCenter** 模式，进一步简化了插件管理流程。
 
-代码主仓库位于 **Gitee** 平台，而 **Github** 则作为镜像仓库，主要用于发布 **Composer** 包，方便开发者集成和使用。
-
 无论是企业用户还是个人开发者，都能通过 **ThinkAdmin** 插件管理中心轻松管理插件，提升系统功能和用户体验。
+
+### 加入我们
+
+我们的代码仓库已移至 **Github**，而 **Gitee** 则仅作为国内镜像仓库，方便广大开发者获取和使用。若想提交 **PR** 或 **ISSUE** 请在 [ThinkAdminDeveloper](https://github.com/zoujingli/ThinkAdminDeveloper) 仓库进行操作，如果基础仓库操作或提交问题不会也不能处理。
 
 ### 安装插件
 
