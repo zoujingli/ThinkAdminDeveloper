@@ -11,7 +11,9 @@
 
 物码标签管理系统，此插件为收费授权插件，请联系作者获取授权，未授权不可商用。
 
-代码主仓库放在 **Gitee**，**Github** 仅为镜像仓库用于发布 **Composer** 包。
+### 加入我们
+
+我们的代码仓库已移至 **Github**，而 **Gitee** 则仅作为国内镜像仓库，方便广大开发者获取和使用。若想提交 **PR** 或 **ISSUE** 请在 [ThinkAdminDeveloper](https://github.com/zoujingli/ThinkAdminDeveloper) 仓库进行操作，如果基础仓库操作或提交问题不会也不能处理。
 
 ### 安装插件
 
