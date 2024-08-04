@@ -56,7 +56,7 @@ shouldPrintTime() {
       ;;
     tag)
       # 标签模式
-      TITLE="${TARGET}...v$(getVersion)"
+      TITLE="${TARGET}...$(getVersion)"
       ;;
     esac
 
@@ -72,33 +72,14 @@ getVersion() {
   # 判断是否自定义版本
   if [ -z $VERSION ]; then
     # 未传入版本
-    if [ -z $REPO ]; then
-      # 没有传repo则package文件为当前目录所有
-      PKG_PATH="./package.json"
-    else
-      PKG_PATH="${REPO}/package.json"
-    fi
-
-    # 自定义version为空时抓取版本
-    while read line; do
-      # 抓取定义version行文本
-      if [[ ${line} == *"version"* ]]; then
-        # 移除双引号
-        VERSION=${line//\"/ }
-        # 移除键名
-        VERSION=${VERSION##*"version :"}
-        # 获取版本
-        VERSION=${VERSION%%" ,"}
-        break
-      fi
-    done <$PKG_PATH
+    VERSION=v1.0.0
   fi
   trim $VERSION
 }
 # function，生成输出文件路径
 generateOutPutPath() {
   # 输出文件路径，默认“v版本.md”
-  echo "${OUTPUT_DIR}/v$(getVersion).md"
+  echo "${OUTPUT_DIR}/$(getVersion).md"
 }
 # 生成指定SOURCE TARGET tag差异记录
 genSingleTagLog() {
@@ -108,7 +89,7 @@ genSingleTagLog() {
   if [ ! "$3"x = "0"x ]; then
     if [ $SOU = HEAD ]; then
       # 如果是与最新HEAD对比则将HEAD设为version
-      TIT="## [v$(getVersion)](${REMOTE}/compare/${TAR}...v$(getVersion))"
+      TIT="## [$(getVersion)](${REMOTE}/compare/${TAR}...$(getVersion))"
     else
       TIT="## [${SOU}](${REMOTE}/compare/${TAR}...${SOU})"
     fi
@@ -507,7 +488,7 @@ publish)
   # 合并分支到branch
   # git -C "${REPO}" merge $CURRENT_BRANCH
   # 生成tag
-  # git -C "${REPO}" tag -a "v$(getVersion)" -m ""
+  # git -C "${REPO}" tag -a "$(getVersion)" -m ""
   # 推送tag
   # git -C "${REPO}" push origin --tags
   # 推送代码
