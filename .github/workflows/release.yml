@@ -29,16 +29,17 @@ jobs:
         run: |
           
           # 获取所有标签，按版本排序（降序）  
-          Tags=$(git tag --list --sort=-version:refname)
+          Tags=$(git tag --list --sort=-version:refname)  
           
           # 获取最新的标签（即列表中的第一个）  
-          LATEST_TAG=$(echo "$Tags" | awk 'NR==1 {print $1; exit}')
+          LATEST_TAG=$(echo "$Tags" | awk 'NR==1 {print $1; exit}')  
           
           # 获取倒数第二个标签（如果存在）  
-          if [[ -n "$Tags" ]]; then
-            SECOND_LATEST_TAG=$(echo "$Tags" | tac | awk 'NR==1 {print $1; exit}')
-          else
-            SECOND_LATEST_TAG=""
+          if [[ -n "$Tags" ]]; then  
+            # 使用 tail 获取除了最后一个标签之外的所有标签，然后用 head 获取第一个  
+            SECOND_LATEST_TAG=$(echo "$Tags" | tail -n +2 | head -n 1)  
+          else  
+            SECOND_LATEST_TAG=""  
           fi
           
           # 设置输出变量  
