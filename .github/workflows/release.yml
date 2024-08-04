@@ -16,16 +16,32 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Find last tag
-        id: last_tag
-        run: echo "::set-output name=tag::$(git describe --tags --abbrev=0 || echo 'v0.0.0')"
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 18
 
-      - name: Get second latest tag
-        id: second_tag
+      - name: Install dependencies
+        run: npm install -g gen-git-log
+
+      - name: Find Last Tag
+        id: last_tag
         run: |
           
+          Tags=$(git tag --list --sort=-version:refname)
+          
+          # 获取倒数第一个标签
+          FRIEST_LATEST_TAG=$(echo "$Tags" | awk 'NR==1 {print $1; exit}')
+          
           # 获取倒数第二个标签
-          SECOND_LATEST_TAG=$(git tag --list --sort=-version:refname | awk 'NR==2 {print $1; exit}')
+          SECOND_LATEST_TAG=$(echo "$Tags" | awk 'NR==1 {print $2; exit}')
+          
+          # 如果没有倒数第一个标签，则输出为空字符串  
+          if [[ -z "$FRIEST_LATEST_TAG" ]]; then
+            echo "::set-output name=tag_last::v1.0.0"  
+          else
+            echo "::set-output name=tag_last::$FRIEST_LATEST_TAG"  
+          fi
 
           # 如果没有倒数第二个标签，则输出为空字符串  
           if [[ -z "$SECOND_LATEST_TAG" ]]; then
@@ -35,7 +51,9 @@ jobs:
           fi
 
       - name: Generate Release Notes
-        run: ./bin/genlog.sh -m tag -f ${{ steps.second_tag.outputs.tag_cmd }} -v ${{ steps.last_tag.outputs.tag }}
+        run: |
+          newTag=${{ steps.last_tag.outputs.tag_last }}
+          git-log -m tag -f ${{ steps.last_tag.outputs.tag_cmd }} -v ${newTag#1}
 
       - name: Create Release
         id: create_release
@@ -43,8 +61,8 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.TOKEN }}
         with:
-          tag_name: ${{ steps.last_tag.outputs.tag }}
-          release_name: Release ${{ steps.last_tag.outputs.tag }}
-          body_path: log/${{steps.last_tag.outputs.tag}}.md
+          tag_name: ${{ steps.last_tag.outputs.tag_last }}
+          release_name: Release ${{ steps.last_tag.outputs.tag_last }}
+          body_path: log/${{steps.last_tag.outputs.tag_last}}.md
           draft: false
           prerelease: false
