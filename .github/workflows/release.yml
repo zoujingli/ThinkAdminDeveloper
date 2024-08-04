@@ -52,7 +52,7 @@ jobs:
 
       - name: Generate Release Notes
         run: |
-          mkdir log
+          rm -rf log
           newTag=${{ steps.last_tag.outputs.tag_last }}
           git-log -m tag -f ${{ steps.last_tag.outputs.tag_cmd }} -v ${newTag#v}
 
