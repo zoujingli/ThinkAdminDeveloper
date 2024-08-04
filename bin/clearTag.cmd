@@ -10,4 +10,4 @@ echo Deleting local tags...
 for /f "delims=" %%i in ('git tag') do git tag -d %%i
 
 echo All tags deleted.
-pause
+pause  
