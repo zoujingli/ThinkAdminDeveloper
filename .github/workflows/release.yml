@@ -43,19 +43,19 @@ jobs:
           
           # 设置输出变量  
           echo "::set-output name=tag_last::${LATEST_TAG:-v1.0.0}"
-          echo "::set-output name=tag_cmd::-S ${SECOND_LATEST_TAG:-v1.0.0} "
+          echo "::set-output name=tag_second::${SECOND_LATEST_TAG:-v1.0.0}"
 
       - name: Generate Release Notes
         run: |
           rm -rf log
           newTag=${{ steps.last_tag.outputs.tag_last }}
-          git-log -m tag -f ${{ steps.last_tag.outputs.tag_cmd }}-v ${newTag#v}
+          git-log -m tag -f -S ${{ steps.last_tag.outputs.tag_second }} -v ${newTag#v}
 
       - name: Create Release
         id: create_release
         uses: actions/create-release@v1
         env:
-          GITHUB_TOKEN: ${{ secrets.TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           tag_name: ${{ steps.last_tag.outputs.tag_last }}
           release_name: Release ${{ steps.last_tag.outputs.tag_last }}
