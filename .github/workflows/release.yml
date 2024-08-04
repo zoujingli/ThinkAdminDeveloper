@@ -25,7 +25,7 @@ jobs:
         run: |
           
           # 获取倒数第二个标签
-          SECOND_LATEST_TAG=$(git tag --list --sort=-version:refname) | awk '{print $2}'
+          SECOND_LATEST_TAG=$(git tag --list --sort=-version:refname | awk 'NR==2 {print $1; exit}')
 
           # 如果没有倒数第二个标签，则输出为空字符串  
           if [[ -z "$SECOND_LATEST_TAG" ]]; then
