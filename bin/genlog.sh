@@ -8,7 +8,7 @@ TYPE_TITLE_MAP=(新增 修改 重构 样式 文档 其他 构建 持续集成 �
 NOW=$(date "+%F %H:%M")
 # 起始日期
 SINCE="last.Monday"
-# 终止日期
+# 终止日期 
 UNTIL=$(date +%F)
 # 是否覆盖文件，默认否
 FOUCE=0
