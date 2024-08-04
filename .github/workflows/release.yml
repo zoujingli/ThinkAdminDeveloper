@@ -30,7 +30,7 @@ jobs:
 
       - name: Generate changelog since last tag
         run: |
-          conventional-changelog -p angular -i CHANGELOG.md -s -r ${{ steps.last_tag.outputs.tag }}..HEAD 
+          conventional-changelog -p atom -i CHANGELOG.md -s -r ${{ steps.last_tag.outputs.tag }}..HEAD 
 
       - name: Create Release
         id: create_release
