@@ -1,3 +1,16 @@
+####### 可解析的提交前缀 ########
+#  ci: 持续集成
+#  fix: 修改
+#  feat: 新增
+#  refactor: 重构
+#  docs: 文档
+#  style: 样式
+#  chore: 其他
+#  build: 构建
+#  pref: 优化
+#  test: 测试
+###############################
+
 on:
   push:
     # Sequence of patterns matched against refs/tags
