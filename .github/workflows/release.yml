@@ -29,13 +29,13 @@ jobs:
 
           # 如果没有倒数第二个标签，则输出为空字符串  
           if [[ -z "$SECOND_LATEST_TAG" ]]; then
-            echo "::set-output name=tag::"  
+            echo "::set-output name=tag_cmd::"  
           else
-            echo "::set-output name=tag::$SECOND_LATEST_TAG"  
+            echo "::set-output name=tag_cmd::-S $SECOND_LATEST_TAG"  
           fi
 
       - name: Generate Release Notes
-        run: ./bin/genlog.sh -m tag -f -S ${{ steps.second_tag.outputs.tag }} -v ${{ steps.last_tag.outputs.tag }}
+        run: ./bin/genlog.sh -m tag -f ${{ steps.second_tag.outputs.tag_cmd }} -v ${{ steps.last_tag.outputs.tag }}
 
       - name: Create Release
         id: create_release
