@@ -18,12 +18,8 @@ jobs:
       - name: Install PyGithub
         run: pip install PyGithub
 
-      - name: Delete all GitHub tags
+      - name: Delete tags and releases
+        env:
+          GITHUB_TOKEN: ${{ secrets.TOKEN }}
         run: |
-          # 获取所有 tag 的列表  
-          TAGS=$(git ls-remote --tags origin | cut -f2 | cut -d'/' -f3)
-          
-          # 循环遍历所有 tag 并删除  
-          for TAG in $TAGS; do
-            curl -s -X DELETE "https://api.github.com/repos/${{ github.repository }}/git/refs/tags/$TAG" -H "Authorization: token ${{ secrets.TOKEN }}"
-          done
+          python .github/delete_tags_and_releases.py

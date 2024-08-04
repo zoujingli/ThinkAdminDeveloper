@@ -45,7 +45,7 @@ jobs:
 
           # 如果没有倒数第二个标签，则输出为空字符串  
           if [[ -z "$SECOND_LATEST_TAG" ]]; then
-            echo "::set-output name=tag_cmd::"  
+            echo "::set-output name=tag_cmd::-S master"  
           else
             echo "::set-output name=tag_cmd::-S $SECOND_LATEST_TAG"  
           fi
