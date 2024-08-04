@@ -23,11 +23,9 @@ jobs:
       - name: Get second latest tag
         id: second_tag
         run: |
-          # 获取所有标签，并按日期排序（实际上按标签名字符串排序）  
-          TAGS=$(git tag --list --sort=-version:refname)  
-
+          
           # 获取倒数第二个标签
-          SECOND_LATEST_TAG=$(echo "$TAGS" | tail -n 2 | head -n 1)  
+          SECOND_LATEST_TAG=$(git tag --list --sort=-version:refname) | awk '{print $2}'
 
           # 如果没有倒数第二个标签，则输出为空字符串  
           if [[ -z "$SECOND_LATEST_TAG" ]]; then
