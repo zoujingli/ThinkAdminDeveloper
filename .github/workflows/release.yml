@@ -28,33 +28,28 @@ jobs:
         id: last_tag
         run: |
           
+          # 获取所有标签，按版本排序（降序）  
           Tags=$(git tag --list --sort=-version:refname)
           
-          # 获取倒数第一个标签
-          FRIEST_LATEST_TAG=$(echo "$Tags" | awk 'NR==1 {print $1; exit}')
+          # 获取最新的标签（即列表中的第一个）  
+          LATEST_TAG=$(echo "$Tags" | awk 'NR==1 {print $1; exit}')
           
-          # 获取倒数第二个标签
-          SECOND_LATEST_TAG=$(echo "$Tags" | awk 'NR==1 {print $2; exit}')
+          # 获取倒数第二个标签（如果存在）  
+          if [[ -n "$Tags" ]]; then
+            SECOND_LATEST_TAG=$(echo "$Tags" | tac | awk 'NR==1 {print $1; exit}')
+          else
+            SECOND_LATEST_TAG=""
+          fi
           
-          # 如果没有倒数第一个标签，则输出为空字符串  
-          if [[ -z "$FRIEST_LATEST_TAG" ]]; then
-            echo "::set-output name=tag_last::v1.0.0"  
-          else
-            echo "::set-output name=tag_last::$FRIEST_LATEST_TAG"  
-          fi
-
-          # 如果没有倒数第二个标签，则输出为空字符串  
-          if [[ -z "$SECOND_LATEST_TAG" ]]; then
-            echo "::set-output name=tag_cmd::-S master"  
-          else
-            echo "::set-output name=tag_cmd::-S $SECOND_LATEST_TAG"  
-          fi
+          # 设置输出变量  
+          echo "::set-output name=tag_last::${LATEST_TAG:-v1.0.0}"
+          echo "::set-output name=tag_cmd::-S ${SECOND_LATEST_TAG:-v1.0.0} "
 
       - name: Generate Release Notes
         run: |
           rm -rf log
           newTag=${{ steps.last_tag.outputs.tag_last }}
-          git-log -m tag -f ${{ steps.last_tag.outputs.tag_cmd }} -v ${newTag#v}
+          git-log -m tag -f ${{ steps.last_tag.outputs.tag_cmd }}-v ${newTag#v}
 
       - name: Create Release
         id: create_release
