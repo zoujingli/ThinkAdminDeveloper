@@ -54,7 +54,6 @@ jobs:
         run: |
           mkdir log
           newTag=${{ steps.last_tag.outputs.tag_last }}
-          echoTag=${newTag#1}
           git-log -m tag -f ${{ steps.last_tag.outputs.tag_cmd }} -v ${newTag#v}
 
       - name: Create Release
