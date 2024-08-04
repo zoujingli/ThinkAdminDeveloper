@@ -16,21 +16,28 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: 16
-
-      - name: Install dependencies
-        run: npm install -g conventional-changelog-cli
-
       - name: Find last tag
         id: last_tag
         run: echo "::set-output name=tag::$(git describe --tags --abbrev=0 || echo 'v0.0.0')"
 
-      - name: Generate changelog since last tag
+      - name: Get second latest tag
+        id: second_tag
         run: |
-          conventional-changelog -p atom -i CHANGELOG.md -s -r ${{ steps.last_tag.outputs.tag }}..HEAD 
+          # 获取所有标签，并按日期排序（实际上按标签名字符串排序）  
+          TAGS=$(git tag --list --sort=-version:refname)  
+
+          # 获取倒数第二个标签
+          SECOND_LATEST_TAG=$(echo "$TAGS" | tail -n 2 | head -n 1)  
+
+          # 如果没有倒数第二个标签，则输出为空字符串  
+          if [[ -z "$SECOND_LATEST_TAG" ]]; then
+            echo "::set-output name=tag::"  
+          else
+            echo "::set-output name=tag::$SECOND_LATEST_TAG"  
+          fi
+
+      - name: Generate Release Notes
+        run: ./bin/genlog.sh -m tag -f -S ${{ steps.second_tag.outputs.tag }} -v ${{ steps.last_tag.outputs.tag }}
 
       - name: Create Release
         id: create_release
@@ -40,6 +47,6 @@ jobs:
         with:
           tag_name: ${{ steps.last_tag.outputs.tag }}
           release_name: Release ${{ steps.last_tag.outputs.tag }}
-          body_path: CHANGELOG.md
+          body_path: log/${{steps.last_tag.outputs.tag}}.md
           draft: false
           prerelease: false
