@@ -17,7 +17,7 @@
 
 ### 依赖插件
 
-* 插件服务管理中心：[ThinkPlugsCenter](https://thinkadmin.top/plugin/think-plugs-center.html) 或者 [ThinkPlugsCenterSimple](https://thinkadmin.top/plugin/think-plugs-center-simple.html) 插件
+* 插件服务管理中心：[ThinkPlugsCenter](https://thinkadmin.top/plugin/think-plugs-center.html)
 * 多终端账号管理插件：[ThinkPlugsAccount](https://thinkadmin.top/vip-plugs-account)
 * 多终端支付管理插件：[ThinkPlugsPayment](https://thinkadmin.top/vip-plugs-payment)
 
