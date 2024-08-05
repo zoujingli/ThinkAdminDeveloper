@@ -44,23 +44,26 @@ class Transfer extends Auth
             'amount.require' => '提现金额为空！',
             'remark.default' => '用户提交提现申请！',
         ]);
-        $state = UserTransfer::config('status');
-        if (empty($state)) $this->error('提现还没有开启！');
+        if (empty(UserTransfer::config('status'))) {
+            $this->error('提现还没有开启！');
+        };
         $transfers = UserTransfer::config('transfer');
-        if (empty($transfers[$data['type']]['state'])) $this->error('提现方式已停用！');
+        if (empty($transfers[$data['type']]['state'])) {
+            $this->error('提现方式已停用！');
+        }
         // 提现数据补充
         $data['unid'] = $this->unid;
         $data['date'] = date('Y-m-d');
         $data['code'] = CodeExtend::uniqidDate(16, 'T');
         // 提现状态处理
-        if (empty($transfers[$data['type']]['state']['audit'])) {
-            $data['status'] = 1;
-            $data['audit_status'] = 0;
-        } else {
+        if (empty($transfers[$data['type']]['audit'])) {
             $data['status'] = 3;
             $data['audit_status'] = 1;
             $data['audit_remark'] = '提现免审核！';
             $data['audit_time'] = date('Y-m-d H:i:s');
+        } else {
+            $data['status'] = 1;
+            $data['audit_status'] = 0;
         }
         // 扣除手续费
         $chargeRate = floatval(UserTransfer::config('charge'));
