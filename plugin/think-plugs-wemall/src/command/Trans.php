@@ -30,14 +30,14 @@ use WePay\TransfersBank;
 use WePayV3\Transfers as TransfersV3;
 
 /**
- * 用户提现处理
+ * 代理提现处理
  * @class Trans
  * @package app\data\command
  */
 class Trans extends Command
 {
     /**
-     * 用户提现配置
+     * 代理提现配置
      * @return void
      */
     protected function configure()

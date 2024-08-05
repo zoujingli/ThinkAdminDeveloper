@@ -34,7 +34,7 @@
             <label class="layui-form-item block relative flex-1">
                 <span class="help-label label-required-prev"><b>累计佣金</b>Rebate Total</span>
                 <input class="layui-input" type="number" min="0" step="0.01" lay-affix="number" lay-precision="2" name="rebate_total" placeholder="请输入累计佣金" required value="{$vo.rebate_total|default='0.00'}">
-                <span class="help-block">将会在用户返佣记录里面创建一条记录，体现为初始佣金值。</span>
+                <span class="help-block">将会在代理返佣记录里面创建一条记录，体现为初始佣金值。</span>
             </label>
             <label class="layui-form-item block relative flex-1 ta-ml-15">
                 <span class="help-label label-required-prev"><b>佣金记录描述</b>Rebate Total Remark</span>
@@ -47,7 +47,7 @@
             <label class="layui-form-item block relative flex-1">
                 <span class="help-label label-required-prev"><b>剩余佣金</b>Rebate Usable</span>
                 <input class="layui-input" type="number" lay-affix="number" min="0" step="0.01" lay-precision="2" name="rebate_usable" placeholder="请输入剩余佣金" required value="{$vo.rebate_usable|default='0.00'}">
-                <span class="help-block">在用户提现记录创建已提现金额（ 累计佣金 减去 剩余佣金 ）</span>
+                <span class="help-block">在代理提现记录创建已提现金额（ 累计佣金 减去 剩余佣金 ）</span>
             </label>
             <label class="layui-form-item block relative flex-1 ta-ml-15">
                 <span class="help-label label-required-prev"><b>提现记录描述</b>Rebate Usable Remark</span>

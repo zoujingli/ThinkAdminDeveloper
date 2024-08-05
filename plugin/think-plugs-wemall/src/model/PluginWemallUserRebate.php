@@ -23,7 +23,7 @@ use plugin\wemall\service\UserRebate;
 use think\model\relation\HasOne;
 
 /**
- * 用户返佣数据
+ * 代理返佣数据
  * @class PluginWemallUserRebate
  * @package plugin\wemall\model
  */

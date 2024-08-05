@@ -26,14 +26,14 @@ use think\admin\helper\QueryHelper;
 use think\db\Query;
 
 /**
- * 用户返佣管理
+ * 代理返佣管理
  * @class Rebate
  * @package plugin\wemall\controller\user
  */
 class Rebate extends Controller
 {
     /**
-     * 用户返佣管理
+     * 代理返佣管理
      * @auth true
      * @menu true
      * @throws \think\db\exception\DataNotFoundException
@@ -43,7 +43,7 @@ class Rebate extends Controller
     public function index()
     {
         PluginWemallUserRebate::mQuery()->layTable(function () {
-            $this->title = '用户返佣管理';
+            $this->title = '代理返佣管理';
             $this->rebate = UserRebate::recount(0);
         }, static function (QueryHelper $query) {
             // 数据关联

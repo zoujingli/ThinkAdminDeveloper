@@ -2,7 +2,7 @@
     <div class="layui-card-body ta-pl-40">
 
         <div class="layui-form-item relative block">
-            <span class="help-label label-required-prev"><b>用户提现状态</b>Status</span>
+            <span class="help-label label-required-prev"><b>代理提现状态</b>Status</span>
             <div class="layui-textarea help-checks">
                 {php} $data['status'] = $data['status'] ?? 0; {/php}
                 {foreach ['关闭返佣提现', '开启返佣提现'] as $k => $v}
@@ -93,9 +93,9 @@
         </div>
 
         <div class="layui-form-item relative block">
-            <span class="help-label"><b>用户提现描述内容</b>Remark</span>
+            <span class="help-label"><b>代理提现描述内容</b>Remark</span>
             <label class="relative block">
-                <textarea class="layui-textarea" name="remark" placeholder="请输入用户提现描述内容">{$data.remark|default=''}</textarea>
+                <textarea class="layui-textarea" name="remark" placeholder="请输入代理提现描述内容">{$data.remark|default=''}</textarea>
             </label>
         </div>
 

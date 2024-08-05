@@ -24,14 +24,14 @@ use plugin\wemall\model\PluginWemallUserRebate;
 use plugin\wemall\service\UserRebate;
 
 /**
- * 用户返佣管理
+ * 代理返佣管理
  * @class Rebate
  * @package plugin\wemall\controller\api\auth
  */
 class Rebate extends Auth
 {
     /**
-     * 获取用户返佣记录
+     * 获取代理返佣记录
      * @return void
      * @throws \think\db\exception\DataNotFoundException
      * @throws \think\db\exception\DbException

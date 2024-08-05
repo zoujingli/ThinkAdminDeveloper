@@ -21,7 +21,7 @@ namespace plugin\wemall\model;
 use plugin\wemall\service\UserTransfer;
 
 /**
- * 用户提现模型
+ * 代理提现模型
  * @class PluginWemallUserTransfer
  * @package plugin\wemall\model
  */

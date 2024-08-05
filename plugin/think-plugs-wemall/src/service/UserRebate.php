@@ -227,7 +227,7 @@ abstract class UserRebate
     }
 
     /**
-     * 同步刷新用户返佣
+     * 同步刷新代理返佣
      * @param integer $unid 指定用户ID
      * @param array|null $data 非数组时更新数据
      * @param mixed $where 其他查询条件

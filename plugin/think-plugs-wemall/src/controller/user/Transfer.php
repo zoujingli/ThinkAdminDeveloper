@@ -27,7 +27,7 @@ use think\admin\helper\QueryHelper;
 use think\admin\service\AdminService;
 
 /**
- * 用户提现管理
+ * 代理提现管理
  * @class Transfer
  * @package plugin\wemall\controller\user
  */
@@ -49,13 +49,13 @@ class Transfer extends Controller
     }
 
     /**
-     * 用户提现配置
+     * 代理提现配置
      * @throws \think\admin\Exception
      */
     public function config()
     {
         $this->skey = 'plugin.wemall.transfer.config';
-        $this->title = '用户提现配置';
+        $this->title = '代理提现配置';
         $this->_sysdata();
     }
 
@@ -86,7 +86,7 @@ class Transfer extends Controller
     }
 
     /**
-     * 用户提现管理
+     * 代理提现管理
      * @menu true
      * @auth true
      * @throws \think\db\exception\DataNotFoundException
@@ -96,7 +96,7 @@ class Transfer extends Controller
     public function index()
     {
         PluginWemallUserTransfer::mQuery()->layTable(function () {
-            $this->title = '用户提现管理';
+            $this->title = '代理提现管理';
             $this->transfer = UserTransfer::amount(0);
         }, static function (QueryHelper $query) {
             // 数据列表处理

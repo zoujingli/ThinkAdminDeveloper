@@ -25,7 +25,7 @@ use plugin\wemall\service\UserTransfer;
 use think\admin\extend\CodeExtend;
 
 /**
- * 用户提现接口
+ * 代理提现接口
  * @class Transfer
  * @package plugin\wemall\controller\api\auth
  */
@@ -111,7 +111,7 @@ class Transfer extends Auth
         if ($transfers[$data['type']]['maxAmount'] < $data['amount']) {
             $this->error("不能大于{$transfers[$data['type']]['maxAmount']}元");
         }
-        // 写入用户提现数据
+        // 写入代理提现数据
         if (PluginWemallUserTransfer::mk()->save($data)) {
             UserRebate::recount($this->unid);
             $this->success('提现申请成功');
@@ -121,7 +121,7 @@ class Transfer extends Auth
     }
 
     /**
-     * 用户提现记录
+     * 代理提现记录
      * @throws \think\db\exception\DataNotFoundException
      * @throws \think\db\exception\DbException
      * @throws \think\db\exception\ModelNotFoundException
@@ -173,12 +173,12 @@ class Transfer extends Auth
     }
 
     /**
-     * 获取用户提现配置
+     * 获取代理提现配置
      * @throws \think\admin\Exception
      */
     public function config()
     {
         $data = UserTransfer::config();
-        $this->success('获取用户提现配置', $data);
+        $this->success('获取代理提现配置', $data);
     }
 }

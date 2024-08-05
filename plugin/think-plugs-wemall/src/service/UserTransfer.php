@@ -21,7 +21,7 @@ namespace plugin\wemall\service;
 use plugin\wemall\model\PluginWemallUserTransfer;
 
 /**
- * 用户提现数据服务
+ * 代理提现数据服务
  * @class UserTransfer
  * @package plugin\wemall\service
  */
@@ -38,7 +38,7 @@ abstract class UserTransfer
     ];
 
     /**
-     * 同步刷新用户返佣
+     * 同步刷新代理返佣
      * @param integer $unid
      * @return array [total, count, audit, locks]
      */
