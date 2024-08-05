@@ -163,27 +163,26 @@ class Service extends Plugin
                 'name' => '商城配置',
                 'subs' => [
                     ['name' => '数据统计报表', 'icon' => 'layui-icon layui-icon-theme', 'node' => "{$code}/base.report/index"],
-                    ['name' => '推广海报管理', 'icon' => 'layui-icon layui-icon-carousel', 'node' => "{$code}/base.poster/index"],
                     ['name' => '系统通知管理', 'icon' => 'layui-icon layui-icon-email', 'node' => "{$code}/base.notify/index"],
                     ['name' => '商城参数管理', 'icon' => 'layui-icon layui-icon-set', 'node' => "{$code}/base.config/index"],
-                    ['name' => '会员等级管理', 'icon' => 'layui-icon layui-icon-senior', 'node' => "{$code}/base.level/index"],
-                    ['name' => '代理等级管理', 'icon' => 'layui-icon layui-icon-senior', 'node' => "{$code}/base.agent/index"],
-                    ['name' => '会员折扣方案', 'icon' => 'layui-icon layui-icon-engine', 'node' => "{$code}/base.discount/index"],
+                    ['name' => '推广海报管理', 'icon' => 'layui-icon layui-icon-carousel', 'node' => "{$code}/base.poster/index"],
                     ['name' => '店铺页面装修', 'icon' => 'layui-icon layui-icon-code-circle', 'node' => "{$code}/base.design/index"],
+                    ['name' => '快递公司管理', 'icon' => 'layui-icon layui-icon-website', 'node' => "{$code}/base.express.company/index"],
+                    ['name' => '邮费模板管理', 'icon' => 'layui-icon layui-icon-template-1', 'node' => "{$code}/base.express.template/index"],
                 ],
             ],
             [
                 'name' => '用户管理',
                 'subs' => [
+                    ['name' => '会员等级管理', 'icon' => 'layui-icon layui-icon-water', 'node' => "{$code}/base.level/index"],
+                    ['name' => '会员折扣方案', 'icon' => 'layui-icon layui-icon-engine', 'node' => "{$code}/base.discount/index"],
                     ['name' => '会员用户管理', 'icon' => 'layui-icon layui-icon-user', 'node' => "{$code}/user.admin/index"],
-                    ['name' => '用户返佣管理', 'icon' => 'layui-icon layui-icon-transfer', 'node' => "{$code}/user.rebate/index"],
-                    ['name' => '用户余额充值', 'icon' => 'layui-icon layui-icon-rmb', 'node' => "{$code}/user.recharge/index"],
-                    ['name' => '用户提现管理', 'icon' => 'layui-icon layui-icon-diamond', 'node' => "{$code}/user.transfer/index"],
-                    ['name' => '活动签到管理', 'icon' => 'layui-icon layui-icon-engine', 'node' => "{$code}/user.checkin/index"],
                     // ['name' => '用户卡券管理', 'icon' => 'layui-icon layui-icon-tabs', 'node' => "{$code}/user.coupon/index"],
                     ['name' => '创建会员用户', 'icon' => 'layui-icon layui-icon-tabs', 'node' => "{$code}/user.create/index"],
+                    ['name' => '用户余额充值', 'icon' => 'layui-icon layui-icon-rmb', 'node' => "{$code}/user.recharge/index"],
                 ],
             ],
+
             [
                 'name' => '商城管理',
                 'subs' => [
@@ -192,9 +191,16 @@ class Service extends Plugin
                     ['name' => '订单发货管理', 'icon' => 'layui-icon layui-icon-transfer', 'node' => "{$code}/shop.sender/index"],
                     ['name' => '售后订单管理', 'icon' => 'layui-icon layui-icon-util', 'node' => "{$code}/shop.refund/index"],
                     ['name' => '商品评论管理', 'icon' => 'layui-icon layui-icon-util', 'node' => "{$code}/shop.reply/index"],
-                    ['name' => '快递公司管理', 'icon' => 'layui-icon layui-icon-website', 'node' => "{$code}/base.express.company/index"],
-                    ['name' => '邮费模板管理', 'icon' => 'layui-icon layui-icon-template-1', 'node' => "{$code}/base.express.template/index"],
                 ],
+            ],
+            [
+                'name' => '代理管理',
+                'subs' => [
+                    ['name' => '代理等级管理', 'icon' => 'layui-icon layui-icon-water', 'node' => "{$code}/base.agent/index"],
+                    ['name' => '代理返佣管理', 'icon' => 'layui-icon layui-icon-transfer', 'node' => "{$code}/user.rebate/index"],
+                    ['name' => '代理提现管理', 'icon' => 'layui-icon layui-icon-diamond', 'node' => "{$code}/user.transfer/index"],
+                    // ['name' => '活动签到管理', 'icon' => 'layui-icon layui-icon-engine', 'node' => "{$code}/user.checkin/index"],
+                ]
             ],
             [
                 'name' => '帮助咨询',
