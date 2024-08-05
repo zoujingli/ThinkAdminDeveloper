@@ -132,7 +132,9 @@ class Transfer extends Controller
             if (in_array($data['status'], [0, 1, 2, 3])) {
                 $data['last_at'] = date('Y-m-d H:i:s');
             } elseif ($data['status'] == 4) {
-                $data['trade_no'] = CodeExtend::uniqidDate(20);
+                if (empty($find['trade_no'])) {
+                    $data['trade_no'] = CodeExtend::uniqidDate(20);
+                }
                 $data['trade_time'] = date('Y-m-d H:i:s');
                 $data['change_time'] = date('Y-m-d H:i:s');
                 $data['change_desc'] = ($data['remark'] ?: '线下打款成功') . ' By ' . AdminService::getUserName();
