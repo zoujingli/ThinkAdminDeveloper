@@ -27,6 +27,7 @@ use think\console\Input;
 use think\console\Output;
 use WePay\Transfers;
 use WePay\TransfersBank;
+use WePayV3\Transfers as TransfersV3;
 
 /**
  * 用户提现处理
@@ -64,9 +65,21 @@ class Trans extends Command
                 if ($model->getAttr('type') === 'wechat_banks') {
                     $result = $this->createTransferBank($model);
                 } else {
-                    $result = $this->createTransferWallet($model);
+                    // $result = $this->createTransferWallet($model);
+                    $result = $this->createTransferV3($model);
+                    p($result, false, 'transfer.params');
                 }
-                if ($result['return_code'] === 'SUCCESS' && $result['result_code'] === 'SUCCESS') {
+                if (isset($result['code']) && in_array($result['code'], ['PARM_ERROR', 'INVALID_REOUEST'])) {
+                    $model->save(['change_time' => $changeNow, 'change_desc' => $result['message'] ?? '发起提现参数错误！']);
+                } elseif (isset($result['batch_id'])) {
+                    $model->save([
+                        'status'      => 4,
+                        'trade_no'    => $result['batch_id'],
+                        'trade_time'  => date('Y-m-d H:i:s', strtotime($result['create_time'] ?? $changeNow)),
+                        'change_time' => $changeNow,
+                        'change_desc' => '创建微信提现成功',
+                    ]);
+                } elseif ($result['return_code'] === 'SUCCESS' && $result['result_code'] === 'SUCCESS') {
                     $model->save([
                         'status'      => 4,
                         'trade_no'    => $result['partner_trade_no'],
@@ -82,7 +95,8 @@ class Trans extends Command
                 }
             } elseif ($model->getAttr('status') === 4) {
                 $this->queue->message($total, $count, sprintf('刷新提现订单 %s 状态', $model->getAttr('code')), 1);
-                $model->getAttr('type') === 'wechat_banks' ? $this->queryTransferBank($model) : $this->queryTransferWallet($model);
+                // $model->getAttr('type') === 'wechat_banks' ? $this->queryTransferBank($model) : $this->queryTransferWallet($model);
+                $model->getAttr('type') === 'wechat_banks' ? $this->queryTransferBank($model) : $this->queryTransferV3($model);
             }
         } catch (\Exception $exception) {
             $error++;
@@ -93,6 +107,32 @@ class Trans extends Command
     }
 
     /**
+     * 通过商户转账到余额
+     * @param \plugin\wemall\model\PluginWemallUserTransfer $model
+     * @return array
+     * @throws \WeChat\Exceptions\InvalidDecryptException
+     * @throws \WeChat\Exceptions\InvalidResponseException
+     * @throws \WeChat\Exceptions\LocalCacheException
+     * @throws \think\admin\Exception
+     */
+    private function createTransferV3(PluginWemallUserTransfer $model): array
+    {
+        return TransfersV3::instance($this->getConfig($model))->batchs([
+            'out_batch_no'         => "B{$model->getAttr('code')}",
+            'batch_name'           => '微信余额提现',
+            'batch_remark'         => '来自商户批量提现！',
+            'transfer_detail_list' => [
+                [
+                    'openid'          => $model->getAttr('openid'),
+                    'out_detail_no'   => $model->getAttr('code'),
+                    'transfer_amount' => intval($model->getAttr('amount') - $model->getAttr('charge_amount')) * 100,
+                    'transfer_remark' => '自商户收入的提现',
+                ]
+            ]
+        ]);
+    }
+
+    /**
      * 尝试提现转账到银行卡
      * @param PluginWemallUserTransfer $model
      * @return array
@@ -100,6 +140,7 @@ class Trans extends Command
      * @throws \WeChat\Exceptions\InvalidResponseException
      * @throws \WeChat\Exceptions\LocalCacheException
      * @throws \think\admin\Exception
+     * @deprecated 微信已经不支持该接口
      */
     private function createTransferBank(PluginWemallUserTransfer $model): array
     {
@@ -120,6 +161,7 @@ class Trans extends Command
      * @throws \WeChat\Exceptions\InvalidResponseException
      * @throws \WeChat\Exceptions\LocalCacheException
      * @throws \think\admin\Exception
+     * @deprecated 微信已经不支持该接口
      */
     private function createTransferWallet(PluginWemallUserTransfer $model): array
     {
@@ -134,11 +176,59 @@ class Trans extends Command
     }
 
     /**
+     * 查询V3接口提现打款状态
+     * @param \plugin\wemall\model\PluginWemallUserTransfer $model
+     * @return void
+     * @throws \WeChat\Exceptions\InvalidResponseException
+     * @throws \WeChat\Exceptions\LocalCacheException
+     * @throws \think\admin\Exception
+     */
+    private function queryTransferV3(PluginWemallUserTransfer $model): void
+    {
+        $result = TransfersV3::instance($this->getConfig($model))->query($model->getAttr('trade_no'));
+        p($result, false, 'transfer.notify');
+        if (is_array($result) && isset($result['transfer_detail_list'])) {
+            foreach ($result['transfer_detail_list'] as $item) {
+                if ($item['detail_status'] === 'SUCCESS') {
+                    $model->save([
+                        'status'      => 5,
+                        'trade_time'  => date('Y-m-d H:i:s', strtotime($result['transfer_batch']['update_time'])),
+                        'change_time' => date('Y-m-d H:i:s'),
+                        'change_desc' => '微信提现打款成功',
+                    ]);
+                } // 处理中，等待完成即可
+                elseif (in_array($item['detail_status'], ['INIT', 'WAIT_PAY', 'PROCESSING'])) {
+                    $message = [
+                        'INIT'       => '初始态。 系统转账校验中。',
+                        'WAIT_PAY'   => '待商户确认, 符合免密条件时, 系统会自动扭转为转账中。',
+                        'PROCESSING' => '转账中。正在处理中，转账结果尚未明确。'
+                    ];
+                    $model->save([
+                        'status'      => 4,
+                        'trade_time'  => date('Y-m-d H:i:s', strtotime($result['transfer_batch']['update_time'])),
+                        'change_time' => date('Y-m-d H:i:s'),
+                        'change_desc' => $message[$item['detail_status']],
+                    ]);
+                } else {
+                    $model->save([
+                        'status'      => 0,
+                        'change_time' => date('Y-m-d H:i:s'),
+                        'change_desc' => '微信提现打款失败',
+                    ]);
+                    // 刷新用户可提现余额
+                    UserRebate::recount($model->getAttr('unid'));
+                }
+            }
+        }
+    }
+
+    /**
      * 查询更新提现打款状态
      * @param PluginWemallUserTransfer $model
      * @throws \WeChat\Exceptions\InvalidResponseException
      * @throws \WeChat\Exceptions\LocalCacheException
      * @throws \think\admin\Exception
+     * @deprecated 微信已经不支持该接口
      */
     private function queryTransferBank(PluginWemallUserTransfer $model)
     {
@@ -169,6 +259,7 @@ class Trans extends Command
      * @throws \WeChat\Exceptions\InvalidResponseException
      * @throws \WeChat\Exceptions\LocalCacheException
      * @throws \think\admin\Exception
+     * @deprecated 微信已经不支持该接口
      */
     private function queryTransferWallet(PluginWemallUserTransfer $model)
     {
@@ -203,12 +294,17 @@ class Trans extends Command
         }
         // 获取商户参数
         return [
-            'appid'      => $model->getAttr('appid'),
-            'mch_id'     => $data['wechat_mch_id'],
-            'mch_key'    => $data['wechat_mch_key'],
-            'ssl_key'    => $local->path($file1, true),
-            'ssl_cer'    => $local->path($file2, true),
-            'cache_path' => syspath('runtime/wechat'),
+            'appid'        => $model->getAttr('appid'),
+            'mch_id'       => $data['wechat_mch_id'],
+            'mch_key'      => $data['wechat_mch_key'],
+            'mch_v3_key'   => $data['wechat_mch_key'],
+            // V2 证书配置
+            'ssl_key'      => $local->path($file1, true),
+            'ssl_cer'      => $local->path($file2, true),
+            // V3 证书配置
+            'cert_private' => $local->path($file1, true),
+            'cert_public'  => $local->path($file2, true),
+            'cache_path'   => syspath('safefile/wechat'),
         ];
     }
 }
