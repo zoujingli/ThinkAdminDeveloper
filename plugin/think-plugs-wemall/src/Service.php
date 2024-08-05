@@ -207,7 +207,7 @@ class Service extends Plugin
                 'subs' => [
                     ['name' => '常见问题管理', 'icon' => 'layui-icon layui-icon-star', 'node' => "{$code}/help.problem/index"],
                     ['name' => '意见反馈管理', 'icon' => 'layui-icon layui-icon-template', 'node' => "{$code}/help.feedback/index"],
-                    ['name' => '工单提问管理', 'icon' => 'layui-icon layui-icon-service', 'node' => "{$code}/help.question/index"],
+                    // ['name' => '工单提问管理', 'icon' => 'layui-icon layui-icon-service', 'node' => "{$code}/help.question/index"],
                 ],
             ],
         ], PaymentService::menu());
