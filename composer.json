@@ -82,5 +82,8 @@
     "allow-plugins": {
       "zoujingli/think-install": true
     }
+  },
+  "scripts": {
+    "post-install-cmd": "php -r \"file_exists('.env.example') && !file_exists('.env') || copy('.env.example','.env');\""
   }
 }
