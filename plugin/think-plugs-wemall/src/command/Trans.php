@@ -55,6 +55,16 @@ class Trans extends Command
      */
     protected function execute(Input $input, Output $output)
     {
+        $msgs = [
+            'ACCEPTED'        => '已受理。',
+            'PROCESSING'      => '转账中。已开始处理批次内的转账明细单。',
+            'FINISHED'        => '已完成。批次内的所有转账明细单都已处理完成。',
+            'CLOSED'          => '已关闭。可查询具体的批次关闭原因确认。',
+            'PARAM_ERROR'     => '参数错误。',
+            'INVALID_REQUEST' => '请求参数符合参数格式，但不符合业务规则。',
+            'SIGN_ERROR'      => '验证不通过。',
+            'SYSTEM_ERROR'    => '系统异常，请稍后重试。',
+        ];
         $model = PluginWemallUserTransfer::mk()->where(['type' => 'wechat_wallet', 'status' => [3, 4]]);
         [$total, $count, $error, $changeNow] = [(clone $model)->count(), 0, 0, date('Y-m-d H:i:s')];
         /** @var PluginWemallUserTransfer $item */
@@ -62,13 +72,8 @@ class Trans extends Command
             $this->queue->message($total, ++$count, sprintf('开始处理订单 %s 提现', $model->getAttr('code')));
             if ($model->getAttr('status') === 3) {
                 $this->queue->message($total, $count, sprintf('尝试处理订单 %s 打款', $model->getAttr('code')), 1);
-
                 $result = $this->createTransferV3($model);
-                p($result, false, 'transfer.params');
-
-                if (isset($result['code']) && in_array($result['code'], ['PARM_ERROR', 'INVALID_REOUEST'])) {
-                    $model->save(['change_time' => $changeNow, 'change_desc' => $result['message'] ?? '发起提现参数错误！']);
-                } elseif (isset($result['batch_id'])) {
+                if (isset($result['code']) && isset($result['batch_id'])) {
                     $model->save([
                         'status'      => 4,
                         'trade_no'    => $result['batch_id'],
@@ -79,7 +84,7 @@ class Trans extends Command
                 } else {
                     $model->save([
                         'change_time' => $changeNow,
-                        'change_desc' => $result['err_code_des'] ?? '线上提现失败'
+                        'change_desc' => $result['message'] ?? ($msgs[$result['batch_status'] ?? '-'] ?? '线上提现失败')
                     ]);
                 }
             } elseif ($model->getAttr('status') === 4) {
@@ -105,6 +110,7 @@ class Trans extends Command
      */
     private function createTransferV3(PluginWemallUserTransfer $model): array
     {
+        $amount = floatval($model->getAttr('amount')) - floatval($model->getAttr('charge_amount'));
         return TransfersV3::instance($this->getConfig($model))->batchs([
             'out_batch_no'         => "B{$model->getAttr('code')}",
             'batch_name'           => '微信余额提现',
@@ -113,7 +119,7 @@ class Trans extends Command
                 [
                     'openid'          => $model->getAttr('openid'),
                     'out_detail_no'   => $model->getAttr('code'),
-                    'transfer_amount' => intval($model->getAttr('amount') - $model->getAttr('charge_amount')) * 100,
+                    'transfer_amount' => intval($amount * 100),
                     'transfer_remark' => '自商户收入的提现',
                 ]
             ]
@@ -131,35 +137,40 @@ class Trans extends Command
     private function queryTransferV3(PluginWemallUserTransfer $model): void
     {
         $result = TransfersV3::instance($this->getConfig($model))->query($model->getAttr('trade_no'));
-        p($result, false, 'transfer.notify');
+        p($result, false, 'transfer_notify');
         if (is_array($result) && isset($result['transfer_detail_list'])) {
+            $msgs = [
+                'INIT'       => '初始态。系统转账校验中。',
+                'WAIT_PAY'   => '待确认。符合免密条件时, 系统会自动扭转为转账中。',
+                'FAIL'       => '转账失败。需要确认失败原因后，再决定是否重新发起对该笔明细单的转账。',
+                'PROCESSING' => '转账中。正在处理中，转账结果尚未明确。',
+                'SUCCESS'    => '转账成功。',
+            ];
+            $nowTime = date('Y-m-d H:i:s');
+            $updateTime = empty($result['transfer_batch']['update_time']) ? $nowTime : $result['transfer_batch']['update_time'];
             foreach ($result['transfer_detail_list'] as $item) {
-                // 处理完成，直接完成操作
                 if ($item['detail_status'] === 'SUCCESS') {
+                    // 处理完成，直接完成操作
                     $model->save([
                         'status'      => 5,
-                        'trade_time'  => date('Y-m-d H:i:s', strtotime($result['transfer_batch']['update_time'] ?? date('Y-m-d H:i:s'))),
-                        'change_time' => date('Y-m-d H:i:s'),
-                        'change_desc' => '微信提现打款成功',
+                        'trade_time'  => date('Y-m-d H:i:s', strtotime($updateTime)),
+                        'change_time' => $nowTime,
+                        'change_desc' => $msgs[$item['detail_status']] ?? '微信提现打款成功',
                     ]);
-                } // 处理中，等待完成即可
-                elseif (in_array($item['detail_status'], ['INIT', 'WAIT_PAY', 'PROCESSING'])) {
-                    $message = [
-                        'INIT'       => '初始态。 系统转账校验中。',
-                        'WAIT_PAY'   => '待商户确认, 符合免密条件时, 系统会自动扭转为转账中。',
-                        'PROCESSING' => '转账中。正在处理中，转账结果尚未明确。'
-                    ];
+                } elseif (in_array($item['detail_status'], ['INIT', 'WAIT_PAY', 'PROCESSING'])) {
+                    // 处理中，等待完成即可
                     $model->save([
                         'status'      => 4,
-                        'trade_time'  => date('Y-m-d H:i:s', strtotime($result['transfer_batch']['update_time'] ?? date('Y-m-d H:i:s'))),
-                        'change_time' => date('Y-m-d H:i:s'),
-                        'change_desc' => $message[$item['detail_status']],
+                        'trade_time'  => date('Y-m-d H:i:s', strtotime($updateTime)),
+                        'change_time' => $nowTime,
+                        'change_desc' => $msgs[$item['detail_status']],
                     ]);
                 } else {
+                    // 异常状态，需要回退提现
                     $model->save([
                         'status'      => 0,
-                        'change_time' => date('Y-m-d H:i:s'),
-                        'change_desc' => '微信提现打款失败',
+                        'change_time' => $nowTime,
+                        'change_desc' => $msgs[$item['detail_status'] ?? '-'] ?? '微信提现打款失败',
                     ]);
                     // 刷新用户可提现余额
                     UserRebate::recount($model->getAttr('unid'));
