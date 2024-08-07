@@ -24,4 +24,4 @@ jobs:
           git config pull.rebase true
           git config --global user.name "Anyon"
           git config --global user.email "zoujingli@qq.com"
-          ./bin/split-linux.sh
+          ./.github/split-linux.sh

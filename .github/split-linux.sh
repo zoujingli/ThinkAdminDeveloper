@@ -6,7 +6,7 @@ BASEPATH=$(cd `dirname $0`; cd ../plugin/; pwd)
 REPOS=$@
 function split()
 {
-    SHA1=`./bin/splitsh-lite-linux --prefix=$1`
+    SHA1=`.github/splitsh-lite-linux --prefix=$1`
     git push $2 "$SHA1:refs/heads/$CURRENT_BRANCH" -f
 }
 
