@@ -17,12 +17,12 @@
     "plugin": {
       "copy": {
         "stc/think": "!think",
+        "stc/.env.example": "!.env.example",
         "stc/public/index.php": "!public/index.php",
         "stc/public/static/plugs": "!public/static/plugs",
         "stc/public/static/theme": "!public/static/theme",
         "stc/public/static/admin.js": "!public/static/admin.js",
-        "stc/public/static/login.js": "!public/static/login.js",
-        "stc/.env.example": ".env.example"
+        "stc/public/static/login.js": "!public/static/login.js"
       },
       "init": {
         "stc/class/Index.php": "app/index/controller/Index.php",
