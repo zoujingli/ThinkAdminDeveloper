@@ -19,7 +19,7 @@ return [
     'default' => 'file',
     // 缓存连接配置
     'stores'  => [
-        'file' => [
+        'file'  => [
             // 驱动方式
             'type'       => 'File',
             // 缓存保存目录
@@ -33,7 +33,7 @@ return [
             // 序列化机制
             'serialize'  => [],
         ],
-        'safe' => [
+        'safe'  => [
             // 驱动方式
             'type'       => 'File',
             // 缓存保存目录
@@ -49,11 +49,11 @@ return [
         ],
         'redis' => [
             // 驱动方式
-            'type'       => 'redis',
-            'host'       => env('redis.host','127.0.0.1'),
-            'password'   => env('redis.password',''),
-            'select'   => env('redis.select',0),
-            'port'   => env('redis.port',6379),
+            'type'     => 'redis',
+            'host'     => env('redis.host', '127.0.0.1'),
+            'port'     => env('redis.port', 6379),
+            'select'   => env('redis.select', 0),
+            'password' => env('redis.password', ''),
         ]
     ],
 ];
