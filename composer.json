@@ -84,13 +84,7 @@
     }
   },
   "scripts": {
-    "post-package-update": [
-      "@php -r \"file_exists('.env') || copy('.env.example', '.env');\""
-    ],
-    "post-package-install": [
-      "@php -r \"file_exists('.env') || copy('.env.example', '.env');\""
-    ],
-    "post-create-project-cmd": [
+    "post-autoload-dump": [
       "@php -r \"file_exists('.env') || copy('.env.example', '.env');\""
     ]
   }
