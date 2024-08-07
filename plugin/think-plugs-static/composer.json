@@ -22,7 +22,7 @@
         "stc/public/static/theme": "!public/static/theme",
         "stc/public/static/admin.js": "!public/static/admin.js",
         "stc/public/static/login.js": "!public/static/login.js",
-        ".env.example": ".env.example"
+        "stc/.env.example": ".env.example"
       },
       "init": {
         "stc/class/Index.php": "app/index/controller/Index.php",
