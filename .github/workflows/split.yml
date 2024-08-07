@@ -1,4 +1,4 @@
-name: Split Repos
+name: Split Repositorys
 
 on: [ workflow_dispatch ]
 
@@ -13,12 +13,14 @@ jobs:
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
+
       - name: Setup Private Key
         run: |
           mkdir -p ~/.ssh
           echo "$SSH_PRIVATE_KEY" > ~/.ssh/id_rsa
           chmod 600 ~/.ssh/id_rsa
           echo "StrictHostKeyChecking no" >> ~/.ssh/config
+
       - name: Split And Push
         run: |
           git config pull.rebase true

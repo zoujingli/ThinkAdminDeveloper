@@ -15,7 +15,6 @@ def main():
     owner = os.getenv("GITHUB_REPOSITORY").split('/')[0]  # 获取仓库所有者
     g = Github(token)
     repo = g.get_repo(f"{owner}/{repo_name}")
-
     delete_all_releases(repo)
 
 if __name__ == "__main__":

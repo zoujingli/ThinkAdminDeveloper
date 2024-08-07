@@ -11,12 +11,6 @@ CURRENT_BRANCH=$(git rev-parse --abbrev-ref HEAD)
 VERSION=$1
 BASEPATH=$(cd `dirname $0`; cd ../plugin/; pwd)
 
-# Always prepend with "v"
-#if [[ $VERSION != v*  ]]
-#then
-#    VERSION="v$VERSION"
-#fi
-
 if [ -z $2 ] ; then
     repos=$(ls $BASEPATH)
 else

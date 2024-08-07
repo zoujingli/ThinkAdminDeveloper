@@ -1,4 +1,4 @@
-name: Clear Release
+name: Clear Releases
 
 on:
   workflow_dispatch:
@@ -20,6 +20,6 @@ jobs:
 
       - name: Delete tags and releases
         env:
-          GITHUB_TOKEN: ${{ secrets.TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          python .github/clear-releases.py
+          python .github/clear-github-releases.py
