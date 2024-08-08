@@ -21,6 +21,11 @@ namespace plugin\worker;
 use plugin\worker\command\Worker;
 use think\admin\Plugin;
 
+/**
+ * 插件注册服务
+ * @class Service
+ * @package plugin\worker
+ */
 class Service extends Plugin
 {
     /**

@@ -34,8 +34,21 @@ abstract class Server
     protected $port = '2346';
     protected $option = [];
     protected $context = [];
-    protected $event = ['onWorkerStart', 'onConnect', 'onMessage', 'onClose', 'onError', 'onBufferFull', 'onBufferDrain', 'onWorkerReload', 'onWebSocketConnect'];
+    protected $event = [
+        'onWorkerStart',
+        'onConnect',
+        'onMessage',
+        'onClose',
+        'onError',
+        'onBufferFull',
+        'onBufferDrain',
+        'onWorkerReload',
+        'onWebSocketConnect'
+    ];
 
+    /**
+     * 服务构造方法
+     */
     public function __construct()
     {
         // 实例化 Websocket 服务
@@ -59,13 +72,29 @@ abstract class Server
         $this->init();
     }
 
+    /**
+     * 服务初始化方法
+     * @return mixed
+     */
     abstract protected function init();
 
+    /**
+     * 动态设置属性
+     * @param string $name
+     * @param mixed $value
+     * @return void
+     */
     public function __set(string $name, $value)
     {
         $this->worker->$name = $value;
     }
 
+    /**
+     * 动态调用方法
+     * @param string $method
+     * @param array $args
+     * @return void
+     */
     public function __call(string $method, array $args)
     {
         call_user_func_array([$this->worker, $method], $args);
