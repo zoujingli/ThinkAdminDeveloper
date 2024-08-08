@@ -10,8 +10,6 @@
 
 **ThinkAdmin** 后台提供了功能强大的 **UI** 框架，并附带部分系统初始化文件，遵循 MIT 协议，不仅开源，而且完全免费并可用于商业项目。
 
-主要代码仓库托管在 **Gitee**，而 **Github** 仅作为镜像仓库，用于发布 **Composer** 包，方便开发者快速集成。
-
 请注意，安装此插件将会占用并替换 `public/static` 目录下的部分文件（但自定义脚本和样式保存在 `public/static/extra` 目录内的文件将不会被替换）。因此，如果您曾对 `public/static` 目录进行了自定义修改，我们建议您在安装此插件之前备份相关文件，以避免重要内容丢失。
 
 当您使用 `Composer` 卸载此插件时，请留意它并不会自动删除或还原 `public/static` 目录中的文件，也不会自动移除系统初始化文件。为了确保系统的整洁和一致性，这些操作需要您手动完成。
@@ -34,6 +32,10 @@ composer require zoujingli/think-plugs-static
 ### 插件本卸载不会删除 public/static 目录的代码
 composer remove zoujingli/think-plugs-static
 ```
+
+### 加入我们
+
+我们的代码仓库已移至 **Github**，而 **Gitee** 则仅作为国内镜像仓库，方便广大开发者获取和使用。若想提交 **PR** 或 **ISSUE** 请在 [ThinkAdminDeveloper](https://github.com/zoujingli/ThinkAdminDeveloper) 仓库进行操作，如果在其他仓库操作或提交问题将无法处理！。
 
 ### 版权说明
 
