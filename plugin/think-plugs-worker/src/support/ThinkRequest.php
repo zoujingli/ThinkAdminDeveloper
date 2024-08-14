@@ -65,10 +65,16 @@ class ThinkRequest extends Request
         // 请求真实IP
         $this->realIP = $this->header['x-real-ip'] ?? ($this->header['x-forwarded-for'] ?? $connection->getRemoteIp());
 
-        // 请求地址域名及端口处理
-        $this->host = $this->header['x-host'] ?? ($this->header['x-requested-host'] ?? ($this->header['remote-host'] ?? $request->host()));
-        $port = intval($this->header['x-requested-port'] ?? (strpos($this->host, ':') !== false ? explode(':', $this->host)[1] : $connection->getRemoteIp()));
-        if (strpos($this->host, ':') !== false && in_array($port, [80, 443])) $this->host = strstr($this->host, ':', true);
+        // 请求服务器的域名处理
+        $this->host = $this->header['x-host'] ?? ($this->header['x-requested-host'] ?? ($this->header['host'] ?? $request->host()));
+        // 请求服务器的端口处理
+        if (!is_numeric($port = $this->header['x-port'] ?? ($this->header['x-requested-port'] ?? ($this->header['port'] ?? null)))) {
+            $port = strpos($this->host, ':') !== false ? explode(':', $this->host)[1] : $connection->getRemotePort();
+        }
+        // 如果是正常端口，不需要在 host 表示出来
+        if (strpos($this->host, ':') !== false && in_array($port, [80, 443])) {
+            $this->host = strstr($this->host, ':', true);
+        }
 
         // 替换全局变量
         $_GET = $request->get();
