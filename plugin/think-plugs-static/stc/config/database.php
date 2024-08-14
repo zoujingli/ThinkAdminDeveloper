@@ -33,15 +33,15 @@ return [
             // 数据库名
             'database'        => env('mysql.database', 'thinkadmin'),
             // 用户名
-            'username'        => env('mysql.username', 'thinkadmin'),
+            'username'        => env('mysql.username', 'root'),
             // 密码
-            'password'        => env('mysql.password', 'thinkadmin'),
+            'password'        => env('mysql.password', ''),
             // 端口
             'hostport'        => env('mysql.hostport', '3306'),
             // 数据库连接参数
             'params'          => [],
             // 数据库编码默认采用 utf8
-            'charset'         => 'utf8mb4',
+            'charset'         => env('mysql.charset', 'utf8mb4'),
             // 数据库表前缀
             'prefix'          => env('mysql.prefix', ''),
             // 数据库部署方式:0 集中式(单一服务器),1 分布式(主从服务器)
