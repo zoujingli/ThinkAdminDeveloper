@@ -82,10 +82,5 @@
     "allow-plugins": {
       "zoujingli/think-install": true
     }
-  },
-  "scripts": {
-    "post-autoload-dump": [
-      "@php -r \"file_exists('.env.example') && !file_exists('.env') && copy('.env.example', '.env');\""
-    ]
   }
 }

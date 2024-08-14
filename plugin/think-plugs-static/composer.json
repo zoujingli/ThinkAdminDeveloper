@@ -17,7 +17,7 @@
     "plugin": {
       "copy": {
         "stc/think": "!think",
-        "stc/.env.example": "!.env.example",
+        "stc/.env.example": ".env",
         "stc/public/index.php": "!public/index.php",
         "stc/public/static/plugs": "!public/static/plugs",
         "stc/public/static/theme": "!public/static/theme",
