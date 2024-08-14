@@ -301,6 +301,35 @@ php think xadmin:worker [start|stop|status|-d]
 
 更多其他特性请阅读 **workerman** 文档 https://www.workerman.net/doc/workerman
 
+### 代理配置
+
+Nginx 代理代理配置参考如下：
+
+```
+location ^~ / {
+
+    # 执行代理访问真实服务器
+    proxy_pass http://127.0.0.1:2346/;
+    
+    # 将客户端的 Host 和 IP 信息一并转发到对应节点
+    proxy_set_header Host $http_host;
+    proxy_set_header X-Host $http_host;
+    proxy_set_header X-Real-IP $remote_addr;
+    proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+    
+    # 将协议转发到对应节点，如果使用非 https 请改为 http
+    proxy_set_header X-scheme https;
+    
+    proxy_set_header REMOTE-HOST $remote_addr;
+    proxy_set_header Upgrade $http_upgrade;
+    proxy_set_header Connection $connection_upgrade;
+    proxy_http_version 1.1;
+    
+    # proxy_hide_header Upgrade;
+    add_header X-Cache $upstream_cache_status;
+}
+```
+
 ### 版权说明
 
 **ThinkPlugsWorker** 遵循 **Apache2** 开源协议发布，并提供免费使用。
