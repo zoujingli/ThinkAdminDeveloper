@@ -16,7 +16,7 @@
 
 return [
     // 默认缓存驱动
-    'default' => 'file',
+    'default' => env('cache.type', 'file'),
     // 缓存连接配置
     'stores'  => [
         'file'  => [
@@ -50,10 +50,10 @@ return [
         'redis' => [
             // 驱动方式
             'type'     => 'redis',
-            'host'     => env('redis.host', '127.0.0.1'),
-            'port'     => env('redis.port', 6379),
-            'select'   => env('redis.select', 0),
-            'password' => env('redis.password', ''),
+            'host'     => env('cache.redis_hostname', '127.0.0.1'),
+            'port'     => env('cache.redis_hostport', 6379),
+            'password' => env('cache.redis_password', ''),
+            'select'   => env('cache.redis_select', 0),
         ]
     ],
 ];

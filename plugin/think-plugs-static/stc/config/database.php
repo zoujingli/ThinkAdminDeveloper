@@ -16,7 +16,7 @@
 
 return [
     // 默认使用的数据库连接配置
-    'default'         => env('db.type', 'sqlite'),
+    'default'         => env('type.db_type', 'sqlite'),
     // 自定义时间查询规则
     'time_query_rule' => [],
     // 自动写入时间戳字段
@@ -29,15 +29,15 @@ return [
             // 数据库类型
             'type'            => 'mysql',
             // 服务器地址
-            'hostname'        => env('mysql.hostname', '127.0.0.1'),
+            'hostname'        => env('db.mysql_hostname', '127.0.0.1'),
             // 数据库名
-            'database'        => env('mysql.database', 'thinkadmin'),
+            'database'        => env('db.mysql_database', 'thinkadmin'),
             // 用户名
-            'username'        => env('mysql.username', 'root'),
+            'username'        => env('db.mysql_username', 'root'),
             // 密码
-            'password'        => env('mysql.password', ''),
+            'password'        => env('db.mysql_password', ''),
             // 端口
-            'hostport'        => env('mysql.hostport', '3306'),
+            'hostport'        => env('db.mysql_hostport', '3306'),
             // 数据库连接参数
             'params'          => [],
             // 数据库编码默认采用 utf8
