@@ -52,10 +52,9 @@ class Upload extends Controller
         $allows = str2arr(sysconf('storage.allow_exts|raw'));
         if (empty($uuid) && $unid > 0) $allows = array_intersect($exts, $allows);
         foreach ($allows as $ext) $data['exts'][$ext] = Storage::mime($ext);
-        $template = realpath(__DIR__ . '/../../view/api/upload.js');
         $data['exts'] = json_encode($data['exts'], JSON_UNESCAPED_UNICODE);
         $data['nameType'] = sysconf('storage.name_type|raw') ?: 'xmd5';
-        return view($template, $data)->contentType('application/x-javascript');
+        return view(dirname(__DIR__, 2) . '/view/api/upload.js', $data)->contentType('application/x-javascript');
     }
 
     /**

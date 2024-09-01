@@ -56,7 +56,7 @@ class Plugs extends Controller
             }
         }
         $this->field = $this->app->request->get('field', 'icon');
-        $this->fetch(realpath(__DIR__ . '/../../view/api/icon.html'));
+        $this->fetch(dirname(__DIR__, 2) . '/view/api/icon.html');
     }
 
     /**
