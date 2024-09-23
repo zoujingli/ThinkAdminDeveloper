@@ -179,6 +179,101 @@ class Trans extends Command
         }
     }
 
+
+    /**
+     * 企业付款到银行卡
+     * @param PluginWemallUserTransfer $model
+     * @return array
+     * @throws \WeChat\Exceptions\InvalidDecryptException
+     * @throws \WeChat\Exceptions\InvalidResponseException
+     * @throws \WeChat\Exceptions\LocalCacheException
+     * @throws \think\admin\Exception
+     * @deprecated 微信商户已不再提供此接口
+     */
+    private function createTransferBank(PluginWemallUserTransfer $model): array
+    {
+        return TransfersBank::instance($this->getConfig($model))->create([
+            'partner_trade_no' => $model->getAttr('code'),
+            'enc_bank_no'      => $model->getAttr('bank_code'),
+            'enc_true_name'    => $model->getAttr('bank_user'),
+            'bank_code'        => $model->getAttr('bank_wseq'),
+            'amount'           => intval($model->getAttr('amount') - $model->getAttr('charge_amount')) * 100,
+            'desc'             => '微信银行卡提现',
+        ]);
+    }
+
+    /**
+     * 企业付款到零钱
+     * @param PluginWemallUserTransfer $model
+     * @return array
+     * @throws \WeChat\Exceptions\InvalidResponseException
+     * @throws \WeChat\Exceptions\LocalCacheException
+     * @throws \think\admin\Exception
+     * @deprecated 微信商户已不再提供此接口
+     */
+    private function createTransferWallet(PluginWemallUserTransfer $model): array
+    {
+        return Transfers::instance($this->getConfig($model))->create([
+            'openid'           => $model->getAttr('openid'),
+            'amount'           => intval($model->getAttr('amount') - $model->getAttr('charge_amount')) * 100,
+            'partner_trade_no' => $model->getAttr('code'),
+            'spbill_create_ip' => '127.0.0.1',
+            'check_name'       => 'NO_CHECK',
+            'desc'             => '微信余额提现！',
+        ]);
+    }
+
+    /**
+     * 查询企业付款到银行卡
+     * @param PluginWemallUserTransfer $model
+     * @throws \WeChat\Exceptions\InvalidResponseException
+     * @throws \WeChat\Exceptions\LocalCacheException
+     * @throws \think\admin\Exception
+     * @deprecated 微信商户已不再提供此接口
+     */
+    private function queryTransferBank(PluginWemallUserTransfer $model)
+    {
+        $result = TransfersBank::instance($this->getConfig($model))->query($model->getAttr('trade_no'));
+        if ($result['return_code'] === 'SUCCESS' && $result['result_code'] === 'SUCCESS') {
+            if ($result['status'] === 'SUCCESS') {
+                $model->save([
+                    'status'      => 5,
+                    'trade_time'  => $result['pay_succ_time'] ?: date('Y-m-d H:i:s'),
+                    'change_time' => date('Y-m-d H:i:s'),
+                    'change_desc' => '微信提现打款成功',
+                ]);
+            } elseif (in_array($result['status'], ['FAILED', 'BANK_FAIL'])) {
+                $model->save([
+                    'status'      => 0,
+                    'change_time' => date('Y-m-d H:i:s'),
+                    'change_desc' => '微信提现打款失败',
+                ]);
+                // 刷新用户可提现余额
+                UserRebate::recount($model->getAttr('unid'));
+            }
+        }
+    }
+
+    /**
+     * 查询企业付款到零钱
+     * @param PluginWemallUserTransfer $model
+     * @throws \WeChat\Exceptions\InvalidResponseException
+     * @throws \WeChat\Exceptions\LocalCacheException
+     * @throws \think\admin\Exception
+     */
+    private function queryTransferWallet(PluginWemallUserTransfer $model)
+    {
+        $result = Transfers::instance($this->getConfig($model))->query($model->getAttr('trade_no'));
+        if ($result['return_code'] === 'SUCCESS' && $result['result_code'] === 'SUCCESS') {
+            $model->save([
+                'status'      => 5,
+                'trade_time'  => $result['payment_time'],
+                'change_time' => date('Y-m-d H:i:s'),
+                'change_desc' => '微信提现打款成功！',
+            ]);
+        }
+    }
+
     /**
      * 获取微信提现参数
      * @param PluginWemallUserTransfer $model
