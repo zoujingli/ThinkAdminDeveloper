@@ -260,6 +260,7 @@ class Trans extends Command
      * @throws \WeChat\Exceptions\InvalidResponseException
      * @throws \WeChat\Exceptions\LocalCacheException
      * @throws \think\admin\Exception
+     * @deprecated 微信商户已不再提供此接口
      */
     private function queryTransferWallet(PluginWemallUserTransfer $model)
     {
