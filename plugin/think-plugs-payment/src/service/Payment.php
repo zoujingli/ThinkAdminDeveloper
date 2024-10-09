@@ -461,8 +461,8 @@ abstract class Payment
                 'sum(used_balance-refund_balance)'   => 'balance',
                 'sum(used_integral-refund_integral)' => 'integral',
             ])->group('channel_type')->select()->map(static function (PluginPaymentRecord $item) use (&$total) {
-                $type = $item->getAttr('channel_type');
                 $total['amount'] = round($total['amount'] + $item->getAttr('amount'), 2);
+                $type = $item->getAttr('channel_type');
                 if (!in_array($type, [self::INTEGRAL, self::BALANCE])) $type = 'payment';
                 $total[$type] = round($total[$type] + $item[$type] ?? 0, 2);
             });
@@ -484,8 +484,8 @@ abstract class Payment
             PluginPaymentRefund::mk()->where(['record_code' => $pCode, 'refund_status' => [0, 1]])->field([
                 'refund_account', 'sum(refund_amount) amount', 'sum(used_payment)' => 'payment', 'sum(used_balance)' => 'balance', 'sum(used_integral)' => 'integral',
             ])->group('refund_account')->select()->map(static function (PluginPaymentRefund $item) use (&$total) {
-                $type = $item->getAttr('refund_account');
                 $total['amount'] = round($total['amount'] + $item->getAttr('amount'), 2);
+                $type = $item->getAttr('refund_account');
                 if (!in_array($type, [self::INTEGRAL, self::BALANCE])) $type = 'payment';
                 $total[$type] = round($total[$type] + $item[$type] ?? 0, 2);
             });
