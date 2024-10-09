@@ -442,8 +442,7 @@ abstract class Payment
      */
     public static function leaveAmount(string $orderNo, $orderAmount): float
     {
-        $diff = round(round(floatval($orderAmount), 2) - self::paidAmount($orderNo, true), 2);
-        return $diff > 0 ? $diff : 0.00;
+        return round(max(floatval($orderAmount) - self::paidAmount($orderNo, true), 0), 2);
     }
 
     /**
