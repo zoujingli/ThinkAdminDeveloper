@@ -86,10 +86,10 @@ class EmptyPayment implements PaymentInterface
     /**
      * 支付通知处理
      * @param array $data
-     * @param ?array $notify
+     * @param ?array $body
      * @return \think\Response
      */
-    public function notify(array $data = [], ?array $notify = null): Response
+    public function notify(array $data = [], ?array $body = null): Response
     {
         return response('SUCCESS');
     }

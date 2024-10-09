@@ -111,18 +111,18 @@ class JoinPayment implements PaymentInterface
     /**
      * 支付结果处理
      * @param array|null $data
-     * @param array|null $notify
+     * @param array|null $body
      * @return \think\Response
      */
-    public function notify(?array $data = null, ?array $notify = null): Response
+    public function notify(?array $data = null, ?array $body = null): Response
     {
-        $notify = $data ?: $this->app->request->get();
-        foreach ($notify as &$item) $item = urldecode($item);
-        if (empty($notify['hmac']) || $notify['hmac'] !== $this->_doSign($notify)) {
+        $body = $data ?: $this->app->request->get();
+        foreach ($body as &$item) $item = urldecode($item);
+        if (empty($body['hmac']) || $body['hmac'] !== $this->_doSign($body)) {
             return response('error');
         }
-        if (isset($notify['r6_Status']) && intval($notify['r6_Status']) === 100) {
-            if ($this->updateAction($notify['r2_OrderNo'], $notify['r9_BankTrxNo'], $notify['r3_Amount'])) {
+        if (isset($body['r6_Status']) && intval($body['r6_Status']) === 100) {
+            if ($this->updateAction($body['r2_OrderNo'], $body['r9_BankTrxNo'], $body['r3_Amount'])) {
                 return response('success');
             } else {
                 return response('error');

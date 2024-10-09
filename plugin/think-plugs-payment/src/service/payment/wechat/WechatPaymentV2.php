@@ -125,34 +125,46 @@ class WechatPaymentV2 extends WechatPayment
     /**
      * 支付通知处理
      * @param array $data
-     * @param ?array $notify
+     * @param ?array $body
      * @return \think\Response
+     * @throws \WeChat\Exceptions\InvalidDecryptException
      * @throws \WeChat\Exceptions\InvalidResponseException
      * @throws \think\admin\Exception
      */
-    public function notify(array $data = [], ?array $notify = null): Response
+    public function notify(array $data = [], ?array $body = null): Response
     {
-        $notify = $notify ?: $this->payment->getNotify();
-        p($notify, false, 'notify_v2');
-        if ($data['scen'] === 'order' && $notify['result_code'] == 'SUCCESS' && $notify['return_code'] == 'SUCCESS') {
-            [$pCode, $pTrade] = [$notify['out_trade_no'], $notify['transaction_id']];
-            [$pAmount, $pCoupon] = [strval($notify['cash_fee'] / 100), strval(($notify['coupon_fee'] ?? 0) / 100)];
-            if (!$this->updateAction($pCode, $pTrade, $pAmount, null, $pCoupon, $notify)) {
-                return xml(['return_code' => 'ERROR', 'return_msg' => '数据更新失败']);
+        if ($data['scen'] === 'order') {
+            // 支付通知处理
+            $notify = $this->payment->getNotify($body);
+            p($notify, false, 'notify_payment_v2');
+            if ($notify['result_code'] == 'SUCCESS' && $notify['return_code'] == 'SUCCESS') {
+                [$pCode, $pTrade] = [$notify['out_trade_no'], $notify['transaction_id']];
+                [$pAmount, $pCoupon] = [strval($notify['cash_fee'] / 100), strval(($notify['coupon_fee'] ?? 0) / 100)];
+                if (!$this->updateAction($pCode, $pTrade, $pAmount, null, $pCoupon, $notify)) {
+                    return xml(['return_code' => 'ERROR', 'return_msg' => '数据更新失败']);
+                }
             }
-        } elseif ($data['scen'] === 'refund' && ($notify['refund_status'] ?? '') == 'SUCCESS') {
-            if ($data['order'] !== $notify['out_refund_no']) return response('error', 500);
-            $refund = PluginPaymentRefund::mk()->where(['code' => $notify['out_refund_no']])->findOrEmpty();
-            if ($refund->isEmpty()) return xml(['return_code' => 'ERROR', 'return_msg' => '数据更新失败']);
-            $refund->save([
-                'refund_time'    => date('Y-m-d H:i:s', strtotime($notify['success_time'])),
-                'refund_trade'   => $notify['refund_id'],
-                'refund_scode'   => $notify['refund_status'],
-                'refund_status'  => 1,
-                'refund_notify'  => json_encode($notify, 64 | 256),
-                'refund_account' => $notify['refund_recv_accout'] ?? '',
-            ]);
-            static::syncRefund($refund->getAttr('record_code'));
+        } elseif ($data['scen'] === 'refund') {
+            // 退款通知信息
+            $notify = Refund::instance($this->config)->getNotify($body);
+            p($notify, false, 'notify_refund_v2');
+            if (!empty($notify['result']) && is_array($notify['result'])) {
+                $notify = array_merge($notify, $notify['result']);
+                unset($notify['result'], $notify['req_info']);
+            }
+            if (isset($notify['refund_status']) && $notify['refund_status'] == 'SUCCESS') {
+                $refund = PluginPaymentRefund::mk()->where(['code' => $notify['out_refund_no']])->findOrEmpty();
+                if ($refund->isEmpty()) return xml(['return_code' => 'ERROR', 'return_msg' => '数据更新失败']);
+                $refund->save([
+                    'refund_time'    => date('Y-m-d H:i:s', strtotime($notify['success_time'])),
+                    'refund_trade'   => $notify['transaction_id'],
+                    'refund_scode'   => $notify['refund_status'],
+                    'refund_status'  => 1,
+                    'refund_notify'  => json_encode($notify, 64 | 256),
+                    'refund_account' => $notify['refund_recv_accout'] ?? '',
+                ]);
+                static::syncRefund($refund->getAttr('record_code'));
+            }
         }
         return xml(['return_code' => 'SUCCESS', 'return_msg' => 'OK']);
     }

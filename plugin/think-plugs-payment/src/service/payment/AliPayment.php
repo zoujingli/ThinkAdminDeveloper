@@ -47,10 +47,10 @@ class AliPayment implements PaymentInterface
         $this->config = [
             // 沙箱模式
             'debug'       => false,
-            // 签名类型（RSA|RSA2）
-            'sign_type'   => "RSA2",
             // 应用ID
             'appid'       => $this->cfgParams['alipay_appid'],
+            // 签名类型（RSA|RSA2）
+            'sign_type'   => "RSA2",
             // 支付宝公钥 (1行填写，特别注意，这里是支付宝公钥，不是应用公钥，最好从开发者中心的网页上去复制)
             'public_key'  => $this->_trimCert($this->cfgParams['alipay_public_key']),
             // 支付宝私钥 (1行填写)
@@ -125,13 +125,13 @@ class AliPayment implements PaymentInterface
     /**
      * 支付通知处理
      * @param array $data
-     * @param ?array $notify
+     * @param ?array $body
      * @return \think\Response
      * @throws \WeChat\Exceptions\InvalidResponseException
      */
-    public function notify(array $data = [], ?array $notify = null): Response
+    public function notify(array $data = [], ?array $body = null): Response
     {
-        $notify = $data ?: App::instance($this->config)->notify();
+        $notify = $body ?: App::instance($this->config)->notify();
         if (in_array($notify['trade_status'], ['TRADE_SUCCESS', 'TRADE_FINISHED'])) {
             if ($this->updateAction($notify['out_trade_no'], $notify['trade_no'], $notify['total_amount'])) {
                 return response('success');
