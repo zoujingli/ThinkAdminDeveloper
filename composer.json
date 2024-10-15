@@ -76,7 +76,7 @@
       "url": "plugin/think-library"
     }
   ],
-  "minimum-stability": "stable",
+  "minimum-stability": "dev",
   "config": {
     "sort-packages": true,
     "allow-plugins": {
