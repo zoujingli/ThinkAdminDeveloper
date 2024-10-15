@@ -20,7 +20,6 @@ class InstallPackage extends Migrator
     /**
      * 数据库初始化
      * @return void
-     * @throws \think\db\exception\DbException
      */
     public function change()
     {
@@ -33,7 +32,6 @@ class InstallPackage extends Migrator
     /**
      * 安装扩展数据
      * @return void
-     * @throws \think\db\exception\DbException
      */
     private function inserData()
     {
