@@ -20,15 +20,15 @@
     "ext-gd": "*",
     "ext-json": "*",
     "ext-openssl": "*",
-    "zoujingli/think-plugs-wuma": "^1.0|@dev",
-    "zoujingli/think-plugs-admin": "^1.0|@dev",
-    "zoujingli/think-plugs-worker": "^1.0|@dev",
-    "zoujingli/think-plugs-center": "^1.0|@dev",
-    "zoujingli/think-plugs-wechat": "^1.0|@dev",
-    "zoujingli/think-plugs-wemall": "^1.0|@dev",
-    "zoujingli/think-plugs-account": "^1.0|@dev",
-    "zoujingli/think-plugs-payment": "^1.0|@dev",
-    "zoujingli/think-plugs-wechat-service": "^1.0|@dev"
+    "zoujingli/think-plugs-wuma": "*",
+    "zoujingli/think-plugs-admin": "*",
+    "zoujingli/think-plugs-worker": "*",
+    "zoujingli/think-plugs-center": "*",
+    "zoujingli/think-plugs-wechat": "*",
+    "zoujingli/think-plugs-wemall": "*",
+    "zoujingli/think-plugs-account": "*",
+    "zoujingli/think-plugs-payment": "*",
+    "zoujingli/think-plugs-wechat-service": "*"
   },
   "repositories": [
     {
@@ -76,7 +76,7 @@
       "url": "plugin/think-library"
     }
   ],
-  "minimum-stability": "dev",
+  "minimum-stability": "stable",
   "config": {
     "sort-packages": true,
     "allow-plugins": {
