@@ -17,13 +17,11 @@
 namespace app\index\controller;
 
 use think\admin\Controller;
-use think\admin\extend\ToolsExtend;
 
 class Index extends Controller
 {
     public function index()
     {
-        // $this->redirect(sysuri('admin/login/index'));
-        dump(ToolsExtend::findFilesArray('app', null, null, false, 3));
+        $this->redirect(sysuri('admin/login/index'));
     }
 }
