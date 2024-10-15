@@ -16,7 +16,7 @@
 
 return [
     // 默认使用的数据库连接配置
-    'default'         => env('db.type', 'sqlite'),
+    'default'         => env('DB_TYPE', 'sqlite'),
     // 自定义时间查询规则
     'time_query_rule' => [],
     // 自动写入时间戳字段
@@ -29,21 +29,21 @@ return [
             // 数据库类型
             'type'            => 'mysql',
             // 服务器地址
-            'hostname'        => env('db.mysql_hostname', '127.0.0.1'),
+            'hostname'        => env('DB_MYSQL_HOST', '127.0.0.1'),
+            // 服务器端口
+            'hostport'        => env('DB_MYSQL_PORT', '3306'),
             // 数据库名
-            'database'        => env('db.mysql_database', 'thinkadmin'),
+            'database'        => env('DB_MYSQL_DATABASE', 'thinkadmin'),
             // 用户名
-            'username'        => env('db.mysql_username', 'root'),
+            'username'        => env('DB_MYSQL_USERNAME', 'root'),
             // 密码
-            'password'        => env('db.mysql_password', ''),
-            // 端口
-            'hostport'        => env('db.mysql_hostport', '3306'),
+            'password'        => env('DB_MYSQL_PASSWORD', ''),
             // 数据库连接参数
             'params'          => [],
             // 数据库表前缀
-            'prefix'          => env('db.mysql_prefix', ''),
+            'prefix'          => env('DB_MYSQL_PREFIX', ''),
             // 数据库编码默认采用 utf8mb4
-            'charset'         => env('db.mysql_charset', 'utf8mb4'),
+            'charset'         => env('DB_MYSQL_CHARSET', 'utf8mb4'),
             // 数据库部署方式:0 集中式(单一服务器),1 分布式(主从服务器)
             'deploy'          => 0,
             // 数据库读写是否分离 主从式有效

@@ -16,10 +16,10 @@
 
 return [
     // 默认缓存驱动
-    'default' => 'file',
+    'default' => env('CACHE_TYPE', 'file'),
     // 缓存连接配置
     'stores'  => [
-        'file' => [
+        'file'  => [
             // 驱动方式
             'type'       => 'File',
             // 缓存保存目录
@@ -33,7 +33,7 @@ return [
             // 序列化机制
             'serialize'  => [],
         ],
-        'safe' => [
+        'safe'  => [
             // 驱动方式
             'type'       => 'File',
             // 缓存保存目录
@@ -47,5 +47,13 @@ return [
             // 序列化机制
             'serialize'  => [],
         ],
+        'redis' => [
+            // 驱动方式
+            'type'     => 'redis',
+            'host'     => env('CACHE_REDIS_HOST', '127.0.0.1'),
+            'port'     => env('CACHE_REDIS_PORT', 6379),
+            'select'   => env('CACHE_REDIS_SELECT', 0),
+            'password' => env('CACHE_REDIS_PASSWORD', ''),
+        ]
     ],
 ];
