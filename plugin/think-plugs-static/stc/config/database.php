@@ -40,10 +40,10 @@ return [
             'hostport'        => env('db.mysql_hostport', '3306'),
             // 数据库连接参数
             'params'          => [],
-            // 数据库编码默认采用 utf8
-            'charset'         => env('mysql.charset', 'utf8mb4'),
             // 数据库表前缀
-            'prefix'          => env('mysql.prefix', ''),
+            'prefix'          => env('db.mysql_prefix', ''),
+            // 数据库编码默认采用 utf8mb4
+            'charset'         => env('db.mysql_charset', 'utf8mb4'),
             // 数据库部署方式:0 集中式(单一服务器),1 分布式(主从服务器)
             'deploy'          => 0,
             // 数据库读写是否分离 主从式有效
@@ -62,11 +62,12 @@ return [
             'fields_cache'    => isOnline(),
         ],
         'sqlite' => [
-            'charset'     => 'utf8',
             // 数据库类型
             'type'        => 'sqlite',
             // 数据库文件
             'database'    => syspath('database/sqlite.db'),
+            // 数据库编码默认采用 utf8
+            'charset'     => 'utf8',
             // 监听执行日志
             'trigger_sql' => true,
             // 其他参数字段
