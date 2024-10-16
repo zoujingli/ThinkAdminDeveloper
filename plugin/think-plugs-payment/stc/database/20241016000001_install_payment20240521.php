@@ -20,7 +20,7 @@ use think\migration\Migrator;
 @set_time_limit(0);
 @ini_set('memory_limit', -1);
 
-class InstallPayment extends Migrator
+class InstallPayment20241016 extends Migrator
 {
     /**
      * 创建数据库
@@ -65,7 +65,7 @@ class InstallPayment extends Migrator
             ['update_time', 'datetime', ['default' => NULL, 'null' => true, 'comment' => '更新时间']],
         ], [
             'type', 'unid', 'deleted', 'user_phone', 'create_time',
-        ]);
+        ], true);
     }
 
     /**
@@ -100,7 +100,7 @@ class InstallPayment extends Migrator
             ['update_time', 'datetime', ['default' => NULL, 'null' => true, 'comment' => '更新时间']],
         ], [
             'unid', 'code', 'cancel', 'unlock', 'deleted', 'create_time', 'deleted_time',
-        ]);
+        ], true);
     }
 
     /**
@@ -130,7 +130,7 @@ class InstallPayment extends Migrator
             ['update_time', 'datetime', ['default' => NULL, 'null' => true, 'comment' => '更新时间']],
         ], [
             'type', 'code', 'sort', 'status', 'deleted', 'create_time',
-        ]);
+        ], true);
     }
 
     /**
@@ -165,7 +165,7 @@ class InstallPayment extends Migrator
             ['update_time', 'datetime', ['default' => NULL, 'null' => true, 'comment' => '更新时间']],
         ], [
             'unid', 'code', 'cancel', 'unlock', 'deleted', 'create_time', 'deleted_time',
-        ]);
+        ], true);
     }
 
     /**
@@ -214,7 +214,7 @@ class InstallPayment extends Migrator
             ['update_time', 'datetime', ['default' => NULL, 'null' => true, 'comment' => '更新时间']],
         ], [
             'unid', 'usid', 'code', 'order_no', 'create_time', 'audit_status', 'channel_type', 'channel_code', 'payment_trade', 'refund_status', 'payment_status',
-        ]);
+        ], true);
     }
 
     /**
@@ -250,6 +250,6 @@ class InstallPayment extends Migrator
             ['update_time', 'datetime', ['default' => NULL, 'null' => true, 'comment' => '更新时间']],
         ], [
             'unid', 'usid', 'code', 'record_code', 'create_time', 'refund_trade', 'refund_status', 'refund_account',
-        ]);
+        ], true);
     }
 }
