@@ -33,7 +33,7 @@ return [
         'name'  => 'ThinkAdmin',
         'count' => 4,
     ],
-    // 监控文件变更重载
+    // 监控文件变更重载，仅 Debug 模式有效
     'files'    => [
         // 监控检测间隔（单位秒，零不监控）
         'time' => 3,
@@ -42,16 +42,11 @@ return [
         // 文件监控后缀（默认监控 所有 文件）
         'exts' => ['*']
     ],
-    // 监控内存超限重载
+    // 监控内存超限重载，仅 Debug 模式有效
     'memory'   => [
         // 监控检测间隔（单位秒，零不监控）
         'time'  => 60,
         // 限制内存大小（可选单位有 G M K ）
         'limit' => '1G'
     ],
-    'customs'  => [
-        'test' => [
-            'classes' => \plugin\worker\support\HttpServer::class
-        ]
-    ]
 ];
