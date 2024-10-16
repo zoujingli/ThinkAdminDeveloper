@@ -10,6 +10,15 @@ class InstallWemall20241016 extends Migrator
 {
 
     /**
+     * 获取脚本名称
+     * @return string
+     */
+    public function getName(): string
+    {
+        return 'WemallPlugin';
+    }
+
+    /**
      * 创建数据库
      */
     public function change()
