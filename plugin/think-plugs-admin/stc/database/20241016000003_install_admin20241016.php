@@ -32,7 +32,7 @@ class InstallAdmin20241016 extends Migrator
      */
     public function getName(): string
     {
-        return 'InstallAdmin';
+        return 'AdminPlugin';
     }
 
     /**
