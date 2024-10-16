@@ -1,29 +1,12 @@
 <?php
 
-// +----------------------------------------------------------------------
-// | WeMall Plugin for ThinkAdmin
-// +----------------------------------------------------------------------
-// | 版权所有 2022~2024 ThinkAdmin [ thinkadmin.top ]
-// +----------------------------------------------------------------------
-// | 官方网站: https://thinkadmin.top
-// +----------------------------------------------------------------------
-// | 免责声明 ( https://thinkadmin.top/disclaimer )
-// | 会员免费 ( https://thinkadmin.top/vip-introduce )
-// +----------------------------------------------------------------------
-// | gitee 代码仓库：https://gitee.com/zoujingli/think-plugs-wemall
-// | github 代码仓库：https://github.com/zoujingli/think-plugs-wemall
-// +----------------------------------------------------------------------
-
 use think\admin\extend\PhinxExtend;
 use think\migration\Migrator;
 
 @set_time_limit(0);
 @ini_set('memory_limit', -1);
 
-/**
- * 用户数据
- */
-class InstallWemall extends Migrator
+class InstallWemall20241016 extends Migrator
 {
 
     /**
@@ -94,7 +77,7 @@ class InstallWemall extends Migrator
             ['update_time', 'datetime', ['default' => NULL, 'null' => true, 'comment' => '更新时间']],
         ], [
             'utime', 'status', 'number', 'create_time',
-        ]);
+        ], true);
     }
 
     /**
@@ -108,7 +91,7 @@ class InstallWemall extends Migrator
         // 创建数据表对象
         $table = $this->table('plugin_wemall_config_coupon', [
             'engine' => 'InnoDB', 'collation' => 'utf8mb4_general_ci', 'comment' => '商城-配置-卡券',
-        ]);
+        ], true);
         // 创建或更新数据表
         PhinxExtend::upgrade($table, [
             ['type', 'integer', ['limit' => 1, 'default' => 1, 'null' => true, 'comment' => '类型(0通用券,1商品券)']],
@@ -132,7 +115,7 @@ class InstallWemall extends Migrator
             ['update_time', 'datetime', ['default' => NULL, 'null' => true, 'comment' => '更新时间']],
         ], [
             'sort', 'type', 'status', 'deleted', 'create_time',
-        ]);
+        ], true);
     }
 
     /**
@@ -159,7 +142,7 @@ class InstallWemall extends Migrator
             ['update_time', 'datetime', ['default' => NULL, 'null' => true, 'comment' => '更新时间']],
         ], [
             'sort', 'status', 'deleted', 'create_time',
-        ]);
+        ], true);
     }
 
     /**
@@ -190,7 +173,7 @@ class InstallWemall extends Migrator
             ['update_time', 'datetime', ['default' => NULL, 'null' => true, 'comment' => '更新时间']],
         ], [
             'utime', 'status', 'number', 'create_time',
-        ]);
+        ], true);
     }
 
     /**
@@ -222,7 +205,7 @@ class InstallWemall extends Migrator
             ['update_time', 'datetime', ['default' => NULL, 'null' => true, 'comment' => '更新时间']],
         ], [
             'code', 'sort', 'name', 'tips', 'status', 'deleted', 'create_time',
-        ]);
+        ], true);
     }
 
     /**
@@ -253,7 +236,7 @@ class InstallWemall extends Migrator
             ['update_time', 'datetime', ['default' => NULL, 'null' => true, 'comment' => '更新时间']],
         ], [
             'code', 'sort', 'name', 'status', 'deleted', 'create_time',
-        ]);
+        ], true);
     }
 
     /**
@@ -295,7 +278,7 @@ class InstallWemall extends Migrator
             ['update_time', 'datetime', ['default' => NULL, 'null' => true, 'comment' => '更新时间']],
         ], [
             'code', 'sort', 'name', 'type', 'stype', 'status', 'deleted', 'p1_level', 'p2_level', 'p3_level', 'p0_level', 'create_time',
-        ]);
+        ], true);
     }
 
     /**
@@ -322,7 +305,7 @@ class InstallWemall extends Migrator
             ['update_time', 'datetime', ['default' => NULL, 'null' => true, 'comment' => '更新时间']],
         ], [
             'code', 'sort', 'name', 'status', 'deleted', 'create_time',
-        ]);
+        ], true);
     }
 
     /**
@@ -351,7 +334,7 @@ class InstallWemall extends Migrator
             ['update_time', 'datetime', ['default' => NULL, 'null' => true, 'comment' => '更新时间']],
         ], [
             'code', 'sort', 'name', 'status', 'deleted', 'create_time',
-        ]);
+        ], true);
     }
 
     /**
@@ -400,7 +383,7 @@ class InstallWemall extends Migrator
             ['update_time', 'datetime', ['default' => NULL, 'null' => true, 'comment' => '更新时间']],
         ], [
             'code', 'sort', 'ssid', 'status', 'deleted', 'rebate_type', 'discount_id', 'create_time', 'level_agent', 'level_upgrade',
-        ]);
+        ], true);
     }
 
     /**
@@ -428,7 +411,7 @@ class InstallWemall extends Migrator
             ['update_time', 'datetime', ['default' => NULL, 'null' => true, 'comment' => '更新时间']],
         ], [
             'pid', 'sort', 'status', 'deleted',
-        ]);
+        ], true);
     }
 
     /**
@@ -467,7 +450,7 @@ class InstallWemall extends Migrator
             ['update_time', 'datetime', ['default' => NULL, 'null' => true, 'comment' => '更新时间']],
         ], [
             'gcode', 'gspec', 'ghash', 'status',
-        ]);
+        ], true);
     }
 
     /**
@@ -492,7 +475,7 @@ class InstallWemall extends Migrator
             ['update_time', 'datetime', ['default' => NULL, 'null' => true, 'comment' => '更新时间']],
         ], [
             'sort', 'status',
-        ]);
+        ], true);
     }
 
     /**
@@ -520,7 +503,7 @@ class InstallWemall extends Migrator
             ['update_time', 'datetime', ['default' => NULL, 'null' => true, 'comment' => '更新时间']],
         ], [
             'ghash', 'gcode', 'status', 'deleted',
-        ]);
+        ], true);
     }
 
     /**
@@ -553,7 +536,7 @@ class InstallWemall extends Migrator
             ['update_time', 'datetime', ['default' => NULL, 'null' => true, 'comment' => '更新时间']],
         ], [
             'sort', 'unid', 'status', 'deleted', 'reply_st',
-        ]);
+        ], true);
     }
 
     /**
@@ -583,7 +566,7 @@ class InstallWemall extends Migrator
             ['update_time', 'datetime', ['default' => NULL, 'null' => true, 'comment' => '更新时间']],
         ], [
             'sort', 'status', 'deleted',
-        ]);
+        ], true);
     }
 
     /**
@@ -613,7 +596,7 @@ class InstallWemall extends Migrator
             ['update_time', 'datetime', ['default' => NULL, 'null' => true, 'comment' => '更新时间']],
         ], [
             'sort', 'name', 'unid', 'phone', 'status', 'deleted',
-        ]);
+        ], true);
     }
 
     /**
@@ -641,7 +624,7 @@ class InstallWemall extends Migrator
             ['update_time', 'datetime', ['default' => NULL, 'null' => true, 'comment' => '更新时间']],
         ], [
             'ccid', 'unid', 'status',
-        ]);
+        ], true);
     }
 
     /**
@@ -707,7 +690,7 @@ class InstallWemall extends Migrator
             ['update_time', 'datetime', ['default' => NULL, 'null' => true, 'comment' => '更新时间']],
         ], [
             'unid', 'ssid', 'puid1', 'puid2', 'puid3', 'status', 'order_no', 'create_time', 'refund_code', 'coupon_code', 'delivery_type', 'cancel_status', 'refund_status', 'deleted_status',
-        ]);
+        ], true);
     }
 
     /**
@@ -734,7 +717,7 @@ class InstallWemall extends Migrator
             ['update_time', 'datetime', ['default' => NULL, 'null' => true, 'comment' => '更新时间']],
         ], [
             'unid', 'ssid', 'gcode', 'gspec', 'ghash',
-        ]);
+        ], true);
     }
 
     /**
@@ -789,7 +772,7 @@ class InstallWemall extends Migrator
             ['update_time', 'datetime', ['default' => NULL, 'null' => true, 'comment' => '更新时间']],
         ], [
             'unid', 'gsku', 'ssid', 'gcode', 'gspec', 'ghash', 'status', 'deleted', 'order_no', 'rebate_type', 'discount_id', 'level_agent', 'delivery_code',
-        ]);
+        ], true);
     }
 
     /**
@@ -835,7 +818,52 @@ class InstallWemall extends Migrator
             ['update_time', 'datetime', ['default' => NULL, 'null' => true, 'comment' => '更新时间']],
         ], [
             'unid', 'type', 'code', 'ssid', 'status', 'order_no', 'create_time',
+        ], true);
+    }
+
+    /**
+     * 创建数据对象
+     * @class PluginWemallOrderSend
+     * @table plugin_wemall_order_send
+     * @return void
+     */
+    private function _create_plugin_wemall_order_send()
+    {
+        // 创建数据表对象
+        $table = $this->table('plugin_wemall_order_send', [
+            'engine' => 'InnoDB', 'collation' => 'utf8mb4_general_ci', 'comment' => '商城-订单-配送',
         ]);
+        // 创建或更新数据表
+        PhinxExtend::upgrade($table, [
+            ['unid', 'biginteger', ['limit' => 20, 'default' => 0, 'null' => true, 'comment' => '商城用户编号']],
+            ['order_no', 'string', ['limit' => 20, 'default' => '', 'null' => true, 'comment' => '商城订单单号']],
+            ['address_id', 'string', ['limit' => 20, 'default' => '', 'null' => true, 'comment' => '配送地址编号']],
+            ['user_idcode', 'string', ['limit' => 100, 'default' => '', 'null' => true, 'comment' => '收货人证件号码']],
+            ['user_idimg1', 'string', ['limit' => 500, 'default' => '', 'null' => true, 'comment' => '收货人证件正面']],
+            ['user_idimg2', 'string', ['limit' => 500, 'default' => '', 'null' => true, 'comment' => '收货人证件反面']],
+            ['user_name', 'string', ['limit' => 50, 'default' => '', 'null' => true, 'comment' => '收货人联系名称']],
+            ['user_phone', 'string', ['limit' => 20, 'default' => '', 'null' => true, 'comment' => '收货人联系手机']],
+            ['region_prov', 'string', ['limit' => 30, 'default' => '', 'null' => true, 'comment' => '配送地址的省份']],
+            ['region_city', 'string', ['limit' => 30, 'default' => '', 'null' => true, 'comment' => '配送地址的城市']],
+            ['region_area', 'string', ['limit' => 30, 'default' => '', 'null' => true, 'comment' => '配送地址的区域']],
+            ['region_addr', 'string', ['limit' => 255, 'default' => '', 'null' => true, 'comment' => '配送的详细地址']],
+            ['delivery_code', 'string', ['limit' => 20, 'default' => '', 'null' => true, 'comment' => '配送模板编号']],
+            ['delivery_count', 'biginteger', ['limit' => 20, 'default' => 0, 'null' => true, 'comment' => '快递计费基数']],
+            ['delivery_amount', 'decimal', ['precision' => 20, 'scale' => 2, 'default' => '0.00', 'null' => true, 'comment' => '配送计算金额']],
+            ['delivery_remark', 'string', ['limit' => 255, 'default' => '', 'null' => true, 'comment' => '配送计算描述']],
+            ['express_time', 'string', ['limit' => 20, 'default' => '', 'null' => true, 'comment' => '快递发送时间']],
+            ['express_code', 'string', ['limit' => 80, 'default' => '', 'null' => true, 'comment' => '快递运送单号']],
+            ['express_remark', 'string', ['limit' => 255, 'default' => '', 'null' => true, 'comment' => '快递发送备注']],
+            ['company_code', 'string', ['limit' => 20, 'default' => '', 'null' => true, 'comment' => '快递公司编码']],
+            ['company_name', 'string', ['limit' => 100, 'default' => '', 'null' => true, 'comment' => '快递公司名称']],
+            ['extra', 'text', ['default' => NULL, 'null' => true, 'comment' => '原始数据']],
+            ['status', 'integer', ['limit' => 1, 'default' => 1, 'null' => true, 'comment' => '发货状态(1待发货,2已发货,3已收货)']],
+            ['deleted', 'integer', ['limit' => 1, 'default' => 0, 'null' => true, 'comment' => '删除状态(0未删,1已删)']],
+            ['create_time', 'datetime', ['default' => NULL, 'null' => true, 'comment' => '创建时间']],
+            ['update_time', 'datetime', ['default' => NULL, 'null' => true, 'comment' => '更新时间']],
+        ], [
+            'unid', 'status', 'deleted', 'order_no', 'create_time',
+        ], true);
     }
 
     /**
@@ -846,6 +874,11 @@ class InstallWemall extends Migrator
      */
     private function _create_plugin_wemall_order_sender()
     {
+        // 数据表重命名
+        if ($this->hasTable('plugin_wemall_order_send') && !$this->hasTable('plugin_wemall_order_sender')) {
+            $this->table('plugin_wemall_order_send')->rename('plugin_wemall_order_sender');
+        }
+
         // 创建数据表对象
         $table = $this->table('plugin_wemall_order_sender', [
             'engine' => 'InnoDB', 'collation' => 'utf8mb4_general_ci', 'comment' => '商城-订单-配送',
@@ -881,7 +914,7 @@ class InstallWemall extends Migrator
             ['update_time', 'datetime', ['default' => NULL, 'null' => true, 'comment' => '更新时间']],
         ], [
             'unid', 'ssid', 'status', 'deleted', 'order_no', 'create_time',
-        ]);
+        ], true);
     }
 
     /**
@@ -906,7 +939,7 @@ class InstallWemall extends Migrator
             ['update_time', 'datetime', ['default' => NULL, 'null' => true, 'comment' => '更新时间']],
         ], [
             'unid', 'sort', 'gcode',
-        ]);
+        ], true);
     }
 
     /**
@@ -938,7 +971,7 @@ class InstallWemall extends Migrator
             ['update_time', 'datetime', ['default' => NULL, 'null' => true, 'comment' => '更新时间']],
         ], [
             'unid', 'code', 'ssid', 'ghash', 'gcode', 'status', 'deleted', 'order_no', 'create_time',
-        ]);
+        ], true);
     }
 
     /**
@@ -964,7 +997,7 @@ class InstallWemall extends Migrator
             ['update_time', 'datetime', ['default' => NULL, 'null' => true, 'comment' => '更新时间']],
         ], [
             'unid', 'sort', 'ssid', 'gcode',
-        ]);
+        ], true);
     }
 
     /**
@@ -989,7 +1022,7 @@ class InstallWemall extends Migrator
             ['update_time', 'datetime', ['default' => NULL, 'null' => true, 'comment' => '更新时间']],
         ], [
             'keys', 'unid', 'sort',
-        ]);
+        ], true);
     }
 
     /**
@@ -1018,7 +1051,7 @@ class InstallWemall extends Migrator
             ['update_time', 'datetime', ['default' => NULL, 'null' => true, 'comment' => '更新时间']],
         ], [
             'unid', 'date', 'status', 'deleted', 'create_time',
-        ]);
+        ], true);
     }
 
     /**
@@ -1052,7 +1085,7 @@ class InstallWemall extends Migrator
             ['confirm_time', 'datetime', ['default' => NULL, 'null' => true, 'comment' => '到账时间']],
         ], [
             'code', 'unid', 'coid', 'used', 'status', 'expire', 'deleted', 'create_time', 'confirm_time',
-        ]);
+        ], true);
     }
 
     /**
@@ -1088,7 +1121,7 @@ class InstallWemall extends Migrator
             ['update_time', 'datetime', ['default' => NULL, 'null' => true, 'comment' => '更新时间']],
         ], [
             'name', 'unid', 'phone', 'status', 'deleted', 'create_time', 'agent_entry', 'agent_phone', 'rebate_total',
-        ]);
+        ], true);
     }
 
     /**
@@ -1124,7 +1157,7 @@ class InstallWemall extends Migrator
             ['confirm_time', 'datetime', ['default' => NULL, 'null' => true, 'comment' => '到账时间']],
         ], [
             'type', 'date', 'code', 'name', 'unid', 'hash', 'status', 'deleted', 'order_no', 'order_unid', 'create_time', 'confirm_time',
-        ]);
+        ], true);
     }
 
     /**
@@ -1154,7 +1187,7 @@ class InstallWemall extends Migrator
             ['update_time', 'datetime', ['default' => NULL, 'null' => true, 'comment' => '更新时间']],
         ], [
             'unid', 'code', 'deleted', 'create_time', 'deleted_time',
-        ]);
+        ], true);
     }
 
     /**
@@ -1192,7 +1225,7 @@ class InstallWemall extends Migrator
             ['update_time', 'datetime', ['default' => NULL, 'null' => true, 'comment' => '更新时间']],
         ], [
             'unid', 'path', 'puid1', 'puid2', 'puid3', 'level_code', 'agent_uuid', 'create_time', 'entry_agent', 'entry_member', 'agent_level_code',
-        ]);
+        ], true);
     }
 
     /**
@@ -1240,6 +1273,6 @@ class InstallWemall extends Migrator
             ['update_time', 'datetime', ['default' => NULL, 'null' => true, 'comment' => '更新时间']],
         ], [
             'code', 'unid', 'date', 'type', 'appid', 'openid', 'status', 'create_time', 'audit_status',
-        ]);
+        ], true);
     }
 }
