@@ -15,8 +15,18 @@
 use think\admin\extend\PhinxExtend;
 use think\migration\Migrator;
 
-class InstallCenterData extends Migrator
+class InstallCenter20241016 extends Migrator
 {
+
+    /**
+     * 获取脚本名称
+     * @return string
+     */
+    public function getName(): string
+    {
+        return 'CenterPlugin';
+    }
+
     public function change()
     {
         set_time_limit(0);
