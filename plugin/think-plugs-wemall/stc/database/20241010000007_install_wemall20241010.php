@@ -6,7 +6,7 @@ use think\migration\Migrator;
 @set_time_limit(0);
 @ini_set('memory_limit', -1);
 
-class InstallWemall20241016 extends Migrator
+class InstallWemall20241010 extends Migrator
 {
 
     /**

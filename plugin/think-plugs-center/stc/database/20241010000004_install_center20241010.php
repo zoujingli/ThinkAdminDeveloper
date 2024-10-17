@@ -15,7 +15,7 @@
 use think\admin\extend\PhinxExtend;
 use think\migration\Migrator;
 
-class InstallCenter20241016 extends Migrator
+class InstallCenter20241010 extends Migrator
 {
 
     /**
