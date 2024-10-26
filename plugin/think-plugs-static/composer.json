@@ -17,7 +17,6 @@
     "plugin": {
       "copy": {
         "stc/think": "!think",
-        "stc/.env.example": ".env.example",
         "stc/public/index.php": "!public/index.php",
         "stc/public/static/plugs": "!public/static/plugs",
         "stc/public/static/theme": "!public/static/theme",
@@ -25,7 +24,7 @@
         "stc/public/static/login.js": "!public/static/login.js"
       },
       "init": {
-        "stc/.env.example": ".env",
+        "stc/.env.example": ".env.example",
         "stc/class/Index.php": "app/index/controller/Index.php",
         "stc/config/app.php": "config/app.php",
         "stc/config/cache.php": "config/cache.php",
