@@ -138,7 +138,7 @@ class Refund extends Controller
                 // 如果已经退款了，不让改金额
                 if ($refund->getAttr('status') > 4) {
                     // 取消订单奖励
-                    UserOrder::cancel($refund->getAttr('order_no'));
+                    UserOrder::cancel($refund->getAttr('order_no'), true);
                     // 去除不相关的字段
                     unset($data['payment_amount'], $data['balance_amount'], $data['integral_amount']);
                 }

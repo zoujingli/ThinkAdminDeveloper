@@ -46,6 +46,8 @@ class Rebate extends Controller
             $this->title = '代理返佣管理';
             $this->rebate = UserRebate::recount(0);
         }, static function (QueryHelper $query) {
+            // 删除状态
+            $query->where(['deleted' => 0]);
             // 数据关联
             $query->equal('type,status')->like('name,order_no')->dateBetween('create_time')->with([
                 'user'  => function (Query $query) {

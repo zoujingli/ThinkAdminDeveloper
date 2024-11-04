@@ -214,7 +214,7 @@ abstract class UserRebate
     public static function cancel($order): bool
     {
         $order = UserOrder::widthOrder($order);
-        if ($order->isEmpty() || $order->getAttr('status') > 0) {
+        if ($order->isEmpty()) {
             throw new Exception('订单状态异常！');
         }
         // 更新返佣记录
