@@ -79,8 +79,12 @@ class Worker extends Command
         if (empty($this->config['worker']['pidFile'])) {
             $this->config['worker']['pidFile'] = syspath("safefile/worker/worker_{$port}.pid");
         }
+        if (empty($this->config['worker']['statusFile'])) {
+            $this->config['worker']['statusFile'] = syspath("safefile/worker/worker_{$port}.status");
+        }
         is_dir($dir = dirname($this->config['worker']['pidFile'])) or mkdir($dir, 0777, true);
         is_dir($dir = dirname($this->config['worker']['logFile'])) or mkdir($dir, 0777, true);
+        is_dir($dir = dirname($this->config['worker']['statusFile'])) or mkdir($dir, 0777, true);
 
         // 静态属性设置
         foreach ($this->config['worker'] ?? [] as $name => $value) {
