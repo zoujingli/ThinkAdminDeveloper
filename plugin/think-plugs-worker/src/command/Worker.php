@@ -88,7 +88,7 @@ class Worker extends Command
 
         // 静态属性设置
         foreach ($this->config['worker'] ?? [] as $name => $value) {
-            if (in_array($name, ['daemonize', 'stdoutFile', 'pidFile', 'logFile'])) {
+            if (in_array($name, ['daemonize', 'statusFile', 'stdoutFile', 'pidFile', 'logFile'])) {
                 Workerman::${$name} = $value;
                 unset($this->config['worker'][$name]);
             }
