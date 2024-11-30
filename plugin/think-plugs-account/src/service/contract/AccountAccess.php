@@ -487,6 +487,6 @@ class AccountAccess implements AccountInterface
      */
     private function userCode(): string
     {
-        return CodeExtend::uniqidNumber(16, 'U');
+        return CodeExtend::uniqidNumber(12, 'U');
     }
 }

@@ -81,7 +81,7 @@ class Config extends Controller
     protected function _form_filter(array &$data)
     {
         if (empty($data['code'])) {
-            $data['code'] = CodeExtend::uniqidNumber(16, 'M');
+            $data['code'] = CodeExtend::uniqidNumber(12, 'M');
         }
         if ($this->request->isGet()) {
             $data['content'] = $data['content'] ?? [];
