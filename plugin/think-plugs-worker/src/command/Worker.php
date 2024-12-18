@@ -116,11 +116,6 @@ class Worker extends Command
             if ('start' === $action) $output->writeln('Starting Workerman http server...');
             $worker = new HttpServer($host, $port, $this->config['context'] ?? [], $this->config['callable'] ?? null);
             $worker->setRoot($this->app->getRootPath());
-            // 设置热更新监听文件后缀及目录
-            if (empty($this->config['files']['exts'])) $this->config['files']['exts'] = ['*'];
-            if (empty($this->config['files']['path'])) $this->config['files']['path'] = [$this->app->getBasePath(), $this->app->getConfigPath()];
-            $worker->setMonitorChange(intval($this->config['files']['time'] ?? 0), $this->config['files']['path'], $this->config['files']['exts']);
-            $worker->setMonitorMemory(intval($this->config['memory']['time'] ?? 0), $this->config['memory']['limit'] ?? null);
         } else {
             if (strtolower($this->config['type']) !== 'business') {
                 if (empty($this->config['listen'])) {

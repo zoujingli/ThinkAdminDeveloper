@@ -42,9 +42,6 @@ class HttpServer extends Server
     /** @var string */
     protected $root;
 
-    /** @var array */
-    protected $monitor;
-
     /** @var callable */
     protected $callable;
 
@@ -77,12 +74,6 @@ class HttpServer extends Server
         // 抢占必需替换的类名，并优先加载进内存
         if (!class_exists('think\response\File', false)) {
             class_alias(ThinkResponseFile::class, 'think\response\File');
-        }
-
-        // 设置文件变化及内存超限监控管理
-        if (0 == $worker->id && $this->monitor && Library::$sapp->isDebug()) {
-            Monitor::enableChangeMonitor($this->monitor['change_path'] ?? [], $this->monitor['change_exts'] ?? ['*'], $this->monitor['change_time'] ?? 0);
-            Monitor::enableMemoryMonitor($this->monitor['memory_limit'] ?? null, $this->monitor['memory_time'] ?? 0);
         }
 
         // 初始化运行环境
@@ -144,31 +135,5 @@ class HttpServer extends Server
     public function setRoot(string $path)
     {
         $this->root = $path;
-    }
-
-    /**
-     * 设置文件监控配置
-     * @param integer $time
-     * @param array $path 监听目录
-     * @param array $exts 文件后缀
-     * @return void
-     */
-    public function setMonitorChange(int $time = 2, array $path = [], array $exts = ['*'])
-    {
-        $this->monitor['change_path'] = $path;
-        $this->monitor['change_exts'] = $exts;
-        $this->monitor['change_time'] = $time;
-    }
-
-    /**
-     * 设置内存监控配置
-     * @param integer $time
-     * @param ?string $limit
-     * @return void
-     */
-    public function setMonitorMemory(int $time = 60, ?string $limit = null)
-    {
-        $this->monitor['memory_time'] = $time;
-        $this->monitor['memory_limit'] = $limit;
     }
 }
