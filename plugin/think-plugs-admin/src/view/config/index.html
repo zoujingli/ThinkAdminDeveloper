@@ -1,7 +1,7 @@
 {extend name="main"}
 
 {block name="button"}
-<!--{if isset($super) and $super}-->
+<!--{if isset($issuper) and $issuper}-->
 <a class="layui-btn layui-btn-sm layui-btn-primary" data-load="{:url('admin/api.system/config')}">{:lang('清理无效配置')}</a>
 <!--{/if}-->
 
