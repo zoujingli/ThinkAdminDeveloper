@@ -79,12 +79,11 @@ class Index extends Controller
     /**
      * 修改用户资料
      * @login true
-     * @param mixed $id 用户ID
      */
-    public function info($id = 0)
+    public function info()
     {
-        $this->_applyFormToken();
-        if (AdminService::getUserId() === intval($id)) {
+        $id = $this->request->param('id');
+        if (AdminService::getUserId() == intval($id)) {
             SystemUser::mForm('user/form', 'id', [], ['id' => $id]);
         } else {
             $this->error('只能修改自己的资料！');
@@ -116,14 +115,13 @@ class Index extends Controller
     /**
      * 修改当前用户密码
      * @login true
-     * @param mixed $id
      * @throws \think\db\exception\DataNotFoundException
      * @throws \think\db\exception\DbException
      * @throws \think\db\exception\ModelNotFoundException
      */
-    public function pass($id = 0)
+    public function pass()
     {
-        $this->_applyFormToken();
+        $id = $this->request->param('id');
         if (AdminService::getUserId() !== intval($id)) {
             $this->error('禁止修改他人密码！');
         }
