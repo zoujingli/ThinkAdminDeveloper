@@ -90,9 +90,9 @@ class HttpServer extends Server
         Session::$secure = $this->app->config->get('cookie.secure', false);
         Session::$httpOnly = $this->app->config->get('cookie.httponly', true);
         Session::$sameSite = $this->app->config->get('cookie.samesite', '');
-        Session::$lifetime = $this->app->config->get('session.expire', 7200);
+        Session::$lifetime = intval($this->app->config->get('session.expire', 7200));
         Session::$cookiePath = $this->app->config->get('cookie.path', '/');
-        Session::$cookieLifetime = $this->app->config->get('cookie.expire', 0);
+        Session::$cookieLifetime = intval($this->app->config->get('cookie.expire', 0));
     }
 
     /**
