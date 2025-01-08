@@ -20,7 +20,6 @@ namespace plugin\worker\support;
 
 use plugin\worker\Monitor;
 use plugin\worker\Server;
-use think\admin\Library;
 use think\admin\service\RuntimeService;
 use Workerman\Connection\TcpConnection;
 use Workerman\Protocols\Http\Request as WorkerRequest;
