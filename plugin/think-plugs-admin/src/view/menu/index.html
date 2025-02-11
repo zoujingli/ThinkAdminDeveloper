@@ -17,12 +17,17 @@
 {block name="content"}
 <div class="layui-tab layui-tab-card">
     <ul class="layui-tab-title">
-        {foreach ['index'=>lang('系统菜单'),'recycle'=>lang('回 收 站')] as $k=>$v}
-        {if isset($type) and $type eq $k}
+        {foreach ['index'=>lang('全部菜单'),'recycle'=>lang('回 收 站')] as $k=>$v}
+        {if isset($type) and $type eq $k and isset($pid) and $pid == ''}
         <li class="layui-this" data-open="{:url('index')}?type={$k}">{$v}</li>
         {else}
         <li data-open="{:url('index')}?type={$k}">{$v}</li>
         {/if}{/foreach}
+
+        <!--顶级菜单-->
+        <!--{foreach $menup_list as $k=>$v}-->
+        <li data-open="{:url('index')}?type=index&pid={$v.id}" {if isset($pid) and $pid eq $v.id}class="layui-this"{/if} >{$v.title}</li>
+        <!--{/foreach}-->
     </ul>
     <div class="layui-tab-content">
         <table id="MenuTable" data-url="{:request()->url()}" data-target-search="form.form-search"></table>
@@ -34,7 +39,7 @@
         $('#MenuTable').layTable({
             even: true, height: 'full', page: false,
             sort: {field: 'sort desc,id', type: 'asc'},
-            where: {type: '{$type|default="index"}'},
+            where: {type: '{$type|default="index"}', pid: '{$pid|default=""}'},
             filter: function (items) {
                 var type = this.where.type;
                 return items.filter(function (item) {

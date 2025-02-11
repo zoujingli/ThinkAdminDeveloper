@@ -11,6 +11,7 @@
     <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1">
     <link rel="stylesheet" href="__ROOT__/static/theme/css/iconfont.css?at={:date('md')}">
     <link rel="stylesheet" href="__ROOT__/static/plugs/layui/css/layui.css?v={:date('ymd')}">
+    <link rel="stylesheet" href="__ROOT__/static/extra/icon/iconfont.css?at={:date('md')}">
     <style>
         ::-webkit-input-placeholder {
             color: #aaa
@@ -96,6 +97,12 @@
 <body>
 
 <ul>
+    {foreach $extraIcons??[] as $icon}
+    <li>
+        <i class="iconfont {$icon}"></i>
+        <div class="icon-title">{$icon}</div>
+    </li>
+    {/foreach}
     {foreach $layuiIcons??[] as $icon}
     <li>
         <i class="layui-icon {$icon}"></i>
