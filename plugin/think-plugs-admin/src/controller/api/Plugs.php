@@ -64,6 +64,18 @@ class Plugs extends Controller
                 }
             }
         }
+        // 读取extra自定义字体图标
+        if (empty($this->extraIcons = $this->app->cache->get('ThinkAdminExtraIcons', []))) {
+            $extraIconPath = syspath('public/static/extra/icon/iconfont.css');
+            if (file_exists($extraIconPath)) {
+                $style = file_get_contents($extraIconPath);
+                if (preg_match_all('#\.(iconfont-[\w-]+):#', $style, $matches)) {
+                    if (count($this->extraIcons = $matches[1]) > 0) {
+                        $this->app->cache->set('ThinkAdminExtraIcons', $this->extraIcons, 60);
+                    }
+                }
+            }
+        }
         $this->field = $this->app->request->get('field', 'icon');
         $this->fetch(dirname(__DIR__, 2) . '/view/api/icon.html');
     }
