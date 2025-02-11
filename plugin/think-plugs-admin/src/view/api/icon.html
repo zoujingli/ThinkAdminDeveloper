@@ -11,7 +11,9 @@
     <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1">
     <link rel="stylesheet" href="__ROOT__/static/theme/css/iconfont.css?at={:date('md')}">
     <link rel="stylesheet" href="__ROOT__/static/plugs/layui/css/layui.css?v={:date('ymd')}">
+    {if file_exists(syspath("public/static/extra/icon/iconfont.css"))}
     <link rel="stylesheet" href="__ROOT__/static/extra/icon/iconfont.css?at={:date('md')}">
+    {/if}
     <style>
         ::-webkit-input-placeholder {
             color: #aaa
