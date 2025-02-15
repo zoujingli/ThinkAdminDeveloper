@@ -12,6 +12,9 @@
     <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=0.4">
     <link rel="stylesheet" href="__ROOT__/static/plugs/layui/css/layui.css?at={:date('md')}">
     <link rel="stylesheet" href="__ROOT__/static/theme/css/iconfont.css?at={:date('md')}">
+    {if file_exists(syspath("public/static/extra/icon/iconfont.css"))}
+    <link rel="stylesheet" href="__ROOT__/static/extra/icon/iconfont.css?at={:date('md')}">
+    {/if}
     <link rel="stylesheet" href="__ROOT__/static/theme/css/console.css?at={:date('md')}">
     <link rel="stylesheet" href="__ROOT__/static/extra/style.css?at={:date('md')}">
     {block name="style"}{/block}

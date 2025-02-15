@@ -44,6 +44,12 @@ class Menu extends Controller
     {
         $this->title = '系统菜单管理';
         $this->type = $this->get['type'] ?? 'index';
+        // 获取顶级菜单ID
+        $this->pid = $this->get['pid'] ?? '';
+
+        // 查询顶级菜单集合
+        $this->menup_list = SystemMenu::mk()->where(['pid' => 0, 'status' => 1])->order('sort desc,id asc')->column('id,pid,title', 'id');
+
         SystemMenu::mQuery()->layTable();
     }
 
@@ -66,6 +72,14 @@ class Menu extends Controller
         }
         // 菜单数据树数据变平化
         $data = DataExtend::arr2table($data);
+
+        // 过滤非当前顶级菜单的下级菜单,并重新索引数组
+        if ($this->type === 'index' && $this->pid) {
+            $data = array_values(array_filter($data, function ($item) {
+                return strpos($item['spp'], ",{$this->pid},") !== false;
+            }));
+        }
+
         foreach ($data as &$vo) {
             if ($vo['url'] !== '#' && !preg_match('/^(https?:)?(\/\/|\\\\)/i', $vo['url'])) {
                 $vo['url'] = trim(url($vo['url']) . ($vo['params'] ? "?{$vo['params']}" : ''), '\\/');
