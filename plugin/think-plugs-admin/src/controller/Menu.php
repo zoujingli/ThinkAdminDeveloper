@@ -48,7 +48,7 @@ class Menu extends Controller
         $this->pid = $this->get['pid'] ?? '';
 
         // 查询顶级菜单集合
-        $this->menup_list = SystemMenu::mk()->where(['pid' => 0, 'status' => 1])->order('sort desc,id asc')->column('id,pid,title', 'id');
+        $this->menupList = SystemMenu::mk()->where(['pid' => 0, 'status' => 1])->order('sort desc,id asc')->column('id,pid,title', 'id');
 
         SystemMenu::mQuery()->layTable();
     }
