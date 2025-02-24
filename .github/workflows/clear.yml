@@ -9,17 +9,18 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
-          python-version: '3.x'
+          python-version: '3.11'
 
-      - name: Install PyGithub
-        run: pip install PyGithub
-
-      - name: Delete tags and releases
+      - name: Install dependencies and run script
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
+          python -m pip install --upgrade pip
+          pip install PyGithub
           python .github/clear-github-releases.py
