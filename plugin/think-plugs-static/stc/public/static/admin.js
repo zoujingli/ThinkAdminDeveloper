@@ -1005,7 +1005,9 @@ $(function () {
 
     /*! 注册 data-tips-text 事件行为 */
     $.base.onEvent('mouseenter', '[data-tips-text]', function () {
-        let opts = {tips: [$(this).attr('data-tips-type') || 3, '#78BA32'], time: 0};
+        // 获取自定义颜色（优先取 data-tips-color，否则用默认色）
+        const color = $(this).attr('data-tips-color') || '#78BA32';
+        let opts = {tips: [$(this).attr('data-tips-type') || 3, color], time: 0};
         let layidx = layer.tips($(this).attr('data-tips-text') || this.innerText, this, opts);
         $(this).off('mouseleave').on('mouseleave', function () {
             setTimeout("layer.close('" + layidx + "')", 100);
