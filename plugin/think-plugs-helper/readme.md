@@ -26,6 +26,14 @@ composer require zoujingli/think-plugs-helper --optimize-autoloader --dev
 composer require zoujingli/think-plugs-helper dev-master --optimize-autoloader --dev
 ```
 
+### 使用注释
+
+执行下面的指令即可实现模型字段注释。
+
+```shell
+php think xadmin:helper:model
+```
+
 ### 卸载插件
 
 ```shell
