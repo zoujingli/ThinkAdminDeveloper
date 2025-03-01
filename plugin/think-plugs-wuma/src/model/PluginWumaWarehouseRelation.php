@@ -22,6 +22,15 @@ use think\model\relation\HasMany;
 
 /**
  * 后关联订单模型
+ *
+ * @property int $create_by 上传用户
+ * @property int $deleted 删除状态(0未删,1已删)
+ * @property int $id
+ * @property int $max 大码数值
+ * @property int $mid 中码数值
+ * @property string $create_time 创建时间
+ * @property-read \plugin\wuma\model\PluginWumaWarehouseRelationData[] $mids
+ * @property-read \plugin\wuma\model\PluginWumaWarehouseRelationData[] $mins
  * @class PluginWumaWarehouseRelation
  * @package plugin\wuma\model
  */

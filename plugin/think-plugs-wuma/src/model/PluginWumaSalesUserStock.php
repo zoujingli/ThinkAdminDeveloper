@@ -22,6 +22,20 @@ use plugin\wemall\model\PluginWemallGoodsItem;
 use think\Model;
 use think\model\relation\HasOne;
 
+/**
+ * Class plugin\wuma\model\PluginWumaSalesUserStock
+ *
+ * @property int $auid 经销编号
+ * @property int $id
+ * @property int $num_count 累计出货
+ * @property int $num_total 累计库存
+ * @property int $vir_count 虚拟出货
+ * @property int $vir_total 虚拟库存
+ * @property string $ghash 商品哈唏
+ * @property-read \plugin\wemall\model\PluginWemallGoodsItem $bind_goods
+ * @property-read \plugin\wemall\model\PluginWemallGoodsItem $goods
+ * @property-read \plugin\wuma\model\PluginWumaSalesUser $agent
+ */
 class PluginWumaSalesUserStock extends AbstractPrivate
 {
 

@@ -23,8 +23,32 @@ use think\model\relation\HasMany;
 
 /**
  * 物码规则文件
+ *
+ * @property int $deleted 删除状态(0未删,1已删)
+ * @property int $hex_length 加密长度
+ * @property int $id
+ * @property int $max_length 大码长度
+ * @property int $max_mid 大码与中码比值
+ * @property int $max_number 大码数量
+ * @property int $mid_length 中码长度
+ * @property int $mid_min 中码与小码比值
+ * @property int $mid_number 中码数量
+ * @property int $min_length 小码长度
+ * @property int $number 物码总数
+ * @property int $sns_after 序号结束值
+ * @property int $sns_length 序号长度
+ * @property int $sns_start 序号起始值
+ * @property int $status 记录状态(0无效,1有效)
+ * @property int $type 批次类型(1前关联，2后关联)
+ * @property int $ver_length 验证长度
+ * @property string $batch 批次编号
+ * @property string $create_time 创建时间
+ * @property string $remark 物码描述
+ * @property string $template 导出模板
+ * @property string $update_time 更新时间
+ * @property-read \plugin\wuma\model\PluginWumaCodeRuleRange[] $rules
  * @class PluginWumaCodeRule
- * @package  plugin\wuma\model
+ * @package plugin\wuma\model
  */
 class PluginWumaCodeRule extends AbstractPrivate
 {

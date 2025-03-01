@@ -23,6 +23,27 @@ use think\model\relation\HasOne;
 
 /**
  * 仓库订单模型
+ *
+ * @property int $auid 出库代理
+ * @property int $deleted 删除状态(0未删,1已删)
+ * @property int $id
+ * @property int $mode 操作方式(1扫码操作,2虚拟操作)
+ * @property int $num_need 扫码总数
+ * @property int $num_used 扫码完成
+ * @property int $status 记录状态(0无效,1有效,2完成)
+ * @property int $type 操作类型(1订单入库,2直接入库,3调货入库,4订单出库,5直接出库,6调货出库,7关联出库,8直接退货)
+ * @property int $vir_need 虚拟总数
+ * @property int $vir_used 虚拟完成
+ * @property string $code 操作单号
+ * @property string $create_time 创建时间
+ * @property string $deleted_time 删除时间
+ * @property string $ghash 绑定产品
+ * @property string $update_time 更新时间
+ * @property string $wcode 仓库编号
+ * @property-read \plugin\wemall\model\PluginWemallGoodsItem $bind_goods
+ * @property-read \plugin\wemall\model\PluginWemallGoodsItem $goods
+ * @property-read \plugin\wuma\model\PluginWumaWarehouse $bind_warehouse
+ * @property-read \plugin\wuma\model\PluginWumaWarehouse $warehouse
  * @class PluginWumaWarehouseOrder
  * @package plugin\wuma\model
  */

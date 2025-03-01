@@ -20,6 +20,23 @@ namespace plugin\wuma\model;
 
 /**
  * 防伪查询记录模型
+ *
+ * @property int $auid 代理用户
+ * @property int $code 小码数码
+ * @property int $id
+ * @property int $notify 窜货状态
+ * @property int $times 查询次数
+ * @property string $addr 详细地址
+ * @property string $area 所在区域
+ * @property string $city 所在城市
+ * @property string $create_time 创建时间
+ * @property string $encode 物码编号
+ * @property string $geoip 访问IP
+ * @property string $ghash 商品哈希
+ * @property string $gtype 定位类型
+ * @property string $latlng 经纬度
+ * @property string $prov 所在省份
+ * @property string $update_time 更新时间
  * @class PluginWumaSourceQuery
  * @package plugin\wuma\model
  */

@@ -23,6 +23,18 @@ use think\model\relation\HasOne;
 
 /**
  * 工单交互数据模型
+ *
+ * @property array $images 图片内容
+ * @property int $ccid 目标编号
+ * @property int $deleted 删除状态(0未删,1已删)
+ * @property int $id
+ * @property int $reply_by 后台用户
+ * @property int $status 记录状态(0无效,1待审核,2已审核)
+ * @property int $unid 用户编号
+ * @property string $content 文本内容
+ * @property string $create_time 创建时间
+ * @property string $update_time 更新时间
+ * @property-read \think\admin\model\SystemUser $bind_admin
  * @class PluginWemallHelpQuestionX
  * @package plugin\wemall\model
  */

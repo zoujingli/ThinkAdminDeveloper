@@ -18,6 +18,17 @@ declare (strict_types=1);
 
 namespace plugin\wuma\model;
 
+/**
+ * Class plugin\wuma\model\PluginWumaSalesUserLevel
+ *
+ * @property int $id
+ * @property int $number 代理级别序号
+ * @property int $status 代理等级状态(1使用,0禁用)
+ * @property int $utime 等级更新时间
+ * @property string $create_time 等级创建时间
+ * @property string $name 代理级别名称
+ * @property string $remark 代理级别描述
+ */
 class PluginWumaSalesUserLevel extends AbstractPrivate
 {
     /**

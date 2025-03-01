@@ -22,6 +22,26 @@ use think\admin\Model;
 
 /**
  * 微信自动回复模型
+ *
+ * @property int $create_by 创建人
+ * @property int $id
+ * @property int $news_id 图文ID
+ * @property int $status 状态(0禁用,1启用)
+ * @property string $appid 公众号APPID
+ * @property string $code 消息编号
+ * @property string $content 文本内容
+ * @property string $create_at 创建时间
+ * @property string $image_url 图片链接
+ * @property string $music_desc 音乐描述
+ * @property string $music_image 缩略图片
+ * @property string $music_title 音乐标题
+ * @property string $music_url 音乐链接
+ * @property string $time 延迟时间
+ * @property string $type 类型(text,image,news)
+ * @property string $video_desc 视频描述
+ * @property string $video_title 视频标题
+ * @property string $video_url 视频URL
+ * @property string $voice_url 语音链接
  * @class WechatAuto
  * @package app\wechat\model
  */

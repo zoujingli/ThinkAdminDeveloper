@@ -24,6 +24,25 @@ use think\model\relation\HasOne;
 
 /**
  * 用户子账号模型
+ *
+ * @property int $deleted 删除状态(0未删,1已删)
+ * @property int $id
+ * @property int $sort 排序权重
+ * @property int $status 账号状态
+ * @property int $unid 会员编号
+ * @property string $appid APPID
+ * @property string $create_time 注册时间
+ * @property string $extra 扩展数据
+ * @property string $headimg 用户头像
+ * @property string $nickname 用户昵称
+ * @property string $openid OPENID
+ * @property string $password 登录密码
+ * @property string $phone 绑定手机
+ * @property string $type 终端类型
+ * @property string $unionid UnionID
+ * @property string $update_time 更新时间
+ * @property-read \plugin\account\model\PluginAccountAuth[] $auths
+ * @property-read \plugin\account\model\PluginAccountUser $user
  * @class PluginAccountBind
  * @package plugin\account\model
  */

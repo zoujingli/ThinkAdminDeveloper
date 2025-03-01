@@ -23,6 +23,16 @@ use think\model\relation\HasOne;
 
 /**
  * 仓库订单小码模型
+ *
+ * @property int $code 物码数据
+ * @property int $ddid 数据编号
+ * @property int $id
+ * @property int $mode 操作方式(1扫码操作,2虚拟操作)
+ * @property int $status 退货:记录状态(0无效,1有效)
+ * @property int $stock 调货:库存有效(0已出,1暂存)
+ * @property int $type 操作类型(1订单入库,2直接入库,3调货入库,4订单出库,5直接出库,6调货出库,7关联出库,8直接退货)
+ * @property string $status_time 状态时间
+ * @property-read \plugin\wuma\model\PluginWumaWarehouseOrderData $main
  * @class PluginWumaWarehouseOrderDataMins
  * @package plugin\wuma\model
  */

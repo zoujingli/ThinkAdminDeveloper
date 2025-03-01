@@ -22,6 +22,16 @@ use think\model\relation\HasOne;
 
 /**
  * 子账号授权模型
+ *
+ * @property int $id
+ * @property int $time 有效时间
+ * @property int $usid 终端账号
+ * @property string $create_time 创建时间
+ * @property string $token 授权令牌
+ * @property string $tokenv 授权验证
+ * @property string $type 授权类型
+ * @property string $update_time 更新时间
+ * @property-read \plugin\account\model\PluginAccountBind $client
  * @class PluginAccountAuth
  * @package plugin\account\model
  */

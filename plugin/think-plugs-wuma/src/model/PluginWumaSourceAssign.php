@@ -23,6 +23,19 @@ use think\model\relation\HasOne;
 
 /**
  * 赋码批次模型管理
+ *
+ * @property int $deleted 删除状态(0未删,1已删)
+ * @property int $id
+ * @property int $status 记录状态(0无效,1有效)
+ * @property int $type 赋码类型(0区间,1关联)
+ * @property string $batch 赋码批次号
+ * @property string $cbatch 物码批次号
+ * @property string $coder_items2 JSON赋码
+ * @property string $create_time 创建时间
+ * @property string $outer_items JSON出库
+ * @property string $update_time 更新时间
+ * @property-read \plugin\wuma\model\PluginWumaCodeRule $coder
+ * @property-read \plugin\wuma\model\PluginWumaSourceAssignItem[] $range
  * @class PluginWumaSourceAssign
  * @package plugin\wuma\model
  */

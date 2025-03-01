@@ -26,6 +26,40 @@ use think\model\relation\HasOne;
 
 /**
  * 用户支付行为模型
+ *
+ * @property array $payment_notify 支付通知内容
+ * @property float $order_amount 原订单金额
+ * @property float $payment_amount 实际支付金额
+ * @property float $payment_coupon 平台优惠券金额
+ * @property float $refund_amount 累计退款
+ * @property float $refund_balance 退回余额
+ * @property float $refund_integral 退回积分
+ * @property float $refund_payment 退回金额
+ * @property float $used_balance 扣除余额
+ * @property float $used_integral 扣除积分
+ * @property float $used_payment 支付金额
+ * @property int $audit_status 审核状态(0已拒,1待审,2已审)
+ * @property int $audit_user 审核用户(系统用户ID)
+ * @property int $id
+ * @property int $payment_status 支付状态(0未付,1已付,2取消)
+ * @property int $refund_status 退款状态(0未退,1已退)
+ * @property int $unid 主账号编号
+ * @property int $usid 子账号编号
+ * @property string $audit_remark 审核描述
+ * @property string $audit_time 审核时间
+ * @property string $channel_code 支付通道编号
+ * @property string $channel_type 支付通道类型
+ * @property string $code 发起支付号
+ * @property string $create_time 创建时间
+ * @property string $order_name 原订单标题
+ * @property string $order_no 原订单编号
+ * @property string $payment_images 凭证支付图片
+ * @property string $payment_remark 支付状态备注
+ * @property string $payment_time 支付生效时间
+ * @property string $payment_trade 平台交易编号
+ * @property string $update_time 更新时间
+ * @property-read \plugin\account\model\PluginAccountBind $device
+ * @property-read array $user
  * @class PluginPaymentRecord
  * @package plugin\payment\model
  */

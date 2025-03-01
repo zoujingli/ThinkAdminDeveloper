@@ -24,6 +24,26 @@ use think\model\relation\HasOne;
 
 /**
  * 代理返佣数据
+ *
+ * @property float $amount 奖励数量
+ * @property float $order_amount 订单金额
+ * @property int $deleted 删除状态(0未删除,1已删除)
+ * @property int $id
+ * @property int $layer 上级层级
+ * @property int $order_unid 订单用户
+ * @property int $status 生效状态(0未生效,1已生效)
+ * @property int $unid 用户UNID
+ * @property string $code 奖励编号
+ * @property string $confirm_time 到账时间
+ * @property string $create_time 创建时间
+ * @property string $date 奖励日期
+ * @property string $hash 维一编号
+ * @property string $name 奖励名称
+ * @property string $order_no 订单单号
+ * @property string $remark 奖励描述
+ * @property string $type 奖励类型
+ * @property string $update_time 更新时间
+ * @property-read \plugin\account\model\PluginAccountUser $ouser
  * @class PluginWemallUserRebate
  * @package plugin\wemall\model
  */

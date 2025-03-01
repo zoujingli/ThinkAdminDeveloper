@@ -20,6 +20,18 @@ namespace plugin\wuma\model;
 
 /**
  * 溯源模板模块
+ *
+ * @property int $deleted 删除状态(0未删,1已删)
+ * @property int $id
+ * @property int $sort 排序权重
+ * @property int $status 记录状态(0无效,1有效)
+ * @property int $times 访问次数
+ * @property mixed $content 模板内容
+ * @property mixed $styles 主题样式
+ * @property string $code 模板编号
+ * @property string $create_time 创建时间
+ * @property string $name 模板名称
+ * @property string $update_time 更新时间
  * @class PluginWumaSourceTemplate
  * @package plugin\wuma\model
  */

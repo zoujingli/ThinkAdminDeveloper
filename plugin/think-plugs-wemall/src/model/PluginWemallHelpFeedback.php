@@ -23,6 +23,23 @@ use think\model\relation\HasOne;
 
 /**
  * 意见反馈数据模型
+ *
+ * @property array $images 反馈图片
+ * @property int $deleted 删除状态(0未删,1已删)
+ * @property int $id
+ * @property int $reply_by 回复用户
+ * @property int $reply_st 回复状态
+ * @property int $sort 排序权重
+ * @property int $status 展示状态(1使用,0禁用)
+ * @property int $sync 同步至常见问题状态(1已同步,0未同步)
+ * @property int $unid 反馈用户
+ * @property string $content 反馈内容
+ * @property string $create_time 创建时间
+ * @property string $phone 联系电话
+ * @property string $reply 回复内容
+ * @property string $reply_time 回复时间
+ * @property string $update_time 更新时间
+ * @property-read \think\admin\model\SystemUser $bind_admin
  * @class PluginWemallHelpFeedback
  * @package plugin\wemall\model
  */

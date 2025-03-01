@@ -22,6 +22,19 @@ use plugin\account\model\Abs;
 
 /**
  * 商城代理等级数据
+ *
+ * @property int $id
+ * @property int $number 级别序号
+ * @property int $status 等级状态(1使用,0禁用)
+ * @property int $upgrade_type 升级规则(0单个,1同时)
+ * @property int $utime 更新时间
+ * @property string $cardbg 等级卡片
+ * @property string $cover 等级图标
+ * @property string $create_time 创建时间
+ * @property string $extra 升级规则
+ * @property string $name 级别名称
+ * @property string $remark 级别描述
+ * @property string $update_time 更新时间
  * @class PluginWemallConfigAgent
  * @package plugin\wemall\model
  */

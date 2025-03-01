@@ -22,6 +22,20 @@ use think\model\relation\HasOne;
 
 /**
  * 赋码批次数据模型
+ *
+ * @property int $id
+ * @property int $lock 是否已锁定
+ * @property int $range_after 结束物码区间
+ * @property int $range_start 开始物码区间
+ * @property int $real 是否真锁定
+ * @property string $batch 赋码批次号
+ * @property string $cbatch 物码批次号
+ * @property string $create_time 创建时间
+ * @property string $pbatch 生产批次号
+ * @property string $update_time 更新时间
+ * @property-read \plugin\wuma\model\PluginWumaSourceAssign $assign
+ * @property-read \plugin\wuma\model\PluginWumaSourceProduce $bind_produce
+ * @property-read \plugin\wuma\model\PluginWumaSourceProduce $produce
  * @class PluginWumaSourceBatchAssignItem
  * @package plugin\wuma\model
  */

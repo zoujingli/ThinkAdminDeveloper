@@ -20,6 +20,21 @@ namespace plugin\wemall\model;
 
 use think\model\relation\HasOne;
 
+/**
+ * Class plugin\wemall\model\PluginWemallOrderCart
+ *
+ * @property int $id
+ * @property int $number 商品数量
+ * @property int $ssid 所属商家
+ * @property int $unid 用户编号
+ * @property string $create_time 创建时间
+ * @property string $gcode 商品编号
+ * @property string $ghash 规格哈希
+ * @property string $gspec 商品规格
+ * @property string $update_time 更新时间
+ * @property-read \plugin\wemall\model\PluginWemallGoods $goods
+ * @property-read \plugin\wemall\model\PluginWemallGoodsItem $specs
+ */
 class PluginWemallOrderCart extends AbsUser
 {
     /**

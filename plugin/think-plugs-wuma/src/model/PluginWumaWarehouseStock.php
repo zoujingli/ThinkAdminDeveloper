@@ -24,6 +24,18 @@ use think\model\relation\HasOne;
 
 /**
  * 仓库库存模型
+ *
+ * @property int $id
+ * @property int $num_count 扫码完成
+ * @property int $num_total 扫码总数
+ * @property int $vir_count 虚拟完成
+ * @property int $vir_total 虚拟总数
+ * @property string $ghash 商品规格
+ * @property string $wcode 仓库编号
+ * @property-read \plugin\wemall\model\PluginWemallGoodsItem $bind_goods
+ * @property-read \plugin\wemall\model\PluginWemallGoodsItem $goods
+ * @property-read \plugin\wuma\model\PluginWumaWarehouse $bind_warehouse
+ * @property-read \plugin\wuma\model\PluginWumaWarehouse $warehouse
  * @class PluginWumaWarehouseStock
  * @package plugin\wuma\model
  */

@@ -21,6 +21,28 @@ namespace plugin\wuma\model;
 use plugin\wemall\model\PluginWemallGoodsItem;
 use think\model\relation\HasOne;
 
+/**
+ * Class plugin\wuma\model\PluginWumaSalesOrder
+ *
+ * @property int $auid 经销商编号
+ * @property int $deleted 删除状态(0未删,1已删)
+ * @property int $id
+ * @property int $mode 操作方式(1扫码,2虚拟)
+ * @property int $num_count 累计已经出库
+ * @property int $num_need 累计出库数量
+ * @property int $status 记录状态(0无效,1有效,2完成)
+ * @property int $vir_count 虚拟库使用
+ * @property int $vir_need 虚拟库统计
+ * @property int $xuid 来源经销商
+ * @property string $code 操作单单号
+ * @property string $create_time 创建时间
+ * @property string $ghash 商品哈唏
+ * @property string $update_time 更新时间
+ * @property-read \plugin\wemall\model\PluginWemallGoodsItem $bind_goods
+ * @property-read \plugin\wemall\model\PluginWemallGoodsItem $goods
+ * @property-read \plugin\wuma\model\PluginWumaSalesUser $agent
+ * @property-read \plugin\wuma\model\PluginWumaSalesUser $fromer
+ */
 class PluginWumaSalesOrder extends AbstractPrivate
 {
     /**

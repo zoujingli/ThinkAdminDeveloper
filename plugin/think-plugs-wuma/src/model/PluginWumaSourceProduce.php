@@ -23,6 +23,24 @@ use think\model\relation\HasOne;
 
 /**
  * 生产批次数据模型
+ *
+ * @property int $deleted 删除状态(0未删1已删)
+ * @property int $id
+ * @property int $sort 排序权重
+ * @property int $status 记录状态(0无效1有效)
+ * @property string $addr_area 所在区域
+ * @property string $addr_city 所在城市
+ * @property string $addr_prov 所在省份
+ * @property string $batch 生产批次
+ * @property string $create_time 创建时间
+ * @property string $ghash 产品编号
+ * @property string $remark 批次备注
+ * @property string $tcode 关联溯源模板
+ * @property string $update_time 更新时间
+ * @property-read \plugin\wemall\model\PluginWemallGoodsItem $bind_goods
+ * @property-read \plugin\wemall\model\PluginWemallGoodsItem $goods
+ * @property-read \plugin\wuma\model\PluginWumaSourceTemplate $bind_template
+ * @property-read \plugin\wuma\model\PluginWumaSourceTemplate $template
  * @class PluginWumaSourceProduce
  * @package plugin\wuma\model
  */

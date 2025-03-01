@@ -23,8 +23,18 @@ use think\model\relation\HasOne;
 
 /**
  * 物码范围模型
+ *
+ * @property int $code_length 数码长度
+ * @property int $id
+ * @property int $range_after 结束数码
+ * @property int $range_number 数码数量
+ * @property int $range_start 起始数码
+ * @property int $type 物码类型
+ * @property string $batch 物码批次号
+ * @property string $code_type 数码类型(min小码,mid中码,max大码)
+ * @property-read \plugin\wuma\model\PluginWumaCodeRule $main
  * @class PluginWumaCodeRuleRange
- * @package  plugin\wuma\model
+ * @package plugin\wuma\model
  */
 class PluginWumaCodeRuleRange extends Model
 {

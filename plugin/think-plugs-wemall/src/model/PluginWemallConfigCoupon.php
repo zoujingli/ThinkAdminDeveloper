@@ -23,6 +23,28 @@ use think\model\relation\HasMany;
 
 /**
  * 商城卡券模型
+ *
+ * @property array $limit_levels 授权等级
+ * @property float $amount 抵扣金额
+ * @property float $limit_amount 金额门槛(0不限制)
+ * @property int $deleted 删除状态(1已删,0未删)
+ * @property int $expire_days 有效天数
+ * @property int $id
+ * @property int $limit_times 限领数量(0不限制)
+ * @property int $sort 排序权重
+ * @property int $status 卡券状态(0禁用,1使用)
+ * @property int $total_sales 发放数量
+ * @property int $total_stock 库存数量
+ * @property int $total_used 使用数量
+ * @property int $type 类型(0通用券,1商品券)
+ * @property string $content 内容描述
+ * @property string $cover 封面图标
+ * @property string $create_time 创建时间
+ * @property string $extra 扩展数据
+ * @property string $name 优惠名称
+ * @property string $remark 系统备注
+ * @property string $update_time 更新时间
+ * @property-read \plugin\wemall\model\PluginWemallUserCoupon[] $usable
  * @class PluginWemallConfigCoupon
  * @package plugin\wemall\model
  */

@@ -22,6 +22,12 @@ use think\admin\Model;
 
 /**
  * 微信粉丝标签模型
+ *
+ * @property int $count 粉丝总数
+ * @property int $id
+ * @property string $appid 公众号APPID
+ * @property string $create_at 创建日期
+ * @property string $name 标签名称
  * @class WechatFansTags
  * @package app\wechat\model
  */

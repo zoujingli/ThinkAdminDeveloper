@@ -23,6 +23,30 @@ use think\model\relation\HasOne;
 
 /**
  * 商城商品规格数据
+ *
+ * @property float $allow_balance 余额支付
+ * @property float $allow_integral 兑换积分
+ * @property float $price_cost 进货成本
+ * @property float $price_market 市场价格
+ * @property float $price_selling 销售价格
+ * @property float $reward_balance 奖励余额
+ * @property float $reward_integral 奖励积分
+ * @property int $id
+ * @property int $number_express 计件系数
+ * @property int $number_virtual 虚拟销量
+ * @property int $status 商品状态
+ * @property int $stock_sales 销售数量
+ * @property int $stock_total 商品库存
+ * @property string $create_time 创建时间
+ * @property string $gcode 商品编号
+ * @property string $ghash 商品哈希
+ * @property string $gimage 商品图片
+ * @property string $gsku 商品SKU
+ * @property string $gspec 商品规格
+ * @property string $gunit 商品单位
+ * @property string $update_time 更新时间
+ * @property-read \plugin\wemall\model\PluginWemallGoods $bind_goods
+ * @property-read \plugin\wemall\model\PluginWemallGoods $goods
  * @class PluginWemallGoodsItem
  * @package plugin\wemall\model
  */

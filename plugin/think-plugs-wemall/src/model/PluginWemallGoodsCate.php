@@ -23,6 +23,17 @@ use think\admin\extend\DataExtend;
 
 /**
  * 商城商品分类数据
+ *
+ * @property int $deleted 删除状态
+ * @property int $id
+ * @property int $pid 上级分类
+ * @property int $sort 排序权重
+ * @property int $status 使用状态
+ * @property string $cover 分类图标
+ * @property string $create_time 创建时间
+ * @property string $name 分类名称
+ * @property string $remark 分类描述
+ * @property string $update_time 更新时间
  * @class PluginWemallGoodsCate
  * @package plugin\wemall\model
  */

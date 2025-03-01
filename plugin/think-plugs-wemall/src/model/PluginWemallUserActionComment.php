@@ -22,6 +22,24 @@ use think\model\relation\HasOne;
 
 /**
  * 用户评论数据模型
+ *
+ * @property array $images 评论图片
+ * @property float $rate 评论分数
+ * @property int $deleted 删除状态(0未删,1已删)
+ * @property int $id
+ * @property int $ssid 所属商家
+ * @property int $status 评论状态(0隐藏,1显示)
+ * @property int $unid 用户编号
+ * @property string $code 评论编号
+ * @property string $content 评论内容
+ * @property string $create_time 创建时间
+ * @property string $gcode 商品编号
+ * @property string $ghash 商品哈希
+ * @property string $order_no 订单单号
+ * @property string $update_time 更新时间
+ * @property-read \plugin\wemall\model\PluginWemallGoods $bind_goods
+ * @property-read \plugin\wemall\model\PluginWemallGoods $goods
+ * @property-read \plugin\wemall\model\PluginWemallOrder $orderinfo
  * @class PluginWemallUserActionComment
  * @package plugin\wemall\model
  */

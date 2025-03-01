@@ -22,6 +22,12 @@ use think\admin\Model;
 
 /**
  * 仓库订单箱码模型
+ *
+ * @property int $count 物码数量
+ * @property int $ddid 数据编号
+ * @property int $id
+ * @property string $code 物码数据
+ * @property string $type 物码类型
  * @class PluginWumaWarehouseOrderDataNums
  * @package plugin\wuma\model
  */

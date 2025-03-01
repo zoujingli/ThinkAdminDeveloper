@@ -27,6 +27,31 @@ use think\model\relation\HasOne;
 
 /**
  * 用户关系数据
+ *
+ * @property int $agent_level_code 代理等级
+ * @property int $agent_state 绑定状态
+ * @property int $agent_uuid 绑定用户
+ * @property int $entry_agent 推广权益(0无,1有)
+ * @property int $entry_member 入会礼包(0无,1有)
+ * @property int $id
+ * @property int $layer 所属层级
+ * @property int $level_code 会员等级
+ * @property int $puid1 上1级代理
+ * @property int $puid2 上2级代理
+ * @property int $puid3 上3级代理
+ * @property int $puids 绑定状态
+ * @property int $sort 排序权重
+ * @property int $unid 当前用户
+ * @property string $agent_level_name 代理名称
+ * @property string $create_time 创建时间
+ * @property string $extra 扩展数据
+ * @property string $level_name 会员名称
+ * @property string $path 关系路径
+ * @property string $update_time 更新时间
+ * @property-read \plugin\account\model\PluginAccountUser $user1
+ * @property-read \plugin\account\model\PluginAccountUser $user2
+ * @property-read \plugin\wemall\model\PluginWemallUserRelation $agent1
+ * @property-read \plugin\wemall\model\PluginWemallUserRelation $agent2
  * @class PluginWemallUserRelation
  * @package plugin\wemall\model
  */

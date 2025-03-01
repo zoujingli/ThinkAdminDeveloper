@@ -20,6 +20,21 @@ namespace plugin\wuma\model;
 
 /**
  * 总部仓库模型管理
+ *
+ * @property int $deleted 删除状态(0未删1已删)
+ * @property int $id
+ * @property int $sort 排序权重
+ * @property int $status 记录状态(0无效1有效)
+ * @property string $addr_area 所属区域
+ * @property string $addr_city 所属城市
+ * @property string $addr_prov 所属省份
+ * @property string $addr_text 详细地址
+ * @property string $code 仓库编号
+ * @property string $create_time 创建时间
+ * @property string $name 仓库名称
+ * @property string $person 负责人
+ * @property string $remark 物码描述
+ * @property string $update_time 更新时间
  * @class PluginWumaWarehouse
  * @package plugin\wuma\model
  */
