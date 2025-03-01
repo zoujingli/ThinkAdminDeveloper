@@ -7,7 +7,7 @@
 [![PHP Version](https://thinkadmin.top/static/icon/php-7.1.svg)](https://thinkadmin.top)
 [![License](https://thinkadmin.top/static/icon/license-apache2.svg)](https://www.apache.org/licenses/LICENSE-2.0)
 
-**ThinkPlugsHelper** 是为便捷 ThinkAdmin 开发而给的工具包。
+**ThinkPlugsHelper** 是为便捷 ThinkAdmin 开发而制做的工具包。
 
 ### 加入我们
 
