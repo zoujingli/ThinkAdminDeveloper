@@ -12,6 +12,7 @@
   "require": {
     "php": ">7.1",
     "ext-json": "*",
+    "topthink/think-orm": "^2.0|^3.0|^4.0",
     "topthink/think-ide-helper": "*"
   },
   "autoload": {
