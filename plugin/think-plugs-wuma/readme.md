@@ -49,4 +49,4 @@ composer remove zoujingli/think-plugs-wuma
 
 未获得此插件授权时仅供参考学习不可商用，了解商用授权请阅读 [《付费授权》](https://thinkadmin.top/fee-introduce.html)。
 
-版权所有 Copyright © 2014-2024 by ThinkAdmin (https://thinkadmin.top) All rights reserved。
+版权所有 Copyright © 2014-2025 by ThinkAdmin (https://thinkadmin.top) All rights reserved。

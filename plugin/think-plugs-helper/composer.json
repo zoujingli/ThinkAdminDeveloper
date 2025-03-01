@@ -1,6 +1,7 @@
 {
   "type": "library",
   "name": "zoujingli/think-plugs-helper",
+  "license": "Apache-2.0",
   "homepage": "https://thinkadmin.top",
   "description": "Developer Tools for ThinkAdmin",
   "authors": [
