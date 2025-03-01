@@ -1,0 +1,29 @@
+{
+  "type": "library",
+  "name": "zoujingli/think-plugs-helper",
+  "homepage": "https://thinkadmin.top",
+  "description": "Developer Tools for ThinkAdmin",
+  "authors": [
+    {
+      "name": "Anyon",
+      "email": "zoujingli@qq.com"
+    }
+  ],
+  "require": {
+    "php": ">7.1",
+    "ext-json": "*",
+    "topthink/think-ide-helper": "*"
+  },
+  "autoload": {
+    "psr-4": {
+      "plugin\\helper\\": "src"
+    }
+  },
+  "extra": {
+    "think": {
+      "services": [
+        "plugin\\helper\\Service"
+      ]
+    }
+  }
+}

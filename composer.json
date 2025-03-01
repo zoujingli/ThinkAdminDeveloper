@@ -25,20 +25,33 @@
     "ext-gd": "*",
     "ext-json": "*",
     "ext-openssl": "*",
-    "zoujingli/think-plugs-wuma": "*",
-    "zoujingli/think-plugs-admin": "*",
-    "zoujingli/think-plugs-worker": "*",
-    "zoujingli/think-plugs-center": "*",
-    "zoujingli/think-plugs-wechat": "*",
-    "zoujingli/think-plugs-wemall": "*",
+    "topthink/think-orm": "^4.0",
     "zoujingli/think-plugs-account": "*",
+    "zoujingli/think-plugs-admin": "*",
+    "zoujingli/think-plugs-center": "*",
     "zoujingli/think-plugs-payment": "*",
-    "zoujingli/think-plugs-wechat-service": "*"
+    "zoujingli/think-plugs-wechat": "*",
+    "zoujingli/think-plugs-wechat-service": "*",
+    "zoujingli/think-plugs-wemall": "*",
+    "zoujingli/think-plugs-worker": "*",
+    "zoujingli/think-plugs-wuma": "*"
+  },
+  "require-dev": {
+    "zoujingli/think-plugs-helper": "*"
+  },
+  "scripts": {
+    "test": [
+      "php -m"
+    ]
   },
   "repositories": [
     {
       "type": "path",
       "url": "plugin/think-plugs-wuma"
+    },
+    {
+      "type": "path",
+      "url": "plugin/think-plugs-helper"
     },
     {
       "type": "path",
