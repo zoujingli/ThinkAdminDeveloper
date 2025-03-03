@@ -148,7 +148,7 @@ class PaymentService
     public static function notify(?array $data = null): Response
     {
         try {
-            $notify = static::withPayment()->notify();
+            $notify = static::withPayment()->notify(Library::$sapp->request->post());
             $result = empty($notify['result']) ? [] : json_decode($notify['result'], true);
             if (empty($result) || !is_array($result)) return response('error', 500);
             //订单支付通知处理
