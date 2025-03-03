@@ -181,6 +181,7 @@ class PaymentService
             }
             return response('success');
         } catch (\Exception $exception) {
+            empty($data['code']) || self::query($data['code']);
             return json(['code' => 'FAIL', 'message' => $exception->getMessage()])->code(500);
         }
     }
