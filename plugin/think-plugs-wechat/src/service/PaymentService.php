@@ -148,8 +148,11 @@ class PaymentService
     public static function notify(?array $data = null): Response
     {
         try {
+            p(Library::$sapp->request->post(), false, 'wechat_pay_notify');
             $notify = static::withPayment()->notify(Library::$sapp->request->post());
             $result = empty($notify['result']) ? [] : json_decode($notify['result'], true);
+            p($result, false, 'wechat_pay_notify');
+            p('------------------', false, 'wechat_pay_notify');
             if (empty($result) || !is_array($result)) return response('error', 500);
             //订单支付通知处理
             if ($data['scen'] === 'order' && isset($result['trade_state']) && $result['trade_state'] == 'SUCCESS') {
