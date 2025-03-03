@@ -153,7 +153,10 @@ class PaymentService
             $result = empty($notify['result']) ? [] : json_decode($notify['result'], true);
             p($result, false, 'wechat_pay_notify');
             p('------------------', false, 'wechat_pay_notify');
-            if (empty($result) || !is_array($result)) return response('error', 500);
+            if (empty($result) || !is_array($result)) {
+                empty($data['order']) || self::query($data['order']);
+                return response('error', 500);
+            }
             //订单支付通知处理
             if ($data['scen'] === 'order' && isset($result['trade_state']) && $result['trade_state'] == 'SUCCESS') {
                 if ($data['order'] !== $result['out_trade_no']) return response('error', 500);
@@ -184,7 +187,7 @@ class PaymentService
             }
             return response('success');
         } catch (\Exception $exception) {
-            empty($data['code']) || self::query($data['code']);
+            empty($data['order']) || self::query($data['order']);
             return json(['code' => 'FAIL', 'message' => $exception->getMessage()])->code(500);
         }
     }
