@@ -226,24 +226,23 @@ class WechatService extends Service
     public static function withWxpayCert(array $options): array
     {
         // 文本模式主要是为了解决分布式部署
-        $local = LocalStorage::instance();
         $name1 = "wxpay/{$options['mch_id']}_cer.pem";
         $name2 = "wxpay/{$options['mch_id']}_key.pem";
+        $local = LocalStorage::instance();
         if ($local->has($name1, true) && $local->has($name2, true)) {
             $sslCer = $local->path($name1, true);
             $sslKey = $local->path($name2, true);
         }
+        $data = sysdata('plugin.wechat.payment');
         if (empty($sslCer) || empty($sslKey)) {
-            if (!empty($data = sysdata('plugin.wechat.payment'))) {
-                if (!empty($data['ssl_key_text']) && !empty($data['ssl_cer_text'])) {
-                    $sslCer = $local->set($name1, $data['ssl_cer_text'], true)['file'];
-                    $sslKey = $local->set($name2, $data['ssl_key_text'], true)['file'];
-                }
-            } else {
+            if (empty($data)) {
                 $sslCer = $local->path(sysconf('wechat.mch_ssl_cer'), true);
                 $sslKey = $local->path(sysconf('wechat.mch_ssl_key'), true);
                 if (!$local->has($sslCer, true)) unset($sslCer);
                 if (!$local->has($sslKey, true)) unset($sslKey);
+            } elseif (!empty($data['ssl_key_text']) && !empty($data['ssl_cer_text'])) {
+                $sslCer = $local->set($name1, $data['ssl_cer_text'], true)['file'];
+                $sslKey = $local->set($name2, $data['ssl_key_text'], true)['file'];
             }
         }
         if (isset($sslCer) && isset($sslKey)) {
@@ -251,6 +250,8 @@ class WechatService extends Service
             $options['ssl_key'] = $sslKey;
             $options['cert_public'] = $sslCer;
             $options['cert_private'] = $sslKey;
+            $options['mp_cert_serial'] = $data['ssl_pay_id'] ?? '';
+            $options['mp_cert_content'] = $data['ssl_pay_text'] ?? '';
         }
         return $options;
     }

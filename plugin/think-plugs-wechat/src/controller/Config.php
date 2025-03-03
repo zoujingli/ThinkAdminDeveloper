@@ -188,8 +188,7 @@ class Config extends Controller
                 if (empty($wechat['mch_ssl_p12']) || !$local->has($wechat['mch_ssl_p12'], true)) {
                     $this->error('商户证书 P12 不能为空！');
                 }
-                $content = $local->get($wechat['mch_ssl_p12'], true);
-                if (openssl_pkcs12_read($content, $certs, $wechat['mch_id'])) {
+                if (openssl_pkcs12_read($local->get($wechat['mch_ssl_p12'], true), $certs, $wechat['mch_id'])) {
                     $name1 = "wxpay/{$wechat['mch_id']}_cer.pem";
                     $name2 = "wxpay/{$wechat['mch_id']}_key.pem";
                     $wechat['mch_ssl_cer'] = $local->set($name1, $certs['cert'], true)['url'];
@@ -206,7 +205,7 @@ class Config extends Controller
                 'mch_key'      => $wechat['mch_key'],
                 'mch_v3_key'   => $wechat['mch_v3_key'],
                 'ssl_pay_id'   => $wechat['mch_v3_payid'] ?? '',
-                'ssl_pay_text' => $local->get($wechat['ssl_cer_pay'], true),
+                'ssl_pay_text' => $local->get($wechat['mch_ssl_pay'], true),
                 'ssl_key_text' => $local->get($wechat['mch_ssl_key'], true),
                 'ssl_cer_text' => $local->get($wechat['mch_ssl_cer'], true),
             ]);
