@@ -21,7 +21,7 @@
             <span class="help-block">微信商户账号，需要在微信商户平台获取，MCH_ID 与 APPID 匹配</span>
         </label>
 
-        <label class="layui-form-item relative block">
+        <label class="layui-form-item relative layui-hide">
             <span class="help-label"><b>微信商户 V2 密钥</b>MCH_KEY</span>
             <input name="wechat.mch_key" vali-name="微信商户V2密钥" placeholder="请输入微信商户V2密钥（必填）" maxlength="32" pattern=".{32}" required value="{:sysconf('wechat.mch_key')}" class="layui-input">
             <span class="help-block">微信商户 V2 密钥，需要在微信商户平台操作设置操作密码并获取商户接口密钥</span>
@@ -31,6 +31,12 @@
             <span class="help-label"><b>微信商户 V3 密钥</b>MCH_V3_KEY</span>
             <input name="wechat.mch_v3_key" vali-name="微信商户V3密钥" placeholder="请输入微信商户V3密钥（必填）" maxlength="32" pattern=".{32}" required value="{:sysconf('wechat.mch_v3_key')}" class="layui-input">
             <span class="help-block">微信商户 V3 密钥，需要在微信商户平台操作设置操作密码并获取商户接口密钥</span>
+        </label>
+
+        <label class="layui-form-item relative block">
+            <span class="help-label"><b>微信商户 V3 支付证书ID</b>MCH_V3_PAYCERT_ID</span>
+            <input name="wechat.mch_v3_payid" vali-name="微信商户V3支付证书ID" placeholder="请输入微信商户V3支付证书ID（必填）" maxlength="100" value="{:sysconf('wechat.mch_v3_payid')}" class="layui-input">
+            <span class="help-block">微信商户 V3 支付证书ID，需要在微信商户平台操作设置操作密码并获取商户接口密钥</span>
         </label>
 
         <div class="hr-line-dashed"></div>
@@ -48,24 +54,36 @@
                     <div data-mch-type="none"></div>
                     <div data-mch-type="p12" class="layui-tab-item">
                         <input name="wechat.mch_ssl_p12" value="{$mch_ssl_p12|default=''}" type="hidden">
-                        <button data-file="btn" data-uptype="local" data-safe="true" data-type="p12" data-field="wechat.mch_ssl_p12" type="button" class="layui-btn font-code layui-btn-primary">
-                            <i class="layui-icon layui-icon-vercode"></i> 上传 P12 证书
+                        <button data-file="btn" data-uptype="local" data-safe="true" data-type="p12" data-field="wechat.mch_ssl_p12" type="button" class="layui-btn font-code layui-btn-primary margin-right-10">
+                            <i class="layui-icon layui-icon-vercode"></i> 上传商户P12证书
+                        </button>
+
+                        <input type="hidden" name="wechat.mch_ssl_pay" value="{$mch_ssl_pay|default=''}">
+                        <button data-file="btn" data-uptype="local" data-safe="true" data-type="pem" data-field="wechat.mch_ssl_pay" type="button" class="layui-btn font-code layui-btn-primary margin-right-10">
+                            <i class="layui-icon layui-icon-vercode"></i> 上传微信支付公钥
                         </button>
                     </div>
 
                     <div data-mch-type="pem" class="layui-tab-item">
                         <input type="hidden" name="wechat.mch_ssl_key" value="{$mch_ssl_key|default=''}">
                         <button data-file="btn" data-uptype="local" data-safe="true" data-type="pem" data-field="wechat.mch_ssl_key" type="button" class="layui-btn font-code layui-btn-primary margin-right-10">
-                            <i class="layui-icon layui-icon-vercode"></i> 上传 KEY 证书
+                            <i class="layui-icon layui-icon-vercode"></i> 上传商户证书密钥
                         </button>
+
                         <input type="hidden" name="wechat.mch_ssl_cer" value="{$mch_ssl_cer|default=''}">
-                        <button data-file="btn" data-uptype="local" data-safe="true" data-type="pem" data-field="wechat.mch_ssl_cer" type="button" class="layui-btn font-code layui-btn-primary">
-                            <i class="layui-icon layui-icon-vercode"></i> 上传 CERT 证书
+                        <button data-file="btn" data-uptype="local" data-safe="true" data-type="pem" data-field="wechat.mch_ssl_cer" type="button" class="layui-btn font-code layui-btn-primary margin-right-10">
+                            <i class="layui-icon layui-icon-vercode"></i> 上传商户证书公钥
+                        </button>
+
+                        <input type="hidden" name="wechat.mch_ssl_pay" value="{$mch_ssl_pay|default=''}">
+                        <button data-file="btn" data-uptype="local" data-safe="true" data-type="pem" data-field="wechat.mch_ssl_pay" type="button" class="layui-btn font-code layui-btn-primary margin-right-10">
+                            <i class="layui-icon layui-icon-vercode"></i> 上传微信支付公钥
                         </button>
                     </div>
                 </div>
             </div>
         </div>
+
         <!--{if auth('payment_save')}-->
         <div class="hr-line-dashed margin-top-30"></div>
         <div class="layui-form-item text-center">

@@ -149,9 +149,11 @@ class Config extends Controller
             $this->mch_ssl_cer = sysconf('wechat.mch_ssl_cer');
             $this->mch_ssl_key = sysconf('wechat.mch_ssl_key');
             $this->mch_ssl_p12 = sysconf('wechat.mch_ssl_p12');
+            $this->mch_ssl_pay = sysconf('wechat.mch_ssl_pay');
             if (!$local->has($this->mch_ssl_cer, true)) $this->mch_ssl_cer = '';
             if (!$local->has($this->mch_ssl_key, true)) $this->mch_ssl_key = '';
             if (!$local->has($this->mch_ssl_p12, true)) $this->mch_ssl_p12 = '';
+            if (!$local->has($this->mch_ssl_pay, true)) $this->mch_ssl_pay = '';
             $this->fetch();
         } else {
             $this->error('抱歉，数据提交地址错误！');
@@ -172,10 +174,13 @@ class Config extends Controller
             if ($wechat['mch_ssl_type'] === 'pem') {
                 WechatService::withWxpayCert(['mch_id' => $wechat['mch_id']]);
                 if (empty($wechat['mch_ssl_key']) || !$local->has($wechat['mch_ssl_key'], true)) {
-                    $this->error('商户证书 KEY 不能为空！');
+                    $this->error('商户证书密钥不能为空！');
                 }
                 if (empty($wechat['mch_ssl_cer']) || !$local->has($wechat['mch_ssl_cer'], true)) {
-                    $this->error('商户证书 CERT 不能为空！');
+                    $this->error('商户证书公钥不能为空！');
+                }
+                if (empty($wechat['mch_ssl_pay']) || !$local->has($wechat['mch_ssl_pay'], true)) {
+                    $this->error('微信支付公钥不能为空！');
                 }
             }
             // P12 证书模式转 PEM 模式
@@ -200,6 +205,8 @@ class Config extends Controller
                 'mch_id'       => $wechat['mch_id'],
                 'mch_key'      => $wechat['mch_key'],
                 'mch_v3_key'   => $wechat['mch_v3_key'],
+                'ssl_pay_id'   => $wechat['mch_v3_payid'] ?? '',
+                'ssl_pay_text' => $local->get($wechat['ssl_cer_pay'], true),
                 'ssl_key_text' => $local->get($wechat['mch_ssl_key'], true),
                 'ssl_cer_text' => $local->get($wechat['mch_ssl_cer'], true),
             ]);
