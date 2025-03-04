@@ -18,7 +18,6 @@ declare (strict_types=1);
 
 namespace app\wechat\controller;
 
-use app\wechat\service\PaymentService;
 use app\wechat\service\WechatService;
 use think\admin\Builder;
 use think\admin\Controller;
@@ -147,11 +146,11 @@ class Config extends Controller
         if ($this->request->isGet()) {
             $this->title = '微信支付配置';
             $local = LocalStorage::instance();
-            $data = sysdata('plugin.wechat.payment');
-            $this->mch_ssl_cer = $data['mch_ssl_cer'] ?? '';
-            $this->mch_ssl_key = $data['mch_ssl_key'] ?? '';
-            $this->mch_ssl_p12 = $data['mch_ssl_p12'] ?? '';
-            $this->mch_ssl_pay = $data['mch_ssl_pay'] ?? '';
+            $this->data = sysdata('plugin.wechat.payment');
+            $this->mch_ssl_cer = $this->data['mch_ssl_cer'] ?? '';
+            $this->mch_ssl_key = $this->data['mch_ssl_key'] ?? '';
+            $this->mch_ssl_p12 = $this->data['mch_ssl_p12'] ?? '';
+            $this->mch_ssl_pay = $this->data['mch_ssl_pay'] ?? '';
             if (!$local->has($this->mch_ssl_cer, true)) $this->mch_ssl_cer = '';
             if (!$local->has($this->mch_ssl_key, true)) $this->mch_ssl_key = '';
             if (!$local->has($this->mch_ssl_p12, true)) $this->mch_ssl_p12 = '';

@@ -17,19 +17,19 @@
 
         <label class="layui-form-item relative block">
             <span class="help-label"><b>微信商户账号</b>MCH_ID</span>
-            <input name="wechat.mch_id" required vali-name="微信商户号" placeholder="请输入微信商户账号（必填）" value="{:sysconf('wechat.mch_id')}" class="layui-input">
+            <input name="wechat.mch_id" required vali-name="微信商户号" placeholder="请输入微信商户账号（必填）" value="{$data.mch_id|default=''}" class="layui-input">
             <span class="help-block">微信商户账号，需要在微信商户平台获取</span>
         </label>
 
         <label class="layui-form-item relative layui-hide">
             <span class="help-label"><b>微信 V2 接口密钥</b>MCH_KEY</span>
-            <input name="wechat.mch_key" vali-name="微信商户V2密钥" type="password" lay-affix="eye" placeholder="请输入微信商户V2密钥（必填）" maxlength="32" pattern=".{32}" required value="{:sysconf('wechat.mch_key')}" class="layui-input">
+            <input name="wechat.mch_key" vali-name="微信商户V2密钥" type="password" lay-affix="eye" placeholder="请输入微信商户V2密钥（必填）" maxlength="32" pattern=".{32}" required value="{$data.mch_key|default=''}" class="layui-input">
             <span class="help-block">微信商户 V2 密钥，需要在微信商户平台获取商户接口密钥</span>
         </label>
 
         <label class="layui-form-item relative block">
             <span class="help-label"><b>微信 V3 接口密钥</b>MCH_V3_KEY</span>
-            <input name="wechat.mch_v3_key" vali-name="微信商户V3密钥" type="password" lay-affix="eye" placeholder="请输入微信商户V3密钥（必填）" maxlength="32" pattern=".{32}" required value="{:sysconf('wechat.mch_v3_key')}" class="layui-input">
+            <input name="wechat.mch_v3_key" vali-name="微信商户V3密钥" type="password" lay-affix="eye" placeholder="请输入微信商户V3密钥（必填）" maxlength="32" pattern=".{32}" required value="{$data.mch_v3_key|default=''}" class="layui-input">
             <span class="help-block">微信商户 V3 密钥，需要在微信商户平台获取商户接口密钥</span>
         </label>
 
@@ -37,7 +37,7 @@
 
         <label class="layui-form-item relative block">
             <span class="help-label"><b>微信 V3 支付公钥ID</b>MCH_V3_PAYID</span>
-            <input name="wechat.mch_v3_payid" vali-name="微信商户V3支付公钥ID" placeholder="请输入微信商户V3支付公钥ID（必填）" maxlength="45" pattern="PUB_KEY_ID_.{34}" required value="{:sysconf('wechat.mch_v3_payid')}" class="layui-input">
+            <input name="wechat.mch_v3_payid" vali-name="微信商户V3支付公钥ID" placeholder="请输入微信商户V3支付公钥ID（必填）" maxlength="45" pattern="PUB_KEY_ID_.{34}" required value="{$data.mch_v3_payid|default=''}" class="layui-input">
             <span class="help-block">微信商户 V3 支付证书ID，需要在微信商户平台操作设置操作密码并获取商户接口密钥</span>
         </label>
 
@@ -117,6 +117,6 @@
         function apply(data) {
             return $('[data-mch-type="' + data.value + '"]').show().siblings('[data-mch-type]').hide();
         }
-    })("{:sysconf('wechat.mch_ssl_type')}" || 'pem');
+    })("{$data.mch_ssl_type|default='pem'}");
 </script>
 {/block}
