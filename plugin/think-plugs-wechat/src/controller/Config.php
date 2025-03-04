@@ -171,12 +171,12 @@ class Config extends Controller
         if ($this->request->isPost()) {
             $local = LocalStorage::instance();
             $wechat = $this->request->post('wechat');
-            if (empty($wechat['mch_pay_sid'])) {
-                $this->error('微信支付公钥序号为空！');
-            }
-            if (empty($wechat['mch_ssl_pay']) || !$local->has($wechat['mch_ssl_pay'], true)) {
-                $this->error('微信支付公钥不能为空！');
-            }
+            // if (empty($wechat['mch_pay_sid'])) {
+            //     $this->error('微信支付公钥序号为空！');
+            // }
+            // if (empty($wechat['mch_ssl_pay']) || !$local->has($wechat['mch_ssl_pay'], true)) {
+            //     $this->error('微信支付公钥不能为空！');
+            // }
             // PEM 证书模式处理
             if ($wechat['mch_ssl_type'] === 'pem') {
                 if (empty($wechat['mch_ssl_key']) || !$local->has($wechat['mch_ssl_key'], true)) {
