@@ -189,9 +189,6 @@ class WechatService extends Service
             'token'          => sysconf('wechat.token'),
             'appsecret'      => sysconf('wechat.appsecret'),
             'encodingaeskey' => sysconf('wechat.encodingaeskey'),
-            'mch_id'         => sysconf('wechat.mch_id'),
-            'mch_key'        => sysconf('wechat.mch_key'),
-            'mch_v3_key'     => sysconf('wechat.mch_v3_key'),
             'cache_path'     => syspath('runtime/wechat'),
         ]);
     }
@@ -210,11 +207,7 @@ class WechatService extends Service
             'appsecret'  => $wxapp['appkey'] ?? '',
             'cache_path' => syspath('runtime/wechat'),
         ];
-        return $ispay ? static::withWxpayCert(array_merge([
-            'mch_id'     => sysconf('wechat.mch_id'),
-            'mch_key'    => sysconf('wechat.mch_key'),
-            'mch_v3_key' => sysconf('wechat.mch_v3_key'),
-        ], $config)) : $config;
+        return $ispay ? static::withWxpayCert($config) : $config;
     }
 
     /**
@@ -227,8 +220,8 @@ class WechatService extends Service
     {
         // 文本模式主要是为了解决分布式部署
         $data = sysdata('plugin.wechat.payment');
-        $name1 = sprintf("wxpay/%s_%s_cer.pem", $options['mch_id'], md5($data['ssl_cer_text']));
-        $name2 = sprintf("wxpay/%s_%s_key.pem", $options['mch_id'], md5($data['ssl_key_text']));
+        $name1 = sprintf("wxpay/%s_%s_cer.pem", $data['mch_id'], md5($data['ssl_cer_text']));
+        $name2 = sprintf("wxpay/%s_%s_key.pem", $data['mch_id'], md5($data['ssl_key_text']));
         $local = LocalStorage::instance();
         if ($local->has($name1, true) && $local->has($name2, true)) {
             $sslCer = $local->path($name1, true);
@@ -237,6 +230,9 @@ class WechatService extends Service
             $sslCer = $local->set($name1, $data['ssl_cer_text'], true)['file'];
             $sslKey = $local->set($name2, $data['ssl_key_text'], true)['file'];
         }
+        $options['mch_id'] = $data['mch_id'];
+        $options['mch_key'] = $data['mch_key'];
+        $options['mch_v3_key'] = $data['mch_v3_key'];
         $options['ssl_cer'] = $sslCer;
         $options['ssl_key'] = $sslKey;
         $options['cert_public'] = $sslCer;
