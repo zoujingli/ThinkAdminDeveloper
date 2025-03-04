@@ -241,7 +241,7 @@ class WechatService extends Service
         $options['ssl_key'] = $sslKey;
         $options['cert_public'] = $sslCer;
         $options['cert_private'] = $sslKey;
-        $options['mp_cert_serial'] = $data['ssl_pay_id'] ?? '';
+        $options['mp_cert_serial'] = $data['mch_pay_sid'] ?? '';
         $options['mp_cert_content'] = $data['ssl_pay_text'] ?? '';
         return $options;
     }

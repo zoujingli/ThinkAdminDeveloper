@@ -171,6 +171,12 @@ class Config extends Controller
         if ($this->request->isPost()) {
             $local = LocalStorage::instance();
             $wechat = $this->request->post('wechat');
+            if (empty($wechat['mch_pay_sid'])) {
+                $this->error('微信支付公钥序号为空！');
+            }
+            if (empty($wechat['mch_ssl_pay']) || !$local->has($wechat['mch_ssl_pay'], true)) {
+                $this->error('微信支付公钥不能为空！');
+            }
             // PEM 证书模式处理
             if ($wechat['mch_ssl_type'] === 'pem') {
                 if (empty($wechat['mch_ssl_key']) || !$local->has($wechat['mch_ssl_key'], true)) {
@@ -186,8 +192,8 @@ class Config extends Controller
                     $this->error('商户证书 P12 不能为空！');
                 }
                 if (openssl_pkcs12_read($local->get($wechat['mch_ssl_p12'], true), $certs, $wechat['mch_id'])) {
-                    $name1 = "wxpay/{$wechat['mch_id']}_cer.pem";
-                    $name2 = "wxpay/{$wechat['mch_id']}_key.pem";
+                    $name1 = sprintf("wxpay/%s_%s_cer.pem", $wechat['mch_id'], md5($certs['cert']));
+                    $name2 = sprintf("wxpay/%s_%s_key.pem", $wechat['mch_id'], md5($certs['pkey']));
                     $wechat['mch_ssl_cer'] = $local->set($name1, $certs['cert'], true)['url'];
                     $wechat['mch_ssl_key'] = $local->set($name2, $certs['pkey'], true)['url'];
                     $wechat['mch_ssl_type'] = 'pem';
@@ -195,22 +201,19 @@ class Config extends Controller
                     $this->error('商户账号与 P12 证书不匹配！');
                 }
             }
-            if (empty($wechat['mch_ssl_pay']) || !$local->has($wechat['mch_ssl_pay'], true)) {
-                $this->error('微信支付公钥不能为空！');
-            }
             // 记录文本格式参数，兼容分布式部署
             sysdata('plugin.wechat.payment', [
                 'appid'        => WechatService::getAppid(),
                 'mch_id'       => $wechat['mch_id'],
                 'mch_key'      => $wechat['mch_key'],
                 'mch_v3_key'   => $wechat['mch_v3_key'],
-                'ssl_pay_id'   => $wechat['mch_v3_payid'] ?? '',
                 'mch_ssl_cer'  => $wechat['mch_ssl_cer'],
                 'mch_ssl_key'  => $wechat['mch_ssl_key'],
                 'mch_ssl_pay'  => $wechat['mch_ssl_pay'],
+                'mch_pay_sid'  => $wechat['mch_pay_sid'] ?? '',
+                'ssl_pay_text' => $local->get($wechat['mch_ssl_pay'], true),
                 'ssl_cer_text' => $local->get($wechat['mch_ssl_cer'], true),
                 'ssl_key_text' => $local->get($wechat['mch_ssl_key'], true),
-                'ssl_pay_text' => $local->get($wechat['mch_ssl_pay'], true),
             ]);
             // 同步更新证书内容
             WechatService::withWxpayCert(['mch_id' => $wechat['mch_id']]);
