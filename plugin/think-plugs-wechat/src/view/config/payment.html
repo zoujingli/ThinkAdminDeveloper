@@ -46,9 +46,10 @@
             <div class="margin-top-10">
                 <div data-mch-type="pem" class="layui-tab-item">
                     <input type="hidden" name="wechat.mch_ssl_pay" value="{$mch_ssl_pay|default=''}">
-                    <button data-file="btn" data-uptype="local" data-safe="true" data-type="pem" data-field="wechat.mch_ssl_pay" type="button" class="layui-btn font-code layui-btn-primary margin-right-10">
+                    <button data-file="btn" data-uptype="local" data-safe="true" data-type="pem" data-field="wechat.mch_ssl_pay" type="button" class="layui-btn font-code layui-btn-primary">
                         <i class="layui-icon layui-icon-vercode"></i> 上传微信支付公钥
                     </button>
+                    <a class="layui-btn layui-btn-danger layui-btn-primary ta-ml-5" onclick="$(this).prevAll('input').val('').trigger('change')"><i class="layui-icon layui-icon-close"></i></a>
                 </div>
             </div>
         </div>
@@ -68,21 +69,26 @@
                     <div data-mch-type="none"></div>
                     <div data-mch-type="p12" class="layui-tab-item">
                         <input name="wechat.mch_ssl_p12" value="{$mch_ssl_p12|default=''}" type="hidden">
-                        <button data-file="btn" data-uptype="local" data-safe="true" data-type="p12" data-field="wechat.mch_ssl_p12" type="button" class="layui-btn font-code layui-btn-primary margin-right-10">
+                        <button data-file="btn" data-uptype="local" data-safe="true" data-type="p12" data-field="wechat.mch_ssl_p12" type="button" class="layui-btn font-code layui-btn-primary">
                             <i class="layui-icon layui-icon-vercode"></i> 上传商户P12证书
                         </button>
+                        <a class="layui-btn layui-btn-danger layui-btn-primary ta-ml-5" onclick="$(this).prevAll('input').val('').trigger('change')"><i class="layui-icon layui-icon-close"></i></a>
                     </div>
-
-                    <div data-mch-type="pem" class="layui-tab-item">
-                        <input type="hidden" name="wechat.mch_ssl_key" value="{$mch_ssl_key|default=''}">
-                        <button data-file="btn" data-uptype="local" data-safe="true" data-type="pem" data-field="wechat.mch_ssl_key" type="button" class="layui-btn font-code layui-btn-primary margin-right-10">
-                            <i class="layui-icon layui-icon-vercode"></i> 上传商户证书密钥
-                        </button>
-
-                        <input type="hidden" name="wechat.mch_ssl_cer" value="{$mch_ssl_cer|default=''}">
-                        <button data-file="btn" data-uptype="local" data-safe="true" data-type="pem" data-field="wechat.mch_ssl_cer" type="button" class="layui-btn font-code layui-btn-primary margin-right-10">
-                            <i class="layui-icon layui-icon-vercode"></i> 上传商户证书公钥
-                        </button>
+                    <div data-mch-type="pem" class="layui-tab-item flex">
+                        <div>
+                            <input type="hidden" name="wechat.mch_ssl_key" value="{$mch_ssl_key|default=''}">
+                            <button data-file="btn" data-uptype="local" data-safe="true" data-type="pem" data-field="wechat.mch_ssl_key" type="button" class="layui-btn font-code layui-btn-primary">
+                                <i class="layui-icon layui-icon-vercode"></i> 上传商户证书密钥
+                            </button>
+                            <a class="layui-btn layui-btn-danger layui-btn-primary ta-ml-5" onclick="$(this).prevAll('input').val('').trigger('change')"><i class="layui-icon layui-icon-close"></i></a>
+                        </div>
+                        <div class="ta-ml-20">
+                            <input type="hidden" name="wechat.mch_ssl_cer" value="{$mch_ssl_cer|default=''}">
+                            <button data-file="btn" data-uptype="local" data-safe="true" data-type="pem" data-field="wechat.mch_ssl_cer" type="button" class="layui-btn font-code layui-btn-primary">
+                                <i class="layui-icon layui-icon-vercode"></i> 上传商户证书公钥
+                            </button>
+                            <a class="layui-btn layui-btn-danger layui-btn-primary ta-ml-5" onclick="$(this).prevAll('input').val('').trigger('change')"><i class="layui-icon layui-icon-close"></i></a>
+                        </div>
                     </div>
                 </div>
             </div>
