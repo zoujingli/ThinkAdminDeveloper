@@ -38,17 +38,42 @@
     <span class="help-block"><b>必填，</b>微信商户密钥，需要在微信商户平台操作设置密码并获取密钥，建议定期更换密钥。</span>
 </label>
 
-<label class="layui-form-item block relative">
-    <span class="help-label"><b>商户证书公钥内容</b>（ 需要填写文件的全部内容 ）</span>
-    <textarea class="layui-textarea font-code" name="wechat_mch_cer_text" required vali-name="证书内容" placeholder="请输入微信商户证书内容">{$vo.content.wechat_mch_cer_text|default=''}</textarea>
-    <span class="help-block"><b>必填，</b>从商户平台上下载支付证书，解压并取得其中的 apiclient_cert.pem 用记事本打开并复制文件内容填至此处。</span>
-</label>
+<fieldset class="layui-bg-gray">
+    <legend><span class="layui-badge layui-bg-blue">微信商户证书</span></legend>
+    <div>
+        <label class="layui-form-item block relative">
+            <span class="help-label"><b>商户证书公钥序号</b>WeChat Payment Serial</span>
+            <input class="layui-input font-code" name="wechat_mch_cer_id" vali-name="支付公钥ID" placeholder="请输入商户证书公钥序号" value="{$vo.content.wechat_mch_cer_id|default=''}">
+            <span class="help-block"><b>可选，</b>商户证书公钥序号，需要在微信商户平台生成商户证书时，可以获取到公钥序号。</span>
+        </label>
+        <label class="layui-form-item block relative">
+            <span class="help-label"><b>商户证书公钥内容</b>（ 需要填写文件的全部内容 ）</span>
+            <textarea class="layui-textarea font-code" name="wechat_mch_cer_text" required vali-name="证书内容" placeholder="请输入商户证书公钥内容">{$vo.content.wechat_mch_cer_text|default=''}</textarea>
+            <span class="help-block"><b>必填，</b>从商户平台上下载支付证书，解压并取得其中的 apiclient_cert.pem 用记事本打开并复制文件内容填至此处。</span>
+        </label>
+        <label class="layui-form-item block relative">
+            <span class="help-label"><b>微信商户密钥文件内容</b>（ 需要填写文件的全部内容 ）</span>
+            <textarea class="layui-textarea font-code" name="wechat_mch_key_text" required vali-name="密钥内容" placeholder="请输入微信商户密钥文件内容">{$vo.content.wechat_mch_key_text|default=''}</textarea>
+            <span class="help-block"><b>必填，</b>从商户平台上下载支付证书，解压并取得其中的 apiclient_key.pem 用记事本打开并复制文件内容填至此处。</span>
+        </label>
+    </div>
+</fieldset>
 
-<label class="layui-form-item block relative">
-    <span class="help-label"><b>微信商户密钥文件内容</b>（ 需要填写文件的全部内容 ）</span>
-    <textarea class="layui-textarea font-code" name="wechat_mch_key_text" required vali-name="密钥内容" placeholder="请输入微信商户密钥内容">{$vo.content.wechat_mch_key_text|default=''}</textarea>
-    <span class="help-block"><b>必填，</b>从商户平台上下载支付证书，解压并取得其中的 apiclient_key.pem 用记事本打开并复制文件内容填至此处。</span>
-</label>
+<fieldset data-wechat-version="v3" class="layui-hide layui-bg-gray">
+    <legend><span class="layui-badge layui-bg-blue">微信支付公钥</span></legend>
+    <div>
+        <label class="layui-form-item block relative">
+            <span class="help-label"><b>微信支付公钥 ID</b>WeChat Payment CertId</span>
+            <input class="layui-input font-code" name="wechat_mch_v3_paycer_id" vali-name="支付公钥ID" placeholder="请输入微信支付公钥ID" value="{$vo.content.wechat_mch_v3_paycer_id|default=''}">
+            <span class="help-block"><b>可选，</b>微信商户密钥，需要在微信商户平台操作设置密码并获取密钥，建议定期更换密钥。</span>
+        </label>
+        <label class="layui-form-item block relative">
+            <span class="help-label"><b>微信支付公钥内容</b>（ 需要填写文件的全部内容 ）</span>
+            <textarea class="layui-textarea font-code" name="wechat_mch_v3_paycer_text" vali-name="支付公钥" placeholder="请输入微信支付公钥内容">{$vo.content.wechat_mch_v3_paycer_text|default=''}</textarea>
+            <span class="help-block"><b>可选，</b>从商户平台上下载支付证书，解压并取得其中的 pub_key.pem 用记事本打开并复制文件内容填至此处。</span>
+        </label>
+    </div>
+</fieldset>
 
 <script>
     $(function () {

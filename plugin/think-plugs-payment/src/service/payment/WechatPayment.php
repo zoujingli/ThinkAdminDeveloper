@@ -93,5 +93,8 @@ abstract class WechatPayment implements PaymentInterface
         $this->config['ssl_key'] = $local->path($sslKey, true);
         $this->config['cert_public'] = $this->config['ssl_cer'];
         $this->config['cert_private'] = $this->config['ssl_key'];
+        $this->config['cert_serial'] = $this->cfgParams['wechat_mch_cer_id'] ?? '';
+        $this->config['mp_cert_serial'] = $this->cfgParams['wechat_mch_v3_paycer_id'] ?? '';
+        $this->config['mp_cert_content'] = $this->cfgParams['wechat_mch_v3_paycer_text'] ?? '';
     }
 }
