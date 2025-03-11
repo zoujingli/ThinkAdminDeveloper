@@ -42,7 +42,7 @@ define(function () {
     Excel.prototype.bind = function (done, filename, selector, options) {
         let that = this;
         this.options = options || {}
-        this.loadAll(function (data) {
+        this.bindLoadDone(function (data) {
             that.export(data, this.dataset.filename || filename, options);
         }, selector);
     };
@@ -52,7 +52,7 @@ define(function () {
      * @param done
      * @param selector
      */
-    Excel.prototype.loadAll = function (done, selector) {
+    Excel.prototype.bindLoadDone = function (done, selector) {
         let that = this;
         $('body').off('click', selector || '[data-form-export]').on('click', selector || '[data-form-export]', function () {
             let button = this, form = $(button).parents('form');
