@@ -24,6 +24,7 @@ define(function () {
 
     /*! 导出 Excel 文件 */
     Excel.prototype.export = function (data, name, options) {
+        if (data === false || data === null) return this;
         if (name.substring(0, -5).toLowerCase() !== '.xlsx') name += '.xlsx';
         layui.excel.exportExcel(data, name, 'xlsx', options || this.options || {writeOpt: {bookSST: true}});
     };
