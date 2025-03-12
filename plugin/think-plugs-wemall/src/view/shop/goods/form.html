@@ -204,10 +204,10 @@
                     </div>
                 </div>
                 <div class="goods-spec-box" v-if="x.list && x.list.length>0">
-                    <label class="label-required-null nowrap" v-for="xx in x.list">
+                    <label class="label-required-null nowrap" v-for="(xx,ii) in x.list">
                         <input lay-ignore @click="xx.check=checkListChecked(x.list,$event.target.checked)" v-model.trim="xx.check" type="checkbox">
                         <input v-model.trim="xx.name" @change="trimSpace(xx,'name')" vali-name="规格" placeholder="请输入规格" required type="text">
-                        <a class="layui-icon layui-icon-close goods-spec-close" @click="delSpecVal(x.list,$index)" v-if="x.list.length>1"></a>
+                        <a class="layui-icon layui-icon-close goods-spec-close" @click="delSpecVal(x.list,ii)" v-if="x.list.length>1"></a>
                     </label>
                 </div>
             </div>
