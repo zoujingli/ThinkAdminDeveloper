@@ -178,19 +178,21 @@ class WechatService extends Service
 
     /**
      * 获取公众号配置参数
-     * @param string $appid
+     * @param string $appid 指定公众号
+     * @param boolean $ispay 获取支付参数
      * @return array
      * @throws \think\admin\Exception
      */
-    public static function getConfig(string $appid = ''): array
+    public static function getConfig(string $appid = '', bool $ispay = false): array
     {
-        return static::withWxpayCert([
+        $config = [
             'appid'          => $appid ?: static::getAppid(),
             'token'          => sysconf('wechat.token'),
             'appsecret'      => sysconf('wechat.appsecret'),
             'encodingaeskey' => sysconf('wechat.encodingaeskey'),
             'cache_path'     => syspath('runtime/wechat'),
-        ]);
+        ];
+        return $ispay ? $config : static::withWxpayCert($config);
     }
 
     /**
@@ -220,6 +222,9 @@ class WechatService extends Service
     {
         // 文本模式主要是为了解决分布式部署
         $data = sysdata('plugin.wechat.payment');
+        if (empty($data['mch_id'])) {
+            throw new Exception('无效的支付配置！');
+        }
         $name1 = sprintf("wxpay/%s_%s_cer.pem", $data['mch_id'], md5($data['ssl_cer_text']));
         $name2 = sprintf("wxpay/%s_%s_key.pem", $data['mch_id'], md5($data['ssl_key_text']));
         $local = LocalStorage::instance();
