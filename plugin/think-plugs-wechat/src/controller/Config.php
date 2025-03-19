@@ -38,7 +38,6 @@ class Config extends Controller
      */
     public function options()
     {
-        $this->_applyFormToken();
         $this->thrNotify = sysuri('wechat/api.push/index', [], false, true);
         if ($this->request->isGet()) {
             try {
