@@ -191,7 +191,7 @@ class WechatService extends Service
             'encodingaeskey' => sysconf('wechat.encodingaeskey'),
             'cache_path'     => syspath('runtime/wechat'),
         ];
-        return $ispay ? $config : static::withWxpayCert($config);
+        return $ispay ? static::withWxpayCert($config) : $config;
     }
 
     /**
