@@ -178,15 +178,14 @@ class WechatService extends Service
 
     /**
      * 获取公众号配置参数
-     * @param string $appid 指定公众号
      * @param boolean $ispay 获取支付参数
      * @return array
      * @throws \think\admin\Exception
      */
-    public static function getConfig(string $appid = '', bool $ispay = false): array
+    public static function getConfig(bool $ispay = false): array
     {
         $config = [
-            'appid'          => $appid ?: static::getAppid(),
+            'appid'          => static::getAppid(),
             'token'          => sysconf('wechat.token'),
             'appsecret'      => sysconf('wechat.appsecret'),
             'encodingaeskey' => sysconf('wechat.encodingaeskey'),
@@ -197,7 +196,7 @@ class WechatService extends Service
 
     /**
      * 获取小程序配置参数
-     * @param boolean $ispay 支付参数
+     * @param boolean $ispay 获取支付参数
      * @return array
      * @throws \think\admin\Exception
      */

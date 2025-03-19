@@ -82,7 +82,7 @@ class PaymentService
             if ($oPayed + $pAmount > floatval($oAmount)) {
                 return ['code' => 0, 'info' => '支付总额超出！', 'data' => [], 'params' => []];
             }
-            $config = WechatService::getConfig('', true);
+            $config = WechatService::getConfig(true);
             do $pCode = CodeExtend::uniqidNumber(16, 'P');
             while (WechatPaymentRecord::mk()->master()->where(['code' => $pCode])->findOrEmpty()->isExists());
             $data = [
@@ -328,7 +328,7 @@ class PaymentService
      */
     protected static function withPayment(?array $config = null): Order
     {
-        return Order::instance($config ?: WechatService::getConfig('', true));
+        return Order::instance($config ?: WechatService::getConfig(true));
     }
 
     /**
