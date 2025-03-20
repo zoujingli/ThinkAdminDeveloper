@@ -24,6 +24,7 @@ window.form = layui.form, window.layer = layui.layer;
 window.laytpl = layui.laytpl, window.laydate = layui.laydate;
 window.jQuery = window.$ = window.jQuery || window.$ || layui.$;
 window.jQuery.ajaxSetup({xhrFields: {withCredentials: true}});
+window.jQuery.fn.size || (window.jQuery.fn.size = () => this.length);
 
 /*! 配置 require 参数  */
 require.config({
