@@ -61,7 +61,7 @@ class InstallAdmin20241011 extends Migrator
             'nickname' => '超级管理员',
             'password' => '21232f297a57a5a743894a0e4a801fc3',
             'headimg'  => 'https://thinkadmin.top/static/img/head.png',
-        ]);
+        ], true);
     }
 
     /**
