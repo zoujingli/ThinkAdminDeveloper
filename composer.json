@@ -25,6 +25,7 @@
     "ext-gd": "*",
     "ext-json": "*",
     "ext-openssl": "*",
+    "topthink/think-orm": "^2.0|^3.0",
     "zoujingli/think-plugs-account": "*",
     "zoujingli/think-plugs-admin": "*",
     "zoujingli/think-plugs-center": "*",
