@@ -82,8 +82,7 @@ class PluginWemallGoods extends Abs
      */
     public function items(): HasMany
     {
-        return static::mk()
-            ->hasMany(PluginWemallGoodsItem::class, 'gcode', 'code')
+        return $this->hasMany(PluginWemallGoodsItem::class, 'gcode', 'code')
             ->withoutField('id,status,create_time,update_time')
             ->where(['status' => 1]);
     }
