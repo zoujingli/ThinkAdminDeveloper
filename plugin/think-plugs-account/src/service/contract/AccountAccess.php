@@ -161,6 +161,8 @@ class AccountAccess implements AccountInterface
         }
         $this->bind = $this->save(array_merge($data, ['type' => $this->type]));
         if ($this->bind->isEmpty()) throw new Exception('更新资料失败！');
+        // 刷新更新用户模型
+        $this->user = $this->bind->user()->findOrEmpty();
         return $this->token()->get($rejwt);
     }
 
@@ -178,6 +180,9 @@ class AccountAccess implements AccountInterface
         }
         $data = $this->bind->hidden(['sort', 'password'], true)->toArray();
         if ($this->bind->isExists()) {
+            if ($this->user->isEmpty()) {
+                $this->user = $this->bind->user()->findOrEmpty();
+            }
             $data['user'] = $this->user->hidden(['sort', 'password'], true)->toArray();
             if ($rejwt) $data['token'] = $this->isjwt ? JwtExtend::token([
                 'type' => $this->auth->getAttr('type'), 'token' => $this->auth->getAttr('token')
@@ -419,6 +424,7 @@ class AccountAccess implements AccountInterface
      * @param boolean $expire
      * @return AccountInterface
      * @throws \think\admin\Exception
+     * @throws \think\db\exception\DbException
      */
     public function token(bool $expire = true): AccountInterface
     {
