@@ -110,6 +110,7 @@ class AccountAccess implements AccountInterface
      * @param boolean $isjwt 是否返回令牌
      * @return AccountInterface
      * @throws \think\admin\Exception
+     * @throws \think\db\exception\DbException
      */
     public function init($token = '', bool $isjwt = true): AccountInterface
     {
@@ -142,6 +143,7 @@ class AccountAccess implements AccountInterface
      * @param boolean $rejwt 返回令牌
      * @return array
      * @throws \think\admin\Exception
+     * @throws \think\db\exception\DbException
      */
     public function set(array $data = [], bool $rejwt = false): array
     {
@@ -333,6 +335,7 @@ class AccountAccess implements AccountInterface
      * 解除终端关联
      * @param integer $usid 终端编号
      * @return array
+     * @throws \think\db\exception\DbException
      */
     public function delBind(int $usid): array
     {
@@ -475,7 +478,7 @@ class AccountAccess implements AccountInterface
             $data['headimg'] = Account::headimg();
         }
         // 自动生成账号昵称
-        if (empty($data['nickname']) && $this->bind->getAttr('nickname')) {
+        if (empty($data['nickname']) && empty($this->bind->getAttr('nickname'))) {
             $name = Account::get($this->type)['name'] ?? $this->type;
             $data['nickname'] = "{$name}{$this->bind->getAttr('id')}";
         }
