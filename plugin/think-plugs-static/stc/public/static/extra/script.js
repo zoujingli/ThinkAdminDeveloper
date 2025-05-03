@@ -45,4 +45,12 @@ $(function () {
     window.showTableImage = function (image, circle, size, title) {
         return $.layTable.showImage(image, circle, size, title);
     };
+
+    // 显示商品规格
+    window.showSpec = function (spec) {
+        let names = [];
+        return layui.each(spec.split(';;'), function (i, vv) {
+            names.push(vv.split('::').pop());
+        }), names.join(' ');
+    }
 });
