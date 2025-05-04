@@ -25,17 +25,17 @@
 {block name='script'}
 <script>
 
+    function str2num(v) {
+        return parseFloat(v);
+    }
+
+    function str2name(v) {
+        let _ = [];
+        v.split(';;').forEach(s => _.push(s.split('::').pop()));
+        return _.join(' ');
+    }
 
     $(function () {
-        function str2num(v) {
-            return parseFloat(v);
-        }
-
-        function str2name(v) {
-            let _ = [];
-            v.split(';;').forEach(s => _.push(s.split('::').pop()));
-            return _.join(' ');
-        }
 
         let ostatus = ['已取消', '预订单', '待支付', '待审核', '待发货', '已发货', '已收货', '已评论'];
         let ostyles = ['layui-bg-gray', 'layui-bg-red', 'layui-bg-orange', 'layui-bg-black', 'layui-bg-blue', 'layui-bg-blue', 'layui-bg-green', 'layui-bg-green'];
