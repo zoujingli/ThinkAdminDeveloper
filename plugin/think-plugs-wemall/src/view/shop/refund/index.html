@@ -18,17 +18,18 @@
 
 {block name='script'}
 <script>
-    function str2num(v) {
-        return parseFloat(v);
-    }
-
-    function str2name(v) {
-        let _ = [];
-        v.split(';;').forEach(s => _.push(s.split('::').pop()));
-        return _.join(' ');
-    }
 
     $(function () {
+        function str2num(v) {
+            return parseFloat(v);
+        }
+
+        function str2name(v) {
+            let _ = [];
+            v.split(';;').forEach(s => _.push(s.split('::').pop()));
+            return _.join(' ');
+        }
+
         $('#RefundTable').layTable({
             even: true, height: 'full', sort: {field: 'id', type: 'desc'}, cellExpandedMode: 'tips',
             cols: [[
