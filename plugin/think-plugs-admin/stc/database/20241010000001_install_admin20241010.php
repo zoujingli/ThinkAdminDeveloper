@@ -123,7 +123,7 @@ class InstallAdmin20241010 extends Migrator
             ['deleted_by', 'biginteger', ['limit' => 20, 'default' => 0, 'null' => true, 'comment' => '删除用户']],
             ['create_at', 'timestamp', ['default' => 'CURRENT_TIMESTAMP', 'null' => true, 'comment' => '创建时间']],
         ], [
-            'type', 'code', 'name', 'sort', 'status', 'deleted',
+            'type', 'code', 'sort', 'status', 'deleted',
         ], true);
     }
 
