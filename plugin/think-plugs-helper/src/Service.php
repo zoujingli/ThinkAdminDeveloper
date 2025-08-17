@@ -22,6 +22,11 @@ class Service extends \think\Service
 {
     public function boot()
     {
-        $this->commands([ModelGen::class]);
+        $this->commands([
+            DbModelStruct::class,
+            DbIndexStruct::class,
+            DbBackupStruct::class,
+            DbRestoreStruct::class,
+        ]);
     }
 }

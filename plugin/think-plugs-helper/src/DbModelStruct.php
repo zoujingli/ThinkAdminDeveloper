@@ -30,7 +30,7 @@ use think\ide\console\ModelCommand;
  * @class ModelGen
  * @package plugin\helper
  */
-class ModelGen extends ModelCommand
+class DbModelStruct extends ModelCommand
 {
     protected function configure()
     {
