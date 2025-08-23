@@ -96,7 +96,8 @@ class Admin extends Controller
     protected function _edit_form_filter(array $data)
     {
         if ($this->request->isPost()) {
-            $account = Account::mk(Account::WEB, ['unid' => $data['unid']]);
+            $account = Account::mk('', ['unid' => $data['unid']]);
+
             // 更新当前用户代理线，同时更新账号的 user 数据
             $account->bind(['id' => $data['unid']], $data['user'] ?? []);
             // 修改用户登录密码
