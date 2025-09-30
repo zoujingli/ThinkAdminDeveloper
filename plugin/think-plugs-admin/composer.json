@@ -15,7 +15,7 @@
     "ext-json": "*",
     "topthink/framework": "^6.0|^8.0",
     "topthink/think-view": "^1.0|^2.0",
-    "zoujingli/ip2region": "^1.0|^2.0|@dev",
+    "zoujingli/ip2region": "^1.0|^2.0|^3.0|@dev",
     "zoujingli/think-install": "^1.0|@dev",
     "zoujingli/think-library": "^6.1|@dev",
     "zoujingli/think-plugs-static": "^1.0|@dev"
