@@ -3,16 +3,16 @@
     <div class="layui-card-body ta-pl-40">
 
         <fieldset class="layui-form-item">
-            <legend class="layui-badge text-left think-bg-violet">用户信息</legend>
+            <legend class="layui-badge text-left think-bg-violet">{:lang('用户信息')}</legend>
             <div class="flex">
                 <div class="headimg" style="width:138px;height:138px" data-tips-image data-lazy-src="{$vo.user.headimg|default='__ROOT__/static/theme/img/headimg.png'}"></div>
                 <div class="flex-1 ta-ml-15">
                     <label class="layui-form-item relative block">
-                        <span class="help-label"><b>用户昵称</b>Nickname</span>
+                        <span class="help-label"><b>{:lang('用户昵称')}</b>Nickname</span>
                         <input class="layui-input layui-bg-gray" readonly value="{$vo.user.nickname|default=''}">
                     </label>
                     <label class="relative block">
-                        <span class="help-label"><b>用户账号</b>Phone</span>
+                        <span class="help-label"><b>{:lang('用户账号')}</b>Phone</span>
                         <input class="layui-input layui-bg-gray" readonly value="{$vo.user.phone|default=''}">
                     </label>
                 </div>
@@ -20,7 +20,7 @@
         </fieldset>
 
         <fieldset class="layui-form-item">
-            <legend class="layui-badge text-left think-bg-violet">订单信息</legend>
+            <legend class="layui-badge text-left think-bg-violet">{:lang('订单信息')}</legend>
             <div class="flex">
                 <div>
                     <div data-tips-image data-tips-hover data-lazy-src="{$vo.goods.cover|default=''}" class="uploadimage" style="width:60px;height:60px"></div>
@@ -30,20 +30,20 @@
                     <div class="font-s12 ta-pt-5">{$vo.goods.name|default=''}</div>
                 </div>
                 <div class="layui-form-item ta-ml-15">
-                    <div class="font-s14">订单号：{$vo.order_no|default=''}</div>
+                    <div class="font-s14">{:lang('订单号')}：{$vo.order_no|default=''}</div>
                     <div class="flex">
                         <label class="layui-input-wrap">
-                            <span class="layui-input-prefix nowrap">支付</span>
+                            <span class="layui-input-prefix nowrap">{:lang('支付')}</span>
                             <input class="layui-input layui-bg-gray" readonly value="{$vo.orderinfo.amount_real|default=''}"/>
-                            <span class="layui-input-suffix">元</span>
+                            <span class="layui-input-suffix">{:lang('元')}</span>
                         </label>
                         <label class="layui-input-wrap ta-ml-5">
-                            <span class="layui-input-prefix nowrap">余额</span>
+                            <span class="layui-input-prefix nowrap">{:lang('余额')}</span>
                             <input class="layui-input layui-bg-gray" readonly value="{$vo.orderinfo.amount_balance|default=''}"/>
-                            <span class="layui-input-suffix">元</span>
+                            <span class="layui-input-suffix">{:lang('元')}</span>
                         </label>
                         <label class="layui-input-wrap ta-ml-5">
-                            <span class="layui-input-prefix nowrap">积分</span>
+                            <span class="layui-input-prefix nowrap">{:lang('积分')}</span>
                             <input class="layui-input layui-bg-gray" readonly value="{$vo.orderinfo.amount_integral|default=''}"/>
                         </label>
                     </div>
@@ -53,14 +53,14 @@
 
 
         <fieldset class="layui-form-item">
-            <legend class="layui-badge text-left think-bg-violet">评论内容</legend>
+            <legend class="layui-badge text-left think-bg-violet">{:lang('评论内容')}</legend>
             <label class="layui-form-item block relative">
-                <span class="help-label label-required-prev"><b>评论分类</b></span>
+                <span class="help-label label-required-prev"><b>{:lang('评论分类')}</b></span>
                 <textarea class="layui-textarea" name="content">{$vo.content|default=''}</textarea>
             </label>
 
             <div class="layui-form-item relative block">
-                <span class="help-label"><b>评论图片</b></span>
+                <span class="help-label"><b>{:lang('评论图片')}</b></span>
                 {php}$images = join('|',$vo['images']??[]);{/php}
                 <div class="layui-textarea help-images">
                     <input type="hidden" name="images" value="{$images}">
@@ -74,8 +74,8 @@
         {notempty name = 'vo.id'}<input name='id' type='hidden' value='{$vo.id}'>{/notempty}
 
         <div class="layui-form-item text-center">
-            <button class="layui-btn" type='submit'>保存修改</button>
-            <button class="layui-btn layui-btn-danger" data-target-backup type='button'>取消编辑</button>
+            <button class="layui-btn" type='submit'>{:lang('保存修改')}</button>
+            <button class="layui-btn layui-btn-danger" data-target-backup type='button'>{:lang('取消编辑')}</button>
         </div>
     </div>
 </form>

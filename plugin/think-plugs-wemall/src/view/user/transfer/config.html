@@ -2,10 +2,10 @@
     <div class="layui-card-body ta-pl-40">
 
         <div class="layui-form-item relative block">
-            <span class="help-label label-required-prev"><b>代理提现状态</b>Status</span>
+            <span class="help-label label-required-prev"><b>{:lang('代理提现状态')}</b>Status</span>
             <div class="layui-textarea help-checks">
                 {php} $data['status'] = $data['status'] ?? 0; {/php}
-                {foreach ['关闭返佣提现', '开启返佣提现'] as $k => $v}
+                {foreach [lang('关闭返佣提现'), lang('开启返佣提现')] as $k => $v}
                 {if $data.status eq $k}
                 <input checked class="layui-input" name="status" title="{$v}" type="radio" value="{$k}">
                 {else}
@@ -15,26 +15,26 @@
         </div>
 
         <div class="layui-form-item">
-            <span class="help-label label-required-prev"><b>提现手续费配置</b>Charge</span>
+            <span class="help-label label-required-prev"><b>{:lang('提现手续费配置')}</b>Charge</span>
             <label class="block relative label-required-null">
                 <input class='layui-input' step="0.0001" required data-blur-number="4" data-value-max="50.0000" data-value-min="0.0000" name="charge" value='{$data.charge|default="0.0000"}'>
                 <span class="input-right-icon">%</span>
             </label>
-            <span class='help-block'>请输入提现金额的百分比，费率的取值范围为 0.0000% - 50.0000%</span>
+            <span class='help-block'>{:lang('请输入提现金额的百分比，费率的取值范围为 0.0000% - 50.0000%')}</span>
         </div>
 
         <div class="layui-form-item">
-            <span class="help-label label-required-prev"><b>提现方式配置</b>Types</span>
+            <span class="help-label label-required-prev"><b>{:lang('提现方式配置')}</b>Types</span>
             <table class="layui-table payment-type layui-bg-gray" lay-skin="nob">
                 <thead>
                 <tr>
-                    <th class="notselect nowrap"><b>提现转账方式</b></th>
-                    <td class="text-center notselect nowrap"><b>是否需要审核</b></td>
-                    <td class="text-center notselect nowrap"><b>图 标</b></td>
-                    <td class="text-center notselect nowrap"><b>单笔最小金额（ 元 ）</b></td>
+                    <th class="notselect nowrap"><b>{:lang('提现转账方式')}</b></th>
+                    <td class="text-center notselect nowrap"><b>{:lang('是否需要审核')}</b></td>
+                    <td class="text-center notselect nowrap"><b>{:lang('图 标')}</b></td>
+                    <td class="text-center notselect nowrap"><b>{:lang('单笔最小金额（ 元 ）')}</b></td>
                     <td class="padding-col-0"></td>
-                    <td class="text-center notselect nowrap"><b>单笔最大金额（ 元 ）</b></td>
-                    <td class="text-center notselect nowrap"><b>每日限提现次数</b></td>
+                    <td class="text-center notselect nowrap"><b>{:lang('单笔最大金额（ 元 ）')}</b></td>
+                    <td class="text-center notselect nowrap"><b>{:lang('每日限提现次数')}</b></td>
                 </tr>
                 </thead>
                 <tbody>
@@ -55,9 +55,9 @@
                         {php} $key = 'transfer['.$k.']["audit"]'; {/php}
                         <input name="{$key}" type="hidden" value="0">
                         {if isset($data['transfer'][$k]['audit']) and $data['transfer'][$k]['audit'] eq 1}
-                        <input lay-skin="switch" lay-text="需审核|免审核" name="{$key}" type="checkbox" value="1" checked>
+                        <input lay-skin="switch" lay-text="{:lang('需审核')}|{:lang('免审核')}" name="{$key}" type="checkbox" value="1" checked>
                         {else}
-                        <input lay-skin="switch" lay-text="需审核|免审核" name="{$key}" type="checkbox" value="1">
+                        <input lay-skin="switch" lay-text="{:lang('需审核')}|{:lang('免审核')}" name="{$key}" type="checkbox" value="1">
                         {/if}
                         {php} $key = 'transfer['.$k.'][title]'; {/php}
                         <input class="layui-input" name="{$key}" type="hidden" value="{$t}">
@@ -93,9 +93,9 @@
         </div>
 
         <div class="layui-form-item relative block">
-            <span class="help-label"><b>代理提现描述内容</b>Remark</span>
+            <span class="help-label"><b>{:lang('代理提现描述内容')}</b>Remark</span>
             <label class="relative block">
-                <textarea class="layui-textarea" name="remark" placeholder="请输入代理提现描述内容">{$data.remark|default=''}</textarea>
+                <textarea class="layui-textarea" name="remark" placeholder="{:lang('请输入代理提现描述内容')}">{$data.remark|default=''}</textarea>
             </label>
         </div>
 
@@ -104,8 +104,8 @@
     <div class="hr-line-dashed"></div>
 
     <div class="layui-form-item text-center">
-        <button class="layui-btn" type='submit'>保存数据</button>
-        <button class="layui-btn layui-btn-danger" data-close data-confirm="确定要取消编辑吗？" type='button'>取消编辑</button>
+        <button class="layui-btn" type='submit'>{:lang('保存数据')}</button>
+        <button class="layui-btn layui-btn-danger" data-close data-confirm="{:lang('确定要取消编辑吗？')}" type='button'>{:lang('取消编辑')}</button>
     </div>
 </form>
 

@@ -2,17 +2,17 @@
     <div class="layui-card-body ta-pl-40">
 
         <label class="layui-form-item relative block">
-            <span class="help-label label-required-prev"><b>发货人姓名</b>User Name</span>
-            <input class="layui-input" name="user_name" vali-name="发货人姓名" placeholder="请输入发货人姓名" required value="{$vo.user_name|default=''}">
+            <span class="help-label label-required-prev"><b>{:lang('发货人姓名')}</b>User Name</span>
+            <input class="layui-input" name="user_name" vali-name="{:lang('发货人姓名')}" placeholder="{:lang('请输入发货人姓名')}" required value="{$vo.user_name|default=''}">
         </label>
 
         <label class="layui-form-item relative block">
-            <span class="help-label label-required-prev"><b>发货人手机</b>User Phone</span>
-            <input class="layui-input" name="user_phone" vali-name="发货人手机" placeholder="请输入发货人手机" required value="{$vo.user_phone|default=''}">
+            <span class="help-label label-required-prev"><b>{:lang('发货人手机')}</b>User Phone</span>
+            <input class="layui-input" name="user_phone" vali-name="{:lang('发货人手机')}" placeholder="{:lang('请输入发货人手机')}" required value="{$vo.user_phone|default=''}">
         </label>
 
         <div class="layui-form-item">
-            <span class="help-label label-required-prev"><b>发货所在区域</b>Region Area</span>
+            <span class="help-label label-required-prev"><b>{:lang('发货所在区域')}</b>Region Area</span>
             <div class="layui-row layui-col-space10">
                 <label class="layui-col-xs4"><select class="layui-select" lay-filter="region_prov" name="region_prov"></select></label>
                 <label class="layui-col-xs4"><select class="layui-select" lay-filter="region_city" name="region_city"></select></label>
@@ -21,16 +21,16 @@
         </div>
 
         <label class="layui-form-item relative block">
-            <span class="help-label label-required-prev"><b>发货详细地址</b>Region Address</span>
-            <textarea class="layui-textarea" name="region_addr" vali-name="详情地址" placeholder="请输入发货详细地址" required>{$vo.region_addr|default=""}</textarea>
+            <span class="help-label label-required-prev"><b>{:lang('发货详细地址')}</b>Region Address</span>
+            <textarea class="layui-textarea" name="region_addr" vali-name="{:lang('详情地址')}" placeholder="{:lang('请输入发货详细地址')}" required>{$vo.region_addr|default=""}</textarea>
         </label>
     </div>
 
     <div class="hr-line-dashed"></div>
 
     <div class="layui-form-item text-center">
-        <button class="layui-btn" type='submit'>保存数据</button>
-        <button class="layui-btn layui-btn-danger" data-close data-confirm="确定要取消编辑吗？" type='button'>取消编辑</button>
+        <button class="layui-btn" type='submit'>{:lang('保存数据')}</button>
+        <button class="layui-btn layui-btn-danger" data-close data-confirm="{:lang('确定要取消编辑吗？')}" type='button'>{:lang('取消编辑')}</button>
     </div>
 
 </form>

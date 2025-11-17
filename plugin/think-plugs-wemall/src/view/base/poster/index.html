@@ -3,17 +3,17 @@
 {block name="button"}
 {if isset($type) and $type eq 'index'}
 <!--{if auth("add")}-->
-<button data-open='{:url("add")}' class='layui-btn layui-btn-sm layui-btn-primary'>添加海报</button>
+<button data-open='{:url("add")}' class='layui-btn layui-btn-sm layui-btn-primary'>{:lang('添加海报')}</button>
 <!--{/if}-->
 <!--{if auth("state")}-->
-<a data-confirm="确定要批量禁用海报吗？" data-table-id="PosterTable" data-action="{:url('state')}" data-rule="id#{id};status#0" class='layui-btn layui-btn-sm layui-btn-primary'>批量禁用</a>
+<a data-confirm="{:lang('确定要批量禁用海报吗？')}" data-table-id="PosterTable" data-action="{:url('state')}" data-rule="id#{id};status#0" class='layui-btn layui-btn-sm layui-btn-primary'>{:lang('批量禁用')}</a>
 <!--{/if}-->
 {else}
 <!--{if auth("state")}-->
-<a data-confirm="确定要批量恢复海报吗？" data-table-id="PosterTable" data-action="{:url('state')}" data-rule="id#{id};status#1" class='layui-btn layui-btn-sm layui-btn-primary'>批量恢复</a>
+<a data-confirm="{:lang('确定要批量恢复海报吗？')}" data-table-id="PosterTable" data-action="{:url('state')}" data-rule="id#{id};status#1" class='layui-btn layui-btn-sm layui-btn-primary'>{:lang('批量恢复')}</a>
 <!--{/if}-->
 <!--{if auth("remove")}-->
-<a data-confirm="确定永久删除海报吗？" data-table-id="PosterTable" data-action='{:url("remove")}' data-rule="id#{id}" class='layui-btn layui-btn-sm layui-btn-primary'>批量删除</a>
+<a data-confirm="{:lang('确定永久删除海报吗？')}" data-table-id="PosterTable" data-action='{:url("remove")}' data-rule="id#{id}" class='layui-btn layui-btn-sm layui-btn-primary'>{:lang('批量删除')}</a>
 <!--{/if}-->
 {/if}
 {/block}
@@ -21,7 +21,7 @@
 {block name="content"}
 <div class="layui-tab layui-tab-card">
     <ul class="layui-tab-title">
-        {foreach ['index'=>'推广海报','recycle'=>'回 收 站'] as $k=>$v}{if isset($type) and $type eq $k}
+        {foreach ['index'=>lang('推广海报'),'recycle'=>lang('回 收 站')] as $k=>$v}{if isset($type) and $type eq $k}
         <li data-open="{:url('index')}?type={$k}" class="layui-this color-green">{$v}</li>
         {else}
         <li data-open="{:url('index')}?type={$k}">{$v}</li>
@@ -44,11 +44,11 @@
             cellExpandedMode: 'tips',
             cols: [[
                 {checkbox: true, fixed: true},
-                {field: 'sort', title: '排序权重', width: 100, align: 'center', sort: true, templet: '#SortInputTpl'},
-                {field: 'code', title: '海报编号', align: 'center', width: 160, sort: true},
-                {field: 'name', title: '海报名称', align: 'center', minWidth: 130},
+                {field: 'sort', title: '{:lang("排序权重")}', width: 100, align: 'center', sort: true, templet: '#SortInputTpl'},
+                {field: 'code', title: '{:lang("海报编号")}', align: 'center', width: 160, sort: true},
+                {field: 'name', title: '{:lang("海报名称")}', align: 'center', minWidth: 130},
                 {
-                    field: 'levels', title: '授权等级', templet: function (d) {
+                    field: 'levels', title: '{:lang("授权等级")}', templet: function (d) {
                         let tpls = [];
                         (d.levels_names || []).map(function (v) {
                             tpls.push('<span class="layui-badge layui-bg-blue">' + v + '</span>')
@@ -57,7 +57,7 @@
                     }
                 },
                 {
-                    field: 'devices', title: '授权终端', templet: function (d) {
+                    field: 'devices', title: '{:lang("授权终端")}', templet: function (d) {
                         let tpls = [];
                         (d.devices_names || []).map(function (v) {
                             tpls.push('<span class="layui-badge layui-bg-blue">' + v + '</span>')
@@ -65,9 +65,9 @@
                         return tpls.join('');
                     }
                 },
-                {field: 'status', title: '账号状态', align: 'center', minWidth: 110, templet: '#StatusSwitchTpl'},
-                {field: 'create_time', title: '创建时间', align: 'center', minWidth: 170},
-                {toolbar: '#toolbar', title: '操作面板', align: 'center', minWidth: 210, fixed: 'right'},
+                {field: 'status', title: '{:lang("账号状态")}', align: 'center', minWidth: 110, templet: '#StatusSwitchTpl'},
+                {field: 'create_time', title: '{:lang("创建时间")}', align: 'center', minWidth: 170},
+                {toolbar: '#toolbar', title: '{:lang("操作面板")}', align: 'center', minWidth: 210, fixed: 'right'},
             ]]
         });
 
@@ -91,9 +91,9 @@
 <!-- 数据状态切换模板 -->
 <script type="text/html" id="StatusSwitchTpl">
     <!--{if auth("state")}-->
-    <input type="checkbox" value="{{d.id}}" lay-skin="switch" lay-text="已激活|已禁用" lay-filter="StatusSwitch" {{d.status>0?'checked':''}}>
+    <input type="checkbox" value="{{d.id}}" lay-skin="switch" lay-text="{:lang('已激活')}|{:lang('已禁用')}" lay-filter="StatusSwitch" {{d.status>0?'checked':''}}>
     <!--{else}-->
-    {{d.status ? '<b class="color-green">已启用</b>' : '<b class="color-red">已禁用</b>'}}
+    {{d.status ? '<b class="color-green">' + '{:lang("已启用")}' + '</b>' : '<b class="color-red">' + '{:lang("已禁用")}' + '</b>'}}
     <!--{/if}-->
 </script>
 
@@ -101,14 +101,14 @@
 <script type="text/html" id="toolbar">
     {if isset($type) and $type eq 'index'}
     <!-- {if auth("edit")} -->
-    <a class="layui-btn layui-btn-sm" data-open='{:url("edit")}?id={{d.id}}'>编 辑</a>
+    <a class="layui-btn layui-btn-sm" data-open='{:url("edit")}?id={{d.id}}'>{:lang('编 辑')}</a>
     <!--{/if}-->
     {else}
     <!--{if auth("edit")} -->
-    <a class="layui-btn layui-btn-sm" data-open='{:url("edit")}?id={{d.id}}'>编 辑</a>
+    <a class="layui-btn layui-btn-sm" data-open='{:url("edit")}?id={{d.id}}'>{:lang('编 辑')}</a>
     <!--{/if}-->
     <!--{if auth("remove")}-->
-    <a class="layui-btn layui-btn-sm layui-btn-danger" data-confirm="确定要永久删除此海报吗？" data-action="{:url('remove')}" data-value="id#{{d.id}}">删 除</a>
+    <a class="layui-btn layui-btn-sm layui-btn-danger" data-confirm="{:lang('确定要永久删除此海报吗？')}" data-action="{:url('remove')}" data-value="id#{{d.id}}">{:lang('删 除')}</a>
     <!--{/if}-->
     {/if}
 </script>

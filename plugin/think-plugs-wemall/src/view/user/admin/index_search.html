@@ -1,18 +1,18 @@
 <form action="{:sysuri()}" autocomplete="off" class="layui-form layui-form-pane form-search" method="get" onsubmit="return false">
 
     <div class="layui-form-item layui-inline">
-        <label class="layui-form-label">用户账号</label>
+        <label class="layui-form-label">{:lang('用户账号')}</label>
         <label class="layui-input-inline">
-            <input class="layui-input" name="user" placeholder="请输入用户账号" value="{$get.user|default=''}">
+            <input class="layui-input" name="user" placeholder="{:lang('请输入用户账号')}" value="{$get.user|default=''}">
         </label>
     </div>
 
     <!--{notempty name='upgrades'}-->
     <div class="layui-form-item layui-inline">
-        <label class="layui-form-label">会员等级</label>
+        <label class="layui-form-label">{:lang('会员等级')}</label>
         <div class="layui-input-inline">
             <select class="layui-select" name="level_code">
-                <option value="">-- 全部 --</option>
+                <option value="">{:lang('-- 全部 --')}</option>
                 {foreach $upgrades as $upgrade}{if input('level_code') eq $upgrade.number.''}
                 <option selected value="{$upgrade.number|default=0}">[ VIP{$upgrade.number|default='0'} ] {$upgrade.name|default=''}</option>
                 {else}
@@ -25,11 +25,11 @@
 
 
     <div class="layui-form-item layui-inline">
-        <label class="layui-form-label">推广权限</label>
+        <label class="layui-form-label">{:lang('推广权限')}</label>
         <div class="layui-input-inline">
             <select class="layui-select" name="level_agent">
-                <option value="">-- 全部 --</option>
-                {foreach ['无推广权限','有推广权限'] as $k=>$v}
+                <option value="">{:lang('-- 全部 --')}</option>
+                {foreach [lang('无推广权限'),lang('有推广权限')] as $k=>$v}
                 {if isset($get.level_agent) and $get.level_agent eq $k}
                 <option selected value="{$k}">{$v}</option>
                 {else}
@@ -41,16 +41,16 @@
 
 
     <div class="layui-form-item layui-inline">
-        <label class="layui-form-label">注册时间</label>
+        <label class="layui-form-label">{:lang('注册时间')}</label>
         <div class="layui-input-inline">
-            <input class="layui-input" data-date-range name="create_time" placeholder="请选择注册时间" value="{$get.create_time|default=''}">
+            <input class="layui-input" data-date-range name="create_time" placeholder="{:lang('请选择注册时间')}" value="{$get.create_time|default=''}">
         </div>
     </div>
 
     <div class="layui-form-item layui-inline">
-        <button class="layui-btn layui-btn-primary"><i class="layui-icon">&#xe615;</i> 搜 索</button>
+        <button class="layui-btn layui-btn-primary"><i class="layui-icon">&#xe615;</i> {:lang('搜 索')}</button>
         <button class="layui-btn layui-btn-primary" data-form-export="{:url('index')}?type={$type|default='index'}" type="button">
-            <i class="layui-icon layui-icon-export"></i> 导 出
+            <i class="layui-icon layui-icon-export"></i> {:lang('导 出')}
         </button>
     </div>
 </form>
@@ -74,11 +74,11 @@
             });
 
             // 设置表头内容
-            data.unshift(['ID', '用户编号', '用户姓名', '用户昵称', '关联手机', '绑定邮箱', '会员等级', '注册时间']);
+            data.unshift(['ID', '{:lang("用户编号")}', '{:lang("用户姓名")}', '{:lang("用户昵称")}', '{:lang("关联手机")}', '{:lang("绑定邮箱")}', '{:lang("会员等级")}', '{:lang("注册时间")}']);
 
             // 应用表格样式
             return this.withStyle(data, {H: 120});
 
-        }, '用户账号数据' + layui.util.toDateString(Date.now(), '_yyyyMMdd_HHmmss'));
+        }, '{:lang("用户账号数据")}' + layui.util.toDateString(Date.now(), '_yyyyMMdd_HHmmss'));
     });
 </script>

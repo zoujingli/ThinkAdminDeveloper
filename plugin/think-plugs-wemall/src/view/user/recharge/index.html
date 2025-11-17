@@ -2,7 +2,7 @@
 
 {block name="content"}
 <div class="think-box-notify sub-strong-blue" type="info">
-    <strong>充值统计：</strong>累计已充值 <b>{$total}</b> 元
+    <strong>{:lang('充值统计')}：</strong>{:lang('累计已充值')} <b>{$total}</b> {:lang('元')}
 </div>
 
 <div class="think-box-shadow">
@@ -20,15 +20,15 @@
             cols: [[
                 {field: 'id', hide: true},
                 {
-                    title: '会员用户', minWidth: 80, width: '20%', templet: function (d) {
+                    title: '{:lang("会员用户")}', minWidth: 80, width: '20%', templet: function (d) {
                         return laytpl("<div>{{-showTableImage(d.user.headimg)}} <b>{{d.user.phone}}</b> {{d.user.nickname}}</div>").render(d);
                     }
                 },
-                {field: 'amount', title: '充值金额', align: 'center', minWidth: 80, width: '15%'},
-                {field: 'name', title: '充值标题', align: 'center', minWidth: 80, width: '15%'},
-                {field: 'remark', title: '充值内容', align: 'center', minWidth: 80},
-                {field: 'create_time', title: '创建时间', align: 'center', minWidth: 170, width: '15%', sort: true},
-                {toolbar: '#toolbar', title: '操作面板', align: 'center', minWidth: 80, width: '10%', fixed: 'right'},
+                {field: 'amount', title: '{:lang("充值金额")}', align: 'center', minWidth: 80, width: '15%'},
+                {field: 'name', title: '{:lang("充值标题")}', align: 'center', minWidth: 80, width: '15%'},
+                {field: 'remark', title: '{:lang("充值内容")}', align: 'center', minWidth: 80},
+                {field: 'create_time', title: '{:lang("创建时间")}', align: 'center', minWidth: 170, width: '15%', sort: true},
+                {toolbar: '#toolbar', title: '{:lang("操作面板")}', align: 'center', minWidth: 80, width: '10%', fixed: 'right'},
             ]]
         });
 
@@ -52,7 +52,7 @@
 <!-- 数据操作工具条模板 -->
 <script type="text/html" id="toolbar">
     <!--{if auth("remove")}-->
-    <a class="layui-btn layui-btn-danger layui-btn-sm" data-confirm="确定要删除吗?" data-action="{:url('remove')}" data-value="id#{{d.id}}">删 除</a>
+    <a class="layui-btn layui-btn-danger layui-btn-sm" data-confirm="{:lang('确定要删除吗?')}" data-action="{:url('remove')}" data-value="id#{{d.id}}">{:lang('删 除')}</a>
     <!--{/if}-->
 </script>
 {/block}

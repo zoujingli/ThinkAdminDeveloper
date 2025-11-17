@@ -2,17 +2,17 @@
 
 {block name="content"}
 <div class="think-box-notify">
-    <strong>颜色说明：</strong>
-    <b class="layui-badge layui-bg-green">绿色</b>表示全部选中，
-    <b class="layui-badge layui-bg-blue">蓝色</b>表示部分选中，
-    <b class="layui-badge layui-bg-orange">橙色</b>表示未选中。
+    <strong>{:lang('颜色说明：')}</strong>
+    <b class="layui-badge layui-bg-green">{:lang('绿色')}</b>{:lang('表示全部选中，')}
+    <b class="layui-badge layui-bg-blue">{:lang('蓝色')}</b>{:lang('表示部分选中，')}
+    <b class="layui-badge layui-bg-orange">{:lang('橙色')}</b>{:lang('表示未选中。')}
 </div>
 <div class="think-box-shadow" id="TruckForm">
 
     <div class="layui-card border-line">
         <div class="layui-card-header layui-bg-gray border-bottom-line">
-            <b class="color-green">全国</b><span class="font-s12 color-desc ta-ml-10">配送省份</span>
-            <a class="pull-right notselect" ng-click="SetAllChecked(items)">全选</a>
+            <b class="color-green">{:lang('全国')}</b><span class="font-s12 color-desc ta-ml-10">{:lang('配送省份')}</span>
+            <a class="pull-right notselect" ng-click="SetAllChecked(items)">{:lang('全选')}</a>
         </div>
         <div class="layui-card-body">
             <div class="layui-btn layui-btn-radius ta-ml-0 ta-mr-5 ta-mb-5" ng-class="x.style" ng-click="SetActiveProv(x)" ng-repeat="x in items">
@@ -23,8 +23,8 @@
 
     <div class="layui-card border-line">
         <div class="layui-card-header layui-bg-gray border-bottom-line">
-            <b class="color-green" ng-bind="prov.name"></b><span class="font-s12 color-desc ta-ml-10">配送城市</span>
-            <a class="pull-right notselect" ng-click="SetAllChecked(prov.subs)">全选</a>
+            <b class="color-green" ng-bind="prov.name"></b><span class="font-s12 color-desc ta-ml-10">{:lang('配送城市')}</span>
+            <a class="pull-right notselect" ng-click="SetAllChecked(prov.subs)">{:lang('全选')}</a>
         </div>
         <div class="layui-card-body">
             <div class="layui-btn layui-btn-radius ta-ml-0 ta-mr-5 ta-mb-5" ng-class="x.style" ng-click="SetActiveCity(x)" ng-repeat="x in prov.subs">
@@ -35,8 +35,8 @@
 
     <div class="layui-card border-line">
         <div class="layui-card-header layui-bg-gray border-bottom-line">
-            <b class="color-green" ng-bind="city.name"></b><span class="font-s12 color-desc ta-ml-10">配送区域</span>
-            <a class="pull-right notselect" ng-click="SetAllChecked(city.subs)">全选</a>
+            <b class="color-green" ng-bind="city.name"></b><span class="font-s12 color-desc ta-ml-10">{:lang('配送区域')}</span>
+            <a class="pull-right notselect" ng-click="SetAllChecked(city.subs)">{:lang('全选')}</a>
         </div>
         <div class="layui-card-body">
             <div class="layui-btn layui-btn-radius ta-ml-0 ta-mr-5 ta-mb-5" ng-class="x.style" ng-repeat="x in city.subs">
@@ -47,8 +47,8 @@
 
     <div class="hr-line-dashed ta-mt-40"></div>
     <div class="layui-form-item text-center">
-        <button class="layui-btn layui-btn-danger" type="button" data-target-backup>取消修改</button>
-        <button class="layui-btn" ng-click="Confirm()">确定修改</button>
+        <button class="layui-btn layui-btn-danger" type="button" data-target-backup>{:lang('取消修改')}</button>
+        <button class="layui-btn" ng-click="Confirm()">{:lang('确定修改')}</button>
     </div>
 </div>
 

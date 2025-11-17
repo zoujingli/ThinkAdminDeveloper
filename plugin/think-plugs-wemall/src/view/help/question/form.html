@@ -1,8 +1,8 @@
 {extend name="main"}
 
 {block name="button"}
-<button data-target-submit class='layui-btn layui-btn-sm'>保存数据</button>
-<button data-target-backup class="layui-btn layui-btn-sm layui-btn-danger" data-confirm="确认要取消编辑吗？">取消编辑</button>
+<button data-target-submit class='layui-btn layui-btn-sm'>{:lang('保存数据')}</button>
+<button data-target-backup class="layui-btn layui-btn-sm layui-btn-danger" data-confirm="{:lang('确认要取消编辑吗？')}">{:lang('取消编辑')}</button>
 {/block}
 
 {block name='content'}
@@ -18,11 +18,11 @@
                 </div>
                 <div class="layui-col-xs9">
                     <label class="layui-form-item relative block">
-                        <span class="help-label"><b>用户昵称</b>Nickname</span>
+                        <span class="help-label"><b>{:lang('用户昵称')}</b>Nickname</span>
                         <input class="layui-input layui-bg-gray" readonly value="{$vo.user_nickname|default=''}">
                     </label>
                     <label class="relative block">
-                        <span class="help-label"><b>用户账号</b>Phone</span>
+                        <span class="help-label"><b>{:lang('用户账号')}</b>Phone</span>
                         <input class="layui-input layui-bg-gray" readonly value="{$vo.user_phone|default=''}">
                     </label>
                 </div>
@@ -33,15 +33,15 @@
             <div class="layui-timeline-item">
                 <i class="layui-icon layui-timeline-axis">&#xe63f;</i>
                 <div class="layui-timeline-content layui-text">
-                    <h3 class="layui-timeline-title">提交工单<span class="font-s12 ta-ml-10">{$vo.create_time}</span></h3>
-                    <div class="layui-input layui-bg-gray ta-mt-10"><b>工单标题：</b>{$vo.name|default=""}</div>
+                    <h3 class="layui-timeline-title">{:lang('提交工单')}<span class="font-s12 ta-ml-10">{$vo.create_time}</span></h3>
+                    <div class="layui-input layui-bg-gray ta-mt-10"><b>{:lang('工单标题')}：</b>{$vo.name|default=""}</div>
                     {notempty name='vo.phone'}
-                    <div class="layui-input layui-bg-gray ta-mt-10"><b>联系电话：</b>{$vo.phone|default=""}</div>
+                    <div class="layui-input layui-bg-gray ta-mt-10"><b>{:lang('联系电话')}：</b>{$vo.phone|default=""}</div>
                     {/notempty}
-                    <div class="layui-textarea layui-bg-gray ta-mt-10 ck-content"><b>工单内容：</b>{$vo.content}</div>
+                    <div class="layui-textarea layui-bg-gray ta-mt-10 ck-content"><b>{:lang('工单内容')}：</b>{$vo.content}</div>
                     {notempty name='vo.images'}
                     <div class="ta-mt-10 color-desc">
-                        <span>工单图片：</span>
+                        <span>{:lang('工单图片')}：</span>
                         <div class="layui-textarea help-images layui-bg-gray">
                             {foreach $vo.images as $img}
                             <div class="uploadimage upload-image-lgbox" data-tips-image data-lazy-src="{$img}"></div>
@@ -56,8 +56,8 @@
                 <i class="layui-icon layui-timeline-axis">&#xe63f;</i>
                 <div class="layui-timeline-content layui-text">
                     <h3 class="layui-timeline-title">
-                        {if $c.unid>0} 用户回复<span class="font-s12 ta-ml-10">{$c.create_time}</span>{/if}
-                        {if $c.reply_by>0} 后台回复<span class="font-s12 ta-ml-10">{$c.create_time}</span>{/if}
+                        {if $c.unid>0} {:lang('用户回复')}<span class="font-s12 ta-ml-10">{$c.create_time}</span>{/if}
+                        {if $c.reply_by>0} {:lang('后台回复')}<span class="font-s12 ta-ml-10">{$c.create_time}</span>{/if}
                     </h3>
                     <div class="layui-textarea layui-bg-gray ck-content">{$c.content|raw}</div>
                 </div>
@@ -67,9 +67,9 @@
             <div class="layui-timeline-item">
                 <i class="layui-icon layui-timeline-axis">&#xe756;</i>
                 <div class="layui-timeline-content layui-text">
-                    <h3 class="layui-timeline-title">立即回复</h3>
+                    <h3 class="layui-timeline-title">{:lang('立即回复')}</h3>
                     <label>
-                        <textarea class="layui-hide" name="content" placeholder="请输入回复内容"></textarea>
+                        <textarea class="layui-hide" name="content" placeholder="{:lang('请输入回复内容')}"></textarea>
                     </label>
                 </div>
             </div>
@@ -79,8 +79,8 @@
         {notempty name='vo.id'}<input type='hidden' value='{$vo.id}' name='id'>{/notempty}
 
         <div class="layui-form-item text-center">
-            <button class="layui-btn" type='submit'>保存数据</button>
-            <button class="layui-btn layui-btn-danger" type='button' data-target-backup data-confirm="确定要取消编辑吗？">取消编辑</button>
+            <button class="layui-btn" type='submit'>{:lang('保存数据')}</button>
+            <button class="layui-btn layui-btn-danger" type='button' data-target-backup data-confirm="{:lang('确定要取消编辑吗？')}">{:lang('取消编辑')}</button>
         </div>
     </div>
 </form>

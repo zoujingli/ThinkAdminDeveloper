@@ -3,7 +3,7 @@
 
         <div class="layui-row layui-form-item layui-col-space10">
             <div class="layui-col-xs3">
-                <span class="help-label label-required-prev"><b>奖励类型</b>Type</span>
+                <span class="help-label label-required-prev"><b>{:lang('奖励类型')}</b>Type</span>
                 <select class="layui-select" name="type">
                     {foreach $prizes as $k=>$v}{if isset($vo.type) and $vo.type eq $k}
                     <option value="{$k}" selected>{$v}</option>
@@ -13,18 +13,18 @@
                 </select>
             </div>
             <label class="layui-col-xs9 block relative">
-                <span class="help-label"><b>奖励名称</b>Reward Name</span>
-                <input class="layui-input" name="name" placeholder="请输入奖励名称" required value="{$vo.name|default=''}">
+                <span class="help-label"><b>{:lang('奖励名称')}</b>Reward Name</span>
+                <input class="layui-input" name="name" placeholder="{:lang('请输入奖励名称')}" required value="{$vo.name|default=''}">
             </label>
             <label class="layui-col-xs3 block relative">
-                <span class="help-label"><b>规则编号</b>Code</span>
+                <span class="help-label"><b>{:lang('规则编号')}</b>Code</span>
                 <input class="layui-input layui-bg-gray" name="code" readonly required value="{$vo.code|default=''}">
             </label>
             <div class="layui-col-xs9">
-                <span class="help-label label-required-prev"><b>结算方式</b>Settlement type</span>
+                <span class="help-label label-required-prev"><b>{:lang('结算方式')}</b>Settlement type</span>
                 {empty name='vo.stype'}{assign name='vo.stype' value='0'}{/empty}
                 <div class="layui-input flex flex-align-center">
-                    {foreach ['支付后立即结算','确认收货后结算'] as $k => $v}
+                    {foreach [lang('支付后立即结算'),lang('确认收货后结算')] as $k => $v}
                     {if isset($vo.stype) and $vo.stype eq $k}
                     <input name="stype" type="radio" value="{$k}" title="{$v}" checked>
                     {else}
@@ -42,7 +42,7 @@
         {php} $vo[$lname]=$vo[$lname]??0; {/php}
         <div class="layui-row layui-col-space10">
             <div class="layui-col-xs2 ">
-                <span class="help-label label-required-prev"><b>上 {$k} 级代理</b></span>
+                <span class="help-label label-required-prev"><b>{:lang('上')} {$k} {:lang('级代理')}</b></span>
                 <select class="layui-select" name="{$lname}">
                     {foreach $levels as $level}{if isset($vo[$lname]) and $vo[$lname] eq $level.number}
                     <option value="{$level.number}" selected>{$level.name}</option>
@@ -52,10 +52,10 @@
                 </select>
             </div>
             <div class="layui-col-xs8">
-                <span class="help-label label-required-prev"><b>计算类型</b>类型为比例时奖励系数为百分比</span>
+                <span class="help-label label-required-prev"><b>{:lang('计算类型')}</b>{:lang('类型为比例时奖励系数为百分比')}</span>
                 {php}$vo[$ltype]=$vo[$ltype]??0;{/php}
                 <div class="layui-input flex flex-align-center">
-                    {foreach ['固定金额 / 单','交易比例 / 单','利润比例 / 单'] as $k=>$v}
+                    {foreach [lang('固定金额 / 单'),lang('交易比例 / 单'),lang('利润比例 / 单')] as $k=>$v}
                     {if isset($vo[$ltype]) and $vo[$ltype] eq $k}
                     <input name="{$ltype}" type="radio" value="{$k}" title="{$v}" checked>
                     {else}
@@ -64,8 +64,8 @@
                 </div>
             </div>
             <label class="layui-col-xs2 block relative">
-                <span class="help-label label-required-prev"><b>奖励系数</b></span>
-                <input class="layui-input" name="{$lnumber}" lay-affix="number" min="0" step="0.0001" placeholder="请输入奖励系数" required value="{$vo[$lnumber]|default='0'}">
+                <span class="help-label label-required-prev"><b>{:lang('奖励系数')}</b></span>
+                <input class="layui-input" name="{$lnumber}" lay-affix="number" min="0" step="0.0001" placeholder="{:lang('请输入奖励系数')}" required value="{$vo[$lnumber]|default='0'}">
             </label>
         </div>
         {/foreach}
@@ -74,7 +74,7 @@
         {php} $lnumber = "p0_reward_number"; {/php}
         <div class="layui-row layui-col-space10">
             <div class="layui-col-xs2 layui-form-item">
-                <span class="help-label label-required-prev"><b>用户奖励</b></span>
+                <span class="help-label label-required-prev"><b>{:lang('用户奖励')}</b></span>
                 <select class="layui-select" name="{$lname}">
                     {foreach $levels as $level}{if $level.number>-2}
                     {if isset($vo[$lname]) and $vo[$lname] eq $level.number}
@@ -85,10 +85,10 @@
                 </select>
             </div>
             <div class="layui-col-xs8">
-                <span class="help-label label-required-prev"><b>计算类型</b>类型为比例时奖励系数为百分比</span>
+                <span class="help-label label-required-prev"><b>{:lang('计算类型')}</b>{:lang('类型为比例时奖励系数为百分比')}</span>
                 {php} $vo[$ltype]=$vo[$ltype]??0; {/php}
                 <div class="layui-input flex flex-align-center">
-                    {foreach ['固定金额 / 单','交易比例 / 单','利润比例 / 单'] as $k=>$v}
+                    {foreach [lang('固定金额 / 单'),lang('交易比例 / 单'),lang('利润比例 / 单')] as $k=>$v}
                     {if isset($vo[$ltype]) and $vo[$ltype] eq $k}
                     <input name="{$ltype}" type="radio" value="{$k}" title="{$v}" checked>
                     {else}
@@ -97,16 +97,16 @@
                 </div>
             </div>
             <label class="layui-col-xs2 block relative">
-                <span class="help-label label-required-prev"><b>奖励系数</b></span>
-                <input class="layui-input" name="{$lnumber}" lay-affix="number" min="0" step="0.0001" placeholder="请输入奖励系数" required value="{$vo[$lnumber]|default='0'}">
+                <span class="help-label label-required-prev"><b>{:lang('奖励系数')}</b></span>
+                <input class="layui-input" name="{$lnumber}" lay-affix="number" min="0" step="0.0001" placeholder="{:lang('请输入奖励系数')}" required value="{$vo[$lnumber]|default='0'}">
             </label>
         </div>
 
         <div class="layui-hide">
             <div class="hr-line-dashed"></div>
             <label class="layui-form-item block relative">
-                <span class="help-label"><b>内部备注</b>Remark</span>
-                <textarea class="layui-textarea" name="remark" placeholder="请输入内部备注">{$vo.remark|default=''}</textarea>
+                <span class="help-label"><b>{:lang('内部备注')}</b>Remark</span>
+                <textarea class="layui-textarea" name="remark" placeholder="{:lang('请输入内部备注')}">{$vo.remark|default=''}</textarea>
             </label>
         </div>
 
@@ -114,8 +114,8 @@
         {notempty name='vo.id'}<input name='id' type='hidden' value='{$vo.id}'>{/notempty}
 
         <div class="layui-form-item text-center">
-            <button class="layui-btn" type='submit'>保存数据</button>
-            <button class="layui-btn layui-btn-danger" data-close data-confirm="确定要取消编辑吗？" type='button'>取消编辑</button>
+            <button class="layui-btn" type='submit'>{:lang('保存数据')}</button>
+            <button class="layui-btn layui-btn-danger" data-close data-confirm="{:lang('确定要取消编辑吗？')}" type='button'>{:lang('取消编辑')}</button>
         </div>
     </div>
 

@@ -24,14 +24,14 @@
                 </div>
                 <div class="margin-top-10 flex-between">
                     {notempty name='item.plugmenus'}
-                    <a class="layui-btn layui-btn-sm" id="p{$item.encode}" data-href="{$item.center}">管理插件</a>
+                    <a class="layui-btn layui-btn-sm" id="p{$item.encode}" data-href="{$item.center}">{:lang('管理插件')}</a>
                     {if auth('setdefault') and isset($default) and $default eq $item.code}
-                    <a class="layui-btn layui-btn-sm layui-btn-normal" data-action="{:url('setdefault')}" data-value="default#0">取消默认</a>
+                    <a class="layui-btn layui-btn-sm layui-btn-normal" data-action="{:url('setdefault')}" data-value="default#0">{:lang('取消默认')}</a>
                     {elseif auth('setdefault')}
-                    <a class="layui-btn layui-btn-sm layui-btn-primary" data-action="{:url('setdefault')}" data-value="default#{$item.code}">设为默认</a>
+                    <a class="layui-btn layui-btn-sm layui-btn-primary" data-action="{:url('setdefault')}" data-value="default#{$item.code}">{:lang('设为默认')}</a>
                     {/if}
                     {else}
-                    <a class="layui-btn layui-btn-sm layui-btn-disabled">未配置菜单</a>
+                    <a class="layui-btn layui-btn-sm layui-btn-disabled">{:lang('未配置菜单')}</a>
                     {/notempty}
                 </div>
             </div>
@@ -39,7 +39,7 @@
         {/foreach}
         {empty name='items'}
         <div>
-            <div class="notdata">无记录</div>
+            <div class="notdata">{:lang('无记录')}</div>
         </div>
         {/empty}
     </div>

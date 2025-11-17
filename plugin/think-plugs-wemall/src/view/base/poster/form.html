@@ -1,8 +1,8 @@
 {extend name="main"}
 
 {block name="button"}
-<button data-target-submit class='layui-btn layui-btn-sm'>保存数据</button>
-<button data-target-backup class="layui-btn layui-btn-sm layui-btn-danger" data-confirm="确认要取消编辑吗？">取消编辑</button>
+<button data-target-submit class='layui-btn layui-btn-sm'>{:lang('保存数据')}</button>
+<button data-target-backup class="layui-btn layui-btn-sm layui-btn-danger" data-confirm="{:lang('确认要取消编辑吗？')}">{:lang('取消编辑')}</button>
 {/block}
 
 {block name="content"}
@@ -20,20 +20,20 @@
             </div>
 
             <div class="flex-1 ta-pl-30">
-                <a class="absolute" style="right:20px;top:20px" @click="show()">预 览</a>
+                <a class="absolute" style="right:20px;top:20px" @click="show()">{:lang('预 览')}</a>
 
                 <label class="layui-form-item block relative">
-                    <span class="help-label label-required-prev"><b>推广海报编号</b><code>Code</code></span>
-                    <input class="layui-input think-bg-gray" name="code" readonly required placeholder="请输入推广海报编号" value='{$vo.code|default=""}'>
+                    <span class="help-label label-required-prev"><b>{:lang('推广海报编号')}</b><code>Code</code></span>
+                    <input class="layui-input think-bg-gray" name="code" readonly required placeholder="{:lang('请输入推广海报编号')}" value='{$vo.code|default=""}'>
                 </label>
 
                 <label class="layui-form-item block relative">
-                    <span class="help-label label-required-prev"><b>推广海报标题</b><code>Title</code></span>
-                    <input class="layui-input" name="name" required placeholder="请输入推广海报标题" value='{$vo.name|default=""}'>
+                    <span class="help-label label-required-prev"><b>{:lang('推广海报标题')}</b><code>Title</code></span>
+                    <input class="layui-input" name="name" required placeholder="{:lang('请输入推广海报标题')}" value='{$vo.name|default=""}'>
                 </label>
 
                 <div class="layui-form-item block relative">
-                    <span class="help-label label-required-prev"><b>授权终端类型</b><code>Device</code></span>
+                    <span class="help-label label-required-prev"><b>{:lang('授权终端类型')}</b><code>Device</code></span>
                     <div class="layui-textarea help-checks">
                         {empty name='vo.devices'}{php}$vo['devices']=[];{/php}{/empty}
                         {foreach $devices as $k=>$l}
@@ -49,7 +49,7 @@
                 </div>
 
                 <div class="layui-form-item block relative">
-                    <span class="help-label label-required-prev"><b>授权会员等级</b><code>Level</code></span>
+                    <span class="help-label label-required-prev"><b>{:lang('授权会员等级')}</b><code>Level</code></span>
                     <div class="layui-textarea help-checks">
                         {empty name='vo.levels'}{php}$vo['levels']=[];{/php}{/empty}
                         {foreach $levels as $l}
@@ -65,7 +65,7 @@
                 </div>
 
                 <div class="layui-form-item">
-                    <span class="help-label label-required-prev"><b>推广海报底图</b>( 推荐尺寸 1008 x 1426 或相应比例 )</span>
+                    <span class="help-label label-required-prev"><b>{:lang('推广海报底图')}</b>( {:lang('推荐尺寸 1008 x 1426 或相应比例')} )</span>
                     <label class="block relative">
                         <input class="layui-input think-bg-gray" data-tips-image data-tips-hover readonly v-model="image" name="image">
                         <a class="layui-icon layui-icon-upload input-right-icon" data-file data-field="image" data-type="png,jpg,jpeg"></a>
@@ -74,33 +74,33 @@
 
                 <div class="layui-row layui-col-space15">
                     <div class="layui-col-md4 layui-col-sm6 layui-col-xs6" v-for="(x,k) in items">
-                        <span class="help-label label-required-prev"><b>邀请人{{x.name}}</b></span>
+                        <span class="help-label label-required-prev"><b>{:lang('邀请人')}{{x.name}}</b></span>
                         <div class="layui-textarea">
                             <div class="layui-input-group">
-                                <div class="layui-input-prefix nowrap">是否显示</div>
-                                <label class="think-radio"><input type="radio" v-model="x.state" value="1" lay-ignore> 是</label>
-                                <label class="think-radio"><input type="radio" v-model="x.state" value="0" lay-ignore> 否</label>
+                                <div class="layui-input-prefix nowrap">{:lang('是否显示')}</div>
+                                <label class="think-radio"><input type="radio" v-model="x.state" value="1" lay-ignore> {:lang('是')}</label>
+                                <label class="think-radio"><input type="radio" v-model="x.state" value="0" lay-ignore> {:lang('否')}</label>
                             </div>
                             <div v-if="x.type==='ximg'" class="layui-input-group ta-mt-10">
-                                <div class="layui-input-prefix nowrap">图片尺寸</div>
+                                <div class="layui-input-prefix nowrap">{:lang('图片尺寸')}</div>
                                 <label><input type="number" v-model="x.size" min="12" max="200" value="12" class="layui-input ta-pr-0"></label>
                                 <div class="layui-input-suffix">px</div>
                             </div>
                             <div v-if="x.type=='text'" class="layui-input-group ta-mt-10">
-                                <div class="layui-input-prefix nowrap">文字大小</div>
+                                <div class="layui-input-prefix nowrap">{:lang('文字大小')}</div>
                                 <label><input type="number" v-model="x.size" min="12" max="99" value="12" class="layui-input ta-pr-0"></label>
                                 <div class="layui-input-suffix"><span :data-color-picker="k" class="ta-m-0"></span></div>
                             </div>
                             <div v-if="x.rule=='item.value'" class="layui-input-group ta-mt-10">
-                                <div class="layui-input-prefix nowrap">文字内容</div>
+                                <div class="layui-input-prefix nowrap">{:lang('文字内容')}</div>
                                 <label class="block">
-                                    <input class="layui-input" placeholder="请输入文字内容" v-model="x.value">
+                                    <input class="layui-input" :placeholder="'{:lang('请输入文字内容')}'" v-model="x.value">
                                 </label>
                             </div>
                             <div v-if="x.rule=='user.spreat'" class="layui-input-group ta-mt-10">
-                                <div class="layui-input-prefix nowrap">入口链接</div>
+                                <div class="layui-input-prefix nowrap">{:lang('入口链接')}</div>
                                 <label class="block">
-                                    <input class="layui-input" placeholder="请输入入口链接" v-model="x.value">
+                                    <input class="layui-input" :placeholder="'{:lang('请输入入口链接')}'" v-model="x.value">
                                 </label>
                             </div>
                         </div>
@@ -118,8 +118,8 @@
         {notempty name='vo.id'}<input name="id" type="hidden" value="{$vo.id}">{/notempty}
 
         <div class="layui-form-item text-center">
-            <button class="layui-btn" type='submit'>保存数据</button>
-            <button class="layui-btn layui-btn-danger" type='button' data-confirm="确认要取消编辑吗？" data-target-backup>取消编辑</button>
+            <button class="layui-btn" type='submit'>{:lang('保存数据')}</button>
+            <button class="layui-btn layui-btn-danger" type='button' data-confirm="{:lang('确认要取消编辑吗？')}" data-target-backup>{:lang('取消编辑')}</button>
         </div>
     </div>
 </form>
@@ -132,11 +132,11 @@
                 id: parseInt("{$vo.id|default=0}"),
                 image: '{$vo.image|default="https://fakeimg.pl/10x10/16baaa/16baaa"}',
                 imageBox: {w: 504, h: 713}, items: [
-                    {type: 'ximg', name: '用户头像', rule: 'user.headimg', value: '', size: 100, state: 1, point: {x: 30, y: 80}, color: 'rgba(51,51,51,1)'},
-                    {type: 'text', name: '用户昵称', rule: 'user.nickname', value: '用户昵称', size: 14, state: 1, point: {x: 55, y: 82}, color: 'rgba(51,51,51,1)'},
-                    {type: 'text', name: '等级身份', rule: 'user.rolename', value: '推广专员', size: 14, state: 1, point: {x: 55, y: 88}, color: 'rgba(51,51,51,1)'},
-                    {type: 'ximg', name: '邀请二维码', rule: 'user.spreat', value: '/pages/home/index', size: 100, state: 1, point: {x: 70, y: 80}, color: 'rgba(51,51,51,1)'},
-                    {type: 'text', name: '推广短语', rule: 'item.value', value: '推广短语', size: 14, state: 1, point: {x: 30, y: 75}, color: 'rgba(51,51,51,1)'},
+                    {type: 'ximg', name: '{:lang("用户头像")}', rule: 'user.headimg', value: '', size: 100, state: 1, point: {x: 30, y: 80}, color: 'rgba(51,51,51,1)'},
+                    {type: 'text', name: '{:lang("用户昵称")}', rule: 'user.nickname', value: '{:lang("用户昵称")}', size: 14, state: 1, point: {x: 55, y: 82}, color: 'rgba(51,51,51,1)'},
+                    {type: 'text', name: '{:lang("等级身份")}', rule: 'user.rolename', value: '{:lang("推广专员")}', size: 14, state: 1, point: {x: 55, y: 88}, color: 'rgba(51,51,51,1)'},
+                    {type: 'ximg', name: '{:lang("邀请二维码")}', rule: 'user.spreat', value: '/pages/home/index', size: 100, state: 1, point: {x: 70, y: 80}, color: 'rgba(51,51,51,1)'},
+                    {type: 'text', name: '{:lang("推广短语")}', rule: 'item.value', value: '{:lang("推广短语")}', size: 14, state: 1, point: {x: 30, y: 75}, color: 'rgba(51,51,51,1)'},
                 ]
             }, methods: {
                 point(data) {

@@ -2,7 +2,7 @@
 
 {block name='button'}
 <!--{if auth("config")}-->
-<button class='layui-btn layui-btn-sm layui-btn-primary' data-table-id="DataTable" data-open='{:url("config")}'>签到配置</button>
+<button class='layui-btn layui-btn-sm layui-btn-primary' data-table-id="DataTable" data-open='{:url("config")}'>{:lang('签到配置')}</button>
 <!--{/if}-->
 {/block}
 
@@ -24,16 +24,16 @@
                 {field: 'id', hide: true},
                 // {checkbox: true, fixed: true},
                 {
-                    title: '会员用户', minWidth: 80, width: '20%', templet: function (d) {
+                    title: '{:lang("会员用户")}', minWidth: 80, width: '20%', templet: function (d) {
                         return laytpl("<div>{{-showTableImage(d.user.headimg)}} <b>{{d.user.phone}}</b> {{d.user.nickname}}</div>").render(d);
                     }
                 },
-                {field: 'date', title: '签到日期', align: 'center', minWidth: 110},
-                {title: '连续签到', align: 'center', minWidth: 110, templet: "<div>连续 {{d.times}} 天</div>"},
-                {title: '奖励规则', align: 'center', minWidth: 110, templet: "<div>第 {{d.timed}} 天</div>"},
-                {title: '签到奖励', align: 'center', minWidth: 110, templet: "<div>奖励 {{Number(d.integral)}} 积分</div>"},
-                {title: '签到奖励', align: 'center', minWidth: 110, templet: "<div>余额 {{Number(d.balance)}} 元</div>"},
-                {field: 'create_time', title: '创建时间', align: 'center', minWidth: 170, sort: true},
+                {field: 'date', title: '{:lang("签到日期")}', align: 'center', minWidth: 110},
+                {title: '{:lang("连续签到")}', align: 'center', minWidth: 110, templet: '<div>{:lang("连续")} {{d.times}} {:lang("天")}</div>'},
+                {title: '{:lang("奖励规则")}', align: 'center', minWidth: 110, templet: '<div>{:lang("第")} {{d.timed}} {:lang("天")}</div>'},
+                {title: '{:lang("签到奖励")}', align: 'center', minWidth: 110, templet: '<div>{:lang("奖励")} {{Number(d.integral)}} {:lang("积分")}</div>'},
+                {title: '{:lang("签到奖励")}', align: 'center', minWidth: 110, templet: '<div>{:lang("余额")} {{Number(d.balance)}} {:lang("元")}</div>'},
+                {field: 'create_time', title: '{:lang("创建时间")}', align: 'center', minWidth: 170, sort: true},
                 // {toolbar: '#toolbar', title: '操作面板', align: 'center', minWidth: 140, fixed: 'right'},
             ]]
         });

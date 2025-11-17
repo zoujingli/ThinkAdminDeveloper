@@ -33,48 +33,48 @@
         $('#RefundTable').layTable({
             even: true, height: 'full', sort: {field: 'id', type: 'desc'}, cellExpandedMode: 'tips',
             cols: [[
-                {field: 'headimg', title: '头 像', width: 100, align: 'center', templet: '<div>{{-showTableImage(d.user.headimg,true,"md")}}</div>'},
+                {field: 'headimg', title: '{:lang("头 像")}', width: 100, align: 'center', templet: '<div>{{-showTableImage(d.user.headimg,true,"md")}}</div>'},
                 {
-                    title: '会员用户', width: 200, templet: function (d) {
+                    title: '{:lang("会员用户")}', width: 200, templet: function (d) {
                         let tpls = [];
                         if (d.user) {
-                            tpls.push('用户昵称：{{d.user.nickname||d.user.username||"-"}}');
-                            tpls.push('用户手机：<b class="font-code">{{d.user.phone}}</b>');
-                            tpls.push('用户编号：<b class="font-code">{{d.user.code}}</b>');
+                            tpls.push('{:lang("用户昵称")}：{{d.user.nickname||d.user.username||"-"}}');
+                            tpls.push('{:lang("用户手机")}：<b class="font-code">{{d.user.phone}}</b>');
+                            tpls.push('{:lang("用户编号")}：<b class="font-code">{{d.user.code}}</b>');
                         } else {
-                            tpls.push('<div class="color-desc ta-pt-10">无用户账号</div>')
+                            tpls.push('<div class="color-desc ta-pt-10">' + '{:lang("无用户账号")}' + '</div>')
                         }
                         return laytpl("<div class='nowrap'>" + tpls.join('<br>') + "</div>").render(d);
                     }
                 },
                 {
-                    title: '售后信息', templet: (d) => {
+                    title: '{:lang("售后信息")}', templet: (d) => {
                         let style = ['grey', 'grey', 'blue', 'blue', 'blue', 'blue', 'blue', 'green', 'green'][d.status] || 'blue';
-                        let status = ['已取消', '预订单', '待审核', '待退货', '已退货', '待退款', '已退款', '已完成'][d.status] || '未知';
+                        let status = ['{:lang("已取消")}', '{:lang("预订单")}', '{:lang("待审核")}', '{:lang("待退货")}', '{:lang("已退货")}', '{:lang("待退款")}', '{:lang("已退款")}', '{:lang("已完成")}'][d.status] || '{:lang("未知")}';
                         let left = '<span class="layui-badge layui-badge-middle flex-center layui-bg-' + style + '" style="height:4.5em">' + status + '</span>';
                         let tpls = [];
-                        tpls.push('售后单 <b class="font-code">{{d.code||"-"}}</b>');
-                        tpls.push('{{d.typename}}，申请退款 <b class="font-code">{{str2num(d.amount)}}</b> 元');
-                        tpls.push('退回 <b>{{Number(d.payment_amount)}}</b> 元，退回 <b>{{Number(d.balance_amount)}}</b> 余额，退回 <b>{{Number(d.integral_amount)}}</b> 积分')
+                        tpls.push('{:lang("售后单")} <b class="font-code">{{d.code||"-"}}</b>');
+                        tpls.push('{{d.typename}}，' + '{:lang("申请退款")}' + ' <b class="font-code">{{str2num(d.amount)}}</b> {:lang("元")}');
+                        tpls.push('{:lang("退回")} <b>{{Number(d.payment_amount)}}</b> {:lang("元")}，' + '{:lang("退回")}' + ' <b>{{Number(d.balance_amount)}}</b> {:lang("余额")}，' + '{:lang("退回")}' + ' <b>{{Number(d.integral_amount)}}</b> {:lang("积分")}')
                         return laytpl('<div class="flex">' + left + "<div class='nowrap sub-strong-blue'>" + tpls.join('<br>') + "</div></div>").render(d);
                     }
                 },
                 {
-                    title: '订单信息', templet: (d) => {
-                        let ostatus = ['已取消', '预订单', '待支付', '待审核', '待发货', '已发货', '已收货', '已评论'];
+                    title: '{:lang("订单信息")}', templet: (d) => {
+                        let ostatus = ['{:lang("已取消")}', '{:lang("预订单")}', '{:lang("待支付")}', '{:lang("待审核")}', '{:lang("待发货")}', '{:lang("已发货")}', '{:lang("已收货")}', '{:lang("已评论")}'];
                         let ostyles = ['layui-bg-gray layui-border-red', 'layui-bg-red', 'layui-bg-orange', 'layui-bg-black', 'layui-bg-blue', 'layui-bg-green', 'layui-bg-green'];
                         let status = laytpl('<span class="layui-badge layui-badge-middle flex-center {{d.style}}" style="height:4.5em">{{d.status}}</span>').render({
                             status: ostatus[d.orderinfo.status], style: ostyles[d.orderinfo.status]
                         });
                         let tpls = [];
-                        tpls.push('订单号 <b class="font-code">{{d.order_no||"-"}}</b>');
-                        tpls.push('共支付 <b class="font-code">{{str2num(d.orderinfo.amount_real)}}</b> 元，共 {{d.orderinfo.number_goods}} 件商品');
-                        tpls.push('余额支付 <b>{{Number(d.orderinfo.amount_balance)}}</b> 元，使用 <b>{{Number(d.orderinfo.amount_integral)}}</b> 积分抵扣')
+                        tpls.push('{:lang("订单号")} <b class="font-code">{{d.order_no||"-"}}</b>');
+                        tpls.push('{:lang("共支付")} <b class="font-code">{{str2num(d.orderinfo.amount_real)}}</b> {:lang("元")}，' + '{:lang("共")}' + ' {{d.orderinfo.number_goods}} {:lang("件商品")}');
+                        tpls.push('{:lang("余额支付")} <b>{{Number(d.orderinfo.amount_balance)}}</b> {:lang("元")}，' + '{:lang("使用")}' + ' <b>{{Number(d.orderinfo.amount_integral)}}</b> {:lang("积分抵扣")}')
                         return laytpl('<div class="flex">' + status + '<div class="nowrap sub-strong-blue">' + tpls.join('<br>') + '</div></div>').render(d);
                     }
                 },
-                {field: 'id', sort: true, title: '操作时间', minWidth: 170, templet: "<div>更新时间：{{d.update_time}}<br>下单时间：{{d.create_time}}</div>"},
-                {toolbar: '#RefundEdit', title: '操作面板', width: 120, align: 'center', fixed: 'right'},
+                {field: 'id', sort: true, title: '{:lang("操作时间")}', minWidth: 170, templet: '<div>{:lang("更新时间")}：{{d.update_time}}<br>{:lang("下单时间")}：{{d.create_time}}</div>'},
+                {toolbar: '#RefundEdit', title: '{:lang("操作面板")}', width: 120, align: 'center', fixed: 'right'},
             ]]
         });
     });
@@ -84,7 +84,7 @@
 <script type="text/html" id="RefundEdit">
     <!--{if auth('edit')}-->
     <div class="ta-p-5"></div>
-    <a class="layui-btn layui-btn-sm" data-open="{:url('edit')}?id={{d.id}}">编 辑</a>
+    <a class="layui-btn layui-btn-sm" data-open="{:url('edit')}?id={{d.id}}">{:lang('编 辑')}</a>
     <!--{/if}-->
 </script>
 {/block}

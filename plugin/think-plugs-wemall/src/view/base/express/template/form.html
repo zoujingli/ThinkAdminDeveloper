@@ -5,12 +5,12 @@
     <form action="{:sysuri()}" class='layui-form layui-card shadow' data-auto="true" method="post">
         <div class="layui-card-body ta-p-40 ta-pb-10">
             <label class="layui-form-item block relative">
-                <span class="help-label"><b>邮费模板名称</b>Name</span>
-                <input class="layui-input" name="name" placeholder="请输入邮费模板名称" required vali-name="邮费模板名称" value='{$vo.name|default=""}'>
-                <span class="color-desc"><b>必填</b>，邮费模板名称用于区分邮费模板规则，仅在后台选择邮费模板时使用。</span>
+                <span class="help-label"><b>{:lang('邮费模板名称')}</b>Name</span>
+                <input class="layui-input" name="name" placeholder="{:lang('请输入邮费模板名称')}" required vali-name="{:lang('邮费模板名称')}" value='{$vo.name|default=""}'>
+                <span class="color-desc"><b>{:lang('必填')}</b>，{:lang('邮费模板名称用于区分邮费模板规则，仅在后台选择邮费模板时使用。')}</span>
             </label>
             <div class="layui-form-item block relative">
-                <span class="help-label label-required-prev"><b>指定快递公司</b>Express</span>
+                <span class="help-label label-required-prev"><b>{:lang('指定快递公司')}</b>Express</span>
                 <div class="layui-textarea help-checks">
                     {foreach $companys as $k=>$v}
                     <label class="think-checkbox" data-width="100px" title="{$v}">
@@ -24,28 +24,28 @@
                 </div>
             </div>
             <div class="layui-form-item">
-                <span class="help-label label-required-prev"><b>配送区域计费规则</b>Region</span>
+                <span class="help-label label-required-prev"><b>{:lang('配送区域计费规则')}</b>Region</span>
                 <table class="layui-table">
                     <thead>
                     <tr>
-                        <th class="nowrap text-left">可配送区域</th>
-                        <th class="nowrap text-center">首件（个）</th>
-                        <th class="nowrap text-center">运费（元）</th>
-                        <th class="nowrap text-center">续件（个）</th>
-                        <th class="nowrap text-center">续费（元）</th>
+                        <th class="nowrap text-left">{:lang('可配送区域')}</th>
+                        <th class="nowrap text-center">{:lang('首件（个）')}</th>
+                        <th class="nowrap text-center">{:lang('运费（元）')}</th>
+                        <th class="nowrap text-center">{:lang('续件（个）')}</th>
+                        <th class="nowrap text-center">{:lang('续费（元）')}</th>
                     </tr>
                     </thead>
                     <tbody>
                     <!--已选择的区域邮费规则-->
                     <tr ng-if="item.city.length > 0" ng-repeat="item in rules">
                         <td>
-                            <b class="color-green">自定区域：</b>
+                            <b class="color-green">{:lang('自定区域：')}</b>
                             <div class="ta-mr-5 inline-block" ng-if="ShowProvinceStatus(province)" ng-repeat="province in item.city">
                                 <b class="font-w7" ng-bind="province.name"></b>
                                 <span class="color-desc">{{ShowProvinceCityName(province)}}</span>
                             </div>
-                            <a class="ta-ml-5 inline-block nowrap" ng-click="EditRuleItem(item)">编辑</a>
-                            <a class="ta-ml-5 inline-block nowrap" ng-click="RemoveRuleItem(item)">删除</a>
+                            <a class="ta-ml-5 inline-block nowrap" ng-click="EditRuleItem(item)">{:lang('编辑')}</a>
+                            <a class="ta-ml-5 inline-block nowrap" ng-click="RemoveRuleItem(item)">{:lang('删除')}</a>
                         </td>
                         <td class="ta-p-0 text-center">
                             <input class="layui-input text-center ta-pl-0 border-0" ng-blur="convertNumber(item.rule,'firstNumber',0)" ng-model="item.rule.firstNumber">
@@ -61,12 +61,12 @@
                         </td>
                     </tr>
                     <tr ng-if="defs.city.length > 0">
-                        <td colspan="5"><a class="font-w7" ng-click="AddRuleItem()">添加可配送区域和运费</a></td>
+                        <td colspan="5"><a class="font-w7" ng-click="AddRuleItem()">{:lang('添加可配送区域和运费')}</a></td>
                     </tr>
                     <!-- 未选择的区域邮费规则 -->
                     <tr ng-if="defs.city.length > 0">
                         <td>
-                            <b class="color-green">默认区域：</b>
+                            <b class="color-green">{:lang('默认区域：')}</b>
                             <div class="ta-mr-5 inline-block" ng-repeat="province in defs.city">
                                 <b class="font-w7" ng-bind="province.name"></b>
                                 <span class="color-desc">{{ShowProvinceCityName(province)}}</span>
@@ -99,7 +99,7 @@
             {notempty name='vo.code'}<input name="code" type="hidden" value="{$vo.code}">{/notempty}
 
             <div class="layui-form-item text-center">
-                <button class="layui-btn" type='submit'>保存数据</button>
+                <button class="layui-btn" type='submit'>{:lang('保存数据')}</button>
             </div>
         </div>
     </form>
@@ -110,8 +110,8 @@
                 <div class="layui-col-xs8">
                     <div class="layui-textarea" style="height:360px;overflow:auto">
                         <div>
-                            <span class="pointer notselect ta-mr-10" ng-click="CheckAllProvince(true)">全选</span>
-                            <span class="pointer notselect ta-mr-10" ng-click="CheckAllProvince(false)">取消</span>
+                            <span class="pointer notselect ta-mr-10" ng-click="CheckAllProvince(true)">{:lang('全选')}</span>
+                            <span class="pointer notselect ta-mr-10" ng-click="CheckAllProvince(false)">{:lang('取消')}</span>
                         </div>
                         <hr class="hr-line-dashed ta-mt-5 ta-mb-5">
                         <div class="layui-row layui-col-space5">
@@ -128,8 +128,8 @@
                 <div class="layui-col-xs4">
                     <div class="layui-textarea" style="height:360px;overflow:auto">
                         <div>
-                            <span class="pointer notselect ta-mr-10" ng-click="CheckAllCity(true)">全选</span>
-                            <span class="pointer notselect ta-mr-10" ng-click="CheckAllCity(false)">取消</span>
+                            <span class="pointer notselect ta-mr-10" ng-click="CheckAllCity(true)">{:lang('全选')}</span>
+                            <span class="pointer notselect ta-mr-10" ng-click="CheckAllCity(false)">{:lang('取消')}</span>
                             <b class="pull-right color-blue" ng-bind="city.name"></b>
                         </div>
                         <hr class="hr-line-dashed ta-mt-5 ta-mb-5">
@@ -141,7 +141,7 @@
             </div>
         </div>
         <div class="layui-form-item text-center">
-            <button class="layui-btn" ng-click="SetRuleItem()">确定选择</button>
+            <button class="layui-btn" ng-click="SetRuleItem()">{:lang('确定选择')}</button>
         </div>
     </div>
 </div>
@@ -280,7 +280,7 @@
             /*! 显示区域选择器 */
             $rootScope.showDialog = function () {
                 layui.layer.open({
-                    type: 1, shade: false, area: '800px', title: '区域选择器',
+                    type: 1, shade: false, area: '800px', title: '{:lang("区域选择器")}',
                     content: $('#RegionDialog').removeClass('layui-hide'), end: function () {
                         $('#RegionDialog').addClass('layui-hide'), $rootScope.SetRuleItem();
                     }

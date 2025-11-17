@@ -2,14 +2,14 @@
 
 {block name="button"}
 <!--{if auth("remove")}-->
-<button data-action='{:url("remove")}' data-table-id="FeedbackData" data-rule="id#{id}" data-confirm="确定要批量删除吗？" class='layui-btn layui-btn-sm layui-btn-primary'>批量删除</button>
+<button data-action='{:url("remove")}' data-table-id="FeedbackData" data-rule="id#{id}" data-confirm="{:lang('确定要批量删除吗？')}" class='layui-btn layui-btn-sm layui-btn-primary'>{:lang('批量删除')}</button>
 <!--{/if}-->
 {/block}
 
 {block name="content"}
 <div class="layui-tab layui-tab-card think-bg-white">
     <ul class="layui-tab-title">
-        {foreach ['index'=>'意见反馈','recycle'=>'回 收 站'] as $k=>$v}
+        {foreach ['index'=>lang('意见反馈'),'recycle'=>lang('回 收 站')] as $k=>$v}
         {if isset($type) and $type eq $k}
         <li class="layui-this color-green" data-open="{:url('index')}?type={$k}">{$v}</li>
         {else}
@@ -31,19 +31,19 @@
             even: true, height: 'full', sort: {field: 'sort desc,id', type: 'desc'},
             cols: [[
                 {checkbox: true, fixed: true},
-                {field: 'sort', title: '排序权重', align: 'center', width: 100, sort: true, templet: '#SortInputTpl'},
+                {field: 'sort', title: '{:lang("排序权重")}', align: 'center', width: 100, sort: true, templet: '#SortInputTpl'},
                 {
-                    title: '提交用户', minWidth: 200, width: '10%', templet: function (d) {
+                    title: '{:lang("提交用户")}', minWidth: 200, width: '10%', templet: function (d) {
                         return showTableImage(d.user_headimg, true, '', (d.user_nickname || '') + " " + (d.user_phone || ''));
                     }
                 },
-                {field: 'phone', title: '联系电话', align: 'center', minWidth: 140, templet: '<div>{{d.phone||"-"}}</div>'},
-                {field: 'content', title: '反馈意见', align: 'left', minWidth: 150, templet: '<div>{{d.content||"-"}}</div>'},
-                {field: 'reply', title: '回复内容', align: 'left', minWidth: 150, templet: '<div>{{d.reply||"-"}}</div>'},
-                {field: 'status', title: '显示状态', align: 'center', minWidth: 110, templet: '#StatusSwitchTpl'},
-                {field: 'sync', title: '同步到常见问题', align: 'center', minWidth: 110, templet: '#ToProblemSwitchTpl'},
-                {field: 'create_time', title: '创建时间', align: 'center', minWidth: 170, sort: true},
-                {toolbar: '#toolbar', title: '操作面板', align: 'center', minWidth: 150, fixed: 'right'},
+                {field: 'phone', title: '{:lang("联系电话")}', align: 'center', minWidth: 140, templet: '<div>{{d.phone||"-"}}</div>'},
+                {field: 'content', title: '{:lang("反馈意见")}', align: 'left', minWidth: 150, templet: '<div>{{d.content||"-"}}</div>'},
+                {field: 'reply', title: '{:lang("回复内容")}', align: 'left', minWidth: 150, templet: '<div>{{d.reply||"-"}}</div>'},
+                {field: 'status', title: '{:lang("显示状态")}', align: 'center', minWidth: 110, templet: '#StatusSwitchTpl'},
+                {field: 'sync', title: '{:lang("同步到常见问题")}', align: 'center', minWidth: 110, templet: '#ToProblemSwitchTpl'},
+                {field: 'create_time', title: '{:lang("创建时间")}', align: 'center', minWidth: 170, sort: true},
+                {toolbar: '#toolbar', title: '{:lang("操作面板")}', align: 'center', minWidth: 150, fixed: 'right'},
             ]]
         });
 
@@ -77,29 +77,29 @@
 <!-- 数据状态切换模板 -->
 <script type="text/html" id="StatusSwitchTpl">
     <!--{if auth("state")}-->
-    <input type="checkbox" value="{{d.id}}" lay-skin="switch" lay-text="已显示|已隐藏" lay-filter="StatusSwitch" {{-d.status>0?'checked':''}}>
+    <input type="checkbox" value="{{d.id}}" lay-skin="switch" lay-text="{:lang('已显示')}|{:lang('已隐藏')}" lay-filter="StatusSwitch" {{-d.status>0?'checked':''}}>
     <!--{else}-->
-    {{-d.status ? '<b class="color-green">已显示</b>' : '<b class="color-red">已隐藏</b>'}}
+    {{-d.status ? '<b class="color-green">' + '{:lang("已显示")}' + '</b>' : '<b class="color-red">' + '{:lang("已隐藏")}' + '</b>'}}
     <!--{/if}-->
 </script>
 
 <!-- 同步到常见问题切换模板 -->
 <script type="text/html" id="ToProblemSwitchTpl">
     <!--{if auth("toproblem")}-->
-    <input type="checkbox" value="{{d.id}}" lay-skin="switch" lay-text="已同步|未同步" lay-filter="ToProblemSwitch" {{-d.sync>0?'checked':''}}/>
+    <input type="checkbox" value="{{d.id}}" lay-skin="switch" lay-text="{:lang('已同步')}|{:lang('未同步')}" lay-filter="ToProblemSwitch" {{-d.sync>0?'checked':''}}/>
     <!--{else}-->
-    {{-d.sync ? '<b class="color-green">已同步</b>' : '<b class="color-red">未同步</b>'}}
+    {{-d.sync ? '<b class="color-green">' + '{:lang("已同步")}' + '</b>' : '<b class="color-red">' + '{:lang("未同步")}' + '</b>'}}
     <!--{/if}-->
 </script>
 
 <!-- 数据操作工具条模板 -->
 <script type="text/html" id="toolbar">
     <!--{if auth('edit')}-->
-    <a class="layui-btn layui-btn-primary layui-btn-sm" data-open='{:url("edit")}?id={{d.id}}'>编 辑</a>
+    <a class="layui-btn layui-btn-primary layui-btn-sm" data-open='{:url("edit")}?id={{d.id}}'>{:lang('编 辑')}</a>
     <!--{/if}-->
 
     <!--{if auth("remove")}-->
-    <a class="layui-btn layui-btn-danger layui-btn-sm" data-confirm="确定要删除问题吗?" data-action="{:url('remove')}" data-value="id#{{d.id}}">删 除</a>
+    <a class="layui-btn layui-btn-danger layui-btn-sm" data-confirm="{:lang('确定要删除问题吗?')}" data-action="{:url('remove')}" data-value="id#{{d.id}}">{:lang('删 除')}</a>
     <!--{/if}-->
 </script>
 {/block}

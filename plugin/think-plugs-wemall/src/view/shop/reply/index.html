@@ -3,7 +3,7 @@
 {block name="content"}
 <div class="layui-tab layui-tab-card think-bg-white">
     <ul class="layui-tab-title">
-        {foreach ['index'=>'评论管理','recycle'=>'回收站'] as $k=>$v}
+        {foreach ['index'=>lang('评论管理'),'recycle'=>lang('回收站')] as $k=>$v}
         {if isset($type) and $type eq $k}
         <li class="layui-this" data-open="{:url('index')}?type={$k}">{$v}</li>
         {else}
@@ -24,23 +24,23 @@
         let $table = $('#ReplyTable').layTable({
             even: true, height: 'full', sort: {field: 'id', type: 'desc'},
             cols: [[
-                {field: 'headimg', title: '头 像', width: 70, align: 'center', templet: '<div>{{-showTableImage(d.user_headimg,true,"sm")}}</div>'},
+                {field: 'headimg', title: '{:lang("头 像")}', width: 70, align: 'center', templet: '<div>{{-showTableImage(d.user_headimg,true,"sm")}}</div>'},
                 {
-                    title: '会员用户', width: 180, templet: function (d) {
+                    title: '{:lang("会员用户")}', width: 180, templet: function (d) {
                         let tpls = [];
-                        tpls.push('用户昵称：{{d.user_nickname||d.user_username||"-"}}');
-                        tpls.push('用户手机：<b class="font-code">{{d.user_phone}}</b>');
+                        tpls.push('{:lang("用户昵称")}：{{d.user_nickname||d.user_username||"-"}}');
+                        tpls.push('{:lang("用户手机")}：<b class="font-code">{{d.user_phone}}</b>');
                         return laytpl("<div class='nowrap'>" + tpls.join('<br>') + "</div>").render(d);
                     }
                 },
                 {
-                    title: '评论得分', width: 165, align: 'center', templet: function (d) {
+                    title: '{:lang("评论得分")}', width: 165, align: 'center', templet: function (d) {
                         return laytpl('<div data-rate-number="{{d.rate}}"></div>').render(d)
                     }
                 },
-                {title: '评论内容', field: 'content'},
+                {title: '{:lang("评论内容")}', field: 'content'},
                 {
-                    title: '评论图片', templet: function (d) {
+                    title: '{:lang("评论图片")}', templet: function (d) {
                         let tpls = [];
                         d.images.map(x => {
                             tpls.push(laytpl("<div class='uploadimage ta-mr-5' data-lazy-src='{{d.x}}' data-tips-hover data-tips-image style='width:40px;height:40px;background-image:url('{{d.x}}')'></div>").render({x: x}))
@@ -48,15 +48,15 @@
                         return tpls.length > 0 ? tpls.join('') : '<div class="ta-pt-10">-</div>';
                     }
                 },
-                {title: '订单编号', field: 'order_no'},
+                {title: '{:lang("订单编号")}', field: 'order_no'},
                 {
-                    title: '评论商品', field: 'gcode', templet: function (d) {
+                    title: '{:lang("评论商品")}', field: 'gcode', templet: function (d) {
                         return laytpl('{{d.goods_code}}<br>{{d.goods_name}}').render(d)
                     }
                 },
-                {field: 'status', title: '商品状态', minWidth: 110, width: '5%', align: 'center', templet: '#StatusSwitchTpl'},
-                {field: 'id', sort: true, title: '操作时间', minWidth: 170, templet: "<div>更新时间：{{d.update_time}}<br>评论时间：{{d.create_time}}</div>"},
-                {toolbar: '#ReplyEdit', title: '操作面板', width: 120, align: 'center', fixed: 'right'},
+                {field: 'status', title: '{:lang("商品状态")}', minWidth: 110, width: '5%', align: 'center', templet: '#StatusSwitchTpl'},
+                {field: 'id', sort: true, title: '{:lang("操作时间")}', minWidth: 170, templet: '<div>{:lang("更新时间")}：{{d.update_time}}<br>{:lang("评论时间")}：{{d.create_time}}</div>'},
+                {toolbar: '#ReplyEdit', title: '{:lang("操作面板")}', width: 120, align: 'center', fixed: 'right'},
             ]],
             done: function () {
                 // 动态显示评分星星
@@ -82,16 +82,16 @@
 <script type="text/html" id="StatusSwitchTpl">
     <div class="ta-pt-10 block relative"></div>
     <!--{if auth("state")}-->
-    <input type="checkbox" value="{{d.id}}" lay-skin="switch" lay-text="显示|隐藏" lay-filter="StatusSwitch" {{-d.status>0?'checked':''}}>
+    <input type="checkbox" value="{{d.id}}" lay-skin="switch" lay-text="{:lang('显示')}|{:lang('隐藏')}" lay-filter="StatusSwitch" {{-d.status>0?'checked':''}}>
     <!--{else}-->
-    {{-d.status ? '<b class="color-green">已显示</b>' : '<b class="color-red">已隐藏</b>'}}
+    {{-d.status ? '<b class="color-green">' + '{:lang("已显示")}' + '</b>' : '<b class="color-red">' + '{:lang("已隐藏")}' + '</b>'}}
     <!--{/if}-->
 </script>
 
 <!-- 操控面板的模板 -->
 <script type="text/html" id="ReplyEdit">
     <!--{if auth('edit')}-->
-    <a class="layui-btn layui-btn-sm" data-modal="{:url('edit')}?id={{d.id}}" data-title="修改评论">编 辑</a>
+    <a class="layui-btn layui-btn-sm" data-modal="{:url('edit')}?id={{d.id}}" data-title="{:lang('修改评论')}">{:lang('编 辑')}</a>
     <!--{/if}-->
 </script>
 {/block}

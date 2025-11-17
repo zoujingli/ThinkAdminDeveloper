@@ -2,7 +2,7 @@
 
 {block name="button"}
 <!--{if auth("clean")}-->
-<button class='layui-btn layui-btn-sm layui-btn-primary' data-queue='{:url("clean")}'>订单自动处理</button>
+<button class='layui-btn layui-btn-sm layui-btn-primary' data-queue='{:url("clean")}'>{:lang('订单自动处理')}</button>
 <!--{/if}-->
 {/block}
 
@@ -37,74 +37,74 @@
 
     $(function () {
 
-        let ostatus = ['已取消', '预订单', '待支付', '待审核', '待发货', '已发货', '已收货', '已评论'];
+        let ostatus = ['{:lang("已取消")}', '{:lang("预订单")}', '{:lang("待支付")}', '{:lang("待审核")}', '{:lang("待发货")}', '{:lang("已发货")}', '{:lang("已收货")}', '{:lang("已评论")}'];
         let ostyles = ['layui-bg-gray', 'layui-bg-red', 'layui-bg-orange', 'layui-bg-black', 'layui-bg-blue', 'layui-bg-blue', 'layui-bg-green', 'layui-bg-green'];
 
-        let rstatus = ['未售后', '预订单', '待审核', '待退货', '已退货', '待退款', '已退货', '已完成'];
+        let rstatus = ['{:lang("未售后")}', '{:lang("预订单")}', '{:lang("待审核")}', '{:lang("待退货")}', '{:lang("已退货")}', '{:lang("待退款")}', '{:lang("已退货")}', '{:lang("已完成")}'];
         let rstyles = ['layui-bg-gray', 'layui-bg-gray', 'layui-bg-blue', 'layui-bg-blue', 'layui-bg-blue', 'layui-bg-blue', 'layui-bg-blue', 'layui-bg-green'];
 
         $('#OrderTable').layTable({
             even: true, height: 'full', sort: {field: 'id', type: 'desc'},
             cols: [[
-                {field: 'headimg', title: '头 像', width: 90, align: 'center', templet: '<div>{{-showTableImage(d.user.headimg,true,"md")}}</div>'},
+                {field: 'headimg', title: '{:lang("头 像")}', width: 90, align: 'center', templet: '<div>{{-showTableImage(d.user.headimg,true,"md")}}</div>'},
                 {
-                    title: '会员用户', width: 170, templet: function (d) {
+                    title: '{:lang("会员用户")}', width: 170, templet: function (d) {
                         let tpls = [];
                         if (d.user) {
-                            tpls.push('<div>用户昵称：{{d.user.nickname||d.user.username||"-"}}</div>');
-                            tpls.push('<div>用户手机：<b class="font-code">{{d.user.phone}}</b></div>');
+                            tpls.push('<div>' + '{:lang("用户昵称")}' + '：{{d.user.nickname||d.user.username||"-"}}</div>');
+                            tpls.push('<div>' + '{:lang("用户手机")}' + '：<b class="font-code">{{d.user.phone}}</b></div>');
                         } else {
-                            tpls.push('<div class="color-desc ta-pt-10">无用户账号</div>')
+                            tpls.push('<div class="color-desc ta-pt-10">' + '{:lang("无用户账号")}' + '</div>')
                         }
                         return laytpl("<div class='nowrap ta-pt-10'>" + tpls.join('') + "</div>").render(d);
                     }
                 },
                 {
-                    title: '推广用户', width: 170, templet: function (d) {
+                    title: '{:lang("推广用户")}', width: 170, templet: function (d) {
                         let tpls = [];
                         if (d.from) {
-                            tpls.push('<div>用户昵称：{{d.from.nickname||d.from.username||"-"}}</div>');
-                            tpls.push('<div>用户手机：<b class="font-code">{{d.from.phone}}</b></div>');
+                            tpls.push('<div>' + '{:lang("用户昵称")}' + '：{{d.from.nickname||d.from.username||"-"}}</div>');
+                            tpls.push('<div>' + '{:lang("用户手机")}' + '：<b class="font-code">{{d.from.phone}}</b></div>');
                         } else {
-                            tpls.push('<div class="color-desc ta-pt-10">无推荐人</div>')
+                            tpls.push('<div class="color-desc ta-pt-10">' + '{:lang("无推荐人")}' + '</div>')
                         }
                         return laytpl("<div class='nowrap ta-pt-10'>" + tpls.join('') + "</div>").render(d);
                     }
                 },
                 {
-                    title: '订单信息', minWidth: 250, templet: function (d) {
+                    title: '{:lang("订单信息")}', minWidth: 250, templet: function (d) {
                         d.showPayments = "{:url('plugin-payment/record/index')}"
-                        let tpls = ' <a data-tips-text="查看支付信息" data-title="查看支付信息" class="layui-icon layui-icon-rmb font-s12 ta-mr-5" data-width="999px" data-close-refresh="OrderTable"  data-modal="{{d.showPayments}}?orderinfo={{d.order_no}}"></a>';
-                        tpls += '订单号 <b class="font-code">{{d.order_no}}</b>';
+                        let tpls = ' <a data-tips-text="' + '{:lang("查看支付信息")}' + '" data-title="' + '{:lang("查看支付信息")}' + '" class="layui-icon layui-icon-rmb font-s12 ta-mr-5" data-width="999px" data-close-refresh="OrderTable"  data-modal="{{d.showPayments}}?orderinfo={{d.order_no}}"></a>';
+                        tpls += '{:lang("订单号")} <b class="font-code">{{d.order_no}}</b>';
                         if (d.amount_real > 0) {
                             if (d.payment_status > 0) {
-                                tpls += '<br>已支付 <b class="font-code" data-width="1024px" data-title="查看支付详情">{{str2num(d.amount_real)}}</b> 元';
+                                tpls += '<br>' + '{:lang("已支付")}' + ' <b class="font-code" data-width="1024px" data-title="' + '{:lang("查看支付详情")}' + '">{{str2num(d.amount_real)}}</b> {:lang("元")}';
                             } else {
-                                tpls += '<br>需支付 <b class="font-code" data-width="1024px" data-title="查看支付详情">{{str2num(d.amount_real)}}</b> 元';
+                                tpls += '<br>' + '{:lang("需支付")}' + ' <b class="font-code" data-width="1024px" data-title="' + '{:lang("查看支付详情")}' + '">{{str2num(d.amount_real)}}</b> {:lang("元")}';
                             }
                         } else {
-                            tpls += '<br>无需支付';
+                            tpls += '<br>' + '{:lang("无需支付")}';
                         }
                         if (d.amount_express > 0) {
-                            tpls += ' ( 随减 <b class="font-code">{{str2num(d.amount_reduct)}}</b> 元，含邮费 <b class="font-code">{{str2num(d.amount_express)}}</b> 元)';
+                            tpls += ' ( {:lang("随减")} <b class="font-code">{{str2num(d.amount_reduct)}}</b> {:lang("元")}，{:lang("含邮费")} <b class="font-code">{{str2num(d.amount_express)}}</b> {:lang("元")})';
                         } else {
-                            tpls += ' ( 随减 <b class="font-code">{{str2num(d.amount_reduct)}}</b> 元，包邮免费 )';
+                            tpls += ' ( {:lang("随减")} <b class="font-code">{{str2num(d.amount_reduct)}}</b> {:lang("元")}，{:lang("包邮免费")} )';
                         }
                         tpls += '<br>'
                         if (d.amount_balance > 0) {
-                            tpls += "余额 " + d.amount_balance + " 元，"
+                            tpls += '{:lang("余额")} ' + d.amount_balance + ' {:lang("元")}，'
                         } else {
-                            tpls += '未使用余额，'
+                            tpls += '{:lang("未使用余额")}，'
                         }
                         if (d.amount_integral > 0) {
-                            tpls += "积分 " + d.amount_balance + "，"
+                            tpls += '{:lang("积分")} ' + d.amount_balance + '，'
                         } else {
-                            tpls += '未使用积分，'
+                            tpls += '{:lang("未使用积分")}，'
                         }
                         if (d.coupon_code) {
-                            tpls += "优惠券 " + d.coupon_amount + "元，"
+                            tpls += '{:lang("优惠券")} ' + d.coupon_amount + '{:lang("元")}，'
                         } else {
-                            tpls += '未使用优惠券。'
+                            tpls += '{:lang("未使用优惠券")}。'
                         }
 
                         let status = laytpl('<span class="layui-badge layui-badge-middle flex-center {{d.style}}" >{{d.status}}</span>').render({
@@ -117,7 +117,7 @@
                     }
                 },
                 {
-                    title: '商品详情', minWidth: 220, templet: function (d) {
+                    title: '{:lang("商品详情")}', minWidth: 220, templet: function (d) {
                         let tpls = [];
                         d.items.map(function (v) {
                             tpls.push(laytpl(
@@ -129,7 +129,7 @@
                                 '       <div>' +
                                 '           <span>{{d.gname}}</span>' +
                                 '           <span class="ta-pl-5 color-desc">{{str2name(d.gspec)}}</span><br>' +
-                                '           <span>{{d.stock_sales}}件 x {{str2num(d.price_selling)}}元/件，计 {{str2num(d.total_price_selling)}}元</span> ' +
+                                '           <span>{{d.stock_sales}}' + '{:lang("件")}' + ' x {{str2num(d.price_selling)}}' + '{:lang("元/件")}' + '，' + '{:lang("计")}' + ' {{str2num(d.total_price_selling)}}' + '{:lang("元")}' + '</span> ' +
                                 '       </div>' +
                                 '   </div>' +
                                 '</div>'
@@ -139,24 +139,24 @@
                     }
                 },
                 {
-                    title: '收货地址', templet: function (d) {
+                    title: '{:lang("收货地址")}', templet: function (d) {
                         if (d.address) {
                             let tpls = [];
                             if (d.address.status > 1) {
-                                tpls.push('<b>发货物流：</b><span class="ta-mr-5">{{d.company_name}}</span><span class="color-blue font-code">{{d.express_code}}</span>');
+                                tpls.push('<b>' + '{:lang("发货物流")}' + '：</b><span class="ta-mr-5">{{d.company_name}}</span><span class="color-blue font-code">{{d.express_code}}</span>');
                             } else {
-                                tpls.push('<b>发货物流：</b><span class="color-desc">未发货</span>');
+                                tpls.push('<b>' + '{:lang("发货物流")}' + '：</b><span class="color-desc">' + '{:lang("未发货")}' + '</span>');
                             }
-                            tpls.push('<b>联系方式：</b><span class="ta-mr-5">{{d.user_name}}</span><span class="color-blue font-code">{{d.user_phone}}</span>');
-                            tpls.push('<b>收货地址：</b>{{d.region_prov}} {{d.region_city}} {{d.region_area}} {{d.region_addr}}');
+                            tpls.push('<b>' + '{:lang("联系方式")}' + '：</b><span class="ta-mr-5">{{d.user_name}}</span><span class="color-blue font-code">{{d.user_phone}}</span>');
+                            tpls.push('<b>' + '{:lang("收货地址")}' + '：</b>{{d.region_prov}} {{d.region_city}} {{d.region_area}} {{d.region_addr}}');
                             return laytpl(tpls.join('<br>')).render(d.address);
                         } else {
-                            return '<div class="ta-pt-20 color-desc">无收货信息</div>';
+                            return '<div class="ta-pt-20 color-desc">' + '{:lang("无收货信息")}' + '</div>';
                         }
                     }
                 },
-                {field: 'id', sort: true, title: '创建时间', minWidth: 170, templet: "下单时间：{{d.create_time}}<br><div>支付时间：{{d.payment_time}}<br>签收时间：{{d.confirm_time}}</div>"},
-                {toolbar: '#toolbar', hide: true, title: '操作面板', width: 120, align: 'center', fixed: 'right'},
+                {field: 'id', sort: true, title: '{:lang("创建时间")}', minWidth: 170, templet: '{:lang("下单时间")}：{{d.create_time}}<br><div>{:lang("支付时间")}：{{d.payment_time}}<br>{:lang("签收时间")}：{{d.confirm_time}}</div>'},
+                {toolbar: '#toolbar', hide: true, title: '{:lang("操作面板")}', width: 120, align: 'center', fixed: 'right'},
             ]]
         });
     });
@@ -166,7 +166,7 @@
 <!-- 操控面板的模板 -->
 <script type="text/html" id="toolbar">
     <!--{if auth('remove')}-->
-    <a class="layui-btn layui-btn-sm layui-btn-danger" data-confirm="确定要删除此商品吗？" data-action="{:url('remove')}" data-value="code#{{d.code}}">删 除</a>
+    <a class="layui-btn layui-btn-sm layui-btn-danger" data-confirm="{:lang('确定要删除吗?')}" data-action="{:url('remove')}" data-value="id#{{d.id}}">{:lang('删 除')}</a>
     <!--{/if}-->
 </script>
 {/block}

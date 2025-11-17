@@ -2,18 +2,18 @@
     <div class="layui-card-body ta-pl-40">
 
         <label class="layui-form-item block relative">
-            <span class="help-label"><b>方案名称</b>Scheme Name</span>
-            <input class="layui-input" name="name" placeholder="请输入方案名称" required value="{$vo.name|default=''}">
+            <span class="help-label"><b>{:lang('方案名称')}</b>Scheme Name</span>
+            <input class="layui-input" name="name" placeholder="{:lang('请输入方案名称')}" required value="{$vo.name|default=''}">
         </label>
 
         <div class="layui-form-item label-required-prev">
-            <span class="help-label"><b>会员等级</b>User Level</span>
+            <span class="help-label"><b>{:lang('会员等级')}</b>User Level</span>
 
             <table class="layui-table" lay-skin="line">
                 <thead>
                 <tr class="layui-bg-gray">
-                    <th class="text-left">会员等级</th>
-                    <th class="text-right">售价比例 ( 0.00% - 100.00% )</th>
+                    <th class="text-left">{:lang('会员等级')}</th>
+                    <th class="text-right">{:lang('售价比例 ( 0.00% - 100.00% )')}</th>
                 </tr>
                 </thead>
                 <tbody>
@@ -34,16 +34,16 @@
         </div>
 
         <label class="layui-form-item block relative">
-            <span class="help-label"><b>方案备注</b>Scheme Remark</span>
-            <textarea class="layui-textarea" name="remark" placeholder="请输入方案备注">{$vo.remark|default=''}</textarea>
+            <span class="help-label"><b>{:lang('方案备注')}</b>Scheme Remark</span>
+            <textarea class="layui-textarea" name="remark" placeholder="{:lang('请输入方案备注')}">{$vo.remark|default=''}</textarea>
         </label>
 
         <div class="hr-line-dashed"></div>
         {notempty name='vo.id'}<input name='id' type='hidden' value='{$vo.id}'>{/notempty}
 
         <div class="layui-form-item text-center">
-            <button class="layui-btn" type='submit'>保存数据</button>
-            <button class="layui-btn layui-btn-danger" data-close data-confirm="确定要取消编辑吗？" type='button'>取消编辑</button>
+            <button class="layui-btn" type='submit'>{:lang('保存数据')}</button>
+            <button class="layui-btn layui-btn-danger" data-close data-confirm="{:lang('确定要取消编辑吗？')}" type='button'>{:lang('取消编辑')}</button>
         </div>
     </div>
 

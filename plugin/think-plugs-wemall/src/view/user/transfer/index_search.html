@@ -3,17 +3,17 @@
     <form action="{:sysuri()}" autocomplete="off" class="layui-form layui-form-pane form-search" method="get" onsubmit="return false">
 
         <div class="layui-form-item layui-inline">
-            <label class="layui-form-label">用户账号</label>
+            <label class="layui-form-label">{:lang('用户账号')}</label>
             <label class="layui-input-inline">
-                <input class="layui-input" name="user" placeholder="请输入用户账号" value="{$get.user|default=''}">
+                <input class="layui-input" name="user" placeholder="{:lang('请输入用户账号')}" value="{$get.user|default=''}">
             </label>
         </div>
 
         <div class="layui-form-item layui-inline">
-            <label class="layui-form-label">提现方式</label>
+            <label class="layui-form-label">{:lang('提现方式')}</label>
             <div class="layui-input-inline">
                 <select name="type" class="layui-select">
-                    <option value="">-- 全部 --</option>
+                    <option value="">{:lang('-- 全部 --')}</option>
                     {foreach $types as $k=>$v}
                     {if isset($get.type) and $get.type eq $k.''}
                     <option selected value="{$k}">{$v}</option>
@@ -25,11 +25,11 @@
         </div>
 
         <div class="layui-form-item layui-inline">
-            <label class="layui-form-label">打款状态</label>
+            <label class="layui-form-label">{:lang('打款状态')}</label>
             <div class="layui-input-inline">
                 <select name="status">
-                    <option value="">-- 全部 --</option>
-                    {foreach ['已拒绝', '待审核', '已审核', '待打款', '已打款','已完成'] as $k=>$v}
+                    <option value="">{:lang('-- 全部 --')}</option>
+                    {foreach [lang('已拒绝'), lang('待审核'), lang('已审核'), lang('待打款'), lang('已打款'), lang('已完成')] as $k=>$v}
                     {if input('status') eq $k.''}
                     <option selected value="{$k}">{$v}</option>
                     {else}
@@ -40,14 +40,14 @@
         </div>
 
         <div class="layui-form-item layui-inline">
-            <label class="layui-form-label">申请时间</label>
+            <label class="layui-form-label">{:lang('申请时间')}</label>
             <div class="layui-input-inline">
-                <input class="layui-input" data-date-range name="create_time" placeholder="请选择申请时间" value="{$get.create_time|default=''}">
+                <input class="layui-input" data-date-range name="create_time" placeholder="{:lang('请选择申请时间')}" value="{$get.create_time|default=''}">
             </div>
         </div>
 
         <div class="layui-form-item layui-inline">
-            <button class="layui-btn layui-btn-primary"><i class="layui-icon">&#xe615;</i> 搜 索</button>
+            <button class="layui-btn layui-btn-primary"><i class="layui-icon">&#xe615;</i> {:lang('搜 索')}</button>
         </div>
     </form>
 </fieldset>

@@ -15,24 +15,24 @@
         </div>
 
         <label class="layui-form-item block relative">
-            <span class="help-label"><b>阿里云账号</b>AccessKeyId</span>
-            <input class="layui-input" name="alisms_keyid" vali-name="阿里云账号" placeholder="请输入阿里云账号" required value="{$vo.alisms_keyid|default=''}">
+            <span class="help-label"><b>{:lang('阿里云账号')}</b>AccessKeyId</span>
+            <input class="layui-input" name="alisms_keyid" vali-name="{:lang('阿里云账号')}" placeholder="{:lang('请输入阿里云账号')}" required value="{$vo.alisms_keyid|default=''}">
         </label>
 
         <label class="layui-form-item block relative">
-            <span class="help-label"><b>阿里云密钥</b>AccessKeySecret</span>
-            <input class="layui-input" name="alisms_secret" vali-name="阿里云密钥" placeholder="请输入阿里云密钥" required value="{$vo.alisms_secret|default=''}">
+            <span class="help-label"><b>{:lang('阿里云密钥')}</b>AccessKeySecret</span>
+            <input class="layui-input" name="alisms_secret" vali-name="{:lang('阿里云密钥')}" placeholder="{:lang('请输入阿里云密钥')}" required value="{$vo.alisms_secret|default=''}">
         </label>
 
         <label class="layui-form-item block relative">
-            <span class="help-label"><b>短信签名</b>SignName</span>
-            <input class="layui-input" name="alisms_signtx" vali-name="短信签名" placeholder="请输入短信签名" required value="{$vo.alisms_signtx|default=''}">
+            <span class="help-label"><b>{:lang('短信签名')}</b>SignName</span>
+            <input class="layui-input" name="alisms_signtx" vali-name="{:lang('短信签名')}" placeholder="{:lang('请输入短信签名')}" required value="{$vo.alisms_signtx|default=''}">
         </label>
 
         {foreach $scenes as $k=>$s}
         <label class="layui-form-item block relative">
             <span class="help-label label-required-prev"><b>{$s}</b>{:ucfirst(strtolower($k))} Code</span>
-            <input class="layui-input" required name="alisms_scenes[{$k}]" value="{$vo.alisms_scenes[$k]|default=''}" placeholder="请输入短信模板编号">
+            <input class="layui-input" required name="alisms_scenes[{$k}]" value="{$vo.alisms_scenes[$k]|default=''}" placeholder="{:lang('请输入短信模板编号')}">
         </label>
         {/foreach}
 
@@ -41,7 +41,7 @@
     <div class="hr-line-dashed"></div>
 
     <div class="layui-form-item text-center ta-mt-20">
-        <button class="layui-btn" type="submit">保存配置</button>
-        <button class="layui-btn layui-btn-danger" type='button' data-confirm="确定要取消修改吗？" data-close>取消修改</button>
+        <button class="layui-btn" type="submit">{:lang('保存配置')}</button>
+        <button class="layui-btn layui-btn-danger" type='button' data-confirm="{:lang('确定要取消修改吗？')}" data-close>{:lang('取消修改')}</button>
     </div>
 </form>

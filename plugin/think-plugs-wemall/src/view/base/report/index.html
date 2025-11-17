@@ -5,33 +5,33 @@
     <div class="layui-row layui-col-space15">
         <div class="layui-col-sm6 layui-col-md3">
             <div class="portal-block-item nowrap" style="background:linear-gradient(-125deg,#57bdbf,#2f9de2)">
-                <div>商品总量</div>
+                <div>{:lang('商品总量')}</div>
                 <div>{$goodsTotal|default='0'}</div>
-                <div>当前商品总数量</div>
+                <div>{:lang('当前商品总数量')}</div>
             </div>
             <i class="portal-block-icon layui-icon layui-icon-app"></i>
         </div>
         <div class="layui-col-sm6 layui-col-md3">
             <div class="portal-block-item nowrap" style="background:linear-gradient(-125deg,#ff7d7d,#fb2c95)">
-                <div>用户总量</div>
+                <div>{:lang('用户总量')}</div>
                 <div>{$usersTotal|default='0'}</div>
-                <div>当前用户总数量</div>
+                <div>{:lang('当前用户总数量')}</div>
             </div>
             <i class="portal-block-icon layui-icon layui-icon-user"></i>
         </div>
         <div class="layui-col-sm6 layui-col-md3">
             <div class="portal-block-item nowrap" style="background:linear-gradient(-113deg,#c543d8,#925cc3)">
-                <div>订单总量</div>
+                <div>{:lang('订单总量')}</div>
                 <div>{$orderTotal|default='0'}</div>
-                <div>已付款订单总数</div>
+                <div>{:lang('已付款订单总数')}</div>
             </div>
             <i class="portal-block-icon layui-icon layui-icon-form"></i>
         </div>
         <div class="layui-col-sm6 layui-col-md3">
             <div class="portal-block-item nowrap" style="background:linear-gradient(-141deg,#ecca1b,#f39526)">
-                <div>交易金额</div>
+                <div>{:lang('交易金额')}</div>
                 <div>{$amountTotal|default='0'}</div>
-                <div>已成交金额总数</div>
+                <div>{:lang('已成交金额总数')}</div>
             </div>
             <i class="portal-block-icon layui-icon layui-icon-rmb"></i>
         </div>
@@ -96,12 +96,12 @@
             chart2.resize()
         });
         chart2.setOption({
-            title: {text: '会员等级分布统计', left: 'center'},
+            title: {text: '{:lang("会员等级分布统计")}', left: 'center'},
             legend: {orient: 'vertical', left: 'left'},
-            tooltip: {trigger: 'item', formatter: '{a} <br/>{b} : {c} 人 ( {d}% )'},
+            tooltip: {trigger: 'item', formatter: '{a} <br/>{b} : {c} {:lang("人")} ( {d}% )'},
             series: [
                 {
-                    name: '会员等级',
+                    name: '{:lang("会员等级")}',
                     type: 'pie',
                     radius: '60%',
                     center: ['50%', '55%'],
@@ -124,13 +124,13 @@
                 charts.resize()
             });
             charts.setOption({
-                title: [{left: 'center', text: '近十天代理收益统计'}],
+                title: [{left: 'center', text: '{:lang("近十天代理收益统计")}'}],
                 tooltip: {trigger: 'axis', show: true, axisPointer: {type: 'cross', label: {}}},
                 xAxis: [{data: days, gridIndex: 0}],
                 yAxis: [
                     {
                         splitLine: {show: true}, gridIndex: 0, type: 'value', axisLabel: {
-                            formatter: '{value} 元'
+                            formatter: '{value} {:lang("元")}'
                         }
                     }
                 ],
@@ -140,9 +140,9 @@
                         smooth: true, showBackground: true,
                         areaStyle: {color: 'rgba(180, 180, 180, 0.5)'},
                         type: 'line', showSymbol: true, xAxisIndex: 0, yAxisIndex: 0,
-                        label: {normal: {position: 'top', formatter: '{c} 元', show: true}},
+                        label: {normal: {position: 'top', formatter: '{c} {:lang("元")}', show: true}},
                         data: data1.map(function (item) {
-                            return item['返佣金额'];
+                            return item['{:lang("返佣金额")}'];
                         }),
                     }
                 ]
@@ -154,13 +154,13 @@
                 charts.resize()
             });
             charts.setOption({
-                title: [{left: 'center', text: '近十天用户增涨趋势'}],
+                title: [{left: 'center', text: '{:lang("近十天用户增涨趋势")}'}],
                 tooltip: {trigger: 'axis', show: true, axisPointer: {type: 'cross', label: {}}},
                 xAxis: [{data: days, gridIndex: 0}],
                 yAxis: [
                     {
                         splitLine: {show: true}, gridIndex: 0, type: 'value', axisLabel: {
-                            formatter: '{value} 人'
+                            formatter: '{value} {:lang("人")}'
                         }
                     }
                 ],
@@ -170,9 +170,9 @@
                         smooth: true, showBackground: true,
                         areaStyle: {color: 'rgba(180, 180, 180, 0.5)'},
                         type: 'line', showSymbol: true, xAxisIndex: 0, yAxisIndex: 0,
-                        label: {normal: {position: 'top', formatter: '{c} 人', show: true}},
+                        label: {normal: {position: 'top', formatter: '{c} {:lang("人")}', show: true}},
                         data: data1.map(function (item) {
-                            return item['增加用户'];
+                            return item['{:lang("增加用户")}'];
                         }),
                     }
                 ]
@@ -184,13 +184,13 @@
                 charts.resize()
             });
             charts.setOption({
-                title: [{left: 'center', text: '近十天订单数量趋势'}],
+                title: [{left: 'center', text: '{:lang("近十天订单数量趋势")}'}],
                 tooltip: {trigger: 'axis', show: true, axisPointer: {type: 'cross', label: {}}},
                 xAxis: [{data: days, gridIndex: 0}],
                 yAxis: [
                     {
                         splitLine: {show: true}, gridIndex: 0, type: 'value', axisLabel: {
-                            formatter: '{value} 单'
+                            formatter: '{value} {:lang("单")}'
                         }
                     }
                 ],
@@ -200,9 +200,9 @@
                         smooth: true, showBackground: true,
                         areaStyle: {color: 'rgba(180, 180, 180, 0.5)'},
                         type: 'line', showSymbol: true, xAxisIndex: 0, yAxisIndex: 0,
-                        label: {normal: {position: 'top', formatter: '{c} 单', show: true}},
+                        label: {normal: {position: 'top', formatter: '{c} {:lang("单")}', show: true}},
                         data: data1.map(function (item) {
-                            return item['订单数量'];
+                            return item['{:lang("订单数量")}'];
                         }),
                     }
                 ]
@@ -214,21 +214,21 @@
                 charts.resize()
             });
             charts.setOption({
-                title: [{left: 'center', text: '近十天交易金额趋势'}],
+                title: [{left: 'center', text: '{:lang("近十天交易金额趋势")}'}],
                 grid: [{left: '10%', right: '3%', top: '25%'}],
                 tooltip: {
                     trigger: 'axis',
                 },
                 xAxis: [{data: days, gridIndex: 0}],
-                yAxis: [{type: 'value', splitLine: {show: true}, gridIndex: 0, axisLabel: {formatter: '{value} 元'}}],
+                yAxis: [{type: 'value', splitLine: {show: true}, gridIndex: 0, axisLabel: {formatter: '{value} {:lang("元")}'}}],
                 series: [
                     {
                         smooth: true, showBackground: true,
                         areaStyle: {color: 'rgba(180, 180, 180, 0.5)'},
                         type: 'line', showSymbol: true, xAxisIndex: 0, yAxisIndex: 0,
-                        label: {position: 'top', formatter: '{c} 元', show: true},
+                        label: {position: 'top', formatter: '{c} {:lang("元")}', show: true},
                         data: data1.map(function (item) {
-                            return item['订单金额'];
+                            return item['{:lang("订单金额")}'];
                         }),
                     }
                 ]
@@ -240,28 +240,28 @@
                 charts.resize()
             });
             charts.setOption({
-                title: [{text: '近十天账户余额趋势'}],
-                legend: {data: ['充值余额', '消费余额']},
+                title: [{text: '{:lang("近十天账户余额趋势")}'}],
+                legend: {data: ['{:lang("充值余额")}', '{:lang("消费余额")}']},
                 tooltip: {trigger: 'axis'},
                 xAxis: [{data: days, gridIndex: 0}],
-                yAxis: [{type: 'value', splitLine: {show: true}, gridIndex: 0, axisLabel: {formatter: '{value} 元'}}],
+                yAxis: [{type: 'value', splitLine: {show: true}, gridIndex: 0, axisLabel: {formatter: '{value} {:lang("元")}'}}],
                 series: [
                     {
-                        name: '充值余额', type: 'line',
+                        name: '{:lang("充值余额")}', type: 'line',
                         smooth: true, showBackground: true,
                         areaStyle: {color: 'rgba(180, 180, 180, 0.5)'},
-                        label: {position: 'top', formatter: '{c} 元', show: true},
+                        label: {position: 'top', formatter: '{c} {:lang("元")}', show: true},
                         data: data1.map(function (item) {
-                            return item['充值余额'];
+                            return item['{:lang("充值余额")}'];
                         }),
                     },
                     {
-                        name: '消费余额', type: 'line',
+                        name: '{:lang("消费余额")}', type: 'line',
                         smooth: true, showBackground: true,
                         areaStyle: {color: 'rgba(180, 180, 180, 0.5)'},
-                        label: {formatter: '{c} 元', show: true},
+                        label: {formatter: '{c} {:lang("元")}', show: true},
                         data: data1.map(function (item) {
-                            return item['消费余额'];
+                            return item['{:lang("消费余额")}'];
                         }),
                     },
                 ]
@@ -274,23 +274,23 @@
             });
             charts.setOption({
                 grid: [{left: '10%', right: '3%', top: '25%'}],
-                title: [{left: 'center', text: '近十天平台余额趋势'}],
+                title: [{left: 'center', text: '{:lang("近十天平台余额趋势")}'}],
                 tooltip: {trigger: 'axis'},
                 xAxis: [{data: days, gridIndex: 0}],
-                yAxis: [{type: 'value', splitLine: {show: true}, gridIndex: 0, axisLabel: {formatter: '{value} 元'}}],
+                yAxis: [{type: 'value', splitLine: {show: true}, gridIndex: 0, axisLabel: {formatter: '{value} {:lang("元")}'}}],
                 series: [
                     {
                         type: 'line',
                         smooth: true, showBackground: true,
                         areaStyle: {color: 'rgba(180, 180, 180, 0.5)'},
-                        label: {formatter: '{c} 元', showSymbol: false, show: true},
+                        label: {formatter: '{c} {:lang("元")}', showSymbol: false, show: true},
                         data: data1.map(function (item) {
-                            return item['剩余余额'];
+                            return item['{:lang("剩余余额")}'];
                         }),
                         markLine: {
                             data: [[
                                 {x: '90%', symbol: 'none', yAxis: 'max'},
-                                {symbol: 'circle', label: {position: 'start', formatter: '最大 {c} 元'}, type: 'max', name: '最高点'}
+                                {symbol: 'circle', label: {position: 'start', formatter: '{:lang("最大")} {c} {:lang("元")}'}, type: 'max', name: '{:lang("最高点")}'}
                             ]]
                         }
                     }

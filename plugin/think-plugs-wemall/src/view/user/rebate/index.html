@@ -8,7 +8,7 @@
 
 {block name="content"}
 <div class="think-box-notify sub-strong-blue" type="info">
-    <strong>返佣统计：</strong>累计已产生返佣 <b>{$rebate.0+$rebate.2}</b> 元 ( 含未到账 <b>{$rebate.2|default='0.00'}</b> 元 )，累计已提现 <b>{$total.1|default=0.00}</b> 元。
+    <strong>{:lang('返佣统计')}：</strong>{:lang('累计已产生返佣')} <b>{$rebate.0+$rebate.2}</b> {:lang('元')} ( {:lang('含未到账')} <b>{$rebate.2|default='0.00'}</b> {:lang('元')} )，{:lang('累计已提现')} <b>{$total.1|default=0.00}</b> {:lang('元')}。
 </div>
 <div class="think-box-shadow">
     {include file='user/rebate/index_search'}
@@ -17,7 +17,7 @@
 
 <script>
     $(function () {
-        let ostatus = ['未到账', '已到账'];
+        let ostatus = ['{:lang("未到账")}', '{:lang("已到账")}'];
         let ostyles = ['layui-bg-blue', 'layui-bg-green'];
 
         $('#ReabteRecordTable').layTable({
@@ -27,25 +27,25 @@
                 {field: 'id', hide: true},
                 {fixed: true, checkbox: true},
                 {
-                    title: '代理头像', width: 80, align: 'center', templet: function (d) {
+                    title: '{:lang("代理头像")}', width: 80, align: 'center', templet: function (d) {
                         if (!d.user || !d.user.headimg) return '';
                         return laytpl('<div>{{-showTableImage(d.user.headimg,true,"sm")}}</div>').render(d)
                     }
                 },
                 {
-                    title: '代理账号', templet: function (d) {
+                    title: '{:lang("代理账号")}', templet: function (d) {
                         let tpls = [];
-                        tpls.push('账号昵称：<b>{{d.user.nickname}}</b>')
-                        tpls.push('账号手机：<b class="color-blue">{{d.user.phone}}</b>')
+                        tpls.push('{:lang("账号昵称")}：<b>{{d.user.nickname}}</b>')
+                        tpls.push('{:lang("账号手机")}：<b class="color-blue">{{d.user.phone}}</b>')
                         return laytpl(tpls.join('<br>')).render(d);
                     }
                 },
                 {
-                    title: '返佣信息', templet: function (d) {
+                    title: '{:lang("返佣信息")}', templet: function (d) {
                         let tpls = [];
-                        tpls.push('返佣金额：<b class="color-text">{{Number(d.amount)}}</b> 元，<span class="color-desc font-s12">第 {{d.layer+1}} 笔</span>')
-                        tpls.push('返佣名称：{{d.name||"-"}}')
-                        // tpls.push('返佣单号：{{d.code||"-"}}')
+                        tpls.push('{:lang("返佣金额")}：<b class="color-text">{{Number(d.amount)}}</b> {:lang("元")}，<span class="color-desc font-s12">' + '{:lang("第")}' + ' {{d.layer+1}} {:lang("笔")}</span>')
+                        tpls.push('{:lang("返佣名称")}：{{d.name||"-"}}')
+                        // tpls.push('{:lang("返佣单号")}：{{d.code||"-"}}')
                         let refund = laytpl('<span class="layui-badge layui-badge-middle flex-center {{d.style}}" style="zoom:85%;line-height:15px;padding:3px 4px">{{d.status}}</span>').render({
                             status: ostatus[d.status], style: ostyles[d.status]
                         });
@@ -53,33 +53,33 @@
                     }
                 },
                 {
-                    title: '用户头像', width: 80, align: 'center', templet: function (d) {
+                    title: '{:lang("用户头像")}', width: 80, align: 'center', templet: function (d) {
                         if (!d.ouser || !d.ouser.headimg) return '<div class="ta-pt-10">-</div>';
                         return laytpl('<div>{{-showTableImage(d.ouser.headimg,true,"sm")}}</div>').render(d)
                     }
                 },
                 {
-                    title: '用户账号', templet: function (d) {
+                    title: '{:lang("用户账号")}', templet: function (d) {
                         if (!d.ouser || !d.ouser.headimg) return '<div class="ta-pt-10">-</div>';
                         let tpls = [];
-                        tpls.push('账号昵称：<b>{{d.ouser.nickname}}</b>')
-                        tpls.push('账号手机：<b class="color-blue">{{d.ouser.phone}}</b>')
+                        tpls.push('{:lang("账号昵称")}：<b>{{d.ouser.nickname}}</b>')
+                        tpls.push('{:lang("账号手机")}：<b class="color-blue">{{d.ouser.phone}}</b>')
                         return laytpl(tpls.join('<br>')).render(d);
                     }
                 },
                 {
-                    title: '订单信息', templet: function (d) {
+                    title: '{:lang("订单信息")}', templet: function (d) {
                         let tpls = [];
-                        tpls.push('支付金额：<b class="color-text">{{Number(d.order_amount)}}</b> 元')
-                        tpls.push('订单单号：{{d.order_no||"-"}}')
+                        tpls.push('{:lang("支付金额")}：<b class="color-text">{{Number(d.order_amount)}}</b> {:lang("元")}')
+                        tpls.push('{:lang("订单单号")}：{{d.order_no||"-"}}')
                         return laytpl(tpls.join('<br>')).render(d);
                     }
                 },
                 {
-                    title: '返佣时间', templet: function (d) {
+                    title: '{:lang("返佣时间")}', templet: function (d) {
                         let tpls = [];
-                        tpls.push('返佣类型：{{d.type_name||"-"}}')
-                        tpls.push('返佣时间：{{d.create_time}}')
+                        tpls.push('{:lang("返佣类型")}：{{d.type_name||"-"}}')
+                        tpls.push('{:lang("返佣时间")}：{{d.create_time}}')
                         return laytpl(tpls.join('<br>')).render(d);
                     }
                 },

@@ -2,18 +2,18 @@
 
 {block name='button'}
 <!--{if auth("add")}-->
-<button class='layui-btn layui-btn-sm layui-btn-primary' data-table-id="CouponConfigTable" data-open='{:url("add")}'>添加卡券</button>
+<button class='layui-btn layui-btn-sm layui-btn-primary' data-table-id="CouponConfigTable" data-open='{:url("add")}'>{:lang('添加卡券')}</button>
 <!--{/if}-->
 
 <!--{if auth("remove")}-->
-<button class='layui-btn layui-btn-sm layui-btn-primary' data-table-id="CouponConfigTable" data-action='{:url("remove")}' data-rule="id#{id}" data-confirm="确定要删除这些卡券吗？">删除卡券</button>
+<button class='layui-btn layui-btn-sm layui-btn-primary' data-table-id="CouponConfigTable" data-action='{:url("remove")}' data-rule="id#{id}" data-confirm="{:lang('确定要删除这些卡券吗？')}">{:lang('删除卡券')}</button>
 <!--{/if}-->
 {/block}
 
 {block name="content"}
 <div class="layui-tab layui-tab-card think-bg-white">
     <ul class="layui-tab-title">
-        {foreach ['index'=>'卡券管理','recycle'=>'回 收 站'] as $k=>$v}
+        {foreach ['index'=>lang('卡券管理'),'recycle'=>lang('回 收 站')] as $k=>$v}
         {if isset($type) and $type eq $k}
         <li class="layui-this" data-open="{:url('index')}?type={$k}">{$v}</li>
         {else}
@@ -36,16 +36,16 @@
             sort: {field: 'sort desc,id', type: 'desc'},
             cols: [[
                 {checkbox: true, fixed: true},
-                {field: 'sort', title: '排序权重', align: 'center', width: 100, sort: true, templet: '#SortInputTpl'},
-                {field: 'name', title: '名称', align: 'left', minWidth: 80},
-                {field: 'type_name', title: '类型', align: 'center', minWidth: 80},
-                {field: 'amount', title: '金额', align: 'center', minWidth: 80},
-                {field: 'total_stock', title: '库存数量', align: 'center', minWidth: 80},
-                {field: 'total_sales', title: '领取数量', align: 'center', minWidth: 80},
-                {field: 'expire_days', title: '有效时间', align: 'center', minWidth: 80, templet: '<div>{{d.expire_days>0?(d.expire_days+"天"):"永久"}}</div>'},
-                {field: 'status', title: '记录状态', align: 'center', minWidth: 110, templet: '#StatusSwitchTpl'},
-                {field: 'create_time', title: '创建时间', align: 'center', minWidth: 170, sort: true},
-                {toolbar: '#toolbar', title: '操作面板', align: 'center', minWidth: 160, fixed: 'right'},
+                {field: 'sort', title: '{:lang("排序权重")}', align: 'center', width: 100, sort: true, templet: '#SortInputTpl'},
+                {field: 'name', title: '{:lang("名称")}', align: 'left', minWidth: 80},
+                {field: 'type_name', title: '{:lang("类型")}', align: 'center', minWidth: 80},
+                {field: 'amount', title: '{:lang("金额")}', align: 'center', minWidth: 80},
+                {field: 'total_stock', title: '{:lang("库存数量")}', align: 'center', minWidth: 80},
+                {field: 'total_sales', title: '{:lang("领取数量")}', align: 'center', minWidth: 80},
+                {field: 'expire_days', title: '{:lang("有效时间")}', align: 'center', minWidth: 80, templet: '<div>{{d.expire_days>0?(d.expire_days+"' + '{:lang("天")}' + '"):"' + '{:lang("永久")}' + '"}}</div>'},
+                {field: 'status', title: '{:lang("记录状态")}', align: 'center', minWidth: 110, templet: '#StatusSwitchTpl'},
+                {field: 'create_time', title: '{:lang("创建时间")}', align: 'center', minWidth: 170, sort: true},
+                {toolbar: '#toolbar', title: '{:lang("操作面板")}', align: 'center', minWidth: 160, fixed: 'right'},
             ]]
         });
 
@@ -70,19 +70,19 @@
 <!-- 数据状态切换模板 -->
 <script type="text/html" id="StatusSwitchTpl">
     <!--{if auth("state")}-->
-    <input type="checkbox" value="{{d.id}}" lay-skin="switch" lay-text="已激活|已禁用" lay-filter="StatusSwitch" {{-d.status>0?'checked':''}}>
+    <input type="checkbox" value="{{d.id}}" lay-skin="switch" lay-text="{:lang('已激活')}|{:lang('已禁用')}" lay-filter="StatusSwitch" {{-d.status>0?'checked':''}}>
     <!--{else}-->
-    {{-d.status ? '<b class="color-green">已启用</b>' : '<b class="color-red">已禁用</b>'}}
+    {{-d.status ? '<b class="color-green">' + '{:lang("已启用")}' + '</b>' : '<b class="color-red">' + '{:lang("已禁用")}' + '</b>'}}
     <!--{/if}-->
 </script>
 
 <!-- 数据操作工具条模板 -->
 <script type="text/html" id="toolbar">
     <!--{if auth('edit')}-->
-    <a class="layui-btn layui-btn-primary layui-btn-sm" data-open='{:url("edit")}?id={{d.id}}'>编 辑</a>
+    <a class="layui-btn layui-btn-primary layui-btn-sm" data-open='{:url("edit")}?id={{d.id}}'>{:lang('编 辑')}</a>
     <!--{/if}-->
     <!--{if auth("remove")}-->
-    <a class="layui-btn layui-btn-danger layui-btn-sm" data-confirm="确定要删除吗?" data-action="{:url('remove')}" data-value="id#{{d.id}}">删 除</a>
+    <a class="layui-btn layui-btn-danger layui-btn-sm" data-confirm="{:lang('确定要删除吗?')}" data-action="{:url('remove')}" data-value="id#{{d.id}}">{:lang('删 除')}</a>
     <!--{/if}-->
 </script>
 {/block}

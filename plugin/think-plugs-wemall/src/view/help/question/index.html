@@ -2,7 +2,7 @@
 
 {block name="button"}
 <!--{if auth("remove")}-->
-<button data-action='{:url("remove")}' data-table-id="QuestionData" data-rule="id#{id}" data-confirm="确定要批量删除问题吗？" class='layui-btn layui-btn-sm layui-btn-primary'>批量删除</button>
+<button data-action='{:url("remove")}' data-table-id="QuestionData" data-rule="id#{id}" data-confirm="{:lang('确定要批量删除问题吗？')}" class='layui-btn layui-btn-sm layui-btn-primary'>{:lang('批量删除')}</button>
 <!--{/if}-->
 {/block}
 
@@ -26,21 +26,21 @@
                 {checkbox: true, fixed: true}, {field: 'sort', hide: true},
                 // {field: 'sort', title: '排序权重', align: 'center', width: 100, sort: true, templet: '#SortInputTpl'},
                 {
-                    title: '提交用户', minWidth: 200, width: '10%', templet: function (d) {
+                    title: '{:lang("提交用户")}', minWidth: 200, width: '10%', templet: function (d) {
                         return showTableImage(d.user_headimg, true, '', (d.user_nickname || '') + " " + (d.user_phone || ''));
                     }
                 },
-                {field: 'name', title: '工单标题', align: 'left', minWidth: 140},
-                {field: 'content', title: '工单内容', align: 'left', minWidth: 180, templet: '<div>{{d.content||"-"}}</div>'},
+                {field: 'name', title: '{:lang("工单标题")}', align: 'left', minWidth: 140},
+                {field: 'content', title: '{:lang("工单内容")}', align: 'left', minWidth: 180, templet: '<div>{{d.content||"-"}}</div>'},
                 {
-                    field: 'status', title: '工单状态', align: 'center', width: 110, templet: function (d) {
+                    field: 'status', title: '{:lang("工单状态")}', align: 'center', width: 110, templet: function (d) {
                         //状态：0取消,1新工单,2后台回复,3前台回复,4已完结
-                        return ['取消', '新工单', '后台回复', '前台回复', '已完结'][d.status] || '未知';
+                        return ['{:lang("取消")}', '{:lang("新工单")}', '{:lang("后台回复")}', '{:lang("前台回复")}', '{:lang("已完结")}'][d.status] || '{:lang("未知")}';
                     }
                 },
-                {field: 'phone', title: '联系电话', align: 'left', minWidth: 100, width: '10%'},
-                {field: 'create_time', title: '创建时间', align: 'center', minWidth: 170, width: '10%', sort: true},
-                {toolbar: '#toolbar', title: '操作面板', align: 'center', minWidth: 150, width: '10%', fixed: 'right'},
+                {field: 'phone', title: '{:lang("联系电话")}', align: 'left', minWidth: 100, width: '10%'},
+                {field: 'create_time', title: '{:lang("创建时间")}', align: 'center', minWidth: 170, width: '10%', sort: true},
+                {toolbar: '#toolbar', title: '{:lang("操作面板")}', align: 'center', minWidth: 150, width: '10%', fixed: 'right'},
             ]]
         });
 
@@ -64,10 +64,10 @@
 <!-- 数据操作工具条模板 -->
 <script type="text/html" id="toolbar">
     <!--{if auth('edit')}-->
-    <a class="layui-btn layui-btn-primary layui-btn-sm" data-open='{:url("edit")}?id={{d.id}}'>回 复</a>
+    <a class="layui-btn layui-btn-primary layui-btn-sm" data-open='{:url("edit")}?id={{d.id}}'>{:lang('回 复')}</a>
     <!--{/if}-->
     <!--{if auth("remove")}-->
-    <a class="layui-btn layui-btn-danger layui-btn-sm" data-confirm="确定要删除问题吗?" data-action="{:url('remove')}" data-value="id#{{d.id}}">删 除</a>
+    <a class="layui-btn layui-btn-danger layui-btn-sm" data-confirm="{:lang('确定要删除问题吗?')}" data-action="{:url('remove')}" data-value="id#{{d.id}}">{:lang('删 除')}</a>
     <!--{/if}-->
 </script>
 {/block}

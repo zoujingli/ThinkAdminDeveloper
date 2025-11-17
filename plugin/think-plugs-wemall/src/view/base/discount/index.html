@@ -2,14 +2,14 @@
 
 {block name="button"}
 <!--{if auth("add")}-->
-<button class='layui-btn layui-btn-sm layui-btn-primary' data-table-id="DiscountTable" data-modal="{:url('add')}" data-title="添加折扣">添加折扣</button>
+<button class='layui-btn layui-btn-sm layui-btn-primary' data-table-id="DiscountTable" data-modal="{:url('add')}" data-title="{:lang('添加折扣')}">{:lang('添加折扣')}</button>
 <!--{/if}-->
 {/block}
 
 {block name="content"}
 <div class="layui-tab layui-tab-card">
     <ul class="layui-tab-title">
-        {foreach ['index'=>'折扣方案','recycle'=>'回 收 站'] as $k=>$v}{if isset($type) and $type eq $k}
+        {foreach ['index'=>lang('折扣方案'),'recycle'=>lang('回 收 站')] as $k=>$v}{if isset($type) and $type eq $k}
         <li data-open="{:url('index')}?type={$k}" class="layui-this">{$v}</li>
         {else}
         <li data-open="{:url('index')}?type={$k}">{$v}</li>
@@ -30,18 +30,18 @@
             sort: {field: 'sort desc,id', type: 'desc'},
             cols: [[
                 {field: 'id', title: 'ID', align: "center", width: 80},
-                {field: 'sort', title: '排序权重', align: 'center', width: 100, sort: true, templet: '#SortInputTpl'},
-                {field: 'name', title: '方案名称', align: 'left', minWidth: 140},
+                {field: 'sort', title: '{:lang("排序权重")}', align: 'center', width: 100, sort: true, templet: '#SortInputTpl'},
+                {field: 'name', title: '{:lang("方案名称")}', align: 'left', minWidth: 140},
                 {
-                    title: '方案规则', align: 'left', width: '33%', templet: function (d) {
+                    title: '{:lang("方案规则")}', align: 'left', width: '33%', templet: function (d) {
                         let tags = [];
-                        d.items.forEach((item) => tags.push(laytpl('<span class="layui-badge think-bg-violet">VIP{{d.level}} 折扣 {{d.discount}}%</span>').render(item)));
+                        d.items.forEach((item) => tags.push(laytpl('<span class="layui-badge think-bg-violet">VIP{{d.level}} {:lang("折扣")} {{d.discount}}%</span>').render(item)));
                         return tags.join('');
                     }
                 },
-                {field: 'status', title: '状 态', align: 'center', width: 110, templet: '#StatusSwitchTpl'},
-                {field: 'create_time', title: '创建时间', align: 'center', minWidth: 170, sort: true},
-                {toolbar: '#toolbar', title: '操作面板', align: 'center', minWidth: 80, fixed: 'right'},
+                {field: 'status', title: '{:lang("状 态")}', align: 'center', width: 110, templet: '#StatusSwitchTpl'},
+                {field: 'create_time', title: '{:lang("创建时间")}', align: 'center', minWidth: 170, sort: true},
+                {toolbar: '#toolbar', title: '{:lang("操作面板")}', align: 'center', minWidth: 80, fixed: 'right'},
             ]]
         });
 
@@ -66,19 +66,19 @@
 <!-- 数据状态切换模板 -->
 <script type="text/html" id="StatusSwitchTpl">
     <!--{if auth("state")}-->
-    <input type="checkbox" value="{{d.id}}" lay-skin="switch" lay-text="已激活|已禁用" lay-filter="StatusSwitch" {{-d.status>0?'checked':''}}>
+    <input type="checkbox" value="{{d.id}}" lay-skin="switch" lay-text="{:lang('已激活')}|{:lang('已禁用')}" lay-filter="StatusSwitch" {{-d.status>0?'checked':''}}>
     <!--{else}-->
-    {{-d.status ? '<b class="color-green">已启用</b>' : '<b class="color-red">已禁用</b>'}}
+    {{-d.status ? '<b class="color-green">' + '{:lang("已启用")}' + '</b>' : '<b class="color-red">' + '{:lang("已禁用")}' + '</b>'}}
     <!--{/if}-->
 </script>
 
 <!-- 数据操作工具条模板 -->
 <script type="text/html" id="toolbar">
     <!--{if auth("edit") and isset($type) and $type eq 'index'}-->
-    <a class="layui-btn layui-btn-primary layui-btn-sm" data-title="编辑方案" data-modal='{:url("edit")}?id={{d.id}}'>编 辑</a>
+    <a class="layui-btn layui-btn-primary layui-btn-sm" data-title="{:lang('编辑方案')}" data-modal='{:url("edit")}?id={{d.id}}'>{:lang('编 辑')}</a>
     <!--{/if}-->
     <!--{if auth("remove") and isset($type) and $type neq 'index'}-->
-    <a class="layui-btn layui-btn-danger layui-btn-sm" data-action="{:url('remove')}" data-value="id#{{d.id}}" data-confirm="确定要删除方案吗?">删 除</a>
+    <a class="layui-btn layui-btn-danger layui-btn-sm" data-action="{:url('remove')}" data-value="id#{{d.id}}" data-confirm="{:lang('确定要删除方案吗?')}">{:lang('删 除')}</a>
     <!--{/if}-->
 </script>
 {/block}

@@ -1,21 +1,21 @@
 <form action="{:sysuri()}" id="AddressConfigForm" data-table-id="SenderTable" method="post" data-auto="true" class="layui-form layui-card">
     <div class="layui-card-body ta-pl-40">
         <fieldset class="layui-form-item layui-bg-gray">
-            <legend><span class="layui-badge layui-bg-cyan">收货信息</span></legend>
+            <legend><span class="layui-badge layui-bg-cyan">{:lang('收货信息')}</span></legend>
             <div class="layui-form-item layui-row layui-col-space10">
 
                 <label class="layui-col-xs6 relative block">
-                    <span class="help-label label-required-prev"><b>收货人姓名</b>User Name</span>
-                    <input class="layui-input" name="user_name" vali-name="收货人姓名" placeholder="请输入收货姓名" required value="{$vo.user_name|default=''}">
+                    <span class="help-label label-required-prev"><b>{:lang('收货人姓名')}</b>User Name</span>
+                    <input class="layui-input" name="user_name" vali-name="{:lang('收货人姓名')}" placeholder="{:lang('请输入收货姓名')}" required value="{$vo.user_name|default=''}">
                 </label>
 
                 <label class="layui-col-xs6 relative block">
-                    <span class="help-label label-required-prev"><b>收货人手机</b>User Mobile</span>
-                    <input class="layui-input" name="user_phone" vali-name="收货人手机" pattern="mobile" placeholder="请输入收货人手机" required value="{$vo.user_phone|default=''}">
+                    <span class="help-label label-required-prev"><b>{:lang('收货人手机')}</b>User Mobile</span>
+                    <input class="layui-input" name="user_phone" vali-name="{:lang('收货人手机')}" pattern="mobile" placeholder="{:lang('请输入收货人手机')}" required value="{$vo.user_phone|default=''}">
                 </label>
 
                 <div class="layui-col-xs12 relative block">
-                    <span class="help-label"><b>收货所在区域</b>（原区域：{$vo.extra.region_prov|default='--'} - {$vo.extra.region_city|default=''} - {$vo.extra.region_area|default=''} ）</span>
+                    <span class="help-label"><b>{:lang('收货所在区域')}</b>（{:lang('原区域')}：{$vo.extra.region_prov|default='--'} - {$vo.extra.region_city|default=''} - {$vo.extra.region_area|default=''} ）</span>
                     <div class="layui-row layui-col-space10">
                         <label class="layui-col-xs4"><select class="layui-select" lay-filter="form_prov" name="form_prov"></select></label>
                         <label class="layui-col-xs4"><select class="layui-select" lay-filter="form_city" name="form_city"></select></label>
@@ -24,19 +24,19 @@
                 </div>
 
                 <label class="layui-col-xs12 relative block">
-                    <span class="help-label"><b>收货详细地址</b>（原地址：{$vo.extra.region_addr|default=""} )</span>
-                    <input class="layui-input" name="region_addr" placeholder="请输入收货地址" required value='{$vo.region_addr|default=""}'>
+                    <span class="help-label"><b>{:lang('收货详细地址')}</b>（{:lang('原地址')}：{$vo.extra.region_addr|default=""} )</span>
+                    <input class="layui-input" name="region_addr" placeholder="{:lang('请输入收货地址')}" required value='{$vo.region_addr|default=""}'>
                 </label>
             </div>
         </fieldset>
 
         <fieldset class="layui-form-item layui-bg-gray">
             <legend>
-                <span class="layui-badge layui-bg-cyan">快递信息</span>
-                <span class="layui-badge layui-bg-blue pointer" data-express-query>快递跟踪</span>
+                <span class="layui-badge layui-bg-cyan">{:lang('快递信息')}</span>
+                <span class="layui-badge layui-bg-blue pointer" data-express-query>{:lang('快递跟踪')}</span>
             </legend>
             <label class="layui-form-item relative block">
-                <span class="help-label"><b>快递配送公司</b>Express Company</span>
+                <span class="help-label"><b>{:lang('快递配送公司')}</b>Express Company</span>
                 <select class="layui-select" data-delivery-code lay-search name="company_code">
                     {foreach $items as $k=>$v}{if isset($vo.company_code) and $vo.company_code eq $k}
                     <option selected value="{$k}">{$v} ( {$k} )</option>
@@ -47,13 +47,13 @@
             </label>
 
             <label class="layui-form-item relative block">
-                <span class="help-label"><b>快递配送单号</b>Express Number</span>
-                <input class="layui-input" data-delivery-number vali-name="快递配送单号" name="express_code" placeholder="请输入快递配送单号" required value='{$vo.express_code|default=""}'>
+                <span class="help-label"><b>{:lang('快递配送单号')}</b>Express Number</span>
+                <input class="layui-input" data-delivery-number vali-name="{:lang('快递配送单号')}" name="express_code" placeholder="{:lang('请输入快递配送单号')}" required value='{$vo.express_code|default=""}'>
             </label>
 
             <label class="layui-form-item relative block">
-                <span class="help-label"><b>快递配送描述</b>Express Description</span>
-                <textarea class="layui-textarea" name="express_remark" placeholder="请输入快递配送描述">{$vo.express_remark|default=""}</textarea>
+                <span class="help-label"><b>{:lang('快递配送描述')}</b>Express Description</span>
+                <textarea class="layui-textarea" name="express_remark" placeholder="{:lang('请输入快递配送描述')}">{$vo.express_remark|default=""}</textarea>
             </label>
         </fieldset>
     </div>
@@ -63,8 +63,8 @@
     {notempty name='vo.express_time'}<input name='express_time' type='hidden' value='{$vo.express_time}'>{/notempty}
 
     <div class="layui-form-item text-center">
-        <button class="layui-btn" type='submit'>保存数据</button>
-        <button class="layui-btn layui-btn-danger" data-close data-confirm="确定要取消编辑吗？" type='button'>取消编辑</button>
+        <button class="layui-btn" type='submit'>{:lang('保存数据')}</button>
+        <button class="layui-btn layui-btn-danger" data-close data-confirm="{:lang('确定要取消编辑吗？')}" type='button'>{:lang('取消编辑')}</button>
     </div>
 
 </form>
@@ -84,6 +84,6 @@
 
     $('[data-express-query]').on('click', function () {
         let code = $('[data-delivery-code]').val(), number = $('[data-delivery-number]').val();
-        $.form.modal('{:url("shop.sender/query")}', {code: code, number: number}, '快递追踪查询')
+        $.form.modal('{:url("shop.sender/query")}', {code: code, number: number}, '{:lang("快递追踪查询")}')
     });
 </script>

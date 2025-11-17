@@ -2,12 +2,12 @@
 
 {block name="content"}
 <div class="think-box-notify sub-strong-blue" type="info">
-    <strong>积分统计</strong>：<span>累计发放 <b>{$integralTotal|number_format}</b> 积分，已消费 <b>{$integralCount|abs|number_format}</b> 积分，剩余可用 <b>{:number_format($integralTotal+$integralCount)}</b> 积分。</span>
+    <strong>{:lang('积分统计')}</strong>：<span>{:lang('累计发放')} <b>{$integralTotal|number_format}</b> {:lang('积分')}，{:lang('已消费')} <b>{$integralCount|abs|number_format}</b> {:lang('积分')}，{:lang('剩余可用')} <b>{:number_format($integralTotal+$integralCount)}</b> {:lang('积分')}。</span>
 </div>
 
 <div class="layui-tab layui-tab-card">
     <ul class="layui-tab-title">
-        {foreach ['index'=>'积分管理','recycle'=>'回 收 站'] as $k=>$v}{if isset($type) and $type eq $k}
+        {foreach ['index'=>lang('积分管理'),'recycle'=>lang('回 收 站')] as $k=>$v}{if isset($type) and $type eq $k}
         <li data-open="{:url('index')}?type={$k}" class="layui-this">{$v}</li>
         {else}
         <li data-open="{:url('index')}?type={$k}">{$v}</li>

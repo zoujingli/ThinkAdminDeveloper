@@ -12,13 +12,13 @@
                 // {checkbox: true},
                 {field: 'id', hide: true},
                 {field: 'sort', hide: true},
-                {field: 'cover', title: '商品封面', width: 80, align: 'center', templet: '<div>{{-showTableImage(d.cover,false,"sm")}}</div>'},
-                {field: 'name', title: '商品名称', templet: "<div>商品名称：{{d.name}}<br>商品编号：<b class='color-blue'>{{d.code}}</b></div>"},
-                {field: 'create_time', title: '创建时间', width: 210, templet: "<div>更新：{{d.update_time}}<br>创建：{{d.create_time}}</div>"},
-                {toolbar: '#SelectToolbar', title: '操作面板', width: 80, align: 'center', fixed: 'right'},
+                {field: 'cover', title: '{:lang("商品封面")}', width: 80, align: 'center', templet: '<div>{{-showTableImage(d.cover,false,"sm")}}</div>'},
+                {field: 'name', title: '{:lang("商品名称")}', templet: '<div>{:lang("商品名称")}：{{d.name}}<br>{:lang("商品编号")}：<b class=\'color-blue\'>{{d.code}}</b></div>'},
+                {field: 'create_time', title: '{:lang("创建时间")}', width: 210, templet: '<div>{:lang("更新")}：{{d.update_time}}<br>{:lang("创建")}：{{d.create_time}}</div>'},
+                {toolbar: '#SelectToolbar', title: '{:lang("操作面板")}', width: 80, align: 'center', fixed: 'right'},
             ]]
         }).trigger('tool', function (item) {
-            let attr = ['商品详情', item.data.code, item.data.name];
+            let attr = ['{:lang("商品详情")}', item.data.code, item.data.name];
             window.setItemValue(item.data, attr.join('#'));
             $.msg.closeThisModal(this);
         });
@@ -28,8 +28,8 @@
 <!-- 操作工具条模板 -->
 <script type="text/html" id="SelectToolbar">
     {{# if (typeof checkItemValue !== 'function' || checkItemValue(d.id)){ }}
-    <a class="layui-btn layui-btn-sm" lay-event="select">选 择</a>
+    <a class="layui-btn layui-btn-sm" lay-event="select">{:lang('选 择')}</a>
     {{# }else{ }}
-    <a class="layui-btn layui-btn-sm layui-btn-disabled">已 选</a>
+    <a class="layui-btn layui-btn-sm layui-btn-disabled">{:lang('已 选')}</a>
     {{# } }}
 </script>

@@ -4,41 +4,41 @@
 
         <div class="flex layui-form-item">
             <label class="flex-1">
-                <span class="help-label"><b>提现单号</b></span>
+                <span class="help-label"><b>{:lang('提现单号')}</b></span>
                 <input class='layui-input layui-bg-gray' disabled value='{$vo.code|default="-"}'>
             </label>
             <label class="flex-1 ta-ml-10">
-                <span class="help-label"><b>提现方式</b></span>
+                <span class="help-label"><b>{:lang('提现方式')}</b></span>
                 <input class='layui-input layui-bg-gray' disabled value='{$vo.type_name|default="-"}'>
             </label>
         </div>
         <div class="flex layui-form-item">
             <div class="flex-1">
-                <span class="help-label"><b>提现金额</b></span>
+                <span class="help-label"><b>{:lang('提现金额')}</b></span>
                 <label class="layui-input-wrap block relative">
                     <input class='layui-input layui-bg-gray' disabled value='{$vo.amount|default="0.00"}'>
-                    <span class="layui-input-suffix">元</span>
+                    <span class="layui-input-suffix">{:lang('元')}</span>
                 </label>
             </div>
             <div class="flex-1 ta-ml-10">
-                <span class="help-label"><b>提现手续费</b></span>
+                <span class="help-label"><b>{:lang('提现手续费')}</b></span>
                 <label class="layui-input-wrap block relative">
                     <input class='layui-input layui-bg-gray' disabled value='{$vo.charge_amount|default="0.00"}'>
-                    <span class="layui-input-suffix">元</span>
+                    <span class="layui-input-suffix">{:lang('元')}</span>
                 </label>
             </div>
             <div class="flex-1 ta-ml-10">
-                <span class="help-label"><b>应打款金额</b></span>
+                <span class="help-label"><b>{:lang('应打款金额')}</b></span>
                 <label class="layui-input-wrap block relative">
                     <input class='layui-input layui-bg-gray' disabled value='{$vo.amount - $vo.charge_amount}'>
-                    <span class="layui-input-suffix">元</span>
+                    <span class="layui-input-suffix">{:lang('元')}</span>
                 </label>
             </div>
         </div>
 
         {in name='vo.type' value='wechat_qrcode,alipay_qrcode'}
         <fieldset class="layui-form-item">
-            <legend><span class="layui-badge layui-bg-blue">付款二维码</span></legend>
+            <legend><span class="layui-badge layui-bg-blue">{:lang('付款二维码')}</span></legend>
             <div data-lazy-src="{$vo.qrcode}" data-tips-image style="height:300px"></div>
         </fieldset>
         {/in}
@@ -47,11 +47,11 @@
         {in name='vo.type' value='alipay_account'}
         <div class="layui-row layui-form-item layui-col-space15">
             <label class="layui-col-xs3">
-                <span class="color-green font-w7">支付宝姓名</span>
+                <span class="color-green font-w7">{:lang('支付宝姓名')}</span>
                 <input class='layui-input layui-disabled layui-bg-gray' disabled value='{$vo.alipay_user|default="0.00"}'>
             </label>
             <label class="layui-col-xs3">
-                <span class="color-green font-w7">支付宝账号</span>
+                <span class="color-green font-w7">{:lang('支付宝账号')}</span>
                 <input class='layui-input layui-disabled layui-bg-gray' disabled value='{$vo.alipay_code|default="0.00"}'>
             </label>
         </div>
@@ -61,26 +61,26 @@
         {in name='vo.type' value='transfer_banks,wechat_banks'}
         <div class="layui-row layui-form-item layui-col-space15">
             <label class="layui-col-xs3">
-                <span class="color-green font-w7">开户银行名称</span>
+                <span class="color-green font-w7">{:lang('开户银行名称')}</span>
                 <input class='layui-input layui-disabled layui-bg-gray' disabled value='{$vo.bank_name|default="-"}'>
             </label>
             <label class="layui-col-xs3">
-                <span class="color-green font-w7">开户分行名称</span>
+                <span class="color-green font-w7">{:lang('开户分行名称')}</span>
                 <input class='layui-input layui-disabled layui-bg-gray' disabled value='{$vo.bank_bran|default="-"}'>
             </label>
             <label class="layui-col-xs3">
-                <span class="color-green font-w7">开户账号姓名</span>
+                <span class="color-green font-w7">{:lang('开户账号姓名')}</span>
                 <input class='layui-input layui-disabled layui-bg-gray' disabled value='{$vo.bank_user|default="-"}'>
             </label>
             <label class="layui-col-xs3">
-                <span class="color-green font-w7">开户银行卡号</span>
+                <span class="color-green font-w7">{:lang('开户银行卡号')}</span>
                 <input class='layui-input layui-disabled layui-bg-gray' disabled value='{$vo.bank_code|default="-"}'>
             </label>
         </div>
         {/in}
 
         <div class="layui-form-item">
-            <span class="help-label label-required-prev"><b>审核操作类型</b></span>
+            <span class="help-label label-required-prev"><b>{:lang('审核操作类型')}</b></span>
 
             <!-- 提现状态(0失败, 1待审核, 2已审核, 3打款中, 4已打款, 5已收款) -->
             <!-- 'wechat_wallet'  => '转账到我的微信零钱' -->
@@ -91,31 +91,31 @@
             <!-- 'transfer_banks' => '线下转账到银行卡账户' -->
 
             {if $vo.status eq 1}
-            {php} $types = [0=>'拒绝提现', 1=>'等待审核', 2=>'审核通过']; {/php}
+            {php} $types = [0=>lang('拒绝提现'), 1=>lang('等待审核'), 2=>lang('审核通过')]; {/php}
             {/if}
 
             {if $vo.status eq 2}
             <!--{in name='vo.type' value='wechat_wallet,wechat_banks'}-->
-            {php} $types = [2=>'审核通过', 3=>'自动打款']; {/php}
+            {php} $types = [2=>lang('审核通过'), 3=>lang('自动打款')]; {/php}
             <!--{else}-->
-            {php} $types = [2=>'审核通过', 3=>'准备打款', 4=>'已经打款']; {/php}
+            {php} $types = [2=>lang('审核通过'), 3=>lang('准备打款'), 4=>lang('已经打款')]; {/php}
             <!--{/in}-->
             {/if}
 
             {if $vo.status eq 3}
             <!--{in name='vo.type' value='wechat_wallet,wechat_banks'}-->
-            {php} $types = [3=>'正在打款']; {/php}
+            {php} $types = [3=>lang('正在打款')]; {/php}
             <!--{else}-->
-            {php} $types = [3=>'准备打款', 4=>'已经打款']; {/php}
+            {php} $types = [3=>lang('准备打款'), 4=>lang('已经打款')]; {/php}
             <!--{/in}-->
             {/if}
 
             {if $vo.status eq 4}
-            {php} $types =[4=>'已经打款']; {/php}
+            {php} $types =[4=>lang('已经打款')]; {/php}
             {/if}
 
             {if $vo.status eq 5}
-            {php} $types =[5=>'已经完成']; {/php}
+            {php} $types =[5=>lang('已经完成')]; {/php}
             {/if}
 
             <div class="layui-textarea help-checks ta-pl-10">
@@ -128,9 +128,9 @@
         </div>
 
         <div class="layui-form-item">
-            <span class="help-label label-required-prev"><b>审核操作描述</b></span>
+            <span class="help-label label-required-prev"><b>{:lang('审核操作描述')}</b></span>
             <label class="relative block">
-                <textarea class="layui-textarea" name="remark" placeholder="请输入审核描述">{$vo.remark|default=''}</textarea>
+                <textarea class="layui-textarea" name="remark" placeholder="{:lang('请输入审核描述')}">{$vo.remark|default=''}</textarea>
             </label>
         </div>
 
@@ -141,7 +141,7 @@
     {notempty name='vo.code'}<input name='code' type='hidden' value='{$vo.code}'>{/notempty}
 
     <div class="layui-form-item text-center">
-        <button class="layui-btn" type='submit'>保存数据</button>
-        <button class="layui-btn layui-btn-danger" data-close data-confirm="确定要取消编辑吗？" type='button'>取消编辑</button>
+        <button class="layui-btn" type='submit'>{:lang('保存数据')}</button>
+        <button class="layui-btn layui-btn-danger" data-close data-confirm="{:lang('确定要取消编辑吗？')}" type='button'>{:lang('取消编辑')}</button>
     </div>
 </form>

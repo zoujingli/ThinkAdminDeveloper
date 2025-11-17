@@ -2,7 +2,7 @@
     <div class="layui-card-body ta-pl-40">
 
         <div class="layui-form-item label-required-prev">
-            <span class="help-label"><b>绑定上级分类</b>Category Parent</span>
+            <span class="help-label"><b>{:lang('绑定上级分类')}</b>Category Parent</span>
             <select class='layui-select' name='pid' lay-search>
                 {foreach $cates as $cate}
                 {eq name='cate.id' value='$vo.pid|default=0'}
@@ -11,30 +11,30 @@
                 <option value='{$cate.id}'>{$cate.spl|raw}{$cate.name}</option>
                 {/eq}{/foreach}
             </select>
-            <span class="help-block"><b>必选，</b>请选择上级分类或顶级分类（目前最多支持{$cateLevel|default=0}级分类）</span>
+            <span class="help-block"><b>{:lang('必选')}，</b>{:lang('请选择上级分类或顶级分类（目前最多支持')}{$cateLevel|default=0}{:lang('级分类）')}</span>
         </div>
 
         <label class="layui-form-item relative block">
-            <span class="help-label"><b>商品分类名称</b>Category Name</span>
-            <input class="layui-input" name="name" placeholder="请输入分类名称" required value='{$vo.name|default=""}'>
-            <span class="help-block"><b>必填，</b>请填写商品分类名称，建议字符不要太长，一般 4-6 个汉字</span>
+            <span class="help-label"><b>{:lang('商品分类名称')}</b>Category Name</span>
+            <input class="layui-input" name="name" placeholder="{:lang('请输入分类名称')}" required value='{$vo.name|default=""}'>
+            <span class="help-block"><b>{:lang('必填')}，</b>{:lang('请填写商品分类名称，建议字符不要太长，一般 4-6 个汉字')}</span>
         </label>
 
         <div class="layui-form-item relative block">
-            <span class="help-label"><b>商品分类图标</b>Category Cover</span>
+            <span class="help-label"><b>{:lang('商品分类图标')}</b>Category Cover</span>
             <div class="relative block">
                 <label>
-                    <input class="layui-input think-bg-gray" data-tips-hover data-tips-image readonly name="cover" placeholder="请上传商品分类图标" value='{$vo.cover|default=""}'>
+                    <input class="layui-input think-bg-gray" data-tips-hover data-tips-image readonly name="cover" placeholder="{:lang('请上传商品分类图标')}" value='{$vo.cover|default=""}'>
                 </label>
                 <a class="input-right-icon layui-icon layui-icon-upload" data-field="cover" data-file data-type="png,jpg,gif"></a>
             </div>
-            <span class="help-block"><b>可选，</b>请上传商品分类图标，需要是 http 可访问的图片资源链接</span>
+            <span class="help-block"><b>{:lang('可选')}，</b>{:lang('请上传商品分类图标，需要是 http 可访问的图片资源链接')}</span>
         </div>
 
         <label class="layui-form-item relative block">
-            <span class="color-green font-w7">商品分类描述</span>
+            <span class="color-green font-w7">{:lang('商品分类描述')}</span>
             <span class="color-desc ta-ml-5">Category Remark</span>
-            <textarea class="layui-textarea" name="remark" placeholder="请输入分类描述">{$vo.remark|default=''}</textarea>
+            <textarea class="layui-textarea" name="remark" placeholder="{:lang('请输入分类描述')}">{$vo.remark|default=''}</textarea>
         </label>
     </div>
 
@@ -42,8 +42,8 @@
     {notempty name='vo.id'}<input name='id' type='hidden' value='{$vo.id}'>{/notempty}
 
     <div class="layui-form-item text-center">
-        <button class="layui-btn" type='submit'>保存数据</button>
-        <button class="layui-btn layui-btn-danger" data-close type='button' data-confirm="确定要取消编辑吗？">取消编辑</button>
+        <button class="layui-btn" type='submit'>{:lang('保存数据')}</button>
+        <button class="layui-btn layui-btn-danger" data-close type='button' data-confirm="{:lang('确定要取消编辑吗？')}">{:lang('取消编辑')}</button>
     </div>
 
 </form>

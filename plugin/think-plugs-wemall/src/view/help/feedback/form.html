@@ -1,8 +1,8 @@
 {extend name="main"}
 
 {block name="button"}
-<button data-target-submit class='layui-btn layui-btn-sm'>保存数据</button>
-<button data-target-backup class="layui-btn layui-btn-sm layui-btn-danger" data-confirm="确认要取消编辑吗？">取消编辑</button>
+<button data-target-submit class='layui-btn layui-btn-sm'>{:lang('保存数据')}</button>
+<button data-target-backup class="layui-btn layui-btn-sm layui-btn-danger" data-confirm="{:lang('确认要取消编辑吗？')}">{:lang('取消编辑')}</button>
 {/block}
 
 {block name='content'}
@@ -11,7 +11,7 @@
 
         {notempty name='vo.images'}
         <div class="layui-form-item">
-            <span class="help-label"><b>问题图片</b>Feedback Image</span>
+            <span class="help-label"><b>{:lang('问题图片')}</b>Feedback Image</span>
             <div class="layui-textarea help-images">
                 {foreach $vo.images as $img}
                 <div class="uploadimage upload-image-lgbox" data-tips-image data-lazy-src="{$img}"></div>
@@ -21,18 +21,18 @@
         {/notempty}
 
         <label class="layui-form-item relative block">
-            <span class="help-label"><b>联系电话</b>Feedback Phone</span>
-            <input maxlength="100" class="layui-input" name="phone" value='{$vo.phone|default=""}' placeholder="请输入联系电话">
+            <span class="help-label"><b>{:lang('联系电话')}</b>Feedback Phone</span>
+            <input maxlength="100" class="layui-input" name="phone" value='{$vo.phone|default=""}' placeholder="{:lang('请输入联系电话')}">
         </label>
 
         <label class="layui-form-item relative block label-required-prev">
-            <span class="help-label"><b>反馈意见</b>Feedback Content</span>
-            <textarea maxlength="500" class="layui-textarea" name="content" placeholder="请输入反馈意见">{$vo.content|default=""}</textarea>
+            <span class="help-label"><b>{:lang('反馈意见')}</b>Feedback Content</span>
+            <textarea maxlength="500" class="layui-textarea" name="content" placeholder="{:lang('请输入反馈意见')}">{$vo.content|default=""}</textarea>
         </label>
 
         <label class="layui-form-item relative block label-required-prev">
-            <span class="help-label"><b>回复内容</b>Feedback Reply</span>
-            <textarea style="height:300px" class="layui-textarea" name="reply" placeholder="请输入回复内容" required>{$vo.reply|default=''}</textarea>
+            <span class="help-label"><b>{:lang('回复内容')}</b>Feedback Reply</span>
+            <textarea style="height:300px" class="layui-textarea" name="reply" placeholder="{:lang('请输入回复内容')}" required>{$vo.reply|default=''}</textarea>
         </label>
 
         <div class="hr-line-dashed"></div>
@@ -40,8 +40,8 @@
         {notempty name='vo.reply_time'}<input type='hidden' value='{$vo.reply_time}' name='reply_time'>{/notempty}
 
         <div class="layui-form-item text-center">
-            <button class="layui-btn" type='submit'>保存数据</button>
-            <button class="layui-btn layui-btn-danger" type='button' data-target-backup data-confirm="确定要取消编辑吗？">取消编辑</button>
+            <button class="layui-btn" type='submit'>{:lang('保存数据')}</button>
+            <button class="layui-btn layui-btn-danger" type='button' data-target-backup data-confirm="{:lang('确定要取消编辑吗？')}">{:lang('取消编辑')}</button>
         </div>
     </div>
 </form>

@@ -10,12 +10,12 @@
             cols: [[
                 {checkbox: true, fixed: true, hide: true},
                 {field: 'sort', hide: true},
-                {field: 'name', title: '分类名称', minWidth: 220, templet: '<div><span class="color-desc">{{d.spl}}</span>{{d.name}}</div>'},
-                {field: 'create_time', title: '创建时间', width: 170, align: 'center'},
-                {toolbar: '#SelectToolbar', title: '操作面板', width: 160, align: 'center', fixed: 'right'},
+                {field: 'name', title: '{:lang("分类名称")}', minWidth: 220, templet: '<div><span class="color-desc">{{d.spl}}</span>{{d.name}}</div>'},
+                {field: 'create_time', title: '{:lang("创建时间")}', width: 170, align: 'center'},
+                {toolbar: '#SelectToolbar', title: '{:lang("操作面板")}', width: 160, align: 'center', fixed: 'right'},
             ]]
         }).trigger('tool', function (item) {
-            let attr = ['商品分类', item.data.id, item.data.name];
+            let attr = ['{:lang("商品分类")}', item.data.id, item.data.name];
             window.setItemValue(item.data, attr.join('#'));
             $.msg.closeThisModal(this);
         });
@@ -25,8 +25,8 @@
 <!-- 操作工具条模板 -->
 <script type="text/html" id="SelectToolbar">
     {{# if (typeof checkItemValue !== 'function' || checkItemValue(d.id)){ }}
-    <a class="layui-btn layui-btn-sm" lay-event="select">选 择</a>
+    <a class="layui-btn layui-btn-sm" lay-event="select">{:lang('选 择')}</a>
     {{# }else{ }}
-    <a class="layui-btn layui-btn-sm layui-btn-disabled">已 选</a>
+    <a class="layui-btn layui-btn-sm layui-btn-disabled">{:lang('已 选')}</a>
     {{# } }}
 </script>
