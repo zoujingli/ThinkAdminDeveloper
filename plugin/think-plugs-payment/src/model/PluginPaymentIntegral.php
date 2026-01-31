@@ -14,7 +14,23 @@
 // | github 代码仓库：https://github.com/zoujingli/think-plugs-payment
 // +----------------------------------------------------------------------
 
-declare (strict_types=1);
+declare(strict_types=1);
+/**
+ * +----------------------------------------------------------------------
+ * | Payment Plugin for ThinkAdmin
+ * +----------------------------------------------------------------------
+ * | 版权所有 2014~2026 ThinkAdmin [ thinkadmin.top ]
+ * +----------------------------------------------------------------------
+ * | 官方网站: https://thinkadmin.top
+ * +----------------------------------------------------------------------
+ * | 开源协议 ( https://mit-license.org )
+ * | 免责声明 ( https://thinkadmin.top/disclaimer )
+ * | 会员特权 ( https://thinkadmin.top/vip-introduce )
+ * +----------------------------------------------------------------------
+ * | gitee 代码仓库：https://gitee.com/zoujingli/ThinkAdmin
+ * | github 代码仓库：https://github.com/zoujingli/ThinkAdmin
+ * +----------------------------------------------------------------------
+ */
 
 namespace plugin\payment\model;
 
@@ -23,11 +39,11 @@ use plugin\account\model\PluginAccountUser;
 use think\model\relation\HasOne;
 
 /**
- * 用户积分模型
+ * 用户积分模型.
  *
- * @property float $amount 操作金额
- * @property float $amount_next 操作后金额
- * @property float $amount_prev 操作前金额
+ * @property string $amount 操作金额
+ * @property string $amount_next 操作后金额
+ * @property string $amount_prev 操作前金额
  * @property int $cancel 作废状态(0未作废,1已作废)
  * @property int $create_by 系统用户
  * @property int $deleted 删除状态(0未删除,1已删除)
@@ -42,15 +58,13 @@ use think\model\relation\HasOne;
  * @property string $remark 操作备注
  * @property string $unlock_time 解锁时间
  * @property string $update_time 更新时间
- * @property-read \plugin\account\model\PluginAccountUser $user
+ * @property PluginAccountUser $user
  * @class PluginPaymentIntegral
- * @package plugin\payment\model
  */
 class PluginPaymentIntegral extends Abs
 {
     /**
-     * 关联用户数据
-     * @return \think\model\relation\HasOne
+     * 关联用户数据.
      */
     public function user(): HasOne
     {
@@ -58,9 +72,8 @@ class PluginPaymentIntegral extends Abs
     }
 
     /**
-     * 格式化输出时间
+     * 格式化输出时间.
      * @param mixed $value
-     * @return string
      */
     public function getCancelTimeAttr($value): string
     {
@@ -73,9 +86,8 @@ class PluginPaymentIntegral extends Abs
     }
 
     /**
-     * 格式化输出时间
+     * 格式化输出时间.
      * @param mixed $value
-     * @return string
      */
     public function getUnlockTimeAttr($value): string
     {

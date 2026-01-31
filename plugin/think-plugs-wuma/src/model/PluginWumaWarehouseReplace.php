@@ -1,25 +1,27 @@
 <?php
 
-// +----------------------------------------------------------------------
-// | Wuma Plugin for ThinkAdmin
-// +----------------------------------------------------------------------
-// | 版权所有 2014~2025 ThinkAdmin [ thinkadmin.top ]
-// +----------------------------------------------------------------------
-// | 官方网站: https://thinkadmin.top
-// +----------------------------------------------------------------------
-// | 免责声明 ( https://thinkadmin.top/disclaimer )
-// | 收费插件 ( https://thinkadmin.top/fee-introduce.html )
-// +----------------------------------------------------------------------
-// | gitee 代码仓库：https://gitee.com/zoujingli/think-plugs-wuma
-// | github 代码仓库：https://github.com/zoujingli/think-plugs-wuma
-// +----------------------------------------------------------------------
-
-declare (strict_types=1);
+declare(strict_types=1);
+/**
+ * +----------------------------------------------------------------------
+ * | Payment Plugin for ThinkAdmin
+ * +----------------------------------------------------------------------
+ * | 版权所有 2014~2026 ThinkAdmin [ thinkadmin.top ]
+ * +----------------------------------------------------------------------
+ * | 官方网站: https://thinkadmin.top
+ * +----------------------------------------------------------------------
+ * | 开源协议 ( https://mit-license.org )
+ * | 免责声明 ( https://thinkadmin.top/disclaimer )
+ * | 会员特权 ( https://thinkadmin.top/vip-introduce )
+ * +----------------------------------------------------------------------
+ * | gitee 代码仓库：https://gitee.com/zoujingli/ThinkAdmin
+ * | github 代码仓库：https://github.com/zoujingli/ThinkAdmin
+ * +----------------------------------------------------------------------
+ */
 
 namespace plugin\wuma\model;
 
 /**
- * 标签替换模型
+ * 标签替换模型.
  *
  * @property int $create_by 上传用户
  * @property int $deleted 删除状态(0未删,1已删)
@@ -33,8 +35,5 @@ namespace plugin\wuma\model;
  * @property string $target 目标物码
  * @property string $type 物码类型
  * @class PluginWumaWarehouseReplace
- * @package plugin\wuma\model
  */
-class PluginWumaWarehouseReplace extends AbstractPrivate
-{
-}
+class PluginWumaWarehouseReplace extends AbstractPrivate {}

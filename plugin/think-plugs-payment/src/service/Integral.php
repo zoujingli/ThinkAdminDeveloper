@@ -14,7 +14,23 @@
 // | github 代码仓库：https://github.com/zoujingli/think-plugs-payment
 // +----------------------------------------------------------------------
 
-declare (strict_types=1);
+declare(strict_types=1);
+/**
+ * +----------------------------------------------------------------------
+ * | Payment Plugin for ThinkAdmin
+ * +----------------------------------------------------------------------
+ * | 版权所有 2014~2026 ThinkAdmin [ thinkadmin.top ]
+ * +----------------------------------------------------------------------
+ * | 官方网站: https://thinkadmin.top
+ * +----------------------------------------------------------------------
+ * | 开源协议 ( https://mit-license.org )
+ * | 免责声明 ( https://thinkadmin.top/disclaimer )
+ * | 会员特权 ( https://thinkadmin.top/vip-introduce )
+ * +----------------------------------------------------------------------
+ * | gitee 代码仓库：https://gitee.com/zoujingli/ThinkAdmin
+ * | github 代码仓库：https://github.com/zoujingli/ThinkAdmin
+ * +----------------------------------------------------------------------
+ */
 
 namespace plugin\payment\service;
 
@@ -23,57 +39,62 @@ use plugin\payment\model\PluginPaymentIntegral;
 use think\admin\Exception;
 
 /**
- * 用户积分调度器
+ * 用户积分调度器.
  * @class Integral
- * @package plugin\payment\service
  */
 abstract class Integral
 {
-
     /**
-     * 积分转换比率
+     * 积分转换比率.
      * @param float $integral
      * @return float
-     * @throws \think\admin\Exception
+     * @throws Exception
      */
     public static function ratio(string $integral = '1'): string
     {
         $cfg = sysdata('plugin.payment.config');
-        if (empty($cfg['integral']) || $cfg['integral'] < 1) $cfg['integral'] = 1;
+        if (empty($cfg['integral']) || $cfg['integral'] < 1) {
+            $cfg['integral'] = 1;
+        }
         return bcdiv($integral, strval($cfg['integral']), 6);
     }
 
     /**
-     * 创建积分变更操作
-     * @param integer $unid 账号编号
+     * 创建积分变更操作.
+     * @param int $unid 账号编号
      * @param string $code 交易标识
      * @param string $name 交易标题
-     * @param float $amount 变更金额
+     * @param string $amount 变更金额
      * @param string $remark 变更描述
-     * @param boolean $unlock 解锁状态
-     * @return PluginPaymentIntegral
-     * @throws \think\admin\Exception
+     * @param bool $unlock 解锁状态
+     * @throws Exception
      */
-    public static function create(int $unid, string $code, string $name, float $amount, string $remark = '', bool $unlock = false): PluginPaymentIntegral
+    public static function create(int $unid, string $code, string $name, string $amount, string $remark = '', bool $unlock = false): PluginPaymentIntegral
     {
         $user = PluginAccountUser::mk()->findOrEmpty($unid);
-        if ($user->isEmpty()) throw new Exception('账号不存在！');
+        if ($user->isEmpty()) {
+            throw new Exception('账号不存在！');
+        }
 
         // 扣减积分检查
         $map = ['unid' => $unid, 'cancel' => 0, 'deleted' => 0];
         $usable = PluginPaymentIntegral::mk()->where($map)->sum('amount');
-        if ($amount < 0 && abs($amount) > $usable) throw new Exception('扣减积分不足！');
+        if ($amount < 0 && abs($amount) > $usable) {
+            throw new Exception('扣减积分不足！');
+        }
 
-            // 积分标准字段
-            $data = ['unid' => $unid, 'code' => $code, 'name' => $name, 'amount' => strval($amount), 'remark' => $remark];
+        // 积分标准字段
+        $data = ['unid' => $unid, 'code' => $code, 'name' => $name, 'amount' => strval($amount), 'remark' => $remark];
 
         // 统计操作前的金额
         $data['amount_prev'] = $usable;
-        $data['amount_next'] = round($usable + $amount, 2);
+        $data['amount_next'] = bcadd(strval($usable), strval($amount), 2);
 
         // 锁定状态处理
         $data['unlock'] = intval($unlock);
-        if ($data['unlock']) $data['unlock_time'] = date('Y-m-d H:i:s');
+        if ($data['unlock']) {
+            $data['unlock_time'] = date('Y-m-d H:i:s');
+        }
 
         // 检查编号是否重复
         $map = ['unid' => $unid, 'code' => $code, 'deleted' => 0];
@@ -83,17 +104,15 @@ abstract class Integral
         if ($model->save($data)) {
             self::recount($unid);
             return $model->refresh();
-        } else {
-            throw new Exception('积分变更失败！');
         }
+        throw new Exception('积分变更失败！');
     }
 
     /**
-     * 解锁积分变更操作
+     * 解锁积分变更操作.
      * @param string $code 交易订单
-     * @param integer $unlock 锁定状态
-     * @return PluginPaymentIntegral
-     * @throws \think\admin\Exception
+     * @param int $unlock 锁定状态
+     * @throws Exception
      */
     public static function unlock(string $code, int $unlock = 1): PluginPaymentIntegral
     {
@@ -101,11 +120,10 @@ abstract class Integral
     }
 
     /**
-     * 作废积分变更操作
+     * 作废积分变更操作.
      * @param string $code 交易订单
-     * @param integer $cancel 取消状态
-     * @return PluginPaymentIntegral
-     * @throws \think\admin\Exception
+     * @param int $cancel 取消状态
+     * @throws Exception
      */
     public static function cancel(string $code, int $cancel = 1): PluginPaymentIntegral
     {
@@ -113,10 +131,8 @@ abstract class Integral
     }
 
     /**
-     * 删除积分记录
-     * @param string $code
-     * @return PluginPaymentIntegral
-     * @throws \think\admin\Exception
+     * 删除积分记录.
+     * @throws Exception
      */
     public static function remove(string $code): PluginPaymentIntegral
     {
@@ -124,19 +140,23 @@ abstract class Integral
     }
 
     /**
-     * 刷新用户积分
-     * @param integer $unid 指定用户编号
-     * @param array|null &$data 非数组时更新数据
+     * 刷新用户积分.
+     * @param int $unid 指定用户编号
+     * @param null|array &$data 非数组时更新数据
      * @return array [lock,used,total,usable]
-     * @throws \think\admin\Exception
+     * @throws Exception
      */
     public static function recount(int $unid, ?array &$data = null): array
     {
         $isUpdate = !is_array($data);
-        if ($isUpdate) $data = [];
+        if ($isUpdate) {
+            $data = [];
+        }
         if ($isUpdate) {
             $user = PluginAccountUser::mk()->findOrEmpty($unid);
-            if ($user->isEmpty()) throw new Exception('账号不存在！');
+            if ($user->isEmpty()) {
+                throw new Exception('账号不存在！');
+            }
         }
         // 统计用户积分数据
         $map = ['unid' => $unid, 'cancel' => 0, 'deleted' => 0];
@@ -149,30 +169,29 @@ abstract class Integral
         $data['integral_used'] = bcmul(strval($used), '-1', 2);
         $data['integral_total'] = strval($total);
         $data['integral_usable'] = bcsub($data['integral_total'], $data['integral_used'], 2);
-        if ($isUpdate) $user->save(['extra' => array_merge($user->getAttr('extra'), $data)]);
+        if ($isUpdate) {
+            $user->save(['extra' => array_merge($user->getAttr('extra'), $data)]);
+        }
         return ['lock' => $lock, 'used' => abs($used), 'total' => $total, 'usable' => $data['integral_usable']];
     }
 
     /**
-     * 获取积分模型
-     * @param string $code
-     * @return PluginPaymentIntegral
-     * @throws \think\admin\Exception
+     * 获取积分模型.
+     * @throws Exception
      */
     public static function get(string $code): PluginPaymentIntegral
     {
         $map = ['code' => $code, 'deleted' => 0];
         $model = PluginPaymentIntegral::mk()->where($map)->findOrEmpty();
-        if ($model->isEmpty()) throw new Exception('无效的操作编号！');
+        if ($model->isEmpty()) {
+            throw new Exception('无效的操作编号！');
+        }
         return $model;
     }
 
     /**
-     * 更新积分记录
-     * @param string $code
-     * @param array $data
-     * @return PluginPaymentIntegral
-     * @throws \think\admin\Exception
+     * 更新积分记录.
+     * @throws Exception
      */
     public static function set(string $code, array $data): PluginPaymentIntegral
     {

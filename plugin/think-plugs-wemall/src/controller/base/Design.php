@@ -1,30 +1,32 @@
 <?php
 
-// +----------------------------------------------------------------------
-// | WeMall Plugin for ThinkAdmin
-// +----------------------------------------------------------------------
-// | 版权所有 2014~2025 ThinkAdmin [ thinkadmin.top ]
-// +----------------------------------------------------------------------
-// | 官方网站: https://thinkadmin.top
-// +----------------------------------------------------------------------
-// | 免责声明 ( https://thinkadmin.top/disclaimer )
-// | 会员免费 ( https://thinkadmin.top/vip-introduce )
-// +----------------------------------------------------------------------
-// | gitee 代码仓库：https://gitee.com/zoujingli/think-plugs-wemall
-// | github 代码仓库：https://github.com/zoujingli/think-plugs-wemall
-// +----------------------------------------------------------------------
-
-declare (strict_types=1);
+declare(strict_types=1);
+/**
+ * +----------------------------------------------------------------------
+ * | Payment Plugin for ThinkAdmin
+ * +----------------------------------------------------------------------
+ * | 版权所有 2014~2026 ThinkAdmin [ thinkadmin.top ]
+ * +----------------------------------------------------------------------
+ * | 官方网站: https://thinkadmin.top
+ * +----------------------------------------------------------------------
+ * | 开源协议 ( https://mit-license.org )
+ * | 免责声明 ( https://thinkadmin.top/disclaimer )
+ * | 会员特权 ( https://thinkadmin.top/vip-introduce )
+ * +----------------------------------------------------------------------
+ * | gitee 代码仓库：https://gitee.com/zoujingli/ThinkAdmin
+ * | github 代码仓库：https://github.com/zoujingli/ThinkAdmin
+ * +----------------------------------------------------------------------
+ */
 
 namespace plugin\wemall\controller\base;
 
 use plugin\wemall\model\PluginWemallGoodsMark;
 use think\admin\Controller;
+use think\admin\Exception;
 
 /**
- * 页面设计器
+ * 页面设计器.
  * @class Design
- * @package plugin\wemall\controller\base
  */
 class Design extends Controller
 {
@@ -32,8 +34,7 @@ class Design extends Controller
      * 前端页面设计
      * @auth true
      * @menu true
-     * @return void
-     * @throws \think\admin\Exception
+     * @throws Exception
      */
     public function index()
     {
@@ -46,26 +47,24 @@ class Design extends Controller
     /**
      * 保存页面布局
      * @auth true
-     * @return void
-     * @throws \think\admin\Exception
+     * @throws Exception
      */
     public function save()
     {
         $input = $this->_vali([
-            'pages.require'  => '页面配置不能为空！',
-            'navbar.require' => '菜单导航配置不能为空！'
+            'pages.require' => '页面配置不能为空！',
+            'navbar.require' => '菜单导航配置不能为空！',
         ]);
         sysdata('plugin.wemall.design', [
-            'pages'  => json_decode($input['pages'], true),
-            'navbar' => json_decode($input['navbar'], true)
+            'pages' => json_decode($input['pages'], true),
+            'navbar' => json_decode($input['navbar'], true),
         ]);
         $this->success('保存成功！');
     }
 
     /**
-     * 连接选择器
+     * 连接选择器.
      * @login true
-     * @return void
      */
     public function link()
     {
@@ -79,9 +78,8 @@ class Design extends Controller
     }
 
     /**
-     * 显示其他连接
+     * 显示其他连接.
      * @login true
-     * @return void
      */
     public function other()
     {
@@ -91,7 +89,7 @@ class Design extends Controller
                 ['name' => '商品中心', 'type' => 'tabs', 'link' => '/pages/goods/index'],
                 ['name' => '会员中心', 'type' => 'tabs', 'link' => '/pages/center/index'],
                 ['name' => '领取优惠券', 'type' => 'page', 'link' => '/pages/goods/coupon'],
-            ]
+            ],
         ]);
     }
 }

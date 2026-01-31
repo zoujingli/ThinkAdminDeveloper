@@ -1,5 +1,22 @@
 <?php
 
+declare(strict_types=1);
+/**
+ * +----------------------------------------------------------------------
+ * | Payment Plugin for ThinkAdmin
+ * +----------------------------------------------------------------------
+ * | 版权所有 2014~2026 ThinkAdmin [ thinkadmin.top ]
+ * +----------------------------------------------------------------------
+ * | 官方网站: https://thinkadmin.top
+ * +----------------------------------------------------------------------
+ * | 开源协议 ( https://mit-license.org )
+ * | 免责声明 ( https://thinkadmin.top/disclaimer )
+ * | 会员特权 ( https://thinkadmin.top/vip-introduce )
+ * +----------------------------------------------------------------------
+ * | gitee 代码仓库：https://gitee.com/zoujingli/ThinkAdmin
+ * | github 代码仓库：https://github.com/zoujingli/ThinkAdmin
+ * +----------------------------------------------------------------------
+ */
 use think\admin\extend\PhinxExtend;
 use think\migration\Migrator;
 
@@ -8,10 +25,8 @@ use think\migration\Migrator;
 
 class InstallWemall20241010 extends Migrator
 {
-
     /**
-     * 获取脚本名称
-     * @return string
+     * 获取脚本名称.
      */
     public function getName(): string
     {
@@ -19,7 +34,7 @@ class InstallWemall20241010 extends Migrator
     }
 
     /**
-     * 创建数据库
+     * 创建数据库.
      */
     public function change()
     {
@@ -63,7 +78,6 @@ class InstallWemall20241010 extends Migrator
      * 创建数据对象
      * @class PluginWemallConfigAgent
      * @table plugin_wemall_config_agent
-     * @return void
      */
     private function _create_plugin_wemall_config_agent()
     {
@@ -78,12 +92,12 @@ class InstallWemall20241010 extends Migrator
             ['cardbg', 'string', ['limit' => 500, 'default' => '', 'null' => true, 'comment' => '等级卡片']],
             ['number', 'integer', ['limit' => 2, 'default' => 0, 'null' => true, 'comment' => '级别序号']],
             ['upgrade_type', 'integer', ['limit' => 1, 'default' => 0, 'null' => true, 'comment' => '升级规则(0单个,1同时)']],
-            ['extra', 'text', ['default' => NULL, 'null' => true, 'comment' => '升级规则']],
+            ['extra', 'text', ['default' => null, 'null' => true, 'comment' => '升级规则']],
             ['remark', 'string', ['limit' => 500, 'default' => '', 'null' => true, 'comment' => '级别描述']],
             ['utime', 'biginteger', ['limit' => 20, 'default' => 0, 'null' => true, 'comment' => '更新时间']],
             ['status', 'integer', ['limit' => 1, 'default' => 1, 'null' => true, 'comment' => '等级状态(1使用,0禁用)']],
-            ['create_time', 'datetime', ['default' => NULL, 'null' => true, 'comment' => '创建时间']],
-            ['update_time', 'datetime', ['default' => NULL, 'null' => true, 'comment' => '更新时间']],
+            ['create_time', 'datetime', ['default' => null, 'null' => true, 'comment' => '创建时间']],
+            ['update_time', 'datetime', ['default' => null, 'null' => true, 'comment' => '更新时间']],
         ], [
             'utime', 'status', 'number', 'create_time',
         ], true);
@@ -93,7 +107,6 @@ class InstallWemall20241010 extends Migrator
      * 创建数据对象
      * @class PluginWemallConfigCoupon
      * @table plugin_wemall_config_coupon
-     * @return void
      */
     private function _create_plugin_wemall_config_coupon()
     {
@@ -106,8 +119,8 @@ class InstallWemall20241010 extends Migrator
             ['type', 'integer', ['limit' => 1, 'default' => 1, 'null' => true, 'comment' => '类型(0通用券,1商品券)']],
             ['name', 'string', ['limit' => 200, 'default' => '', 'null' => true, 'comment' => '优惠名称']],
             ['cover', 'string', ['limit' => 500, 'default' => '', 'null' => true, 'comment' => '封面图标']],
-            ['extra', 'text', ['default' => NULL, 'null' => true, 'comment' => '扩展数据']],
-            ['content', 'text', ['default' => NULL, 'null' => true, 'comment' => '内容描述']],
+            ['extra', 'text', ['default' => null, 'null' => true, 'comment' => '扩展数据']],
+            ['content', 'text', ['default' => null, 'null' => true, 'comment' => '内容描述']],
             ['remark', 'string', ['limit' => 500, 'default' => '', 'null' => true, 'comment' => '系统备注']],
             ['amount', 'decimal', ['precision' => 20, 'scale' => 2, 'default' => '0.00', 'null' => true, 'comment' => '抵扣金额']],
             ['limit_amount', 'decimal', ['precision' => 20, 'scale' => 2, 'default' => '0.00', 'null' => true, 'comment' => '金额门槛(0不限制)']],
@@ -120,8 +133,8 @@ class InstallWemall20241010 extends Migrator
             ['sort', 'biginteger', ['limit' => 20, 'default' => 0, 'null' => true, 'comment' => '排序权重']],
             ['status', 'integer', ['limit' => 1, 'default' => 1, 'null' => true, 'comment' => '卡券状态(0禁用,1使用)']],
             ['deleted', 'integer', ['limit' => 1, 'default' => 0, 'null' => true, 'comment' => '删除状态(1已删,0未删)']],
-            ['create_time', 'datetime', ['default' => NULL, 'null' => true, 'comment' => '创建时间']],
-            ['update_time', 'datetime', ['default' => NULL, 'null' => true, 'comment' => '更新时间']],
+            ['create_time', 'datetime', ['default' => null, 'null' => true, 'comment' => '创建时间']],
+            ['update_time', 'datetime', ['default' => null, 'null' => true, 'comment' => '更新时间']],
         ], [
             'sort', 'type', 'status', 'deleted', 'create_time',
         ], true);
@@ -131,7 +144,6 @@ class InstallWemall20241010 extends Migrator
      * 创建数据对象
      * @class PluginWemallConfigDiscount
      * @table plugin_wemall_config_discount
-     * @return void
      */
     private function _create_plugin_wemall_config_discount()
     {
@@ -143,12 +155,12 @@ class InstallWemall20241010 extends Migrator
         PhinxExtend::upgrade($table, [
             ['name', 'string', ['limit' => 200, 'default' => '', 'null' => true, 'comment' => '方案名称']],
             ['remark', 'string', ['limit' => 500, 'default' => '', 'null' => true, 'comment' => '方案描述']],
-            ['items', 'text', ['default' => NULL, 'null' => true, 'comment' => '方案规则']],
+            ['items', 'text', ['default' => null, 'null' => true, 'comment' => '方案规则']],
             ['sort', 'biginteger', ['limit' => 20, 'default' => 0, 'null' => true, 'comment' => '排序权重']],
             ['status', 'integer', ['limit' => 1, 'default' => 1, 'null' => true, 'comment' => '方案状态(0禁用,1使用)']],
             ['deleted', 'integer', ['limit' => 1, 'default' => 0, 'null' => true, 'comment' => '删除状态(1已删,0未删)']],
-            ['create_time', 'datetime', ['default' => NULL, 'null' => true, 'comment' => '创建时间']],
-            ['update_time', 'datetime', ['default' => NULL, 'null' => true, 'comment' => '更新时间']],
+            ['create_time', 'datetime', ['default' => null, 'null' => true, 'comment' => '创建时间']],
+            ['update_time', 'datetime', ['default' => null, 'null' => true, 'comment' => '更新时间']],
         ], [
             'sort', 'status', 'deleted', 'create_time',
         ], true);
@@ -158,7 +170,6 @@ class InstallWemall20241010 extends Migrator
      * 创建数据对象
      * @class PluginWemallConfigLevel
      * @table plugin_wemall_config_level
-     * @return void
      */
     private function _create_plugin_wemall_config_level()
     {
@@ -175,11 +186,11 @@ class InstallWemall20241010 extends Migrator
             ['upgrade_type', 'integer', ['limit' => 1, 'default' => 0, 'null' => true, 'comment' => '升级规则(0单个,1同时)']],
             ['upgrade_team', 'integer', ['limit' => 1, 'default' => 1, 'null' => true, 'comment' => '团队人数统计(0不计,1累计)']],
             ['remark', 'string', ['limit' => 500, 'default' => '', 'null' => true, 'comment' => '用户级别描述']],
-            ['extra', 'text', ['default' => NULL, 'null' => true, 'comment' => '配置规则']],
+            ['extra', 'text', ['default' => null, 'null' => true, 'comment' => '配置规则']],
             ['utime', 'biginteger', ['limit' => 20, 'default' => 0, 'null' => true, 'comment' => '更新时间']],
             ['status', 'integer', ['limit' => 1, 'default' => 1, 'null' => true, 'comment' => '等级状态(1使用,0禁用)']],
-            ['create_time', 'datetime', ['default' => NULL, 'null' => true, 'comment' => '创建时间']],
-            ['update_time', 'datetime', ['default' => NULL, 'null' => true, 'comment' => '更新时间']],
+            ['create_time', 'datetime', ['default' => null, 'null' => true, 'comment' => '创建时间']],
+            ['update_time', 'datetime', ['default' => null, 'null' => true, 'comment' => '更新时间']],
         ], [
             'utime', 'status', 'number', 'create_time',
         ], true);
@@ -189,7 +200,6 @@ class InstallWemall20241010 extends Migrator
      * 创建数据对象
      * @class PluginWemallConfigNotify
      * @table plugin_wemall_config_notify
-     * @return void
      */
     private function _create_plugin_wemall_config_notify()
     {
@@ -203,15 +213,15 @@ class InstallWemall20241010 extends Migrator
             ['name', 'string', ['limit' => 180, 'default' => '', 'null' => true, 'comment' => '通知标题']],
             ['cover', 'string', ['limit' => 500, 'default' => '', 'null' => true, 'comment' => '通知图片']],
             ['levels', 'string', ['limit' => 500, 'default' => '', 'null' => true, 'comment' => '用户等级']],
-            ['content', 'text', ['default' => NULL, 'null' => true, 'comment' => '通知内容']],
+            ['content', 'text', ['default' => null, 'null' => true, 'comment' => '通知内容']],
             ['remark', 'string', ['limit' => 500, 'default' => '', 'null' => true, 'comment' => '通知描述']],
             ['num_read', 'biginteger', ['limit' => 20, 'default' => 0, 'null' => true, 'comment' => '阅读次数']],
             ['tips', 'integer', ['limit' => 1, 'default' => 0, 'null' => true, 'comment' => 'TIPS显示']],
             ['sort', 'biginteger', ['limit' => 20, 'default' => 0, 'null' => true, 'comment' => '排序权重']],
             ['status', 'integer', ['limit' => 1, 'default' => 1, 'null' => true, 'comment' => '激活状态(0无效,1有效)']],
             ['deleted', 'integer', ['limit' => 1, 'default' => 0, 'null' => true, 'comment' => '删除状态(1已删,0未删)']],
-            ['create_time', 'datetime', ['default' => NULL, 'null' => true, 'comment' => '创建时间']],
-            ['update_time', 'datetime', ['default' => NULL, 'null' => true, 'comment' => '更新时间']],
+            ['create_time', 'datetime', ['default' => null, 'null' => true, 'comment' => '创建时间']],
+            ['update_time', 'datetime', ['default' => null, 'null' => true, 'comment' => '更新时间']],
         ], [
             'code', 'sort', 'name', 'tips', 'status', 'deleted', 'create_time',
         ], true);
@@ -221,7 +231,6 @@ class InstallWemall20241010 extends Migrator
      * 创建数据对象
      * @class PluginWemallConfigPoster
      * @table plugin_wemall_config_poster
-     * @return void
      */
     private function _create_plugin_wemall_config_poster()
     {
@@ -236,13 +245,13 @@ class InstallWemall20241010 extends Migrator
             ['levels', 'string', ['limit' => 500, 'default' => '', 'null' => true, 'comment' => '用户等级']],
             ['devices', 'string', ['limit' => 500, 'default' => '', 'null' => true, 'comment' => '接口通道']],
             ['image', 'string', ['limit' => 500, 'default' => '', 'null' => true, 'comment' => '推广图片']],
-            ['content', 'text', ['default' => NULL, 'null' => true, 'comment' => '二维位置']],
+            ['content', 'text', ['default' => null, 'null' => true, 'comment' => '二维位置']],
             ['remark', 'string', ['limit' => 500, 'default' => '', 'null' => true, 'comment' => '推广描述']],
             ['sort', 'biginteger', ['limit' => 20, 'default' => 0, 'null' => true, 'comment' => '排序权重']],
             ['status', 'integer', ['limit' => 1, 'default' => 1, 'null' => true, 'comment' => '激活状态(0无效,1有效)']],
             ['deleted', 'integer', ['limit' => 1, 'default' => 0, 'null' => true, 'comment' => '删除状态(1已删,0未删)']],
-            ['create_time', 'datetime', ['default' => NULL, 'null' => true, 'comment' => '创建时间']],
-            ['update_time', 'datetime', ['default' => NULL, 'null' => true, 'comment' => '更新时间']],
+            ['create_time', 'datetime', ['default' => null, 'null' => true, 'comment' => '创建时间']],
+            ['update_time', 'datetime', ['default' => null, 'null' => true, 'comment' => '更新时间']],
         ], [
             'code', 'sort', 'name', 'status', 'deleted', 'create_time',
         ], true);
@@ -252,7 +261,6 @@ class InstallWemall20241010 extends Migrator
      * 创建数据对象
      * @class PluginWemallConfigRebate
      * @table plugin_wemall_config_rebate
-     * @return void
      */
     private function _create_plugin_wemall_config_rebate()
     {
@@ -283,8 +291,8 @@ class InstallWemall20241010 extends Migrator
             ['sort', 'biginteger', ['limit' => 20, 'default' => 0, 'null' => true, 'comment' => '排序权重']],
             ['status', 'integer', ['limit' => 1, 'default' => 1, 'null' => true, 'comment' => '激活状态(0无效,1有效)']],
             ['deleted', 'integer', ['limit' => 1, 'default' => 0, 'null' => true, 'comment' => '删除状态(1已删,0未删)']],
-            ['create_time', 'datetime', ['default' => NULL, 'null' => true, 'comment' => '创建时间']],
-            ['update_time', 'datetime', ['default' => NULL, 'null' => true, 'comment' => '更新时间']],
+            ['create_time', 'datetime', ['default' => null, 'null' => true, 'comment' => '创建时间']],
+            ['update_time', 'datetime', ['default' => null, 'null' => true, 'comment' => '更新时间']],
         ], [
             'code', 'sort', 'name', 'type', 'stype', 'status', 'deleted', 'p1_level', 'p2_level', 'p3_level', 'p0_level', 'create_time',
         ], true);
@@ -294,7 +302,6 @@ class InstallWemall20241010 extends Migrator
      * 创建数据对象
      * @class PluginWemallExpressCompany
      * @table plugin_wemall_express_company
-     * @return void
      */
     private function _create_plugin_wemall_express_company()
     {
@@ -310,8 +317,8 @@ class InstallWemall20241010 extends Migrator
             ['sort', 'biginteger', ['limit' => 20, 'default' => 0, 'null' => true, 'comment' => '排序权重']],
             ['status', 'integer', ['limit' => 1, 'default' => 1, 'null' => true, 'comment' => '激活状态(0无效,1有效)']],
             ['deleted', 'integer', ['limit' => 1, 'default' => 0, 'null' => true, 'comment' => '删除状态(1已删,0未删)']],
-            ['create_time', 'datetime', ['default' => NULL, 'null' => true, 'comment' => '创建时间']],
-            ['update_time', 'datetime', ['default' => NULL, 'null' => true, 'comment' => '更新时间']],
+            ['create_time', 'datetime', ['default' => null, 'null' => true, 'comment' => '创建时间']],
+            ['update_time', 'datetime', ['default' => null, 'null' => true, 'comment' => '更新时间']],
         ], [
             'code', 'sort', 'name', 'status', 'deleted', 'create_time',
         ], true);
@@ -321,7 +328,6 @@ class InstallWemall20241010 extends Migrator
      * 创建数据对象
      * @class PluginWemallExpressTemplate
      * @table plugin_wemall_express_template
-     * @return void
      */
     private function _create_plugin_wemall_express_template()
     {
@@ -333,14 +339,14 @@ class InstallWemall20241010 extends Migrator
         PhinxExtend::upgrade($table, [
             ['code', 'string', ['limit' => 20, 'default' => '', 'null' => true, 'comment' => '模板编号']],
             ['name', 'string', ['limit' => 180, 'default' => '', 'null' => true, 'comment' => '模板名称']],
-            ['normal', 'text', ['default' => NULL, 'null' => true, 'comment' => '默认规则']],
-            ['content', 'text', ['default' => NULL, 'null' => true, 'comment' => '模板规则']],
+            ['normal', 'text', ['default' => null, 'null' => true, 'comment' => '默认规则']],
+            ['content', 'text', ['default' => null, 'null' => true, 'comment' => '模板规则']],
             ['company', 'string', ['limit' => 500, 'default' => '', 'null' => true, 'comment' => '快递公司']],
             ['sort', 'biginteger', ['limit' => 20, 'default' => 0, 'null' => true, 'comment' => '排序权重']],
             ['status', 'integer', ['limit' => 1, 'default' => 1, 'null' => true, 'comment' => '激活状态(0无效,1有效)']],
             ['deleted', 'integer', ['limit' => 1, 'default' => 0, 'null' => true, 'comment' => '删除状态(1已删,0未删)']],
-            ['create_time', 'datetime', ['default' => NULL, 'null' => true, 'comment' => '创建时间']],
-            ['update_time', 'datetime', ['default' => NULL, 'null' => true, 'comment' => '更新时间']],
+            ['create_time', 'datetime', ['default' => null, 'null' => true, 'comment' => '创建时间']],
+            ['update_time', 'datetime', ['default' => null, 'null' => true, 'comment' => '更新时间']],
         ], [
             'code', 'sort', 'name', 'status', 'deleted', 'create_time',
         ], true);
@@ -350,7 +356,6 @@ class InstallWemall20241010 extends Migrator
      * 创建数据对象
      * @class PluginWemallGoods
      * @table plugin_wemall_goods
-     * @return void
      */
     private function _create_plugin_wemall_goods()
     {
@@ -366,9 +371,9 @@ class InstallWemall20241010 extends Migrator
             ['marks', 'string', ['limit' => 999, 'default' => '', 'null' => true, 'comment' => '商品标签']],
             ['cates', 'string', ['limit' => 999, 'default' => '', 'null' => true, 'comment' => '分类编号']],
             ['cover', 'string', ['limit' => 999, 'default' => '', 'null' => true, 'comment' => '商品封面']],
-            ['slider', 'text', ['default' => NULL, 'null' => true, 'comment' => '轮播图片']],
-            ['specs', 'text', ['default' => NULL, 'null' => true, 'comment' => '商品规格(JSON)']],
-            ['content', 'text', ['default' => NULL, 'null' => true, 'comment' => '商品详情']],
+            ['slider', 'text', ['default' => null, 'null' => true, 'comment' => '轮播图片']],
+            ['specs', 'text', ['default' => null, 'null' => true, 'comment' => '商品规格(JSON)']],
+            ['content', 'text', ['default' => null, 'null' => true, 'comment' => '商品详情']],
             ['remark', 'string', ['limit' => 999, 'default' => '', 'null' => true, 'comment' => '商品描述']],
             ['stock_total', 'biginteger', ['limit' => 20, 'default' => 0, 'null' => true, 'comment' => '商品库存统计']],
             ['stock_sales', 'biginteger', ['limit' => 20, 'default' => 0, 'null' => true, 'comment' => '商品销售统计']],
@@ -388,8 +393,8 @@ class InstallWemall20241010 extends Migrator
             ['sort', 'biginteger', ['limit' => 20, 'default' => 0, 'null' => true, 'comment' => '列表排序权重']],
             ['status', 'integer', ['limit' => 1, 'default' => 1, 'null' => true, 'comment' => '商品状态(1使用,0禁用)']],
             ['deleted', 'integer', ['limit' => 1, 'default' => 0, 'null' => true, 'comment' => '删除状态(0未删,1已删)']],
-            ['create_time', 'datetime', ['default' => NULL, 'null' => true, 'comment' => '创建时间']],
-            ['update_time', 'datetime', ['default' => NULL, 'null' => true, 'comment' => '更新时间']],
+            ['create_time', 'datetime', ['default' => null, 'null' => true, 'comment' => '创建时间']],
+            ['update_time', 'datetime', ['default' => null, 'null' => true, 'comment' => '更新时间']],
         ], [
             'code', 'sort', 'ssid', 'status', 'deleted', 'rebate_type', 'discount_id', 'create_time', 'level_agent', 'level_upgrade',
         ], true);
@@ -399,7 +404,6 @@ class InstallWemall20241010 extends Migrator
      * 创建数据对象
      * @class PluginWemallGoodsCate
      * @table plugin_wemall_goods_cate
-     * @return void
      */
     private function _create_plugin_wemall_goods_cate()
     {
@@ -416,8 +420,8 @@ class InstallWemall20241010 extends Migrator
             ['sort', 'biginteger', ['limit' => 20, 'default' => 0, 'null' => true, 'comment' => '排序权重']],
             ['status', 'integer', ['limit' => 1, 'default' => 1, 'null' => true, 'comment' => '使用状态']],
             ['deleted', 'integer', ['limit' => 1, 'default' => 0, 'null' => true, 'comment' => '删除状态']],
-            ['create_time', 'datetime', ['default' => NULL, 'null' => true, 'comment' => '创建时间']],
-            ['update_time', 'datetime', ['default' => NULL, 'null' => true, 'comment' => '更新时间']],
+            ['create_time', 'datetime', ['default' => null, 'null' => true, 'comment' => '创建时间']],
+            ['update_time', 'datetime', ['default' => null, 'null' => true, 'comment' => '更新时间']],
         ], [
             'pid', 'sort', 'status', 'deleted',
         ], true);
@@ -427,7 +431,6 @@ class InstallWemall20241010 extends Migrator
      * 创建数据对象
      * @class PluginWemallGoodsItem
      * @table plugin_wemall_goods_item
-     * @return void
      */
     private function _create_plugin_wemall_goods_item()
     {
@@ -455,8 +458,8 @@ class InstallWemall20241010 extends Migrator
             ['number_virtual', 'biginteger', ['limit' => 20, 'default' => 0, 'null' => true, 'comment' => '虚拟销量']],
             ['number_express', 'biginteger', ['limit' => 20, 'default' => 0, 'null' => true, 'comment' => '计件系数']],
             ['status', 'integer', ['limit' => 1, 'default' => 1, 'null' => true, 'comment' => '商品状态']],
-            ['create_time', 'datetime', ['default' => NULL, 'null' => true, 'comment' => '创建时间']],
-            ['update_time', 'datetime', ['default' => NULL, 'null' => true, 'comment' => '更新时间']],
+            ['create_time', 'datetime', ['default' => null, 'null' => true, 'comment' => '创建时间']],
+            ['update_time', 'datetime', ['default' => null, 'null' => true, 'comment' => '更新时间']],
         ], [
             'gcode', 'gspec', 'ghash', 'status',
         ], true);
@@ -466,7 +469,6 @@ class InstallWemall20241010 extends Migrator
      * 创建数据对象
      * @class PluginWemallGoodsMark
      * @table plugin_wemall_goods_mark
-     * @return void
      */
     private function _create_plugin_wemall_goods_mark()
     {
@@ -480,8 +482,8 @@ class InstallWemall20241010 extends Migrator
             ['remark', 'string', ['limit' => 200, 'default' => '', 'null' => true, 'comment' => '标签描述']],
             ['sort', 'biginteger', ['limit' => 20, 'default' => 0, 'null' => true, 'comment' => '排序权重']],
             ['status', 'integer', ['limit' => 1, 'default' => 1, 'null' => true, 'comment' => '标签状态(1使用,0禁用)']],
-            ['create_time', 'datetime', ['default' => NULL, 'null' => true, 'comment' => '创建时间']],
-            ['update_time', 'datetime', ['default' => NULL, 'null' => true, 'comment' => '更新时间']],
+            ['create_time', 'datetime', ['default' => null, 'null' => true, 'comment' => '创建时间']],
+            ['update_time', 'datetime', ['default' => null, 'null' => true, 'comment' => '更新时间']],
         ], [
             'sort', 'status',
         ], true);
@@ -491,7 +493,6 @@ class InstallWemall20241010 extends Migrator
      * 创建数据对象
      * @class PluginWemallGoodsStock
      * @table plugin_wemall_goods_stock
-     * @return void
      */
     private function _create_plugin_wemall_goods_stock()
     {
@@ -508,8 +509,8 @@ class InstallWemall20241010 extends Migrator
             ['gstock', 'biginteger', ['limit' => 20, 'default' => 0, 'null' => true, 'comment' => '入库数量']],
             ['status', 'integer', ['limit' => 1, 'default' => 1, 'null' => true, 'comment' => '数据状态(1使用,0禁用)']],
             ['deleted', 'integer', ['limit' => 1, 'default' => 0, 'null' => true, 'comment' => '删除状态(0未删,1已删)']],
-            ['create_time', 'datetime', ['default' => NULL, 'null' => true, 'comment' => '创建时间']],
-            ['update_time', 'datetime', ['default' => NULL, 'null' => true, 'comment' => '更新时间']],
+            ['create_time', 'datetime', ['default' => null, 'null' => true, 'comment' => '创建时间']],
+            ['update_time', 'datetime', ['default' => null, 'null' => true, 'comment' => '更新时间']],
         ], [
             'ghash', 'gcode', 'status', 'deleted',
         ], true);
@@ -519,7 +520,6 @@ class InstallWemall20241010 extends Migrator
      * 创建数据对象
      * @class PluginWemallHelpFeedback
      * @table plugin_wemall_help_feedback
-     * @return void
      */
     private function _create_plugin_wemall_help_feedback()
     {
@@ -531,18 +531,18 @@ class InstallWemall20241010 extends Migrator
         PhinxExtend::upgrade($table, [
             ['unid', 'biginteger', ['limit' => 20, 'default' => 0, 'null' => true, 'comment' => '反馈用户']],
             ['phone', 'string', ['limit' => 20, 'default' => '', 'null' => true, 'comment' => '联系电话']],
-            ['images', 'text', ['default' => NULL, 'null' => true, 'comment' => '反馈图片']],
-            ['content', 'text', ['default' => NULL, 'null' => true, 'comment' => '反馈内容']],
-            ['reply', 'text', ['default' => NULL, 'null' => true, 'comment' => '回复内容']],
+            ['images', 'text', ['default' => null, 'null' => true, 'comment' => '反馈图片']],
+            ['content', 'text', ['default' => null, 'null' => true, 'comment' => '反馈内容']],
+            ['reply', 'text', ['default' => null, 'null' => true, 'comment' => '回复内容']],
             ['reply_st', 'integer', ['limit' => 1, 'default' => 0, 'null' => true, 'comment' => '回复状态']],
             ['reply_by', 'biginteger', ['limit' => 20, 'default' => 0, 'null' => true, 'comment' => '回复用户']],
-            ['reply_time', 'datetime', ['default' => NULL, 'null' => true, 'comment' => '回复时间']],
+            ['reply_time', 'datetime', ['default' => null, 'null' => true, 'comment' => '回复时间']],
             ['sync', 'integer', ['limit' => 1, 'default' => 0, 'null' => true, 'comment' => '同步至常见问题状态(1已同步,0未同步)']],
             ['sort', 'biginteger', ['limit' => 20, 'default' => 0, 'null' => true, 'comment' => '排序权重']],
             ['status', 'integer', ['limit' => 1, 'default' => 1, 'null' => true, 'comment' => '展示状态(1使用,0禁用)']],
             ['deleted', 'integer', ['limit' => 1, 'default' => 0, 'null' => true, 'comment' => '删除状态(0未删,1已删)']],
-            ['create_time', 'datetime', ['default' => NULL, 'null' => true, 'comment' => '创建时间']],
-            ['update_time', 'datetime', ['default' => NULL, 'null' => true, 'comment' => '更新时间']],
+            ['create_time', 'datetime', ['default' => null, 'null' => true, 'comment' => '创建时间']],
+            ['update_time', 'datetime', ['default' => null, 'null' => true, 'comment' => '更新时间']],
         ], [
             'sort', 'unid', 'status', 'deleted', 'reply_st',
         ], true);
@@ -552,7 +552,6 @@ class InstallWemall20241010 extends Migrator
      * 创建数据对象
      * @class PluginWemallHelpProblem
      * @table plugin_wemall_help_problem
-     * @return void
      */
     private function _create_plugin_wemall_help_problem()
     {
@@ -564,15 +563,15 @@ class InstallWemall20241010 extends Migrator
         PhinxExtend::upgrade($table, [
             ['fid', 'biginteger', ['limit' => 20, 'default' => 0, 'null' => false, 'comment' => '来自反馈']],
             ['name', 'string', ['limit' => 100, 'default' => '', 'null' => true, 'comment' => '问题标题']],
-            ['content', 'text', ['default' => NULL, 'null' => true, 'comment' => '问题内容']],
+            ['content', 'text', ['default' => null, 'null' => true, 'comment' => '问题内容']],
             ['num_er', 'biginteger', ['limit' => 20, 'default' => 0, 'null' => true, 'comment' => '未解决数']],
             ['num_ok', 'biginteger', ['limit' => 20, 'default' => 0, 'null' => true, 'comment' => '已解决数']],
             ['num_read', 'biginteger', ['limit' => 20, 'default' => 0, 'null' => true, 'comment' => '阅读次数']],
             ['sort', 'biginteger', ['limit' => 20, 'default' => 0, 'null' => true, 'comment' => '排序权重']],
             ['status', 'integer', ['limit' => 1, 'default' => 1, 'null' => true, 'comment' => '展示状态(1使用,0禁用)']],
             ['deleted', 'integer', ['limit' => 1, 'default' => 0, 'null' => true, 'comment' => '删除状态(0未删,1已删)']],
-            ['create_time', 'datetime', ['default' => NULL, 'null' => true, 'comment' => '创建时间']],
-            ['update_time', 'datetime', ['default' => NULL, 'null' => true, 'comment' => '更新时间']],
+            ['create_time', 'datetime', ['default' => null, 'null' => true, 'comment' => '创建时间']],
+            ['update_time', 'datetime', ['default' => null, 'null' => true, 'comment' => '更新时间']],
         ], [
             'sort', 'status', 'deleted',
         ], true);
@@ -582,7 +581,6 @@ class InstallWemall20241010 extends Migrator
      * 创建数据对象
      * @class PluginWemallHelpQuestion
      * @table plugin_wemall_help_question
-     * @return void
      */
     private function _create_plugin_wemall_help_question()
     {
@@ -596,13 +594,13 @@ class InstallWemall20241010 extends Migrator
             ['name', 'string', ['limit' => 100, 'default' => '', 'null' => true, 'comment' => '工单标题']],
             ['phone', 'string', ['limit' => 100, 'default' => '', 'null' => true, 'comment' => '联系电话']],
             ['order_no', 'string', ['limit' => 20, 'default' => '', 'null' => true, 'comment' => '关联订单']],
-            ['images', 'text', ['default' => NULL, 'null' => true, 'comment' => '工单图片']],
-            ['content', 'text', ['default' => NULL, 'null' => true, 'comment' => '工单描述']],
+            ['images', 'text', ['default' => null, 'null' => true, 'comment' => '工单图片']],
+            ['content', 'text', ['default' => null, 'null' => true, 'comment' => '工单描述']],
             ['sort', 'biginteger', ['limit' => 20, 'default' => 0, 'null' => true, 'comment' => '排序权重']],
             ['status', 'integer', ['limit' => 1, 'default' => 1, 'null' => true, 'comment' => '工单状态(0取消,1新工单,2后台回复,3前台回复,4已完结)']],
             ['deleted', 'integer', ['limit' => 1, 'default' => 0, 'null' => true, 'comment' => '删除状态(0未删,1已删)']],
-            ['create_time', 'datetime', ['default' => NULL, 'null' => true, 'comment' => '创建时间']],
-            ['update_time', 'datetime', ['default' => NULL, 'null' => true, 'comment' => '更新时间']],
+            ['create_time', 'datetime', ['default' => null, 'null' => true, 'comment' => '创建时间']],
+            ['update_time', 'datetime', ['default' => null, 'null' => true, 'comment' => '更新时间']],
         ], [
             'sort', 'name', 'unid', 'phone', 'status', 'deleted',
         ], true);
@@ -612,7 +610,6 @@ class InstallWemall20241010 extends Migrator
      * 创建数据对象
      * @class PluginWemallHelpQuestionX
      * @table plugin_wemall_help_question_x
-     * @return void
      */
     private function _create_plugin_wemall_help_question_x()
     {
@@ -624,13 +621,13 @@ class InstallWemall20241010 extends Migrator
         PhinxExtend::upgrade($table, [
             ['ccid', 'biginteger', ['limit' => 20, 'default' => 0, 'null' => true, 'comment' => '目标编号']],
             ['unid', 'biginteger', ['limit' => 20, 'default' => 0, 'null' => true, 'comment' => '用户编号']],
-            ['content', 'text', ['default' => NULL, 'null' => true, 'comment' => '文本内容']],
-            ['images', 'text', ['default' => NULL, 'null' => true, 'comment' => '图片内容']],
+            ['content', 'text', ['default' => null, 'null' => true, 'comment' => '文本内容']],
+            ['images', 'text', ['default' => null, 'null' => true, 'comment' => '图片内容']],
             ['reply_by', 'biginteger', ['limit' => 20, 'default' => 0, 'null' => true, 'comment' => '后台用户']],
             ['status', 'integer', ['limit' => 1, 'default' => 1, 'null' => true, 'comment' => '记录状态(0无效,1待审核,2已审核)']],
             ['deleted', 'integer', ['limit' => 1, 'default' => 0, 'null' => true, 'comment' => '删除状态(0未删,1已删)']],
-            ['create_time', 'datetime', ['default' => NULL, 'null' => true, 'comment' => '创建时间']],
-            ['update_time', 'datetime', ['default' => NULL, 'null' => true, 'comment' => '更新时间']],
+            ['create_time', 'datetime', ['default' => null, 'null' => true, 'comment' => '创建时间']],
+            ['update_time', 'datetime', ['default' => null, 'null' => true, 'comment' => '更新时间']],
         ], [
             'ccid', 'unid', 'status',
         ], true);
@@ -640,7 +637,6 @@ class InstallWemall20241010 extends Migrator
      * 创建数据对象
      * @class PluginWemallOrder
      * @table plugin_wemall_order
-     * @return void
      */
     private function _create_plugin_wemall_order()
     {
@@ -680,7 +676,7 @@ class InstallWemall20241010 extends Migrator
             ['rebate_amount', 'decimal', ['precision' => 20, 'scale' => 2, 'default' => '0.00', 'null' => true, 'comment' => '返利金额']],
             ['reward_balance', 'decimal', ['precision' => 20, 'scale' => 2, 'default' => '0.00', 'null' => true, 'comment' => '奖励余额']],
             ['reward_integral', 'decimal', ['precision' => 20, 'scale' => 2, 'default' => '0.00', 'null' => true, 'comment' => '奖励积分']],
-            ['payment_time', 'datetime', ['default' => NULL, 'null' => true, 'comment' => '支付时间']],
+            ['payment_time', 'datetime', ['default' => null, 'null' => true, 'comment' => '支付时间']],
             ['payment_status', 'integer', ['limit' => 1, 'default' => 0, 'null' => true, 'comment' => '支付状态(0未支付,1有支付)']],
             ['payment_amount', 'decimal', ['precision' => 20, 'scale' => 2, 'default' => '0.00', 'null' => true, 'comment' => '实际支付']],
             ['delivery_type', 'integer', ['limit' => 1, 'default' => 0, 'null' => true, 'comment' => '物流类型(0无配送,1需配送)']],
@@ -692,11 +688,11 @@ class InstallWemall20241010 extends Migrator
             ['deleted_remark', 'string', ['limit' => 255, 'default' => '', 'null' => true, 'comment' => '删除描述']],
             ['confirm_time', 'string', ['limit' => 20, 'default' => '', 'null' => true, 'comment' => '签收时间']],
             ['confirm_remark', 'string', ['limit' => 255, 'default' => '', 'null' => true, 'comment' => '签收描述']],
-            ['refund_code', 'string', ['limit' => 20, 'default' => NULL, 'null' => true, 'comment' => '售后单号']],
+            ['refund_code', 'string', ['limit' => 20, 'default' => null, 'null' => true, 'comment' => '售后单号']],
             ['refund_status', 'integer', ['limit' => 1, 'default' => 0, 'null' => true, 'comment' => '售后状态(0未售后,1预订单,2待审核,3待退货,4已退货,5待退款,6已退款,7已完成)']],
             ['status', 'integer', ['limit' => 1, 'default' => 1, 'null' => true, 'comment' => '流程状态(0已取消,1预订单,2待支付,3待审核,4待发货,5已发货,6已收货,7已评论)']],
-            ['create_time', 'datetime', ['default' => NULL, 'null' => true, 'comment' => '创建时间']],
-            ['update_time', 'datetime', ['default' => NULL, 'null' => true, 'comment' => '更新时间']],
+            ['create_time', 'datetime', ['default' => null, 'null' => true, 'comment' => '创建时间']],
+            ['update_time', 'datetime', ['default' => null, 'null' => true, 'comment' => '更新时间']],
         ], [
             'unid', 'ssid', 'puid1', 'puid2', 'puid3', 'status', 'order_no', 'create_time', 'refund_code', 'coupon_code', 'delivery_type', 'cancel_status', 'refund_status', 'deleted_status',
         ], true);
@@ -706,7 +702,6 @@ class InstallWemall20241010 extends Migrator
      * 创建数据对象
      * @class PluginWemallOrderCart
      * @table plugin_wemall_order_cart
-     * @return void
      */
     private function _create_plugin_wemall_order_cart()
     {
@@ -722,8 +717,8 @@ class InstallWemall20241010 extends Migrator
             ['gcode', 'string', ['limit' => 20, 'default' => '', 'null' => true, 'comment' => '商品编号']],
             ['gspec', 'string', ['limit' => 180, 'default' => '', 'null' => true, 'comment' => '商品规格']],
             ['number', 'biginteger', ['limit' => 20, 'default' => 1, 'null' => true, 'comment' => '商品数量']],
-            ['create_time', 'datetime', ['default' => NULL, 'null' => true, 'comment' => '创建时间']],
-            ['update_time', 'datetime', ['default' => NULL, 'null' => true, 'comment' => '更新时间']],
+            ['create_time', 'datetime', ['default' => null, 'null' => true, 'comment' => '创建时间']],
+            ['update_time', 'datetime', ['default' => null, 'null' => true, 'comment' => '更新时间']],
         ], [
             'unid', 'ssid', 'gcode', 'gspec', 'ghash',
         ], true);
@@ -733,7 +728,6 @@ class InstallWemall20241010 extends Migrator
      * 创建数据对象
      * @class PluginWemallOrderItem
      * @table plugin_wemall_order_item
-     * @return void
      */
     private function _create_plugin_wemall_order_item()
     {
@@ -777,8 +771,8 @@ class InstallWemall20241010 extends Migrator
             ['discount_amount', 'decimal', ['precision' => 20, 'scale' => 2, 'default' => '0.00', 'null' => true, 'comment' => '商品优惠金额']],
             ['status', 'integer', ['limit' => 1, 'default' => 1, 'null' => true, 'comment' => '商品状态(1使用,0禁用)']],
             ['deleted', 'integer', ['limit' => 1, 'default' => 0, 'null' => true, 'comment' => '删除状态(0未删,1已删)']],
-            ['create_time', 'datetime', ['default' => NULL, 'null' => true, 'comment' => '创建时间']],
-            ['update_time', 'datetime', ['default' => NULL, 'null' => true, 'comment' => '更新时间']],
+            ['create_time', 'datetime', ['default' => null, 'null' => true, 'comment' => '创建时间']],
+            ['update_time', 'datetime', ['default' => null, 'null' => true, 'comment' => '更新时间']],
         ], [
             'unid', 'gsku', 'ssid', 'gcode', 'gspec', 'ghash', 'status', 'deleted', 'order_no', 'rebate_type', 'discount_id', 'level_agent', 'delivery_code',
         ], true);
@@ -788,7 +782,6 @@ class InstallWemall20241010 extends Migrator
      * 创建数据对象
      * @class PluginWemallOrderRefund
      * @table plugin_wemall_order_refund
-     * @return void
      */
     private function _create_plugin_wemall_order_refund()
     {
@@ -813,18 +806,18 @@ class InstallWemall20241010 extends Migrator
             ['balance_code', 'string', ['limit' => 20, 'default' => '', 'null' => true, 'comment' => '退回单号']],
             ['integral_code', 'string', ['limit' => 20, 'default' => '', 'null' => true, 'comment' => '退回单号']],
             ['phone', 'string', ['limit' => 20, 'default' => '', 'null' => true, 'comment' => '联系电话']],
-            ['images', 'text', ['default' => NULL, 'null' => true, 'comment' => '申请图片']],
-            ['content', 'text', ['default' => NULL, 'null' => true, 'comment' => '申请说明']],
-            ['remark', 'string', ['limit' => 180, 'default' => NULL, 'null' => true, 'comment' => '操作描述']],
+            ['images', 'text', ['default' => null, 'null' => true, 'comment' => '申请图片']],
+            ['content', 'text', ['default' => null, 'null' => true, 'comment' => '申请说明']],
+            ['remark', 'string', ['limit' => 180, 'default' => null, 'null' => true, 'comment' => '操作描述']],
             ['express_no', 'string', ['limit' => 20, 'default' => '', 'null' => true, 'comment' => '快递单号']],
             ['express_code', 'string', ['limit' => 20, 'default' => '', 'null' => true, 'comment' => '快递公司']],
             ['express_name', 'string', ['limit' => 50, 'default' => '', 'null' => true, 'comment' => '快递名称']],
             ['status', 'integer', ['limit' => 1, 'default' => 1, 'null' => true, 'comment' => '流程状态(0已取消,1预订单,2待审核,3待退货,4已退货,5待退款,6已退款,7已完成)']],
-            ['status_at', 'datetime', ['default' => NULL, 'null' => true, 'comment' => '状态变更时间']],
+            ['status_at', 'datetime', ['default' => null, 'null' => true, 'comment' => '状态变更时间']],
             ['status_ds', 'string', ['limit' => 200, 'default' => '', 'null' => true, 'comment' => '状态变更描述']],
             ['admin_by', 'biginteger', ['limit' => 20, 'default' => 0, 'null' => true, 'comment' => '后台用户']],
-            ['create_time', 'datetime', ['default' => NULL, 'null' => true, 'comment' => '创建时间']],
-            ['update_time', 'datetime', ['default' => NULL, 'null' => true, 'comment' => '更新时间']],
+            ['create_time', 'datetime', ['default' => null, 'null' => true, 'comment' => '创建时间']],
+            ['update_time', 'datetime', ['default' => null, 'null' => true, 'comment' => '更新时间']],
         ], [
             'unid', 'type', 'code', 'ssid', 'status', 'order_no', 'create_time',
         ], true);
@@ -834,7 +827,6 @@ class InstallWemall20241010 extends Migrator
      * 创建数据对象
      * @class PluginWemallOrderSend
      * @table plugin_wemall_order_send
-     * @return void
      */
     private function _create_plugin_wemall_order_send()
     {
@@ -865,11 +857,11 @@ class InstallWemall20241010 extends Migrator
             ['express_remark', 'string', ['limit' => 255, 'default' => '', 'null' => true, 'comment' => '快递发送备注']],
             ['company_code', 'string', ['limit' => 20, 'default' => '', 'null' => true, 'comment' => '快递公司编码']],
             ['company_name', 'string', ['limit' => 100, 'default' => '', 'null' => true, 'comment' => '快递公司名称']],
-            ['extra', 'text', ['default' => NULL, 'null' => true, 'comment' => '原始数据']],
+            ['extra', 'text', ['default' => null, 'null' => true, 'comment' => '原始数据']],
             ['status', 'integer', ['limit' => 1, 'default' => 1, 'null' => true, 'comment' => '发货状态(1待发货,2已发货,3已收货)']],
             ['deleted', 'integer', ['limit' => 1, 'default' => 0, 'null' => true, 'comment' => '删除状态(0未删,1已删)']],
-            ['create_time', 'datetime', ['default' => NULL, 'null' => true, 'comment' => '创建时间']],
-            ['update_time', 'datetime', ['default' => NULL, 'null' => true, 'comment' => '更新时间']],
+            ['create_time', 'datetime', ['default' => null, 'null' => true, 'comment' => '创建时间']],
+            ['update_time', 'datetime', ['default' => null, 'null' => true, 'comment' => '更新时间']],
         ], [
             'unid', 'status', 'deleted', 'order_no', 'create_time',
         ], true);
@@ -879,7 +871,6 @@ class InstallWemall20241010 extends Migrator
      * 创建数据对象
      * @class PluginWemallOrderSender
      * @table plugin_wemall_order_sender
-     * @return void
      */
     private function _create_plugin_wemall_order_sender()
     {
@@ -916,11 +907,11 @@ class InstallWemall20241010 extends Migrator
             ['express_remark', 'string', ['limit' => 255, 'default' => '', 'null' => true, 'comment' => '快递发送备注']],
             ['company_code', 'string', ['limit' => 20, 'default' => '', 'null' => true, 'comment' => '快递公司编码']],
             ['company_name', 'string', ['limit' => 100, 'default' => '', 'null' => true, 'comment' => '快递公司名称']],
-            ['extra', 'text', ['default' => NULL, 'null' => true, 'comment' => '原始数据']],
+            ['extra', 'text', ['default' => null, 'null' => true, 'comment' => '原始数据']],
             ['status', 'integer', ['limit' => 1, 'default' => 1, 'null' => true, 'comment' => '发货状态(1待发货,2已发货,3已收货)']],
             ['deleted', 'integer', ['limit' => 1, 'default' => 0, 'null' => true, 'comment' => '删除状态(0未删,1已删)']],
-            ['create_time', 'datetime', ['default' => NULL, 'null' => true, 'comment' => '创建时间']],
-            ['update_time', 'datetime', ['default' => NULL, 'null' => true, 'comment' => '更新时间']],
+            ['create_time', 'datetime', ['default' => null, 'null' => true, 'comment' => '创建时间']],
+            ['update_time', 'datetime', ['default' => null, 'null' => true, 'comment' => '更新时间']],
         ], [
             'unid', 'ssid', 'status', 'deleted', 'order_no', 'create_time',
         ], true);
@@ -930,7 +921,6 @@ class InstallWemall20241010 extends Migrator
      * 创建数据对象
      * @class PluginWemallUserActionCollect
      * @table plugin_wemall_user_action_collect
-     * @return void
      */
     private function _create_plugin_wemall_user_action_collect()
     {
@@ -944,8 +934,8 @@ class InstallWemall20241010 extends Migrator
             ['gcode', 'string', ['limit' => 32, 'default' => '', 'null' => true, 'comment' => '商品编号']],
             ['times', 'biginteger', ['limit' => 20, 'default' => 0, 'null' => true, 'comment' => '记录次数']],
             ['sort', 'biginteger', ['limit' => 20, 'default' => 0, 'null' => true, 'comment' => '排序权重']],
-            ['create_time', 'datetime', ['default' => NULL, 'null' => true, 'comment' => '创建时间']],
-            ['update_time', 'datetime', ['default' => NULL, 'null' => true, 'comment' => '更新时间']],
+            ['create_time', 'datetime', ['default' => null, 'null' => true, 'comment' => '创建时间']],
+            ['update_time', 'datetime', ['default' => null, 'null' => true, 'comment' => '更新时间']],
         ], [
             'unid', 'sort', 'gcode',
         ], true);
@@ -955,7 +945,6 @@ class InstallWemall20241010 extends Migrator
      * 创建数据对象
      * @class PluginWemallUserActionComment
      * @table plugin_wemall_user_action_comment
-     * @return void
      */
     private function _create_plugin_wemall_user_action_comment()
     {
@@ -967,17 +956,17 @@ class InstallWemall20241010 extends Migrator
         PhinxExtend::upgrade($table, [
             ['ssid', 'biginteger', ['limit' => 20, 'default' => 0, 'null' => true, 'comment' => '所属商家']],
             ['unid', 'biginteger', ['limit' => 20, 'default' => 0, 'null' => true, 'comment' => '用户编号']],
-            ['code', 'string', ['limit' => 32, 'default' => NULL, 'null' => true, 'comment' => '评论编号']],
+            ['code', 'string', ['limit' => 32, 'default' => null, 'null' => true, 'comment' => '评论编号']],
             ['gcode', 'string', ['limit' => 20, 'default' => '', 'null' => true, 'comment' => '商品编号']],
-            ['ghash', 'string', ['limit' => 32, 'default' => NULL, 'null' => true, 'comment' => '商品哈希']],
+            ['ghash', 'string', ['limit' => 32, 'default' => null, 'null' => true, 'comment' => '商品哈希']],
             ['order_no', 'string', ['limit' => 20, 'default' => '', 'null' => true, 'comment' => '订单单号']],
             ['rate', 'decimal', ['precision' => 20, 'scale' => 2, 'default' => '5.00', 'null' => true, 'comment' => '评论分数']],
             ['content', 'string', ['limit' => 200, 'default' => '', 'null' => true, 'comment' => '评论内容']],
-            ['images', 'text', ['default' => NULL, 'null' => true, 'comment' => '评论图片']],
+            ['images', 'text', ['default' => null, 'null' => true, 'comment' => '评论图片']],
             ['status', 'integer', ['limit' => 1, 'default' => 0, 'null' => true, 'comment' => '评论状态(0隐藏,1显示)']],
             ['deleted', 'integer', ['limit' => 1, 'default' => 0, 'null' => true, 'comment' => '删除状态(0未删,1已删)']],
-            ['create_time', 'datetime', ['default' => NULL, 'null' => true, 'comment' => '创建时间']],
-            ['update_time', 'datetime', ['default' => NULL, 'null' => true, 'comment' => '更新时间']],
+            ['create_time', 'datetime', ['default' => null, 'null' => true, 'comment' => '创建时间']],
+            ['update_time', 'datetime', ['default' => null, 'null' => true, 'comment' => '更新时间']],
         ], [
             'unid', 'code', 'ssid', 'ghash', 'gcode', 'status', 'deleted', 'order_no', 'create_time',
         ], true);
@@ -987,7 +976,6 @@ class InstallWemall20241010 extends Migrator
      * 创建数据对象
      * @class PluginWemallUserActionHistory
      * @table plugin_wemall_user_action_history
-     * @return void
      */
     private function _create_plugin_wemall_user_action_history()
     {
@@ -1002,8 +990,8 @@ class InstallWemall20241010 extends Migrator
             ['gcode', 'string', ['limit' => 32, 'default' => '', 'null' => true, 'comment' => '商品编号']],
             ['times', 'biginteger', ['limit' => 20, 'default' => 0, 'null' => true, 'comment' => '记录次数']],
             ['sort', 'biginteger', ['limit' => 20, 'default' => 0, 'null' => true, 'comment' => '排序权重']],
-            ['create_time', 'datetime', ['default' => NULL, 'null' => true, 'comment' => '创建时间']],
-            ['update_time', 'datetime', ['default' => NULL, 'null' => true, 'comment' => '更新时间']],
+            ['create_time', 'datetime', ['default' => null, 'null' => true, 'comment' => '创建时间']],
+            ['update_time', 'datetime', ['default' => null, 'null' => true, 'comment' => '更新时间']],
         ], [
             'unid', 'sort', 'ssid', 'gcode',
         ], true);
@@ -1013,7 +1001,6 @@ class InstallWemall20241010 extends Migrator
      * 创建数据对象
      * @class PluginWemallUserActionSearch
      * @table plugin_wemall_user_action_search
-     * @return void
      */
     private function _create_plugin_wemall_user_action_search()
     {
@@ -1027,8 +1014,8 @@ class InstallWemall20241010 extends Migrator
             ['keys', 'string', ['limit' => 99, 'default' => '', 'null' => true, 'comment' => '关键词']],
             ['times', 'biginteger', ['limit' => 20, 'default' => 0, 'null' => true, 'comment' => '搜索次数']],
             ['sort', 'biginteger', ['limit' => 20, 'default' => 0, 'null' => true, 'comment' => '排序权重']],
-            ['create_time', 'datetime', ['default' => NULL, 'null' => true, 'comment' => '创建时间']],
-            ['update_time', 'datetime', ['default' => NULL, 'null' => true, 'comment' => '更新时间']],
+            ['create_time', 'datetime', ['default' => null, 'null' => true, 'comment' => '创建时间']],
+            ['update_time', 'datetime', ['default' => null, 'null' => true, 'comment' => '更新时间']],
         ], [
             'keys', 'unid', 'sort',
         ], true);
@@ -1038,7 +1025,6 @@ class InstallWemall20241010 extends Migrator
      * 创建数据对象
      * @class PluginWemallUserCheckin
      * @table plugin_wemall_user_checkin
-     * @return void
      */
     private function _create_plugin_wemall_user_checkin()
     {
@@ -1056,8 +1042,8 @@ class InstallWemall20241010 extends Migrator
             ['integral', 'decimal', ['precision' => 20, 'scale' => 2, 'default' => '0.00', 'null' => true, 'comment' => '赠送积分']],
             ['status', 'integer', ['limit' => 1, 'default' => 1, 'null' => true, 'comment' => '生效状态(0未生效,1已生效)']],
             ['deleted', 'integer', ['limit' => 1, 'default' => 0, 'null' => true, 'comment' => '删除状态(0未删除,1已删除)']],
-            ['create_time', 'datetime', ['default' => NULL, 'null' => true, 'comment' => '创建时间']],
-            ['update_time', 'datetime', ['default' => NULL, 'null' => true, 'comment' => '更新时间']],
+            ['create_time', 'datetime', ['default' => null, 'null' => true, 'comment' => '创建时间']],
+            ['update_time', 'datetime', ['default' => null, 'null' => true, 'comment' => '更新时间']],
         ], [
             'unid', 'date', 'status', 'deleted', 'create_time',
         ], true);
@@ -1067,7 +1053,6 @@ class InstallWemall20241010 extends Migrator
      * 创建数据对象
      * @class PluginWemallUserCoupon
      * @table plugin_wemall_user_coupon
-     * @return void
      */
     private function _create_plugin_wemall_user_coupon()
     {
@@ -1082,16 +1067,16 @@ class InstallWemall20241010 extends Migrator
             ['coid', 'biginteger', ['limit' => 20, 'default' => 0, 'null' => true, 'comment' => '配置编号']],
             ['code', 'string', ['limit' => 20, 'default' => '', 'null' => true, 'comment' => '卡券编号']],
             ['used', 'integer', ['limit' => 1, 'default' => 0, 'null' => true, 'comment' => '使用状态']],
-            ['used_time', 'datetime', ['default' => NULL, 'null' => true, 'comment' => '使用时间']],
+            ['used_time', 'datetime', ['default' => null, 'null' => true, 'comment' => '使用时间']],
             ['status', 'integer', ['limit' => 1, 'default' => 1, 'null' => true, 'comment' => '生效状态(0未生效,1待使用,2已使用,3已过期)']],
             ['status_desc', 'string', ['limit' => 20, 'default' => '', 'null' => true, 'comment' => '状态描述']],
-            ['status_time', 'datetime', ['default' => NULL, 'null' => true, 'comment' => '修改时间']],
+            ['status_time', 'datetime', ['default' => null, 'null' => true, 'comment' => '修改时间']],
             ['expire', 'biginteger', ['limit' => 20, 'default' => 0, 'null' => true, 'comment' => '有效时间']],
-            ['expire_time', 'datetime', ['default' => NULL, 'null' => true, 'comment' => '有效日期']],
+            ['expire_time', 'datetime', ['default' => null, 'null' => true, 'comment' => '有效日期']],
             ['deleted', 'integer', ['limit' => 1, 'default' => 0, 'null' => true, 'comment' => '删除状态(0未删除,1已删除)']],
-            ['create_time', 'datetime', ['default' => NULL, 'null' => true, 'comment' => '创建时间']],
-            ['update_time', 'datetime', ['default' => NULL, 'null' => true, 'comment' => '更新时间']],
-            ['confirm_time', 'datetime', ['default' => NULL, 'null' => true, 'comment' => '到账时间']],
+            ['create_time', 'datetime', ['default' => null, 'null' => true, 'comment' => '创建时间']],
+            ['update_time', 'datetime', ['default' => null, 'null' => true, 'comment' => '更新时间']],
+            ['confirm_time', 'datetime', ['default' => null, 'null' => true, 'comment' => '到账时间']],
         ], [
             'code', 'unid', 'coid', 'used', 'status', 'expire', 'deleted', 'create_time', 'confirm_time',
         ], true);
@@ -1101,7 +1086,6 @@ class InstallWemall20241010 extends Migrator
      * 创建数据对象
      * @class PluginWemallUserCreate
      * @table plugin_wemall_user_create
-     * @return void
      */
     private function _create_plugin_wemall_user_create()
     {
@@ -1126,8 +1110,8 @@ class InstallWemall20241010 extends Migrator
             ['agent_phone', 'string', ['limit' => 50, 'default' => '', 'null' => true, 'comment' => '上级手机']],
             ['status', 'integer', ['limit' => 1, 'default' => 1, 'null' => true, 'comment' => '记录状态(0无效,1有效)']],
             ['deleted', 'integer', ['limit' => 1, 'default' => 0, 'null' => true, 'comment' => '删除状态(0未删,1已删)']],
-            ['create_time', 'datetime', ['default' => NULL, 'null' => true, 'comment' => '创建时间']],
-            ['update_time', 'datetime', ['default' => NULL, 'null' => true, 'comment' => '更新时间']],
+            ['create_time', 'datetime', ['default' => null, 'null' => true, 'comment' => '创建时间']],
+            ['update_time', 'datetime', ['default' => null, 'null' => true, 'comment' => '更新时间']],
         ], [
             'name', 'unid', 'phone', 'status', 'deleted', 'create_time', 'agent_entry', 'agent_phone', 'rebate_total',
         ], true);
@@ -1137,7 +1121,6 @@ class InstallWemall20241010 extends Migrator
      * 创建数据对象
      * @class PluginWemallUserRebate
      * @table plugin_wemall_user_rebate
-     * @return void
      */
     private function _create_plugin_wemall_user_rebate()
     {
@@ -1161,9 +1144,9 @@ class InstallWemall20241010 extends Migrator
             ['remark', 'string', ['limit' => 50, 'default' => '', 'null' => true, 'comment' => '奖励描述']],
             ['status', 'integer', ['limit' => 1, 'default' => 1, 'null' => true, 'comment' => '生效状态(0未生效,1已生效)']],
             ['deleted', 'integer', ['limit' => 1, 'default' => 0, 'null' => true, 'comment' => '删除状态(0未删除,1已删除)']],
-            ['create_time', 'datetime', ['default' => NULL, 'null' => true, 'comment' => '创建时间']],
-            ['update_time', 'datetime', ['default' => NULL, 'null' => true, 'comment' => '更新时间']],
-            ['confirm_time', 'datetime', ['default' => NULL, 'null' => true, 'comment' => '到账时间']],
+            ['create_time', 'datetime', ['default' => null, 'null' => true, 'comment' => '创建时间']],
+            ['update_time', 'datetime', ['default' => null, 'null' => true, 'comment' => '更新时间']],
+            ['confirm_time', 'datetime', ['default' => null, 'null' => true, 'comment' => '到账时间']],
         ], [
             'type', 'date', 'code', 'name', 'unid', 'hash', 'status', 'deleted', 'order_no', 'order_unid', 'create_time', 'confirm_time',
         ], true);
@@ -1173,7 +1156,6 @@ class InstallWemall20241010 extends Migrator
      * 创建数据对象
      * @class PluginWemallUserRecharge
      * @table plugin_wemall_user_recharge
-     * @return void
      */
     private function _create_plugin_wemall_user_recharge()
     {
@@ -1191,9 +1173,9 @@ class InstallWemall20241010 extends Migrator
             ['deleted', 'integer', ['limit' => 1, 'default' => 0, 'null' => true, 'comment' => '删除状态(0未删除,1已删除)']],
             ['create_by', 'biginteger', ['limit' => 20, 'default' => 0, 'null' => true, 'comment' => '系统用户']],
             ['deleted_by', 'biginteger', ['limit' => 20, 'default' => 0, 'null' => true, 'comment' => '系统用户']],
-            ['create_time', 'datetime', ['default' => NULL, 'null' => true, 'comment' => '创建时间']],
-            ['deleted_time', 'datetime', ['default' => NULL, 'null' => true, 'comment' => '删除时间']],
-            ['update_time', 'datetime', ['default' => NULL, 'null' => true, 'comment' => '更新时间']],
+            ['create_time', 'datetime', ['default' => null, 'null' => true, 'comment' => '创建时间']],
+            ['deleted_time', 'datetime', ['default' => null, 'null' => true, 'comment' => '删除时间']],
+            ['update_time', 'datetime', ['default' => null, 'null' => true, 'comment' => '更新时间']],
         ], [
             'unid', 'code', 'deleted', 'create_time', 'deleted_time',
         ], true);
@@ -1203,7 +1185,6 @@ class InstallWemall20241010 extends Migrator
      * 创建数据对象
      * @class PluginWemallUserRelation
      * @table plugin_wemall_user_relation
-     * @return void
      */
     private function _create_plugin_wemall_user_relation()
     {
@@ -1220,7 +1201,7 @@ class InstallWemall20241010 extends Migrator
             ['puid3', 'biginteger', ['limit' => 20, 'default' => 0, 'null' => true, 'comment' => '上3级代理']],
             ['layer', 'biginteger', ['limit' => 20, 'default' => 0, 'null' => true, 'comment' => '所属层级']],
             ['path', 'string', ['limit' => 180, 'default' => '', 'null' => true, 'comment' => '关系路径']],
-            ['extra', 'text', ['default' => NULL, 'null' => true, 'comment' => '扩展数据']],
+            ['extra', 'text', ['default' => null, 'null' => true, 'comment' => '扩展数据']],
             ['entry_agent', 'integer', ['limit' => 1, 'default' => 0, 'null' => true, 'comment' => '推广权益(0无,1有)']],
             ['entry_member', 'integer', ['limit' => 1, 'default' => 0, 'null' => true, 'comment' => '入会礼包(0无,1有)']],
             ['level_code', 'biginteger', ['limit' => 20, 'default' => 0, 'null' => true, 'comment' => '会员等级']],
@@ -1230,8 +1211,8 @@ class InstallWemall20241010 extends Migrator
             ['agent_level_code', 'biginteger', ['limit' => 20, 'default' => 0, 'null' => true, 'comment' => '代理等级']],
             ['agent_level_name', 'string', ['limit' => 180, 'default' => '', 'null' => true, 'comment' => '代理名称']],
             ['sort', 'biginteger', ['limit' => 20, 'default' => 0, 'null' => true, 'comment' => '排序权重']],
-            ['create_time', 'datetime', ['default' => NULL, 'null' => true, 'comment' => '创建时间']],
-            ['update_time', 'datetime', ['default' => NULL, 'null' => true, 'comment' => '更新时间']],
+            ['create_time', 'datetime', ['default' => null, 'null' => true, 'comment' => '创建时间']],
+            ['update_time', 'datetime', ['default' => null, 'null' => true, 'comment' => '更新时间']],
         ], [
             'unid', 'path', 'puid1', 'puid2', 'puid3', 'level_code', 'agent_uuid', 'create_time', 'entry_agent', 'entry_member', 'agent_level_code',
         ], true);
@@ -1241,7 +1222,6 @@ class InstallWemall20241010 extends Migrator
      * 创建数据对象
      * @class PluginWemallUserTransfer
      * @table plugin_wemall_user_transfer
-     * @return void
      */
     private function _create_plugin_wemall_user_transfer()
     {
@@ -1278,8 +1258,8 @@ class InstallWemall20241010 extends Migrator
             ['audit_status', 'integer', ['limit' => 1, 'default' => 0, 'null' => true, 'comment' => '审核状态']],
             ['audit_remark', 'string', ['limit' => 500, 'default' => '', 'null' => true, 'comment' => '审核描述']],
             ['status', 'integer', ['limit' => 1, 'default' => 1, 'null' => true, 'comment' => '提现状态(0失败,1待审核,2已审核,3打款中,4已打款,5已收款)']],
-            ['create_time', 'datetime', ['default' => NULL, 'null' => true, 'comment' => '创建时间']],
-            ['update_time', 'datetime', ['default' => NULL, 'null' => true, 'comment' => '更新时间']],
+            ['create_time', 'datetime', ['default' => null, 'null' => true, 'comment' => '创建时间']],
+            ['update_time', 'datetime', ['default' => null, 'null' => true, 'comment' => '更新时间']],
         ], [
             'code', 'unid', 'date', 'type', 'appid', 'openid', 'status', 'create_time', 'audit_status',
         ], true);

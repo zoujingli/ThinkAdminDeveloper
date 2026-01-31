@@ -1,42 +1,41 @@
 <?php
 
-
-// +----------------------------------------------------------------------
-// | WeMall Plugin for ThinkAdmin
-// +----------------------------------------------------------------------
-// | 版权所有 2014~2025 ThinkAdmin [ thinkadmin.top ]
-// +----------------------------------------------------------------------
-// | 官方网站: https://thinkadmin.top
-// +----------------------------------------------------------------------
-// | 免责声明 ( https://thinkadmin.top/disclaimer )
-// | 会员免费 ( https://thinkadmin.top/vip-introduce )
-// +----------------------------------------------------------------------
-// | gitee 代码仓库：https://gitee.com/zoujingli/think-plugs-wemall
-// | github 代码仓库：https://github.com/zoujingli/think-plugs-wemall
-// +----------------------------------------------------------------------
-
-declare (strict_types=1);
+declare(strict_types=1);
+/**
+ * +----------------------------------------------------------------------
+ * | Payment Plugin for ThinkAdmin
+ * +----------------------------------------------------------------------
+ * | 版权所有 2014~2026 ThinkAdmin [ thinkadmin.top ]
+ * +----------------------------------------------------------------------
+ * | 官方网站: https://thinkadmin.top
+ * +----------------------------------------------------------------------
+ * | 开源协议 ( https://mit-license.org )
+ * | 免责声明 ( https://thinkadmin.top/disclaimer )
+ * | 会员特权 ( https://thinkadmin.top/vip-introduce )
+ * +----------------------------------------------------------------------
+ * | gitee 代码仓库：https://gitee.com/zoujingli/ThinkAdmin
+ * | github 代码仓库：https://github.com/zoujingli/ThinkAdmin
+ * +----------------------------------------------------------------------
+ */
 
 namespace plugin\wemall\controller\base;
 
 use plugin\account\service\Account;
 use plugin\wemall\service\ConfigService;
 use think\admin\Controller;
+use think\admin\Exception;
 
 /**
- * 应用参数配置
+ * 应用参数配置.
  * @class Config
- * @package plugin\wemall\controller\base
  */
 class Config extends Controller
 {
-
     /**
-     * 商城参数配置
+     * 商城参数配置.
      * @auth true
      * @menu true
-     * @return void
-     * @throws \think\admin\Exception
+     * @throws Exception
      */
     public function index()
     {
@@ -47,16 +46,15 @@ class Config extends Controller
     }
 
     /**
-     * 修改参数配置
+     * 修改参数配置.
      * @auth true
-     * @return void
-     * @throws \think\admin\Exception
+     * @throws Exception
      */
     public function params()
     {
         $this->vo = ConfigService::get();
         if ($this->request->isGet()) {
-            $this->enableAndroid = !!Account::field(Account::ANDROID);
+            $this->enableAndroid = (bool)Account::field(Account::ANDROID);
             $this->fetch();
         } else {
             ConfigService::set(array_merge($this->vo, $this->request->post()));
@@ -65,10 +63,9 @@ class Config extends Controller
     }
 
     /**
-     * 修改订单配置
+     * 修改订单配置.
      * @auth true
-     * @return void
-     * @throws \think\admin\Exception
+     * @throws Exception
      */
     public function order()
     {
@@ -76,16 +73,17 @@ class Config extends Controller
     }
 
     /**
-     * 修改协议内容
+     * 修改协议内容.
      * @auth true
-     * @return void
-     * @throws \think\admin\Exception
+     * @throws Exception
      */
     public function content()
     {
         $input = $this->_vali(['code.require' => '编号不能为空！']);
         $title = ConfigService::$pageTypes[$input['code']] ?? null;
-        if (empty($title)) $this->error('无效的内容编号！');
+        if (empty($title)) {
+            $this->error('无效的内容编号！');
+        }
         if ($this->request->isGet()) {
             $this->title = "编辑{$title}";
             $this->data = ConfigService::getPage($input['code']);

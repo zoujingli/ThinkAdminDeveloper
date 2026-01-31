@@ -1,24 +1,25 @@
 <?php
 
-// +----------------------------------------------------------------------
-// | Worker Plugin for ThinkAdmin
-// +----------------------------------------------------------------------
-// | 版权所有 2014~2025 ThinkAdmin [ thinkadmin.top ]
-// +----------------------------------------------------------------------
-// | 官方网站: https://thinkadmin.top
-// +----------------------------------------------------------------------
-// | 免责声明 ( https://thinkadmin.top/disclaimer )
-// | 开源协议 ( http://www.apache.org/licenses/LICENSE-2.0 )
-// +----------------------------------------------------------------------
-// | gitee 代码仓库：https://gitee.com/zoujingli/think-plugs-worker
-// | github 代码仓库：https://github.com/zoujingli/think-plugs-worker
-// +----------------------------------------------------------------------
-
-declare (strict_types=1);
+declare(strict_types=1);
+/**
+ * +----------------------------------------------------------------------
+ * | Payment Plugin for ThinkAdmin
+ * +----------------------------------------------------------------------
+ * | 版权所有 2014~2026 ThinkAdmin [ thinkadmin.top ]
+ * +----------------------------------------------------------------------
+ * | 官方网站: https://thinkadmin.top
+ * +----------------------------------------------------------------------
+ * | 开源协议 ( https://mit-license.org )
+ * | 免责声明 ( https://thinkadmin.top/disclaimer )
+ * | 会员特权 ( https://thinkadmin.top/vip-introduce )
+ * +----------------------------------------------------------------------
+ * | gitee 代码仓库：https://gitee.com/zoujingli/ThinkAdmin
+ * | github 代码仓库：https://github.com/zoujingli/ThinkAdmin
+ * +----------------------------------------------------------------------
+ */
 
 namespace plugin\worker\support;
 
-use plugin\worker\Monitor;
 use plugin\worker\Server;
 use think\admin\service\RuntimeService;
 use Workerman\Connection\TcpConnection;
@@ -31,7 +32,6 @@ use Workerman\Worker;
 /**
  * 自定义 Http 服务
  * @class HttpServer
- * @package plugin\worker\support
  */
 class HttpServer extends Server
 {
@@ -55,13 +55,8 @@ class HttpServer extends Server
         parent::__construct();
     }
 
-    protected function init()
-    {
-    }
-
     /**
-     * onWorkerStart
-     * @param \Workerman\Worker $worker
+     * onWorkerStart.
      */
     public function onWorkerStart(Worker $worker)
     {
@@ -95,9 +90,7 @@ class HttpServer extends Server
     }
 
     /**
-     * onMessage
-     * @param TcpConnection $connection
-     * @param WorkerRequest $request
+     * onMessage.
      */
     public function onMessage(TcpConnection $connection, WorkerRequest $request)
     {
@@ -119,7 +112,9 @@ class HttpServer extends Server
 
         // 自定义消息回调处理，返回 true 则终止后面的处理
         if (is_callable($this->callable)) {
-            if (call_user_func($this->callable, $connection, $request) === true) return;
+            if (call_user_func($this->callable, $connection, $request) === true) {
+                return;
+            }
         }
 
         // 转发消息并初始化框架，调度 path 对应的系统功能
@@ -127,12 +122,12 @@ class HttpServer extends Server
     }
 
     /**
-     * 设置系统根路径
-     * @param string $path
-     * @return void
+     * 设置系统根路径.
      */
     public function setRoot(string $path)
     {
         $this->root = $path;
     }
+
+    protected function init() {}
 }

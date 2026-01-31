@@ -1,20 +1,22 @@
 <?php
 
-// +----------------------------------------------------------------------
-// | WeMall Plugin for ThinkAdmin
-// +----------------------------------------------------------------------
-// | 版权所有 2014~2025 ThinkAdmin [ thinkadmin.top ]
-// +----------------------------------------------------------------------
-// | 官方网站: https://thinkadmin.top
-// +----------------------------------------------------------------------
-// | 免责声明 ( https://thinkadmin.top/disclaimer )
-// | 会员免费 ( https://thinkadmin.top/vip-introduce )
-// +----------------------------------------------------------------------
-// | gitee 代码仓库：https://gitee.com/zoujingli/think-plugs-wemall
-// | github 代码仓库：https://github.com/zoujingli/think-plugs-wemall
-// +----------------------------------------------------------------------
-
-declare (strict_types=1);
+declare(strict_types=1);
+/**
+ * +----------------------------------------------------------------------
+ * | Payment Plugin for ThinkAdmin
+ * +----------------------------------------------------------------------
+ * | 版权所有 2014~2026 ThinkAdmin [ thinkadmin.top ]
+ * +----------------------------------------------------------------------
+ * | 官方网站: https://thinkadmin.top
+ * +----------------------------------------------------------------------
+ * | 开源协议 ( https://mit-license.org )
+ * | 免责声明 ( https://thinkadmin.top/disclaimer )
+ * | 会员特权 ( https://thinkadmin.top/vip-introduce )
+ * +----------------------------------------------------------------------
+ * | gitee 代码仓库：https://gitee.com/zoujingli/ThinkAdmin
+ * | github 代码仓库：https://github.com/zoujingli/ThinkAdmin
+ * +----------------------------------------------------------------------
+ */
 
 namespace plugin\wemall\model;
 
@@ -22,7 +24,7 @@ use think\admin\model\SystemUser;
 use think\model\relation\HasOne;
 
 /**
- * 意见反馈数据模型
+ * 意见反馈数据模型.
  *
  * @property array $images 反馈图片
  * @property int $deleted 删除状态(0未删,1已删)
@@ -39,29 +41,26 @@ use think\model\relation\HasOne;
  * @property string $reply 回复内容
  * @property string $reply_time 回复时间
  * @property string $update_time 更新时间
- * @property-read \think\admin\model\SystemUser $bind_admin
+ * @property SystemUser $bind_admin
  * @class PluginWemallHelpFeedback
- * @package plugin\wemall\model
  */
 class PluginWemallHelpFeedback extends AbsUser
 {
     /**
-     * 绑定回复用户数据
-     * @return HasOne
+     * 绑定回复用户数据.
      */
     public function bindAdmin(): HasOne
     {
         return $this->hasOne(SystemUser::class, 'id', 'reply_by')->bind([
-            'reply_headimg'  => 'headimg',
+            'reply_headimg' => 'headimg',
             'reply_username' => 'username',
             'reply_nickname' => 'nickname',
         ]);
     }
 
     /**
-     * 格式化图片格式
+     * 格式化图片格式.
      * @param mixed $value
-     * @return array
      */
     public function getImagesAttr($value): array
     {
@@ -69,9 +68,8 @@ class PluginWemallHelpFeedback extends AbsUser
     }
 
     /**
-     * 获取回复时间
+     * 获取回复时间.
      * @param mixed $value
-     * @return string
      */
     public function getReplyTimeAttr($value): string
     {
@@ -79,9 +77,8 @@ class PluginWemallHelpFeedback extends AbsUser
     }
 
     /**
-     * 设置回复时间
+     * 设置回复时间.
      * @param mixed $value
-     * @return string
      */
     public function setReplyTimeAttr($value): string
     {

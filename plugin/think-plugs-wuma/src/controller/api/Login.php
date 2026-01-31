@@ -1,6 +1,22 @@
 <?php
 
-// +----------------------------------------------------------------------
+declare(strict_types=1);
+/**
+ * +----------------------------------------------------------------------
+ * | Payment Plugin for ThinkAdmin
+ * +----------------------------------------------------------------------
+ * | 版权所有 2014~2026 ThinkAdmin [ thinkadmin.top ]
+ * +----------------------------------------------------------------------
+ * | 官方网站: https://thinkadmin.top
+ * +----------------------------------------------------------------------
+ * | 开源协议 ( https://mit-license.org )
+ * | 免责声明 ( https://thinkadmin.top/disclaimer )
+ * | 会员特权 ( https://thinkadmin.top/vip-introduce )
+ * +----------------------------------------------------------------------
+ * | gitee 代码仓库：https://gitee.com/zoujingli/ThinkAdmin
+ * | github 代码仓库：https://github.com/zoujingli/ThinkAdmin
+ * +----------------------------------------------------------------------
+ */
 // | Wuma Plugin for ThinkAdmin
 // +----------------------------------------------------------------------
 // | 版权所有 2014~2025 ThinkAdmin [ thinkadmin.top ]
@@ -17,19 +33,21 @@
 namespace plugin\wuma\controller\api;
 
 use plugin\wuma\model\PluginWumaWarehouseUser;
+use think\db\exception\DataNotFoundException;
+use think\db\exception\DbException;
+use think\db\exception\ModelNotFoundException;
 
 /**
- * 设备登录管理
+ * 设备登录管理.
  * @class Login
- * @package plugin\wuma\controller\api
  */
 class Login extends Base
 {
     /**
-     * 用户登录接口
-     * @throws \think\db\exception\DataNotFoundException
-     * @throws \think\db\exception\DbException
-     * @throws \think\db\exception\ModelNotFoundException
+     * 用户登录接口.
+     * @throws DataNotFoundException
+     * @throws DbException
+     * @throws ModelNotFoundException
      */
     public function login()
     {
@@ -43,19 +61,26 @@ class Login extends Base
         $data['password'] = md5($data['password']);
         $user = PluginWumaWarehouseUser::mk()->where($data)->find();
 
-        if (empty($user)) $this->error('账号或密码错误！');
-        if (empty($user['status'])) $this->error('账号已经被禁用！');
-        if (!empty($user['deleted'])) $this->error('该账号已经被移除！');
+        if (empty($user)) {
+            $this->error('账号或密码错误！');
+        }
+        if (empty($user['status'])) {
+            $this->error('账号已经被禁用！');
+        }
+        if (!empty($user['deleted'])) {
+            $this->error('该账号已经被移除！');
+        }
 
         // 生成登录令牌数据
-        do $token = ['token' => md5(uniqid(rand(1000, 9999), true))];
-        while (PluginWumaWarehouseUser::mk()->where($token)->count() > 0);
+        do {
+            $token = ['token' => md5(uniqid(rand(1000, 9999), true))];
+        } while (PluginWumaWarehouseUser::mk()->where($token)->count() > 0);
 
         // 更新用户登录数据
         $user->save(array_merge($token, [
-            'login_ip'   => $this->request->ip(),
-            'login_at'   => date('Y-m-d H:i:s'),
-            'login_num'  => $this->app->db->raw('login_num+1'),
+            'login_ip' => $this->request->ip(),
+            'login_at' => date('Y-m-d H:i:s'),
+            'login_num' => $this->app->db->raw('login_num+1'),
             'login_vars' => json_encode([
                 'code' => input('code', ''),
                 'type' => input('type', ''),
@@ -69,7 +94,7 @@ class Login extends Base
     }
 
     /**
-     * 退出设备登录
+     * 退出设备登录.
      */
     public function logout()
     {

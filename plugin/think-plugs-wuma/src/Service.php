@@ -1,20 +1,22 @@
 <?php
 
-// +----------------------------------------------------------------------
-// | Wuma Plugin for ThinkAdmin
-// +----------------------------------------------------------------------
-// | 版权所有 2014~2025 ThinkAdmin [ thinkadmin.top ]
-// +----------------------------------------------------------------------
-// | 官方网站: https://thinkadmin.top
-// +----------------------------------------------------------------------
-// | 免责声明 ( https://thinkadmin.top/disclaimer )
-// | 收费插件 ( https://thinkadmin.top/fee-introduce.html )
-// +----------------------------------------------------------------------
-// | gitee 代码仓库：https://gitee.com/zoujingli/think-plugs-wuma
-// | github 代码仓库：https://github.com/zoujingli/think-plugs-wuma
-// +----------------------------------------------------------------------
-
-declare (strict_types=1);
+declare(strict_types=1);
+/**
+ * +----------------------------------------------------------------------
+ * | Payment Plugin for ThinkAdmin
+ * +----------------------------------------------------------------------
+ * | 版权所有 2014~2026 ThinkAdmin [ thinkadmin.top ]
+ * +----------------------------------------------------------------------
+ * | 官方网站: https://thinkadmin.top
+ * +----------------------------------------------------------------------
+ * | 开源协议 ( https://mit-license.org )
+ * | 免责声明 ( https://thinkadmin.top/disclaimer )
+ * | 会员特权 ( https://thinkadmin.top/vip-introduce )
+ * +----------------------------------------------------------------------
+ * | gitee 代码仓库：https://gitee.com/zoujingli/ThinkAdmin
+ * | github 代码仓库：https://github.com/zoujingli/ThinkAdmin
+ * +----------------------------------------------------------------------
+ */
 
 namespace plugin\wuma;
 
@@ -24,11 +26,11 @@ use think\admin\Plugin;
 /**
  * 插件注册服务
  * @class Service
- * @package plugin\wuma
  */
 class Service extends Plugin
 {
     protected $appName = '防伪溯源';
+
     protected $package = 'zoujingli/think-plugs-wuma';
 
     public function register(): void
@@ -36,7 +38,7 @@ class Service extends Plugin
         $this->commands([Create::class]);
         // 注册全局防伪访问路由
         $this->app->route->any('<mode>/<code>!<verify><extra?>', Query::class . '@index')->pattern([
-            'mode' => 'c|n|m', 'code' => '[0-9a-zA-Z]+', 'verify' => '[0-9]{4}', 'extra' => '.+'
+            'mode' => 'c|n|m', 'code' => '[0-9a-zA-Z]+', 'verify' => '[0-9]{4}', 'extra' => '.+',
         ]);
     }
 

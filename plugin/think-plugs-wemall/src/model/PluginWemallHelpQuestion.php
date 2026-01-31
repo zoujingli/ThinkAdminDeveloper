@@ -1,27 +1,29 @@
 <?php
 
-// +----------------------------------------------------------------------
-// | WeMall Plugin for ThinkAdmin
-// +----------------------------------------------------------------------
-// | 版权所有 2014~2025 ThinkAdmin [ thinkadmin.top ]
-// +----------------------------------------------------------------------
-// | 官方网站: https://thinkadmin.top
-// +----------------------------------------------------------------------
-// | 免责声明 ( https://thinkadmin.top/disclaimer )
-// | 会员免费 ( https://thinkadmin.top/vip-introduce )
-// +----------------------------------------------------------------------
-// | gitee 代码仓库：https://gitee.com/zoujingli/think-plugs-wemall
-// | github 代码仓库：https://github.com/zoujingli/think-plugs-wemall
-// +----------------------------------------------------------------------
-
-declare (strict_types=1);
+declare(strict_types=1);
+/**
+ * +----------------------------------------------------------------------
+ * | Payment Plugin for ThinkAdmin
+ * +----------------------------------------------------------------------
+ * | 版权所有 2014~2026 ThinkAdmin [ thinkadmin.top ]
+ * +----------------------------------------------------------------------
+ * | 官方网站: https://thinkadmin.top
+ * +----------------------------------------------------------------------
+ * | 开源协议 ( https://mit-license.org )
+ * | 免责声明 ( https://thinkadmin.top/disclaimer )
+ * | 会员特权 ( https://thinkadmin.top/vip-introduce )
+ * +----------------------------------------------------------------------
+ * | gitee 代码仓库：https://gitee.com/zoujingli/ThinkAdmin
+ * | github 代码仓库：https://github.com/zoujingli/ThinkAdmin
+ * +----------------------------------------------------------------------
+ */
 
 namespace plugin\wemall\model;
 
 use think\model\relation\HasMany;
 
 /**
- * 工单数据模型
+ * 工单数据模型.
  *
  * @property array $images 工单图片
  * @property int $deleted 删除状态(0未删,1已删)
@@ -35,22 +37,19 @@ use think\model\relation\HasMany;
  * @property string $order_no 关联订单
  * @property string $phone 联系电话
  * @property string $update_time 更新时间
- * @property-read \plugin\wemall\model\PluginWemallHelpQuestionX[] $comments
+ * @property PluginWemallHelpQuestionX[] $comments
  * @class PluginWemallHelpQuestion
- * @package plugin\wemall\model
  */
 class PluginWemallHelpQuestion extends AbsUser
 {
-
     // 工单状态
     public const tStatus = [
-        '已取消', '新工单', '后台回复', '用户回复', '已完结'
+        '已取消', '新工单', '后台回复', '用户回复', '已完结',
     ];
 
     /**
-     * 格式化图片格式
+     * 格式化图片格式.
      * @param mixed $value
-     * @return array
      */
     public function getImagesAttr($value): array
     {
@@ -58,8 +57,7 @@ class PluginWemallHelpQuestion extends AbsUser
     }
 
     /**
-     * 关联回复记录
-     * @return \think\model\relation\HasMany
+     * 关联回复记录.
      */
     public function comments(): HasMany
     {

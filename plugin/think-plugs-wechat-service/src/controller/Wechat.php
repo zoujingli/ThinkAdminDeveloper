@@ -1,6 +1,22 @@
 <?php
 
-// +----------------------------------------------------------------------
+declare(strict_types=1);
+/**
+ * +----------------------------------------------------------------------
+ * | Payment Plugin for ThinkAdmin
+ * +----------------------------------------------------------------------
+ * | 版权所有 2014~2026 ThinkAdmin [ thinkadmin.top ]
+ * +----------------------------------------------------------------------
+ * | 官方网站: https://thinkadmin.top
+ * +----------------------------------------------------------------------
+ * | 开源协议 ( https://mit-license.org )
+ * | 免责声明 ( https://thinkadmin.top/disclaimer )
+ * | 会员特权 ( https://thinkadmin.top/vip-introduce )
+ * +----------------------------------------------------------------------
+ * | gitee 代码仓库：https://gitee.com/zoujingli/ThinkAdmin
+ * | github 代码仓库：https://github.com/zoujingli/ThinkAdmin
+ * +----------------------------------------------------------------------
+ */
 // | Wechat Service Plugin for ThinkAdmin
 // +----------------------------------------------------------------------
 // | 版权所有 2014~2025 Anyon <zoujingli@qq.com>
@@ -20,23 +36,24 @@ use plugin\wechat\service\AuthService;
 use plugin\wechat\service\model\WechatAuth;
 use think\admin\Controller;
 use think\admin\helper\QueryHelper;
+use think\db\exception\DataNotFoundException;
+use think\db\exception\DbException;
+use think\db\exception\ModelNotFoundException;
 use think\exception\HttpResponseException;
 
 /**
  * 公众号授权管理
- * Class Wechat
- * @package plugin\wechat\service\controller
+ * Class Wechat.
  */
 class Wechat extends Controller
 {
     /**
-     * 公众号授权管理
+     * 公众号授权管理.
      * @auth true
      * @menu true
-     * @return void
-     * @throws \think\db\exception\DataNotFoundException
-     * @throws \think\db\exception\DbException
-     * @throws \think\db\exception\ModelNotFoundException
+     * @throws DataNotFoundException
+     * @throws DbException
+     * @throws ModelNotFoundException
      */
     public function index()
     {
@@ -62,7 +79,7 @@ class Wechat extends Controller
     }
 
     /**
-     * 同步公众号授权信息
+     * 同步公众号授权信息.
      * @auth true
      */
     public function sync()
@@ -71,12 +88,16 @@ class Wechat extends Controller
             $appid = $this->request->post('appid');
             $where = ['authorizer_appid' => $appid, 'deleted' => 0];
             $author = WechatAuth::mk()->where($where)->findOrEmpty()->toArray();
-            if (empty($author)) $this->error('无效的授权公众号，请重新绑定授权！');
+            if (empty($author)) {
+                $this->error('无效的授权公众号，请重新绑定授权！');
+            }
             $info = AuthService::WeOpenService()->getAuthorizerInfo($appid);
             $data = AuthService::buildAuthData(array_merge($info, ['authorizer_appid' => $appid]));
             $where = ['authorizer_appid' => $data['authorizer_appid']];
             $appkey = WechatAuth::mk()->where($where)->value('appkey');
-            if (empty($appkey)) $data['appkey'] = md5(uniqid('', true));
+            if (empty($appkey)) {
+                $data['appkey'] = md5(uniqid('', true));
+            }
             if (WechatAuth::mUpdate($data, 'authorizer_appid')) {
                 $this->success('更新公众号授权成功！', '');
             }
@@ -88,16 +109,16 @@ class Wechat extends Controller
     }
 
     /**
-     * 同步所有授权公众号
+     * 同步所有授权公众号.
      * @auth true
      */
     public function queue()
     {
-        $this->_queue("同步所有授权公众号数据", 'xsync:wechat');
+        $this->_queue('同步所有授权公众号数据', 'xsync:wechat');
     }
 
     /**
-     * 重置公众号调用次数
+     * 重置公众号调用次数.
      * @auth true
      */
     public function clear()

@@ -1,20 +1,22 @@
 <?php
 
-// +----------------------------------------------------------------------
-// | Wuma Plugin for ThinkAdmin
-// +----------------------------------------------------------------------
-// | 版权所有 2014~2025 ThinkAdmin [ thinkadmin.top ]
-// +----------------------------------------------------------------------
-// | 官方网站: https://thinkadmin.top
-// +----------------------------------------------------------------------
-// | 免责声明 ( https://thinkadmin.top/disclaimer )
-// | 收费插件 ( https://thinkadmin.top/fee-introduce.html )
-// +----------------------------------------------------------------------
-// | gitee 代码仓库：https://gitee.com/zoujingli/think-plugs-wuma
-// | github 代码仓库：https://github.com/zoujingli/think-plugs-wuma
-// +----------------------------------------------------------------------
-
-declare (strict_types=1);
+declare(strict_types=1);
+/**
+ * +----------------------------------------------------------------------
+ * | Payment Plugin for ThinkAdmin
+ * +----------------------------------------------------------------------
+ * | 版权所有 2014~2026 ThinkAdmin [ thinkadmin.top ]
+ * +----------------------------------------------------------------------
+ * | 官方网站: https://thinkadmin.top
+ * +----------------------------------------------------------------------
+ * | 开源协议 ( https://mit-license.org )
+ * | 免责声明 ( https://thinkadmin.top/disclaimer )
+ * | 会员特权 ( https://thinkadmin.top/vip-introduce )
+ * +----------------------------------------------------------------------
+ * | gitee 代码仓库：https://gitee.com/zoujingli/ThinkAdmin
+ * | github 代码仓库：https://github.com/zoujingli/ThinkAdmin
+ * +----------------------------------------------------------------------
+ */
 
 namespace plugin\wuma\service;
 
@@ -26,37 +28,33 @@ use plugin\wuma\model\PluginWumaWarehouseStock;
 use think\admin\Exception;
 use think\admin\extend\CodeExtend;
 use think\admin\service\AdminService;
+use think\db\exception\DataNotFoundException;
+use think\db\exception\DbException;
+use think\db\exception\ModelNotFoundException;
 
 /**
  * 仓库入库服务
  * @class WhImportService
- * @package plugin\wuma\service
  */
 class WhImportService
 {
-
     /**
-     * 生成入库单号
-     * @param string $prefix
-     * @param integer $length
-     * @return string
+     * 生成入库单号.
      */
     public static function withCode(string $prefix = 'RK', int $length = 16): string
     {
-        do $data = ['code' => CodeExtend::uniqidDate($length, $prefix)];
-        while (PluginWumaWarehouseOrder::mk()->master()->where($data)->findOrEmpty()->isExists());
+        do {
+            $data = ['code' => CodeExtend::uniqidDate($length, $prefix)];
+        } while (PluginWumaWarehouseOrder::mk()->master()->where($data)->findOrEmpty()->isExists());
         return $data['code'];
     }
 
     /**
-     * 按订单入库
-     * @param array $body
-     * @param array $order
-     * @return void
-     * @throws \think\admin\Exception
-     * @throws \think\db\exception\DataNotFoundException
-     * @throws \think\db\exception\DbException
-     * @throws \think\db\exception\ModelNotFoundException
+     * 按订单入库.
+     * @throws Exception
+     * @throws DataNotFoundException
+     * @throws DbException
+     * @throws ModelNotFoundException
      */
     public static function order(array $body, array $order)
     {
@@ -69,31 +67,31 @@ class WhImportService
         // 更新入库单数据
         $map = ['code' => $body['code']];
         $data = ['num_used' => PluginWumaWarehouseOrderData::mk()->where($map)->sum('number')];
-        if ($data['num_used'] >= $order['num_need']) $data['status'] = 2;
+        if ($data['num_used'] >= $order['num_need']) {
+            $data['status'] = 2;
+        }
         PluginWumaWarehouseOrder::mk()->where($map)->update($data);
         // 刷新仓库统计数据
         PluginWumaWarehouseStock::sync($order['wcode']);
     }
 
     /**
-     * 直接入库
-     * @param array $body
-     * @return void
-     * @throws \think\admin\Exception
-     * @throws \think\db\exception\DataNotFoundException
-     * @throws \think\db\exception\DbException
-     * @throws \think\db\exception\ModelNotFoundException
+     * 直接入库.
+     * @throws Exception
+     * @throws DataNotFoundException
+     * @throws DbException
+     * @throws ModelNotFoundException
      */
     public static function force(array $body)
     {
         $count = static::insertData($body, static::checkCodes($body));
         // 更新入库订单数据
         PluginWumaWarehouseOrder::mk()->save([
-            'code'     => $body['code'],
-            'type'     => $body['type'] ?? 2,
-            'mode'     => $body['mode'],
-            'ghash'    => $body['ghash'],
-            'status'   => 2,
+            'code' => $body['code'],
+            'type' => $body['type'] ?? 2,
+            'mode' => $body['mode'],
+            'ghash' => $body['ghash'],
+            'status' => 2,
             'num_used' => $count,
             'num_need' => $count,
         ]);
@@ -102,14 +100,13 @@ class WhImportService
     }
 
     /**
-     * 创建虚拟入库
+     * 创建虚拟入库.
      * @param int $count 入库数量
      * @param string $wcode 库存编号
      * @param string $ghash 产品编号
-     * @return void
-     * @throws \think\db\exception\DataNotFoundException
-     * @throws \think\db\exception\DbException
-     * @throws \think\db\exception\ModelNotFoundException
+     * @throws DataNotFoundException
+     * @throws DbException
+     * @throws ModelNotFoundException
      */
     public static function virtual(int $count, string $wcode, string $ghash)
     {
@@ -132,34 +129,34 @@ class WhImportService
     }
 
     /**
-     * 检查并处理入库数据
-     * @param array $body
+     * 检查并处理入库数据.
      * @return array [min=>code#type]
-     * @throws \think\admin\Exception
-     * @throws \think\db\exception\DataNotFoundException
-     * @throws \think\db\exception\DbException
-     * @throws \think\db\exception\ModelNotFoundException
+     * @throws Exception
+     * @throws DataNotFoundException
+     * @throws DbException
+     * @throws ModelNotFoundException
      */
     private static function checkCodes(array $body): array
     {
         $codes = WhCoderService::code2mins($body, true);
-        if (empty($codes)) throw new Exception('入库物码不能为空！');
+        if (empty($codes)) {
+            throw new Exception('入库物码不能为空！');
+        }
         [$state, , $exists, $items] = WhCoderService::checkImportExist(array_keys($codes), 'min');
         if (!empty($state)) {
-            foreach ($exists as $exist) $items[] = strstr($codes[$exist] ?? $exist, '#', true);
+            foreach ($exists as $exist) {
+                $items[] = strstr($codes[$exist] ?? $exist, '#', true);
+            }
             throw new Exception('物码已经入库！', 0, array_unique(array_values($items)));
         }
         return $codes;
     }
 
     /**
-     * 批量写入入库数据
-     * @param array $body
-     * @param array $codes
-     * @return integer
-     * @throws \think\db\exception\DataNotFoundException
-     * @throws \think\db\exception\DbException
-     * @throws \think\db\exception\ModelNotFoundException
+     * 批量写入入库数据.
+     * @throws DataNotFoundException
+     * @throws DbException
+     * @throws ModelNotFoundException
      */
     private static function insertData(array $body, array $codes): int
     {

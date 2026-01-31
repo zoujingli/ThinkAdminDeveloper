@@ -1,5 +1,22 @@
 <?php
 
+declare(strict_types=1);
+/**
+ * +----------------------------------------------------------------------
+ * | Payment Plugin for ThinkAdmin
+ * +----------------------------------------------------------------------
+ * | 版权所有 2014~2026 ThinkAdmin [ thinkadmin.top ]
+ * +----------------------------------------------------------------------
+ * | 官方网站: https://thinkadmin.top
+ * +----------------------------------------------------------------------
+ * | 开源协议 ( https://mit-license.org )
+ * | 免责声明 ( https://thinkadmin.top/disclaimer )
+ * | 会员特权 ( https://thinkadmin.top/vip-introduce )
+ * +----------------------------------------------------------------------
+ * | gitee 代码仓库：https://gitee.com/zoujingli/ThinkAdmin
+ * | github 代码仓库：https://github.com/zoujingli/ThinkAdmin
+ * +----------------------------------------------------------------------
+ */
 use think\admin\extend\PhinxExtend;
 use think\migration\Migrator;
 
@@ -8,10 +25,8 @@ use think\migration\Migrator;
 
 class InstallWuma20241010 extends Migrator
 {
-
     /**
-     * 获取脚本名称
-     * @return string
+     * 获取脚本名称.
      */
     public function getName(): string
     {
@@ -19,7 +34,7 @@ class InstallWuma20241010 extends Migrator
     }
 
     /**
-     * 创建数据库
+     * 创建数据库.
      */
     public function change()
     {
@@ -57,7 +72,6 @@ class InstallWuma20241010 extends Migrator
      * 创建数据对象
      * @class PluginWumaCodeRule
      * @table plugin_wuma_code_rule
-     * @return void
      */
     private function _create_plugin_wuma_code_rule()
     {
@@ -86,8 +100,8 @@ class InstallWuma20241010 extends Migrator
             ['remark', 'string', ['limit' => 500, 'default' => '', 'null' => true, 'comment' => '物码描述']],
             ['status', 'integer', ['limit' => 1, 'default' => 1, 'null' => true, 'comment' => '记录状态(0无效,1有效)']],
             ['deleted', 'integer', ['limit' => 1, 'default' => 0, 'null' => true, 'comment' => '删除状态(0未删,1已删)']],
-            ['create_time', 'datetime', ['default' => NULL, 'null' => true, 'comment' => '创建时间']],
-            ['update_time', 'datetime', ['default' => NULL, 'null' => true, 'comment' => '更新时间']],
+            ['create_time', 'datetime', ['default' => null, 'null' => true, 'comment' => '创建时间']],
+            ['update_time', 'datetime', ['default' => null, 'null' => true, 'comment' => '更新时间']],
         ], [
             'type', 'batch', 'status', 'deleted',
         ], true);
@@ -97,7 +111,6 @@ class InstallWuma20241010 extends Migrator
      * 创建数据对象
      * @class PluginWumaCodeRuleRange
      * @table plugin_wuma_code_rule_range
-     * @return void
      */
     private function _create_plugin_wuma_code_rule_range()
     {
@@ -123,7 +136,6 @@ class InstallWuma20241010 extends Migrator
      * 创建数据对象
      * @class PluginWumaSalesOrder
      * @table plugin_wuma_sales_order
-     * @return void
      */
     private function _create_plugin_wuma_sales_order()
     {
@@ -144,8 +156,8 @@ class InstallWuma20241010 extends Migrator
             ['num_count', 'biginteger', ['limit' => 20, 'default' => 0, 'null' => true, 'comment' => '累计已经出库']],
             ['status', 'integer', ['limit' => 1, 'default' => 1, 'null' => true, 'comment' => '记录状态(0无效,1有效,2完成)']],
             ['deleted', 'integer', ['limit' => 1, 'default' => 0, 'null' => true, 'comment' => '删除状态(0未删,1已删)']],
-            ['create_time', 'datetime', ['default' => NULL, 'null' => true, 'comment' => '创建时间']],
-            ['update_time', 'datetime', ['default' => NULL, 'null' => true, 'comment' => '更新时间']],
+            ['create_time', 'datetime', ['default' => null, 'null' => true, 'comment' => '创建时间']],
+            ['update_time', 'datetime', ['default' => null, 'null' => true, 'comment' => '更新时间']],
         ], [
             'auid', 'xuid', 'code', 'mode', 'ghash', 'status', 'deleted', 'create_time',
         ], true);
@@ -155,7 +167,6 @@ class InstallWuma20241010 extends Migrator
      * 创建数据对象
      * @class PluginWumaSalesOrderData
      * @table plugin_wuma_sales_order_data
-     * @return void
      */
     private function _create_plugin_wuma_sales_order_data()
     {
@@ -171,8 +182,8 @@ class InstallWuma20241010 extends Migrator
             ['mode', 'integer', ['limit' => 1, 'default' => 1, 'null' => true, 'comment' => '操作方式(1扫码,2虚拟)']],
             ['status', 'integer', ['limit' => 1, 'default' => 1, 'null' => true, 'comment' => '记录状态(0无效,1有效)']],
             ['number', 'biginteger', ['limit' => 20, 'default' => 0, 'null' => true, 'comment' => '物码总数']],
-            ['create_time', 'datetime', ['default' => NULL, 'null' => true, 'comment' => '创建时间']],
-            ['update_time', 'datetime', ['default' => NULL, 'null' => true, 'comment' => '更新时间']],
+            ['create_time', 'datetime', ['default' => null, 'null' => true, 'comment' => '创建时间']],
+            ['update_time', 'datetime', ['default' => null, 'null' => true, 'comment' => '更新时间']],
         ], [
             'auid', 'xuid', 'mode', 'code', 'status',
         ], true);
@@ -182,7 +193,6 @@ class InstallWuma20241010 extends Migrator
      * 创建数据对象
      * @class PluginWumaSalesOrderDataMins
      * @table plugin_wuma_sales_order_data_mins
-     * @return void
      */
     private function _create_plugin_wuma_sales_order_data_mins()
     {
@@ -200,8 +210,8 @@ class InstallWuma20241010 extends Migrator
             ['ghash', 'string', ['limit' => 20, 'default' => '', 'null' => true, 'comment' => '商品哈唏']],
             ['status', 'integer', ['limit' => 1, 'default' => 1, 'null' => true, 'comment' => '数据状态(0无效,1有效)']],
             ['deleted', 'integer', ['limit' => 1, 'default' => 0, 'null' => true, 'comment' => '删除状态(0有效,1已删)']],
-            ['status_time', 'datetime', ['default' => NULL, 'null' => true, 'comment' => '状态时间']],
-            ['create_time', 'datetime', ['default' => NULL, 'null' => true, 'comment' => '创建时间']],
+            ['status_time', 'datetime', ['default' => null, 'null' => true, 'comment' => '状态时间']],
+            ['create_time', 'datetime', ['default' => null, 'null' => true, 'comment' => '创建时间']],
         ], [
             'ddid', 'auid', 'code', 'mode', 'stock', 'ghash', 'status', 'deleted',
         ], true);
@@ -211,7 +221,6 @@ class InstallWuma20241010 extends Migrator
      * 创建数据对象
      * @class PluginWumaSalesOrderDataNums
      * @table plugin_wuma_sales_order_data_nums
-     * @return void
      */
     private function _create_plugin_wuma_sales_order_data_nums()
     {
@@ -235,7 +244,6 @@ class InstallWuma20241010 extends Migrator
      * 创建数据对象
      * @class PluginWumaSalesUser
      * @table plugin_wuma_sales_user
-     * @return void
      */
     private function _create_plugin_wuma_sales_user()
     {
@@ -267,8 +275,8 @@ class InstallWuma20241010 extends Migrator
             ['remark', 'string', ['limit' => 500, 'default' => '', 'null' => true, 'comment' => '用户备注描述']],
             ['status', 'integer', ['limit' => 1, 'default' => 1, 'null' => true, 'comment' => '用户状态(1正常,0已黑)']],
             ['deleted', 'integer', ['limit' => 1, 'default' => 0, 'null' => true, 'comment' => '删除状态(0未删,1已删)']],
-            ['create_time', 'datetime', ['default' => NULL, 'null' => true, 'comment' => '注册时间']],
-            ['update_time', 'datetime', ['default' => NULL, 'null' => true, 'comment' => '更新时间']],
+            ['create_time', 'datetime', ['default' => null, 'null' => true, 'comment' => '注册时间']],
+            ['update_time', 'datetime', ['default' => null, 'null' => true, 'comment' => '更新时间']],
         ], [
             'auid', 'code', 'level', 'status', 'deleted', 'super_auid',
         ], true);
@@ -278,7 +286,6 @@ class InstallWuma20241010 extends Migrator
      * 创建数据对象
      * @class PluginWumaSalesUserLevel
      * @table plugin_wuma_sales_user_level
-     * @return void
      */
     private function _create_plugin_wuma_sales_user_level()
     {
@@ -293,7 +300,7 @@ class InstallWuma20241010 extends Migrator
             ['remark', 'string', ['limit' => 500, 'default' => '', 'null' => true, 'comment' => '代理级别描述']],
             ['utime', 'biginteger', ['limit' => 20, 'default' => 0, 'null' => true, 'comment' => '等级更新时间']],
             ['status', 'integer', ['limit' => 1, 'default' => 1, 'null' => true, 'comment' => '代理等级状态(1使用,0禁用)']],
-            ['create_time', 'datetime', ['default' => NULL, 'null' => true, 'comment' => '等级创建时间']],
+            ['create_time', 'datetime', ['default' => null, 'null' => true, 'comment' => '等级创建时间']],
         ], [
             'status', 'number',
         ], true);
@@ -303,7 +310,6 @@ class InstallWuma20241010 extends Migrator
      * 创建数据对象
      * @class PluginWumaSalesUserStock
      * @table plugin_wuma_sales_user_stock
-     * @return void
      */
     private function _create_plugin_wuma_sales_user_stock()
     {
@@ -328,7 +334,6 @@ class InstallWuma20241010 extends Migrator
      * 创建数据对象
      * @class PluginWumaSourceAssign
      * @table plugin_wuma_source_assign
-     * @return void
      */
     private function _create_plugin_wuma_source_assign()
     {
@@ -341,12 +346,12 @@ class InstallWuma20241010 extends Migrator
             ['type', 'integer', ['limit' => 1, 'default' => 0, 'null' => true, 'comment' => '赋码类型(0区间,1关联)']],
             ['batch', 'string', ['limit' => 20, 'default' => '', 'null' => true, 'comment' => '赋码批次号']],
             ['cbatch', 'string', ['limit' => 20, 'default' => '', 'null' => true, 'comment' => '物码批次号']],
-            ['outer_items', 'text', ['default' => NULL, 'null' => true, 'comment' => 'JSON出库']],
-            ['coder_items2', 'text', ['default' => NULL, 'null' => true, 'comment' => 'JSON赋码']],
+            ['outer_items', 'text', ['default' => null, 'null' => true, 'comment' => 'JSON出库']],
+            ['coder_items2', 'text', ['default' => null, 'null' => true, 'comment' => 'JSON赋码']],
             ['status', 'integer', ['limit' => 1, 'default' => 1, 'null' => true, 'comment' => '记录状态(0无效,1有效)']],
             ['deleted', 'integer', ['limit' => 1, 'default' => 0, 'null' => true, 'comment' => '删除状态(0未删,1已删)']],
-            ['create_time', 'datetime', ['default' => NULL, 'null' => true, 'comment' => '创建时间']],
-            ['update_time', 'datetime', ['default' => NULL, 'null' => true, 'comment' => '更新时间']],
+            ['create_time', 'datetime', ['default' => null, 'null' => true, 'comment' => '创建时间']],
+            ['update_time', 'datetime', ['default' => null, 'null' => true, 'comment' => '更新时间']],
         ], [
             'type', 'batch', 'cbatch', 'status', 'deleted',
         ], true);
@@ -356,7 +361,6 @@ class InstallWuma20241010 extends Migrator
      * 创建数据对象
      * @class PluginWumaSourceAssignItem
      * @table plugin_wuma_source_assign_item
-     * @return void
      */
     private function _create_plugin_wuma_source_assign_item()
     {
@@ -373,8 +377,8 @@ class InstallWuma20241010 extends Migrator
             ['pbatch', 'string', ['limit' => 20, 'default' => '', 'null' => true, 'comment' => '生产批次号']],
             ['range_start', 'biginteger', ['limit' => 20, 'default' => 0, 'null' => true, 'comment' => '开始物码区间']],
             ['range_after', 'biginteger', ['limit' => 20, 'default' => 0, 'null' => true, 'comment' => '结束物码区间']],
-            ['create_time', 'datetime', ['default' => NULL, 'null' => true, 'comment' => '创建时间']],
-            ['update_time', 'datetime', ['default' => NULL, 'null' => true, 'comment' => '更新时间']],
+            ['create_time', 'datetime', ['default' => null, 'null' => true, 'comment' => '创建时间']],
+            ['update_time', 'datetime', ['default' => null, 'null' => true, 'comment' => '更新时间']],
         ], [
             'lock', 'real', 'batch', 'cbatch', 'pbatch', 'range_start', 'range_after',
         ], true);
@@ -384,7 +388,6 @@ class InstallWuma20241010 extends Migrator
      * 创建数据对象
      * @class PluginWumaSourceBlockchain
      * @table plugin_wuma_source_blockchain
-     * @return void
      */
     private function _create_plugin_wuma_source_blockchain()
     {
@@ -398,14 +401,14 @@ class InstallWuma20241010 extends Migrator
             ['code', 'string', ['limit' => 20, 'default' => '', 'null' => true, 'comment' => '流程编号']],
             ['hash', 'string', ['limit' => 255, 'default' => '', 'null' => true, 'comment' => '流程HASH']],
             ['name', 'string', ['limit' => 20, 'default' => '', 'null' => true, 'comment' => '流程名称']],
-            ['data', 'text', ['default' => NULL, 'null' => true, 'comment' => '流程环节']],
+            ['data', 'text', ['default' => null, 'null' => true, 'comment' => '流程环节']],
             ['remark', 'string', ['limit' => 999, 'default' => '', 'null' => true, 'comment' => '流程备注']],
             ['sort', 'biginteger', ['limit' => 20, 'default' => 0, 'null' => true, 'comment' => '排序权重']],
             ['status', 'integer', ['limit' => 1, 'default' => 1, 'null' => true, 'comment' => '记录状态(0无效1有效)']],
             ['deleted', 'integer', ['limit' => 1, 'default' => 0, 'null' => true, 'comment' => '删除状态(0未删1已删)']],
-            ['hash_time', 'datetime', ['default' => NULL, 'null' => true, 'comment' => '上链时间']],
-            ['create_time', 'datetime', ['default' => NULL, 'null' => true, 'comment' => '创建时间']],
-            ['update_time', 'datetime', ['default' => NULL, 'null' => true, 'comment' => '更新时间']],
+            ['hash_time', 'datetime', ['default' => null, 'null' => true, 'comment' => '上链时间']],
+            ['create_time', 'datetime', ['default' => null, 'null' => true, 'comment' => '创建时间']],
+            ['update_time', 'datetime', ['default' => null, 'null' => true, 'comment' => '更新时间']],
         ], [
             'code', 'scid', 'sort', 'status', 'deleted',
         ], true);
@@ -415,7 +418,6 @@ class InstallWuma20241010 extends Migrator
      * 创建数据对象
      * @class PluginWumaSourceCertificate
      * @table plugin_wuma_source_certificate
-     * @return void
      */
     private function _create_plugin_wuma_source_certificate()
     {
@@ -429,12 +431,12 @@ class InstallWuma20241010 extends Migrator
             ['name', 'string', ['limit' => 200, 'default' => '', 'null' => true, 'comment' => '模板名称']],
             ['times', 'biginteger', ['limit' => 20, 'default' => 0, 'null' => true, 'comment' => '访问次数']],
             ['image', 'string', ['limit' => 500, 'default' => '', 'null' => true, 'comment' => '证书底图']],
-            ['content', 'text', ['default' => NULL, 'null' => true, 'comment' => '定制规则']],
+            ['content', 'text', ['default' => null, 'null' => true, 'comment' => '定制规则']],
             ['sort', 'biginteger', ['limit' => 20, 'default' => 0, 'null' => true, 'comment' => '排序权重']],
             ['status', 'integer', ['limit' => 1, 'default' => 1, 'null' => true, 'comment' => '记录状态(0无效1有效)']],
             ['deleted', 'integer', ['limit' => 1, 'default' => 0, 'null' => true, 'comment' => '删除状态(0未删1已删)']],
-            ['create_time', 'datetime', ['default' => NULL, 'null' => true, 'comment' => '创建时间']],
-            ['update_time', 'datetime', ['default' => NULL, 'null' => true, 'comment' => '更新时间']],
+            ['create_time', 'datetime', ['default' => null, 'null' => true, 'comment' => '创建时间']],
+            ['update_time', 'datetime', ['default' => null, 'null' => true, 'comment' => '更新时间']],
         ], [
             'code', 'status', 'deleted',
         ], true);
@@ -444,7 +446,6 @@ class InstallWuma20241010 extends Migrator
      * 创建数据对象
      * @class PluginWumaSourceProduce
      * @table plugin_wuma_source_produce
-     * @return void
      */
     private function _create_plugin_wuma_source_produce()
     {
@@ -464,8 +465,8 @@ class InstallWuma20241010 extends Migrator
             ['status', 'integer', ['limit' => 1, 'default' => 1, 'null' => true, 'comment' => '记录状态(0无效1有效)']],
             ['sort', 'biginteger', ['limit' => 20, 'default' => 0, 'null' => true, 'comment' => '排序权重']],
             ['deleted', 'integer', ['limit' => 1, 'default' => 0, 'null' => true, 'comment' => '删除状态(0未删1已删)']],
-            ['create_time', 'datetime', ['default' => NULL, 'null' => true, 'comment' => '创建时间']],
-            ['update_time', 'datetime', ['default' => NULL, 'null' => true, 'comment' => '更新时间']],
+            ['create_time', 'datetime', ['default' => null, 'null' => true, 'comment' => '创建时间']],
+            ['update_time', 'datetime', ['default' => null, 'null' => true, 'comment' => '更新时间']],
         ], [
             'batch', 'status', 'deleted',
         ], true);
@@ -475,7 +476,6 @@ class InstallWuma20241010 extends Migrator
      * 创建数据对象
      * @class PluginWumaSourceQuery
      * @table plugin_wuma_source_query
-     * @return void
      */
     private function _create_plugin_wuma_source_query()
     {
@@ -498,8 +498,8 @@ class InstallWuma20241010 extends Migrator
             ['gtype', 'string', ['limit' => 20, 'default' => '', 'null' => true, 'comment' => '定位类型']],
             ['latlng', 'string', ['limit' => 50, 'default' => '', 'null' => true, 'comment' => '经纬度']],
             ['notify', 'integer', ['limit' => 1, 'default' => 0, 'null' => true, 'comment' => '窜货状态']],
-            ['create_time', 'datetime', ['default' => NULL, 'null' => true, 'comment' => '创建时间']],
-            ['update_time', 'datetime', ['default' => NULL, 'null' => true, 'comment' => '更新时间']],
+            ['create_time', 'datetime', ['default' => null, 'null' => true, 'comment' => '创建时间']],
+            ['update_time', 'datetime', ['default' => null, 'null' => true, 'comment' => '更新时间']],
         ], [
             'code', 'auid', 'prov', 'city', 'area', 'notify', 'encode',
         ], true);
@@ -509,7 +509,6 @@ class InstallWuma20241010 extends Migrator
      * 创建数据对象
      * @class PluginWumaSourceQueryNotify
      * @table plugin_wuma_source_query_notify
-     * @return void
      */
     private function _create_plugin_wuma_source_query_notify()
     {
@@ -536,8 +535,8 @@ class InstallWuma20241010 extends Migrator
             ['agent_prov', 'string', ['limit' => 100, 'default' => '', 'null' => true, 'comment' => '代理省份']],
             ['agent_city', 'string', ['limit' => 100, 'default' => '', 'null' => true, 'comment' => '代理城市']],
             ['agent_area', 'string', ['limit' => 100, 'default' => '', 'null' => true, 'comment' => '代理区域']],
-            ['create_time', 'datetime', ['default' => NULL, 'null' => true, 'comment' => '创建时间']],
-            ['update_time', 'datetime', ['default' => NULL, 'null' => true, 'comment' => '更新时间']],
+            ['create_time', 'datetime', ['default' => null, 'null' => true, 'comment' => '创建时间']],
+            ['update_time', 'datetime', ['default' => null, 'null' => true, 'comment' => '更新时间']],
         ], [
             'auid', 'prov', 'city', 'area', 'code', 'encode', 'agent_prov', 'agent_city', 'agent_area',
         ], true);
@@ -547,7 +546,6 @@ class InstallWuma20241010 extends Migrator
      * 创建数据对象
      * @class PluginWumaSourceQueryVerify
      * @table plugin_wuma_source_query_verify
-     * @return void
      */
     private function _create_plugin_wuma_source_query_verify()
     {
@@ -562,8 +560,8 @@ class InstallWuma20241010 extends Migrator
             ['times', 'biginteger', ['limit' => 20, 'default' => 1, 'null' => true, 'comment' => '查询次数']],
             ['ghash', 'string', ['limit' => 20, 'default' => '', 'null' => true, 'comment' => '商品编号']],
             ['encode', 'string', ['limit' => 50, 'default' => '', 'null' => true, 'comment' => '物码编号']],
-            ['create_time', 'datetime', ['default' => NULL, 'null' => true, 'comment' => '创建时间']],
-            ['update_time', 'datetime', ['default' => NULL, 'null' => true, 'comment' => '更新时间']],
+            ['create_time', 'datetime', ['default' => null, 'null' => true, 'comment' => '创建时间']],
+            ['update_time', 'datetime', ['default' => null, 'null' => true, 'comment' => '更新时间']],
         ], [
             'code', 'auid', 'encode',
         ], true);
@@ -573,7 +571,6 @@ class InstallWuma20241010 extends Migrator
      * 创建数据对象
      * @class PluginWumaSourceTemplate
      * @table plugin_wuma_source_template
-     * @return void
      */
     private function _create_plugin_wuma_source_template()
     {
@@ -586,13 +583,13 @@ class InstallWuma20241010 extends Migrator
             ['code', 'string', ['limit' => 20, 'default' => '', 'null' => true, 'comment' => '模板编号']],
             ['name', 'string', ['limit' => 200, 'default' => '', 'null' => true, 'comment' => '模板名称']],
             ['times', 'biginteger', ['limit' => 20, 'default' => 0, 'null' => true, 'comment' => '访问次数']],
-            ['styles', 'text', ['default' => NULL, 'null' => true, 'comment' => '主题样式']],
-            ['content', 'text', ['default' => NULL, 'null' => true, 'comment' => '模板内容']],
+            ['styles', 'text', ['default' => null, 'null' => true, 'comment' => '主题样式']],
+            ['content', 'text', ['default' => null, 'null' => true, 'comment' => '模板内容']],
             ['sort', 'biginteger', ['limit' => 20, 'default' => 0, 'null' => true, 'comment' => '排序权重']],
             ['status', 'integer', ['limit' => 1, 'default' => 1, 'null' => true, 'comment' => '记录状态(0无效,1有效)']],
             ['deleted', 'integer', ['limit' => 1, 'default' => 0, 'null' => true, 'comment' => '删除状态(0未删,1已删)']],
-            ['create_time', 'datetime', ['default' => NULL, 'null' => true, 'comment' => '创建时间']],
-            ['update_time', 'datetime', ['default' => NULL, 'null' => true, 'comment' => '更新时间']],
+            ['create_time', 'datetime', ['default' => null, 'null' => true, 'comment' => '创建时间']],
+            ['update_time', 'datetime', ['default' => null, 'null' => true, 'comment' => '更新时间']],
         ], [
             'code', 'status', 'deleted',
         ], true);
@@ -602,7 +599,6 @@ class InstallWuma20241010 extends Migrator
      * 创建数据对象
      * @class PluginWumaWarehouse
      * @table plugin_wuma_warehouse
-     * @return void
      */
     private function _create_plugin_wuma_warehouse()
     {
@@ -623,8 +619,8 @@ class InstallWuma20241010 extends Migrator
             ['sort', 'biginteger', ['limit' => 20, 'default' => 0, 'null' => true, 'comment' => '排序权重']],
             ['status', 'integer', ['limit' => 1, 'default' => 1, 'null' => true, 'comment' => '记录状态(0无效1有效)']],
             ['deleted', 'integer', ['limit' => 1, 'default' => 0, 'null' => true, 'comment' => '删除状态(0未删1已删)']],
-            ['create_time', 'datetime', ['default' => NULL, 'null' => true, 'comment' => '创建时间']],
-            ['update_time', 'datetime', ['default' => NULL, 'null' => true, 'comment' => '更新时间']],
+            ['create_time', 'datetime', ['default' => null, 'null' => true, 'comment' => '创建时间']],
+            ['update_time', 'datetime', ['default' => null, 'null' => true, 'comment' => '更新时间']],
         ], [
             'code', 'name', 'sort', 'status', 'deleted', 'create_time',
         ], true);
@@ -634,7 +630,6 @@ class InstallWuma20241010 extends Migrator
      * 创建数据对象
      * @class PluginWumaWarehouseOrder
      * @table plugin_wuma_warehouse_order
-     * @return void
      */
     private function _create_plugin_wuma_warehouse_order()
     {
@@ -656,9 +651,9 @@ class InstallWuma20241010 extends Migrator
             ['num_used', 'biginteger', ['limit' => 20, 'default' => 0, 'null' => true, 'comment' => '扫码完成']],
             ['status', 'integer', ['limit' => 1, 'default' => 1, 'null' => true, 'comment' => '记录状态(0无效,1有效,2完成)']],
             ['deleted', 'integer', ['limit' => 1, 'default' => 0, 'null' => true, 'comment' => '删除状态(0未删,1已删)']],
-            ['create_time', 'datetime', ['default' => NULL, 'null' => true, 'comment' => '创建时间']],
-            ['update_time', 'datetime', ['default' => NULL, 'null' => true, 'comment' => '更新时间']],
-            ['deleted_time', 'datetime', ['default' => NULL, 'null' => true, 'comment' => '删除时间']],
+            ['create_time', 'datetime', ['default' => null, 'null' => true, 'comment' => '创建时间']],
+            ['update_time', 'datetime', ['default' => null, 'null' => true, 'comment' => '更新时间']],
+            ['deleted_time', 'datetime', ['default' => null, 'null' => true, 'comment' => '删除时间']],
         ], [
             'mode', 'auid', 'type', 'code', 'ghash', 'wcode', 'status', 'deleted', 'create_time',
         ], true);
@@ -668,7 +663,6 @@ class InstallWuma20241010 extends Migrator
      * 创建数据对象
      * @class PluginWumaWarehouseOrderData
      * @table plugin_wuma_warehouse_order_data
-     * @return void
      */
     private function _create_plugin_wuma_warehouse_order_data()
     {
@@ -683,7 +677,7 @@ class InstallWuma20241010 extends Migrator
             ['code', 'string', ['limit' => 20, 'default' => '', 'null' => true, 'comment' => '操作单号']],
             ['number', 'biginteger', ['limit' => 20, 'default' => 0, 'null' => true, 'comment' => '标签总数']],
             ['status', 'integer', ['limit' => 1, 'default' => 1, 'null' => true, 'comment' => '记录状态(0无效,1有效)']],
-            ['create_time', 'datetime', ['default' => NULL, 'null' => true, 'comment' => '创建时间']],
+            ['create_time', 'datetime', ['default' => null, 'null' => true, 'comment' => '创建时间']],
         ], [
             'mode', 'type', 'code', 'status',
         ], true);
@@ -693,7 +687,6 @@ class InstallWuma20241010 extends Migrator
      * 创建数据对象
      * @class PluginWumaWarehouseOrderDataMins
      * @table plugin_wuma_warehouse_order_data_mins
-     * @return void
      */
     private function _create_plugin_wuma_warehouse_order_data_mins()
     {
@@ -719,7 +712,6 @@ class InstallWuma20241010 extends Migrator
      * 创建数据对象
      * @class PluginWumaWarehouseOrderDataNums
      * @table plugin_wuma_warehouse_order_data_nums
-     * @return void
      */
     private function _create_plugin_wuma_warehouse_order_data_nums()
     {
@@ -742,7 +734,6 @@ class InstallWuma20241010 extends Migrator
      * 创建数据对象
      * @class PluginWumaWarehouseRelation
      * @table plugin_wuma_warehouse_relation
-     * @return void
      */
     private function _create_plugin_wuma_warehouse_relation()
     {
@@ -756,7 +747,7 @@ class InstallWuma20241010 extends Migrator
             ['mid', 'biginteger', ['limit' => 20, 'default' => 0, 'null' => true, 'comment' => '中码数值']],
             ['deleted', 'integer', ['limit' => 1, 'default' => 0, 'null' => true, 'comment' => '删除状态(0未删,1已删)']],
             ['create_by', 'biginteger', ['limit' => 20, 'default' => 0, 'null' => true, 'comment' => '上传用户']],
-            ['create_time', 'datetime', ['default' => NULL, 'null' => true, 'comment' => '创建时间']],
+            ['create_time', 'datetime', ['default' => null, 'null' => true, 'comment' => '创建时间']],
         ], [
             'max', 'mid', 'deleted',
         ], true);
@@ -766,7 +757,6 @@ class InstallWuma20241010 extends Migrator
      * 创建数据对象
      * @class PluginWumaWarehouseRelationData
      * @table plugin_wuma_warehouse_relation_data
-     * @return void
      */
     private function _create_plugin_wuma_warehouse_relation_data()
     {
@@ -786,7 +776,7 @@ class InstallWuma20241010 extends Migrator
             ['status', 'integer', ['limit' => 1, 'default' => 1, 'null' => true, 'comment' => '记录状态(0无效,1有效)']],
             ['deleted', 'integer', ['limit' => 1, 'default' => 0, 'null' => true, 'comment' => '删除状态(0未删,1已删)']],
             ['create_by', 'biginteger', ['limit' => 20, 'default' => 0, 'null' => true, 'comment' => '上传用户']],
-            ['create_time', 'datetime', ['default' => NULL, 'null' => true, 'comment' => '创建时间']],
+            ['create_time', 'datetime', ['default' => null, 'null' => true, 'comment' => '创建时间']],
         ], [
             'rid', 'max', 'mid', 'min', 'lock', 'status', 'encode', 'number', 'deleted',
         ], true);
@@ -796,7 +786,6 @@ class InstallWuma20241010 extends Migrator
      * 创建数据对象
      * @class PluginWumaWarehouseReplace
      * @table plugin_wuma_warehouse_replace
-     * @return void
      */
     private function _create_plugin_wuma_warehouse_replace()
     {
@@ -815,7 +804,7 @@ class InstallWuma20241010 extends Migrator
             ['status', 'integer', ['limit' => 1, 'default' => 1, 'null' => true, 'comment' => '记录状态(0无效,1有效)']],
             ['deleted', 'integer', ['limit' => 1, 'default' => 0, 'null' => true, 'comment' => '删除状态(0未删,1已删)']],
             ['create_by', 'biginteger', ['limit' => 20, 'default' => 0, 'null' => true, 'comment' => '上传用户']],
-            ['create_time', 'datetime', ['default' => NULL, 'null' => true, 'comment' => '创建时间']],
+            ['create_time', 'datetime', ['default' => null, 'null' => true, 'comment' => '创建时间']],
         ], [
             'smin', 'tmin', 'lock', 'status', 'target', 'source', 'deleted',
         ], true);
@@ -825,7 +814,6 @@ class InstallWuma20241010 extends Migrator
      * 创建数据对象
      * @class PluginWumaWarehouseStock
      * @table plugin_wuma_warehouse_stock
-     * @return void
      */
     private function _create_plugin_wuma_warehouse_stock()
     {
@@ -850,7 +838,6 @@ class InstallWuma20241010 extends Migrator
      * 创建数据对象
      * @class PluginWumaWarehouseUser
      * @table plugin_wuma_warehouse_user
-     * @return void
      */
     private function _create_plugin_wuma_warehouse_user()
     {
@@ -872,8 +859,8 @@ class InstallWuma20241010 extends Migrator
             ['sort', 'biginteger', ['limit' => 20, 'default' => 0, 'null' => true, 'comment' => '排序权重']],
             ['status', 'integer', ['limit' => 1, 'default' => 1, 'null' => true, 'comment' => '记录状态(0无效,1有效)']],
             ['deleted', 'integer', ['limit' => 1, 'default' => 0, 'null' => true, 'comment' => '删除状态(0未删,1已删)']],
-            ['create_time', 'datetime', ['default' => NULL, 'null' => true, 'comment' => '创建时间']],
-            ['update_time', 'datetime', ['default' => NULL, 'null' => true, 'comment' => '更新时间']],
+            ['create_time', 'datetime', ['default' => null, 'null' => true, 'comment' => '创建时间']],
+            ['update_time', 'datetime', ['default' => null, 'null' => true, 'comment' => '更新时间']],
         ], [
             'sort', 'token', 'status', 'deleted', 'username', 'password',
         ], true);

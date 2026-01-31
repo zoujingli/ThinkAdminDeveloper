@@ -1,25 +1,26 @@
 <?php
 
-// +----------------------------------------------------------------------
-// | WeMall Plugin for ThinkAdmin
-// +----------------------------------------------------------------------
-// | 版权所有 2014~2025 ThinkAdmin [ thinkadmin.top ]
-// +----------------------------------------------------------------------
-// | 官方网站: https://thinkadmin.top
-// +----------------------------------------------------------------------
-// | 免责声明 ( https://thinkadmin.top/disclaimer )
-// | 会员免费 ( https://thinkadmin.top/vip-introduce )
-// +----------------------------------------------------------------------
-// | gitee 代码仓库：https://gitee.com/zoujingli/think-plugs-wemall
-// | github 代码仓库：https://github.com/zoujingli/think-plugs-wemall
-// +----------------------------------------------------------------------
-
-declare (strict_types=1);
+declare(strict_types=1);
+/**
+ * +----------------------------------------------------------------------
+ * | Payment Plugin for ThinkAdmin
+ * +----------------------------------------------------------------------
+ * | 版权所有 2014~2026 ThinkAdmin [ thinkadmin.top ]
+ * +----------------------------------------------------------------------
+ * | 官方网站: https://thinkadmin.top
+ * +----------------------------------------------------------------------
+ * | 开源协议 ( https://mit-license.org )
+ * | 免责声明 ( https://thinkadmin.top/disclaimer )
+ * | 会员特权 ( https://thinkadmin.top/vip-introduce )
+ * +----------------------------------------------------------------------
+ * | gitee 代码仓库：https://gitee.com/zoujingli/ThinkAdmin
+ * | github 代码仓库：https://github.com/zoujingli/ThinkAdmin
+ * +----------------------------------------------------------------------
+ */
 
 namespace plugin\wemall;
 
 use plugin\account\model\PluginAccountUser;
-use plugin\account\service\Account;
 use plugin\payment\model\PluginPaymentRecord;
 use plugin\payment\Service as PaymentService;
 use plugin\wemall\command\Clear;
@@ -35,27 +36,25 @@ use think\exception\HttpResponseException;
 use think\Request;
 
 /**
- * 插件服务注册
+ * 插件服务注册.
  * @class Service
- * @package plugin\wemall
  */
 class Service extends Plugin
 {
     /**
-     * 定义插件名称
+     * 定义插件名称.
      * @var string
      */
     protected $appName = '分销商城';
 
     /**
-     * 定义安装包名
+     * 定义安装包名.
      * @var string
      */
     protected $package = 'zoujingli/think-plugs-wemall';
 
     /**
-     * 插件服务注册
-     * @return void
+     * 插件服务注册.
      */
     public function register(): void
     {
@@ -72,15 +71,23 @@ class Service extends Plugin
                 if (preg_match('/^1\d{10}$/', $input['fphone'])) {
                     $where['phone'] = $input['fphone'];
                 } else {
-                    if (empty($input['from'])) $showError('无效推荐人');
+                    if (empty($input['from'])) {
+                        $showError('无效推荐人');
+                    }
                     $where['id'] = $input['from'];
                 }
                 // 判断推荐人是否可
                 $from = PluginAccountUser::mk()->where($where)->findOrEmpty();
-                if ($from->isEmpty()) $showError('无效邀请人！');
-                if ($from->getAttr('phone') == $input['phone']) $showError('不能邀请自己！');
+                if ($from->isEmpty()) {
+                    $showError('无效邀请人！');
+                }
+                if ($from->getAttr('phone') == $input['phone']) {
+                    $showError('不能邀请自己！');
+                }
                 [$rela] = PluginWemallUserRelation::withRelation($from->getAttr('id'));
-                if (empty($rela['entry_agent'])) $showError('无邀请权限！');
+                if (empty($rela['entry_agent'])) {
+                    $showError('无邀请权限！');
+                }
                 // 检查自己是否已绑定
                 $where = ['phone' => $input['phone'], 'deleted' => 0];
                 if (($user = PluginAccountUser::mk()->where($where)->findOrEmpty())->isExists()) {
@@ -100,17 +107,21 @@ class Service extends Plugin
             PluginWemallUserRelation::withInit(intval($data['unid']));
             // 尝试临时绑定推荐人用户
             $input = $this->app->request->post(['from', 'phone', 'fphone']);
-            if (!empty($input['fphone'])) try {
-                $map = ['deleted' => 0];
-                if (preg_match('/^1\d{10}$/', $input['fphone'])) {
-                    $map['phone'] = $input['fphone'];
-                } else {
-                    $map['id'] = $input['from'] ?? 0;
+            if (!empty($input['fphone'])) {
+                try {
+                    $map = ['deleted' => 0];
+                    if (preg_match('/^1\d{10}$/', $input['fphone'])) {
+                        $map['phone'] = $input['fphone'];
+                    } else {
+                        $map['id'] = $input['from'] ?? 0;
+                    }
+                    $from = PluginAccountUser::mk()->where($map)->value('id');
+                    if ($from > 0) {
+                        UserUpgrade::bindAgent(intval($data['unid']), $from, 0);
+                    }
+                } catch (\Exception $exception) {
+                    trace_file($exception);
                 }
-                $from = PluginAccountUser::mk()->where($map)->value('id');
-                if ($from > 0) UserUpgrade::bindAgent(intval($data['unid']), $from, 0);
-            } catch (\Exception $exception) {
-                trace_file($exception);
             }
         });
 
@@ -152,7 +163,7 @@ class Service extends Plugin
     }
 
     /**
-     * 定义插件菜单
+     * 定义插件菜单.
      * @return array[]
      */
     public static function menu(): array
@@ -200,7 +211,7 @@ class Service extends Plugin
                     ['name' => '代理返佣管理', 'icon' => 'layui-icon layui-icon-transfer', 'node' => "{$code}/user.rebate/index"],
                     ['name' => '代理提现管理', 'icon' => 'layui-icon layui-icon-diamond', 'node' => "{$code}/user.transfer/index"],
                     // ['name' => '活动签到管理', 'icon' => 'layui-icon layui-icon-engine', 'node' => "{$code}/user.checkin/index"],
-                ]
+                ],
             ],
             [
                 'name' => '帮助咨询',

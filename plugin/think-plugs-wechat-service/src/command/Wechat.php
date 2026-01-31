@@ -1,33 +1,40 @@
 <?php
 
-// +----------------------------------------------------------------------
-// | Wechat Service Plugin for ThinkAdmin
-// +----------------------------------------------------------------------
-// | 版权所有 2014~2025 Anyon <zoujingli@qq.com>
-// +----------------------------------------------------------------------
-// | 官方网站: https://thinkadmin.top
-// +----------------------------------------------------------------------
-// | 免责声明 ( https://thinkadmin.top/disclaimer )
-// | 会员免费 ( https://thinkadmin.top/vip-introduce )
-// +----------------------------------------------------------------------
-// | gitee 代码仓库：https://gitee.com/zoujingli/think-plugs-wechat-service
-// | github 代码仓库：https://github.com/zoujingli/think-plugs-wechat-service
-// +----------------------------------------------------------------------
-
-declare (strict_types=1);
+declare(strict_types=1);
+/**
+ * +----------------------------------------------------------------------
+ * | Payment Plugin for ThinkAdmin
+ * +----------------------------------------------------------------------
+ * | 版权所有 2014~2026 ThinkAdmin [ thinkadmin.top ]
+ * +----------------------------------------------------------------------
+ * | 官方网站: https://thinkadmin.top
+ * +----------------------------------------------------------------------
+ * | 开源协议 ( https://mit-license.org )
+ * | 免责声明 ( https://thinkadmin.top/disclaimer )
+ * | 会员特权 ( https://thinkadmin.top/vip-introduce )
+ * +----------------------------------------------------------------------
+ * | gitee 代码仓库：https://gitee.com/zoujingli/ThinkAdmin
+ * | github 代码仓库：https://github.com/zoujingli/ThinkAdmin
+ * +----------------------------------------------------------------------
+ */
 
 namespace plugin\wechat\service\command;
 
 use plugin\wechat\service\AuthService;
 use plugin\wechat\service\model\WechatAuth;
 use think\admin\Command;
+use think\admin\Exception;
 use think\console\Input;
 use think\console\Output;
+use think\db\exception\DataNotFoundException;
+use think\db\exception\DbException;
+use think\db\exception\ModelNotFoundException;
+use WeChat\Exceptions\InvalidResponseException;
+use WeChat\Exceptions\LocalCacheException;
 
 /**
  * 同步公众号授权记录
- * Class WeChat
- * @package plugin\wechat\service\command
+ * Class WeChat.
  */
 class Wechat extends Command
 {
@@ -38,14 +45,12 @@ class Wechat extends Command
     }
 
     /**
-     * @param Input $input
-     * @param Output $output
-     * @throws \WeChat\Exceptions\InvalidResponseException
-     * @throws \WeChat\Exceptions\LocalCacheException
-     * @throws \think\admin\Exception
-     * @throws \think\db\exception\DataNotFoundException
-     * @throws \think\db\exception\DbException
-     * @throws \think\db\exception\ModelNotFoundException
+     * @throws InvalidResponseException
+     * @throws LocalCacheException
+     * @throws Exception
+     * @throws DataNotFoundException
+     * @throws DbException
+     * @throws ModelNotFoundException
      */
     protected function execute(Input $input, Output $output)
     {
@@ -58,7 +63,7 @@ class Wechat extends Command
             foreach ($data['list'] ?? [] as $item) {
                 $this->queue->message($data['total_count'] ?? 0, ++$offset, "公众号 {$item['authorizer_appid']} 开始同步数据");
                 $config = WechatAuth::mk()->where(['authorizer_appid' => $item['authorizer_appid']])->find();
-                if (isset($item['refresh_token']) && isset($item['auth_time'])) {
+                if (isset($item['refresh_token'], $item['auth_time'])) {
                     $info = array_merge(AuthService::buildAuthData($wechat->getAuthorizerInfo($item['authorizer_appid'])), [
                         'authorizer_appid' => $item['authorizer_appid'], 'authorizer_refresh_token' => $item['refresh_token'], 'auth_time' => $item['auth_time'], 'deleted' => 0,
                     ]);

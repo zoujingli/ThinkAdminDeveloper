@@ -1,20 +1,22 @@
 <?php
 
-// +----------------------------------------------------------------------
-// | WeMall Plugin for ThinkAdmin
-// +----------------------------------------------------------------------
-// | 版权所有 2014~2025 ThinkAdmin [ thinkadmin.top ]
-// +----------------------------------------------------------------------
-// | 官方网站: https://thinkadmin.top
-// +----------------------------------------------------------------------
-// | 免责声明 ( https://thinkadmin.top/disclaimer )
-// | 会员免费 ( https://thinkadmin.top/vip-introduce )
-// +----------------------------------------------------------------------
-// | gitee 代码仓库：https://gitee.com/zoujingli/think-plugs-wemall
-// | github 代码仓库：https://github.com/zoujingli/think-plugs-wemall
-// +----------------------------------------------------------------------
-
-declare (strict_types=1);
+declare(strict_types=1);
+/**
+ * +----------------------------------------------------------------------
+ * | Payment Plugin for ThinkAdmin
+ * +----------------------------------------------------------------------
+ * | 版权所有 2014~2026 ThinkAdmin [ thinkadmin.top ]
+ * +----------------------------------------------------------------------
+ * | 官方网站: https://thinkadmin.top
+ * +----------------------------------------------------------------------
+ * | 开源协议 ( https://mit-license.org )
+ * | 免责声明 ( https://thinkadmin.top/disclaimer )
+ * | 会员特权 ( https://thinkadmin.top/vip-introduce )
+ * +----------------------------------------------------------------------
+ * | gitee 代码仓库：https://gitee.com/zoujingli/ThinkAdmin
+ * | github 代码仓库：https://github.com/zoujingli/ThinkAdmin
+ * +----------------------------------------------------------------------
+ */
 
 namespace plugin\wemall\controller\user;
 
@@ -28,23 +30,24 @@ use think\admin\Controller;
 use think\admin\extend\CodeExtend;
 use think\admin\extend\JwtExtend;
 use think\admin\helper\QueryHelper;
+use think\db\exception\DataNotFoundException;
+use think\db\exception\DbException;
+use think\db\exception\ModelNotFoundException;
 use think\exception\HttpResponseException;
 
 /**
- * 会员用户管理
+ * 会员用户管理.
  * @class Admin
- * @package plugin\wemall\controller\user
  */
 class Admin extends Controller
 {
     /**
-     * 会员用户管理
+     * 会员用户管理.
      * @auth true
      * @menu true
-     * @return void
-     * @throws \think\db\exception\DataNotFoundException
-     * @throws \think\db\exception\DbException
-     * @throws \think\db\exception\ModelNotFoundException
+     * @throws DataNotFoundException
+     * @throws DbException
+     * @throws ModelNotFoundException
      */
     public function index()
     {
@@ -55,7 +58,7 @@ class Admin extends Controller
         }, function (QueryHelper $query) {
             // 如果传了UNID，不展示下级及自己
             if (!empty($this->get['unid'])) {
-                $query->whereNotLike("path", "%,{$this->get['unid']},%");
+                $query->whereNotLike('path', "%,{$this->get['unid']},%");
                 $query->where(['entry_agent' => 1])->where('unid', '<>', $this->get['unid']);
             }
             $query->with(['user', 'agent1', 'agent2', 'user1', 'user2'])->equal('level_code');
@@ -68,9 +71,8 @@ class Admin extends Controller
     }
 
     /**
-     * 刷新会员数据
+     * 刷新会员数据.
      * @auth true
-     * @return void
      */
     public function sync()
     {
@@ -78,9 +80,8 @@ class Admin extends Controller
     }
 
     /**
-     * 编辑会员资料
+     * 编辑会员资料.
      * @auth true
-     * @return void
      */
     public function edit()
     {
@@ -88,9 +89,75 @@ class Admin extends Controller
     }
 
     /**
-     * 表单数据处理
-     * @param array $data
-     * @return void
+     * 修改用户状态
+     * @auth true
+     */
+    public function state()
+    {
+        PluginAccountUser::mSave($this->_vali([
+            'status.in:0,1' => '状态值范围异常！',
+            'status.require' => '状态值不能为空！',
+        ]));
+    }
+
+    /**
+     * 删除用户账号.
+     * @auth true
+     */
+    public function remove()
+    {
+        PluginAccountUser::mDelete();
+    }
+
+    /**
+     * 模拟用户登录.
+     * @auth true
+     * @throws \think\admin\Exception
+     */
+    public function view()
+    {
+        $data = $this->_vali(['unid.require' => '编号不能为空！']);
+        $token = CodeExtend::encrypt($data, JwtExtend::jwtkey());
+        $domain = ConfigService::get('base_domain');
+        $this->redirect("{$domain}?autologin={$token}");
+    }
+
+    /**
+     * 修改用户上级.
+     * @auth true
+     * @throws DataNotFoundException
+     * @throws DbException
+     * @throws ModelNotFoundException
+     */
+    public function parent()
+    {
+        if ($this->request->isGet()) {
+            $this->index();
+        } else {
+            try {
+                $data = $this->_vali(['unid.require' => '用户编号为空！', 'puid.require' => '上级编号为空！']);
+                $parent = PluginWemallUserRelation::mQuery()->where(['unid' => $data['puid']])->findOrEmpty();
+                if ($parent->isEmpty()) {
+                    $this->error('上级用户不存在！');
+                }
+                $relation = PluginWemallUserRelation::withInit(intval($data['unid']));
+                if (stripos($parent->getAttr('path'), ",{$data['unid']},") !== false) {
+                    $this->error('无法设置下级为自己的上级！');
+                }
+                $this->app->db->transaction(function () use ($relation, $parent) {
+                    UserUpgrade::forceReplaceParent($relation, $parent);
+                });
+                $this->success('更新上级成功！');
+            } catch (HttpResponseException $exception) {
+                throw $exception;
+            } catch (\Exception $e) {
+                $this->error($e->getMessage());
+            }
+        }
+    }
+
+    /**
+     * 表单数据处理.
      * @throws \think\admin\Exception
      */
     protected function _edit_form_filter(array $data)
@@ -105,72 +172,6 @@ class Admin extends Controller
                 $account->pwdModify($data['user']['password']);
                 unset($data['user']['password']);
             }
-        }
-    }
-
-    /**
-     * 修改用户状态
-     * @auth true
-     */
-    public function state()
-    {
-        PluginAccountUser::mSave($this->_vali([
-            'status.in:0,1'  => '状态值范围异常！',
-            'status.require' => '状态值不能为空！',
-        ]));
-    }
-
-    /**
-     * 删除用户账号
-     * @auth true
-     */
-    public function remove()
-    {
-        PluginAccountUser::mDelete();
-    }
-
-    /**
-     * 模拟用户登录
-     * @auth true
-     * @return void
-     * @throws \think\admin\Exception
-     */
-    public function view()
-    {
-        $data = $this->_vali(['unid.require' => '编号不能为空！']);
-        $token = CodeExtend::encrypt($data, JwtExtend::jwtkey());
-        $domain = ConfigService::get('base_domain');
-        $this->redirect("{$domain}?autologin={$token}");
-    }
-
-    /**
-     * 修改用户上级
-     * @auth true
-     * @return void
-     * @throws \think\db\exception\DataNotFoundException
-     * @throws \think\db\exception\DbException
-     * @throws \think\db\exception\ModelNotFoundException
-     */
-    public function parent()
-    {
-        if ($this->request->isGet()) {
-            $this->index();
-        } else try {
-            $data = $this->_vali(['unid.require' => '用户编号为空！', 'puid.require' => '上级编号为空！']);
-            $parent = PluginWemallUserRelation::mQuery()->where(['unid' => $data['puid']])->findOrEmpty();
-            if ($parent->isEmpty()) $this->error('上级用户不存在！');
-            $relation = PluginWemallUserRelation::withInit(intval($data['unid']));
-            if (stripos($parent->getAttr('path'), ",{$data['unid']},") !== false) {
-                $this->error('无法设置下级为自己的上级！');
-            }
-            $this->app->db->transaction(function () use ($relation, $parent) {
-                UserUpgrade::forceReplaceParent($relation, $parent);
-            });
-            $this->success('更新上级成功！');
-        } catch (HttpResponseException $exception) {
-            throw $exception;
-        } catch (\Exception $e) {
-            $this->error($e->getMessage());
         }
     }
 }

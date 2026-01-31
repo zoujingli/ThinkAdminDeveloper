@@ -1,20 +1,22 @@
 <?php
 
-// +----------------------------------------------------------------------
-// | Wuma Plugin for ThinkAdmin
-// +----------------------------------------------------------------------
-// | 版权所有 2014~2025 ThinkAdmin [ thinkadmin.top ]
-// +----------------------------------------------------------------------
-// | 官方网站: https://thinkadmin.top
-// +----------------------------------------------------------------------
-// | 免责声明 ( https://thinkadmin.top/disclaimer )
-// | 收费插件 ( https://thinkadmin.top/fee-introduce.html )
-// +----------------------------------------------------------------------
-// | gitee 代码仓库：https://gitee.com/zoujingli/think-plugs-wuma
-// | github 代码仓库：https://github.com/zoujingli/think-plugs-wuma
-// +----------------------------------------------------------------------
-
-declare (strict_types=1);
+declare(strict_types=1);
+/**
+ * +----------------------------------------------------------------------
+ * | Payment Plugin for ThinkAdmin
+ * +----------------------------------------------------------------------
+ * | 版权所有 2014~2026 ThinkAdmin [ thinkadmin.top ]
+ * +----------------------------------------------------------------------
+ * | 官方网站: https://thinkadmin.top
+ * +----------------------------------------------------------------------
+ * | 开源协议 ( https://mit-license.org )
+ * | 免责声明 ( https://thinkadmin.top/disclaimer )
+ * | 会员特权 ( https://thinkadmin.top/vip-introduce )
+ * +----------------------------------------------------------------------
+ * | gitee 代码仓库：https://gitee.com/zoujingli/ThinkAdmin
+ * | github 代码仓库：https://github.com/zoujingli/ThinkAdmin
+ * +----------------------------------------------------------------------
+ */
 
 namespace plugin\wuma\controller\warehouse;
 
@@ -25,31 +27,34 @@ use plugin\wuma\model\PluginWumaWarehouseOrder;
 use plugin\wuma\model\PluginWumaWarehouseStock;
 use think\admin\Controller;
 use think\admin\helper\QueryHelper;
+use think\db\exception\DataNotFoundException;
+use think\db\exception\DbException;
+use think\db\exception\ModelNotFoundException;
 
 /**
  * 仓库储存统计
  * @class Stock
- * @package plugin\wuma\controller\warehouse
  */
 class Stock extends Controller
 {
     /**
-     * 仓库库存管理
+     * 仓库库存管理.
      * @menu true
      * @auth true
-     * @throws \think\db\exception\DataNotFoundException
-     * @throws \think\db\exception\DbException
-     * @throws \think\db\exception\ModelNotFoundException
+     * @throws DataNotFoundException
+     * @throws DbException
+     * @throws ModelNotFoundException
      */
     public function index()
     {
         PluginWumaWarehouseStock::mQuery()->layTable(function () {
             $this->title = '仓库库存管理';
         }, static function (QueryHelper $query) {
-
             // 仓库搜索查询
             $wdb = PluginWumaWarehouse::mQuery()->like('code|name#wname')->db();
-            if ($wdb->getOptions('where')) $query->whereRaw("wcode in {$wdb->field('code')->buildSql()}");
+            if ($wdb->getOptions('where')) {
+                $query->whereRaw("wcode in {$wdb->field('code')->buildSql()}");
+            }
 
             // 关联其他数据
             $query->with(['bindGoods', 'bindWarehouse']);
@@ -64,11 +69,11 @@ class Stock extends Controller
     }
 
     /**
-     * 仓库出入库明细
+     * 仓库出入库明细.
      * @auth true
-     * @throws \think\db\exception\DataNotFoundException
-     * @throws \think\db\exception\DbException
-     * @throws \think\db\exception\ModelNotFoundException
+     * @throws DataNotFoundException
+     * @throws DbException
+     * @throws ModelNotFoundException
      */
     public function show()
     {

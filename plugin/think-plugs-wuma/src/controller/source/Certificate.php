@@ -1,20 +1,22 @@
 <?php
 
-// +----------------------------------------------------------------------
-// | Wuma Plugin for ThinkAdmin
-// +----------------------------------------------------------------------
-// | 版权所有 2014~2025 ThinkAdmin [ thinkadmin.top ]
-// +----------------------------------------------------------------------
-// | 官方网站: https://thinkadmin.top
-// +----------------------------------------------------------------------
-// | 免责声明 ( https://thinkadmin.top/disclaimer )
-// | 收费插件 ( https://thinkadmin.top/fee-introduce.html )
-// +----------------------------------------------------------------------
-// | gitee 代码仓库：https://gitee.com/zoujingli/think-plugs-wuma
-// | github 代码仓库：https://github.com/zoujingli/think-plugs-wuma
-// +----------------------------------------------------------------------
-
-declare (strict_types=1);
+declare(strict_types=1);
+/**
+ * +----------------------------------------------------------------------
+ * | Payment Plugin for ThinkAdmin
+ * +----------------------------------------------------------------------
+ * | 版权所有 2014~2026 ThinkAdmin [ thinkadmin.top ]
+ * +----------------------------------------------------------------------
+ * | 官方网站: https://thinkadmin.top
+ * +----------------------------------------------------------------------
+ * | 开源协议 ( https://mit-license.org )
+ * | 免责声明 ( https://thinkadmin.top/disclaimer )
+ * | 会员特权 ( https://thinkadmin.top/vip-introduce )
+ * +----------------------------------------------------------------------
+ * | gitee 代码仓库：https://gitee.com/zoujingli/ThinkAdmin
+ * | github 代码仓库：https://github.com/zoujingli/ThinkAdmin
+ * +----------------------------------------------------------------------
+ */
 
 namespace plugin\wuma\controller\source;
 
@@ -23,23 +25,24 @@ use plugin\wuma\service\CertService;
 use think\admin\Controller;
 use think\admin\extend\CodeExtend;
 use think\admin\helper\QueryHelper;
+use think\db\exception\DataNotFoundException;
+use think\db\exception\DbException;
+use think\db\exception\ModelNotFoundException;
 use think\exception\HttpResponseException;
 
 /**
- * 区块链确权证书管理
+ * 区块链确权证书管理.
  * @class Certificate
- * @package plugin\wuma\controller\source
  */
 class Certificate extends Controller
 {
     /**
-     * 区块链确权证书管理
+     * 区块链确权证书管理.
      * @menu true
      * @auth true
-     * @return void
-     * @throws \think\db\exception\DataNotFoundException
-     * @throws \think\db\exception\DbException
-     * @throws \think\db\exception\ModelNotFoundException
+     * @throws DataNotFoundException
+     * @throws DbException
+     * @throws ModelNotFoundException
      */
     public function index()
     {
@@ -53,9 +56,8 @@ class Certificate extends Controller
     }
 
     /**
-     * 添加区块链确权证书
+     * 添加区块链确权证书.
      * @auth true
-     * @return void
      */
     public function add()
     {
@@ -64,9 +66,8 @@ class Certificate extends Controller
     }
 
     /**
-     * 编辑区块链确权证书
+     * 编辑区块链确权证书.
      * @auth true
-     * @return void
      */
     public function edit()
     {
@@ -75,40 +76,8 @@ class Certificate extends Controller
     }
 
     /**
-     * 表单结果处理
-     * @param array $data
-     * @return void
-     * @throws \think\db\exception\DbException
-     */
-    protected function _form_filter(array &$data)
-    {
-        if (empty($data['code'])) {
-            $data['code'] = CodeExtend::uniqidNumber(16, 'CT');
-        }
-        if ($this->request->isPost()) {
-            // 检查产品编号
-            $map = [['id', '<>', $data['id'] ?? 0], ['code', '=', $data['code']]];
-            if (PluginWumaSourceCertificate::mk()->where($map)->count() > 0) {
-                $this->error("证书编号已经存在！");
-            }
-        }
-    }
-
-    /**
-     * 表单结果处理
-     * @param boolean $result
-     */
-    protected function _form_result(bool $result)
-    {
-        if ($result && $this->request->isPost()) {
-            $this->success('证书编辑成功！', 'javascript:history.back()');
-        }
-    }
-
-    /**
-     * 预览授权书生成
+     * 预览授权书生成.
      * @auth true
-     * @return void
      */
     public function show()
     {
@@ -147,11 +116,39 @@ class Certificate extends Controller
     }
 
     /**
-     * 删除区块链确权证书
+     * 删除区块链确权证书.
      * @auth true
      */
     public function remove()
     {
         PluginWumaSourceCertificate::mDelete();
+    }
+
+    /**
+     * 表单结果处理.
+     * @throws DbException
+     */
+    protected function _form_filter(array &$data)
+    {
+        if (empty($data['code'])) {
+            $data['code'] = CodeExtend::uniqidNumber(16, 'CT');
+        }
+        if ($this->request->isPost()) {
+            // 检查产品编号
+            $map = [['id', '<>', $data['id'] ?? 0], ['code', '=', $data['code']]];
+            if (PluginWumaSourceCertificate::mk()->where($map)->count() > 0) {
+                $this->error('证书编号已经存在！');
+            }
+        }
+    }
+
+    /**
+     * 表单结果处理.
+     */
+    protected function _form_result(bool $result)
+    {
+        if ($result && $this->request->isPost()) {
+            $this->success('证书编辑成功！', 'javascript:history.back()');
+        }
     }
 }

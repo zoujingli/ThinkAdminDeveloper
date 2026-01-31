@@ -1,20 +1,22 @@
 <?php
 
-// +----------------------------------------------------------------------
-// | WeMall Plugin for ThinkAdmin
-// +----------------------------------------------------------------------
-// | 版权所有 2014~2025 ThinkAdmin [ thinkadmin.top ]
-// +----------------------------------------------------------------------
-// | 官方网站: https://thinkadmin.top
-// +----------------------------------------------------------------------
-// | 免责声明 ( https://thinkadmin.top/disclaimer )
-// | 会员免费 ( https://thinkadmin.top/vip-introduce )
-// +----------------------------------------------------------------------
-// | gitee 代码仓库：https://gitee.com/zoujingli/think-plugs-wemall
-// | github 代码仓库：https://github.com/zoujingli/think-plugs-wemall
-// +----------------------------------------------------------------------
-
-declare (strict_types=1);
+declare(strict_types=1);
+/**
+ * +----------------------------------------------------------------------
+ * | Payment Plugin for ThinkAdmin
+ * +----------------------------------------------------------------------
+ * | 版权所有 2014~2026 ThinkAdmin [ thinkadmin.top ]
+ * +----------------------------------------------------------------------
+ * | 官方网站: https://thinkadmin.top
+ * +----------------------------------------------------------------------
+ * | 开源协议 ( https://mit-license.org )
+ * | 免责声明 ( https://thinkadmin.top/disclaimer )
+ * | 会员特权 ( https://thinkadmin.top/vip-introduce )
+ * +----------------------------------------------------------------------
+ * | gitee 代码仓库：https://gitee.com/zoujingli/ThinkAdmin
+ * | github 代码仓库：https://github.com/zoujingli/ThinkAdmin
+ * +----------------------------------------------------------------------
+ */
 
 namespace plugin\wemall\controller\api\auth\action;
 
@@ -23,25 +25,24 @@ use plugin\wemall\model\PluginWemallGoods;
 use plugin\wemall\model\PluginWemallUserActionHistory;
 use plugin\wemall\service\UserAction;
 use think\admin\helper\QueryHelper;
+use think\db\exception\DbException;
 use think\db\Query;
 
 /**
- * 用户足迹数据
+ * 用户足迹数据.
  * @class History
- * @package plugin\wemall\controller\api\auth\action
  */
 class History extends Auth
 {
     /**
-     * 提交搜索记录
-     * @return void
-     * @throws \think\db\exception\DbException
+     * 提交搜索记录.
+     * @throws DbException
      */
     public function set()
     {
         $data = $this->_vali([
-            'unid.value'    => $this->unid,
-            'gcode.require' => '商品不能为空！'
+            'unid.value' => $this->unid,
+            'gcode.require' => '商品不能为空！',
         ]);
         $map = ['code' => $data['gcode'], 'deleted' => 0];
         if (PluginWemallGoods::mk()->where($map)->findOrEmpty()->isExists()) {
@@ -53,8 +54,7 @@ class History extends Auth
     }
 
     /**
-     * 获取我的访问记录
-     * @return void
+     * 获取我的访问记录.
      */
     public function get()
     {
@@ -73,9 +73,8 @@ class History extends Auth
     }
 
     /**
-     * 删除收藏记录
-     * @return void
-     * @throws \think\db\exception\DbException
+     * 删除收藏记录.
+     * @throws DbException
      */
     public function del()
     {
@@ -85,9 +84,8 @@ class History extends Auth
     }
 
     /**
-     * 清空访问记录
-     * @return void
-     * @throws \think\db\exception\DbException
+     * 清空访问记录.
+     * @throws DbException
      */
     public function clear()
     {

@@ -1,20 +1,22 @@
 <?php
 
-// +----------------------------------------------------------------------
-// | WeMall Plugin for ThinkAdmin
-// +----------------------------------------------------------------------
-// | 版权所有 2014~2025 ThinkAdmin [ thinkadmin.top ]
-// +----------------------------------------------------------------------
-// | 官方网站: https://thinkadmin.top
-// +----------------------------------------------------------------------
-// | 免责声明 ( https://thinkadmin.top/disclaimer )
-// | 会员免费 ( https://thinkadmin.top/vip-introduce )
-// +----------------------------------------------------------------------
-// | gitee 代码仓库：https://gitee.com/zoujingli/think-plugs-wemall
-// | github 代码仓库：https://github.com/zoujingli/think-plugs-wemall
-// +----------------------------------------------------------------------
-
-declare (strict_types=1);
+declare(strict_types=1);
+/**
+ * +----------------------------------------------------------------------
+ * | Payment Plugin for ThinkAdmin
+ * +----------------------------------------------------------------------
+ * | 版权所有 2014~2026 ThinkAdmin [ thinkadmin.top ]
+ * +----------------------------------------------------------------------
+ * | 官方网站: https://thinkadmin.top
+ * +----------------------------------------------------------------------
+ * | 开源协议 ( https://mit-license.org )
+ * | 免责声明 ( https://thinkadmin.top/disclaimer )
+ * | 会员特权 ( https://thinkadmin.top/vip-introduce )
+ * +----------------------------------------------------------------------
+ * | gitee 代码仓库：https://gitee.com/zoujingli/ThinkAdmin
+ * | github 代码仓库：https://github.com/zoujingli/ThinkAdmin
+ * +----------------------------------------------------------------------
+ */
 
 namespace plugin\wemall\service;
 
@@ -29,51 +31,55 @@ use plugin\wemall\model\PluginWemallUserCreate;
 use plugin\wemall\model\PluginWemallUserRelation;
 use think\admin\Exception;
 use think\admin\Library;
+use think\db\exception\DataNotFoundException;
+use think\db\exception\DbException;
+use think\db\exception\ModelNotFoundException;
 
 /**
  * 商城订单数据服务
  * @class UserOrder
- * @package plugin\wemall\service
  */
 abstract class UserOrder
 {
     /**
-     * 获取随减金额
-     * @return float
-     * @throws \think\admin\Exception
+     * 获取随减金额.
+     * @throws Exception
      */
-    public static function reduct(): float
+    public static function reduct(): string
     {
         $config = sysdata('plugin.wemall.config');
-        if (empty($config['enable_reduct'])) return 0.00;
+        if (empty($config['enable_reduct'])) {
+            return '0.00';
+        }
         $min = intval(($config['reduct_min'] ?? 0) * 100);
         $max = intval(($config['reduct_max'] ?? 0) * 100);
-        return mt_rand($min, $max) / 100;
+        $amount = mt_rand($min, $max) / 100;
+        return number_format($amount, 2, '.', '');
     }
 
     /**
-     * 同步订单关联商品的库存
+     * 同步订单关联商品的库存.
      * @param string $orderNo 订单编号
-     * @return boolean
-     * @throws \think\db\exception\DataNotFoundException
-     * @throws \think\db\exception\DbException
-     * @throws \think\db\exception\ModelNotFoundException
+     * @throws DataNotFoundException
+     * @throws DbException
+     * @throws ModelNotFoundException
      */
     public static function stock(string $orderNo): bool
     {
         $map = ['order_no' => $orderNo];
         $codes = PluginWemallOrderItem::mk()->where($map)->column('gcode');
-        foreach (array_unique($codes) as $code) GoodsService::stock($code);
+        foreach (array_unique($codes) as $code) {
+            GoodsService::stock($code);
+        }
         return true;
     }
 
     /**
-     * 获取订单模型
+     * 获取订单模型.
      * @param PluginWemallOrder|string $order
-     * @param ?integer $unid 动态绑定变量
+     * @param ?int $unid 动态绑定变量
      * @param ?string $orderNo 动态绑定变量
-     * @return \plugin\wemall\model\PluginWemallOrder
-     * @throws \think\admin\Exception
+     * @throws Exception
      */
     public static function widthOrder($order, ?int &$unid = 0, ?string &$orderNo = ''): PluginWemallOrder
     {
@@ -84,27 +90,31 @@ abstract class UserOrder
             [$unid, $orderNo] = [intval($order->getAttr('unid')), $order->getAttr('order_no')];
             return $order;
         }
-        throw new Exception("无效订单对象！");
+        throw new Exception('无效订单对象！');
     }
 
     /**
-     * 根据订单更新会员等级
-     * @param string|PluginWemallOrder $order
-     * @return array|null [RELATION, ORDER, ENTRY]
-     * @throws \think\admin\Exception
-     * @throws \think\db\exception\DataNotFoundException
-     * @throws \think\db\exception\DbException
-     * @throws \think\db\exception\ModelNotFoundException
+     * 根据订单更新会员等级.
+     * @param PluginWemallOrder|string $order
+     * @return null|array [RELATION, ORDER, ENTRY]
+     * @throws Exception
+     * @throws DataNotFoundException
+     * @throws DbException
+     * @throws ModelNotFoundException
      */
     public static function upgrade($order): ?array
     {
         // 目标订单数据
         $order = self::widthOrder($order);
-        if ($order->isEmpty() || $order->getAttr('status') < 4) return null;
+        if ($order->isEmpty() || $order->getAttr('status') < 4) {
+            return null;
+        }
         // 会员用户数据
         $where = ['unid' => $order->getAttr('unid')];
         $relation = PluginWemallUserRelation::mk()->where($where)->findOrEmpty();
-        if ($relation->isEmpty()) return null;
+        if ($relation->isEmpty()) {
+            return null;
+        }
         // 更新入会资格
         $entry = self::entry($relation);
         // 尝试绑定代理
@@ -127,13 +137,12 @@ abstract class UserOrder
     }
 
     /**
-     * 刷新用户入会礼包
+     * 刷新用户入会礼包.
      * @param int|PluginWemallUserRelation $unid
-     * @return PluginWemallUserRelation
-     * @throws \think\admin\Exception
-     * @throws \think\db\exception\DataNotFoundException
-     * @throws \think\db\exception\DbException
-     * @throws \think\db\exception\ModelNotFoundException
+     * @throws Exception
+     * @throws DataNotFoundException
+     * @throws DbException
+     * @throws ModelNotFoundException
      */
     public static function entry($unid): PluginWemallUserRelation
     {
@@ -161,9 +170,9 @@ abstract class UserOrder
     }
 
     /**
-     * 获取等级折扣比例
-     * @param integer $disId 折扣方案ID
-     * @param integer $levelCode 等级序号
+     * 获取等级折扣比例.
+     * @param int $disId 折扣方案ID
+     * @param int $levelCode 等级序号
      * @param float $disRate 默认比例
      * @return array [方案编号, 折扣比例]
      */
@@ -172,8 +181,12 @@ abstract class UserOrder
         if ($disId > 0) {
             $where = ['id' => $disId, 'status' => 1, 'deleted' => 0];
             $discount = PluginWemallConfigDiscount::mk()->where($where)->findOrEmpty();
-            if ($discount->isExists()) foreach ($discount['items'] as $vo) {
-                if ($vo['level'] == $levelCode) $disRate = floatval($vo['discount']);
+            if ($discount->isExists()) {
+                foreach ($discount['items'] as $vo) {
+                    if ($vo['level'] == $levelCode) {
+                        $disRate = strval($vo['discount']);
+                    }
+                }
             }
         }
         return [$disId, $disRate];
@@ -181,10 +194,7 @@ abstract class UserOrder
 
     /**
      * 更新订单收货地址
-     * @param \plugin\wemall\model\PluginWemallOrder $order
-     * @param \plugin\payment\model\PluginPaymentAddress $address
-     * @return boolean
-     * @throws \think\admin\Exception
+     * @throws Exception
      */
     public static function perfect(PluginWemallOrder $order, PluginPaymentAddress $address): bool
     {
@@ -195,12 +205,13 @@ abstract class UserOrder
         $map2 = ['order_no' => $order->getAttr('order_no'), 'unid' => $unid];
         [$amount, $tCount, $tCode, $remark] = ExpressService::amount(
             PluginWemallOrderItem::mk()->where($map1)->column('delivery_code'),
-            $address->getAttr('region_prov'), $address->getAttr('region_city'),
+            $address->getAttr('region_prov'),
+            $address->getAttr('region_city'),
             (int)PluginWemallOrderItem::mk()->where($map2)->sum('delivery_count')
         );
         // 创建订单发货信息
         $data = [
-            'delivery_code'   => $tCode, 'delivery_count' => $tCount, 'unid' => $unid,
+            'delivery_code' => $tCode, 'delivery_count' => $tCount, 'unid' => $unid,
             'delivery_remark' => $remark, 'delivery_amount' => $amount, 'status' => 1,
         ];
         $data['order_no'] = $orderNo;
@@ -221,45 +232,52 @@ abstract class UserOrder
         PluginWemallOrderSender::mk()->where(['order_no' => $orderNo])->findOrEmpty()->save($data);
         // 组装更新订单数据, 重新计算订单金额
         $update = ['status' => 2, 'amount_express' => $data['delivery_amount']];
-        $update['amount_real'] = round($order->getAttr('amount_discount') + $amount - $order->getAttr('amount_reduct'), 2);
-        $update['amount_total'] = round($order->getAttr('amount_goods') + $amount, 2);
+        $amountReal = bcadd(strval($order->getAttr('amount_discount')), strval($amount), 2);
+        $amountReal = bcsub($amountReal, strval($order->getAttr('amount_reduct')), 2);
+        $update['amount_real'] = $amountReal;
+        $update['amount_total'] = bcadd(strval($order->getAttr('amount_goods')), strval($amount), 2);
         // 支付金额不能少于零
-        if ($update['amount_real'] <= 0) $update['amount_real'] = 0.00;
-        if ($update['amount_total'] <= 0) $update['amount_total'] = 0.00;
+        if (bccomp($update['amount_real'], '0.00', 2) <= 0) {
+            $update['amount_real'] = '0.00';
+        }
+        if (bccomp($update['amount_total'], '0.00', 2) <= 0) {
+            $update['amount_total'] = '0.00';
+        }
         // 更新用户订单数据
         if ($order->save($update)) {
             // 触发订单确认事件
             Library::$sapp->event->trigger('PluginWemallOrderPerfect', $order);
             // 返回处理成功数据
             return true;
-        } else {
-            return false;
         }
+        return false;
     }
 
     /**
      * 更新订单支付状态
      * @param PluginWemallOrder|string $order 订单模型
      * @param PluginPaymentRecord $payment 支付行为记录
-     * @return array|bool|string|void|null
-     * @throws \think\admin\Exception
-     * @throws \think\db\exception\DataNotFoundException
-     * @throws \think\db\exception\DbException
-     * @throws \think\db\exception\ModelNotFoundException
+     * @return null|array|bool|string|void
+     * @throws Exception
+     * @throws DataNotFoundException
+     * @throws DbException
+     * @throws ModelNotFoundException
      * @remark 订单状态(0已取消,1预订单,2待支付,3待审核,4待发货,5已发货,6已收货,7已评论)
      */
     public static function change($order, PluginPaymentRecord $payment)
     {
         $order = self::widthOrder($order);
-        if ($order->isEmpty()) return null;
+        if ($order->isEmpty()) {
+            return null;
+        }
 
         // 同步订单支付统计
         $ptotal = Payment::totalPaymentAmount($payment->getAttr('order_no'));
         $order->appendData([
-            'payment_time'    => $payment->getAttr('create_time'),
-            'payment_amount'  => $ptotal['amount'] ?? 0,
-            'amount_payment'  => $ptotal['payment'] ?? 0,
-            'amount_balance'  => $ptotal['balance'] ?? 0,
+            'payment_time' => $payment->getAttr('create_time'),
+            'payment_amount' => $ptotal['amount'] ?? 0,
+            'amount_payment' => $ptotal['payment'] ?? 0,
+            'amount_balance' => $ptotal['balance'] ?? 0,
             'amount_integral' => $ptotal['integral'] ?? 0,
         ], true);
 
@@ -267,7 +285,7 @@ abstract class UserOrder
         if ($order->getAttr('cancel_status') > 0 || $order->getAttr('refund_status') > 0) {
             return $order->save();
         }
-        
+
         // 订单已经支付完成
         if ($order->getAttr('payment_amount') >= $order->getAttr('amount_real')) {
             // 已完成支付，更新订单状态
@@ -294,18 +312,18 @@ abstract class UserOrder
 
         // 凭证支付审核被拒绝，订单回滚到未支付状态
         if ($isVoucher && $payment->getAttr('audit_status') === 0) {
-            if ($order->getAttr('status') === 3) $order->save(['status' => 2]);
+            if ($order->getAttr('status') === 3) {
+                $order->save(['status' => 2]);
+            }
             return self::upgrade($order);
-        } else {
-            $order->save();
         }
+        $order->save();
     }
 
     /**
-     * 取消订单撤销奖励
+     * 取消订单撤销奖励.
      * @param PluginWemallOrder|string $order
-     * @param boolean $setRebate 更新返佣
-     * @return string
+     * @param bool $setRebate 更新返佣
      */
     public static function cancel($order, bool $setRebate = false): string
     {
@@ -315,10 +333,12 @@ abstract class UserOrder
         } catch (\Exception $exception) {
             trace_file($exception);
         }
-        if ($setRebate) try { /* 订单返佣处理 */
-            UserRebate::cancel($order);
-        } catch (\Exception $exception) {
-            trace_file($exception);
+        if ($setRebate) {
+            try { /* 订单返佣处理 */
+                UserRebate::cancel($order);
+            } catch (\Exception $exception) {
+                trace_file($exception);
+            }
         }
         try { /* 升级会员等级 */
             UserUpgrade::upgrade(intval($order->getAttr('unid')));
@@ -329,9 +349,8 @@ abstract class UserOrder
     }
 
     /**
-     * 支付成功发放奖励
+     * 支付成功发放奖励.
      * @param PluginWemallOrder|string $order
-     * @return string
      */
     public static function payment($order): string
     {
@@ -356,9 +375,8 @@ abstract class UserOrder
     }
 
     /**
-     * 支付成功发放奖励
+     * 支付成功发放奖励.
      * @param PluginWemallOrder|string $order
-     * @return string
      */
     public static function confirm($order): string
     {

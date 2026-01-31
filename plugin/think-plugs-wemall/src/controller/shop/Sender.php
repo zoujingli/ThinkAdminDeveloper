@@ -1,20 +1,22 @@
 <?php
 
-// +----------------------------------------------------------------------
-// | WeMall Plugin for ThinkAdmin
-// +----------------------------------------------------------------------
-// | 版权所有 2014~2025 ThinkAdmin [ thinkadmin.top ]
-// +----------------------------------------------------------------------
-// | 官方网站: https://thinkadmin.top
-// +----------------------------------------------------------------------
-// | 免责声明 ( https://thinkadmin.top/disclaimer )
-// | 会员免费 ( https://thinkadmin.top/vip-introduce )
-// +----------------------------------------------------------------------
-// | gitee 代码仓库：https://gitee.com/zoujingli/think-plugs-wemall
-// | github 代码仓库：https://github.com/zoujingli/think-plugs-wemall
-// +----------------------------------------------------------------------
-
-declare (strict_types=1);
+declare(strict_types=1);
+/**
+ * +----------------------------------------------------------------------
+ * | Payment Plugin for ThinkAdmin
+ * +----------------------------------------------------------------------
+ * | 版权所有 2014~2026 ThinkAdmin [ thinkadmin.top ]
+ * +----------------------------------------------------------------------
+ * | 官方网站: https://thinkadmin.top
+ * +----------------------------------------------------------------------
+ * | 开源协议 ( https://mit-license.org )
+ * | 免责声明 ( https://thinkadmin.top/disclaimer )
+ * | 会员特权 ( https://thinkadmin.top/vip-introduce )
+ * +----------------------------------------------------------------------
+ * | gitee 代码仓库：https://gitee.com/zoujingli/ThinkAdmin
+ * | github 代码仓库：https://github.com/zoujingli/ThinkAdmin
+ * +----------------------------------------------------------------------
+ */
 
 namespace plugin\wemall\controller\shop;
 
@@ -26,12 +28,14 @@ use plugin\wemall\model\PluginWemallOrderSender;
 use plugin\wemall\service\ExpressService;
 use think\admin\Controller;
 use think\admin\helper\QueryHelper;
+use think\db\exception\DataNotFoundException;
+use think\db\exception\DbException;
+use think\db\exception\ModelNotFoundException;
 use think\exception\HttpResponseException;
 
 /**
- * 订单发货管理
+ * 订单发货管理.
  * @class Sender
- * @package plugin\wemall\controller\shop
  */
 class Sender extends Controller
 {
@@ -42,12 +46,12 @@ class Sender extends Controller
     private $oStatus = [4, 5, 6, 7];
 
     /**
-     * 订单发货管理
+     * 订单发货管理.
      * @auth true
      * @menu true
-     * @throws \think\db\exception\DataNotFoundException
-     * @throws \think\db\exception\DbException
-     * @throws \think\db\exception\ModelNotFoundException
+     * @throws DataNotFoundException
+     * @throws DbException
+     * @throws ModelNotFoundException
      */
     public function index()
     {
@@ -60,7 +64,7 @@ class Sender extends Controller
             $order = PluginWemallOrder::mk()->whereIn('status', $this->oStatus)->where(['delivery_type' => 1]);
             $query = PluginWemallOrderSender::mk()->whereRaw("order_no in {$order->field('order_no')->buildSql()}");
             foreach ($query->fieldRaw('status,count(1) total')->group('status')->cursor() as $vo) {
-                $this->total["ta"] += $vo['total'];
+                $this->total['ta'] += $vo['total'];
                 $this->total["t{$vo['status']}"] = $vo['total'];
             }
         }, function (QueryHelper $query) {
@@ -70,7 +74,9 @@ class Sender extends Controller
 
             // 用户搜索查询
             $db = PluginAccountUser::mQuery()->like('phone|nickname#user_keys')->db();
-            if ($db->getOptions('where')) $query->whereRaw("unid in {$db->field('id')->buildSql()}");
+            if ($db->getOptions('where')) {
+                $query->whereRaw("unid in {$db->field('id')->buildSql()}");
+            }
 
             // 订单搜索查询
             $db = PluginWemallOrder::mk()->whereIn('status', $this->oStatus)->where(['delivery_type' => 1]);
@@ -100,7 +106,7 @@ class Sender extends Controller
     }
 
     /**
-     * 修改快递管理
+     * 修改快递管理.
      * @auth true
      */
     public function delivery()
@@ -109,8 +115,31 @@ class Sender extends Controller
     }
 
     /**
-     * 快递表单处理
-     * @param array $vo
+     * 快递追踪查询.
+     * @auth true
+     */
+    public function query()
+    {
+        try {
+            $data = $this->_vali([
+                'code.require' => '快递编号不能为空！',
+                'number.require' => '快递单号不能为空！',
+            ]);
+            $this->result = ExpressService::query($data['code'], $data['number']);
+            if (empty($this->result['code'])) {
+                $this->error($this->result['info']);
+            } else {
+                $this->fetch('delivery_query');
+            }
+        } catch (HttpResponseException $exception) {
+            throw $exception;
+        } catch (\Exception $exception) {
+            $this->error($exception->getMessage());
+        }
+    }
+
+    /**
+     * 快递表单处理.
      */
     protected function _delivery_form_filter(array &$vo)
     {
@@ -123,12 +152,16 @@ class Sender extends Controller
         } elseif ($this->request->isPost()) {
             $map = ['order_no' => $vo['order_no']];
             $order = PluginWemallOrder::mk()->where($map)->findOrEmpty();
-            if ($order->isEmpty()) $this->error('订单查询异常，请稍候再试！');
+            if ($order->isEmpty()) {
+                $this->error('订单查询异常，请稍候再试！');
+            }
 
             // 配送快递公司填写
             $map = ['code' => $vo['company_code']];
             $company = PluginWemallExpressCompany::mk()->where($map)->findOrEmpty();
-            if ($company->isEmpty()) $this->error('配送快递公司异常，请重新选择快递公司！');
+            if ($company->isEmpty()) {
+                $this->error('配送快递公司异常，请重新选择快递公司！');
+            }
 
             // 追加表单数据
             $vo['status'] = 2;
@@ -140,31 +173,9 @@ class Sender extends Controller
             $vo['region_area'] = $vo['form_area'] ?? '';
 
             // 更新订单发货状态
-            if ($order['status'] === 4) $order->save(['status' => 5]);
-        }
-    }
-
-    /**
-     * 快递追踪查询
-     * @auth true
-     */
-    public function query()
-    {
-        try {
-            $data = $this->_vali([
-                'code.require'   => '快递编号不能为空！',
-                'number.require' => '快递单号不能为空！'
-            ]);
-            $this->result = ExpressService::query($data['code'], $data['number']);
-            if (empty($this->result['code'])) {
-                $this->error($this->result['info']);
-            } else {
-                $this->fetch('delivery_query');
+            if ($order['status'] === 4) {
+                $order->save(['status' => 5]);
             }
-        } catch (HttpResponseException $exception) {
-            throw $exception;
-        } catch (\Exception $exception) {
-            $this->error($exception->getMessage());
         }
     }
 }

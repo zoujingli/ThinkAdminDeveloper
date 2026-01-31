@@ -1,20 +1,22 @@
 <?php
 
-// +----------------------------------------------------------------------
-// | WeMall Plugin for ThinkAdmin
-// +----------------------------------------------------------------------
-// | 版权所有 2014~2025 ThinkAdmin [ thinkadmin.top ]
-// +----------------------------------------------------------------------
-// | 官方网站: https://thinkadmin.top
-// +----------------------------------------------------------------------
-// | 免责声明 ( https://thinkadmin.top/disclaimer )
-// | 会员免费 ( https://thinkadmin.top/vip-introduce )
-// +----------------------------------------------------------------------
-// | gitee 代码仓库：https://gitee.com/zoujingli/think-plugs-wemall
-// | github 代码仓库：https://github.com/zoujingli/think-plugs-wemall
-// +----------------------------------------------------------------------
-
-declare (strict_types=1);
+declare(strict_types=1);
+/**
+ * +----------------------------------------------------------------------
+ * | Payment Plugin for ThinkAdmin
+ * +----------------------------------------------------------------------
+ * | 版权所有 2014~2026 ThinkAdmin [ thinkadmin.top ]
+ * +----------------------------------------------------------------------
+ * | 官方网站: https://thinkadmin.top
+ * +----------------------------------------------------------------------
+ * | 开源协议 ( https://mit-license.org )
+ * | 免责声明 ( https://thinkadmin.top/disclaimer )
+ * | 会员特权 ( https://thinkadmin.top/vip-introduce )
+ * +----------------------------------------------------------------------
+ * | gitee 代码仓库：https://gitee.com/zoujingli/ThinkAdmin
+ * | github 代码仓库：https://github.com/zoujingli/ThinkAdmin
+ * +----------------------------------------------------------------------
+ */
 
 namespace plugin\wemall\controller\base;
 
@@ -23,22 +25,23 @@ use plugin\wemall\model\PluginWemallConfigNotify;
 use think\admin\Controller;
 use think\admin\extend\CodeExtend;
 use think\admin\helper\QueryHelper;
+use think\db\exception\DataNotFoundException;
+use think\db\exception\DbException;
+use think\db\exception\ModelNotFoundException;
 
 /**
- * 系统通知管理
+ * 系统通知管理.
  * @class Notify
- * @package plugin\wemall\controller\base
  */
 class Notify extends Controller
 {
     /**
-     * 系统通知管理
+     * 系统通知管理.
      * @auth true
      * @menu true
-     * @return void
-     * @throws \think\db\exception\DataNotFoundException
-     * @throws \think\db\exception\DbException
-     * @throws \think\db\exception\ModelNotFoundException
+     * @throws DataNotFoundException
+     * @throws DbException
+     * @throws ModelNotFoundException
      */
     public function index()
     {
@@ -52,7 +55,7 @@ class Notify extends Controller
     }
 
     /**
-     * 添加系统通知
+     * 添加系统通知.
      * @auth true
      */
     public function add()
@@ -62,7 +65,7 @@ class Notify extends Controller
     }
 
     /**
-     * 编辑系统通知
+     * 编辑系统通知.
      * @auth true
      */
     public function edit()
@@ -72,9 +75,28 @@ class Notify extends Controller
     }
 
     /**
-     * 表单数据处理
-     * @param array $data
-     * @return void
+     * 修改通知状态
+     * @auth true
+     */
+    public function state()
+    {
+        PluginWemallConfigNotify::mSave($this->_vali([
+            'status.in:0,1' => '状态值范围异常！',
+            'status.require' => '状态值不能为空！',
+        ]));
+    }
+
+    /**
+     * 删除系统通知.
+     * @auth true
+     */
+    public function remove()
+    {
+        PluginWemallConfigNotify::mDelete();
+    }
+
+    /**
+     * 表单数据处理.
      */
     protected function _form_filter(array &$data)
     {
@@ -90,9 +112,7 @@ class Notify extends Controller
     }
 
     /**
-     * 表单结果处理
-     * @param bool $result
-     * @return void
+     * 表单结果处理.
      */
     protected function _form_result(bool $result)
     {
@@ -101,26 +121,5 @@ class Notify extends Controller
         } else {
             $this->error('通知保存失败！');
         }
-    }
-
-    /**
-     * 修改通知状态
-     * @auth true
-     */
-    public function state()
-    {
-        PluginWemallConfigNotify::mSave($this->_vali([
-            'status.in:0,1'  => '状态值范围异常！',
-            'status.require' => '状态值不能为空！',
-        ]));
-    }
-
-    /**
-     * 删除系统通知
-     * @auth true
-     */
-    public function remove()
-    {
-        PluginWemallConfigNotify::mDelete();
     }
 }

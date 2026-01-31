@@ -1,20 +1,22 @@
 <?php
 
-// +----------------------------------------------------------------------
-// | WeMall Plugin for ThinkAdmin
-// +----------------------------------------------------------------------
-// | 版权所有 2014~2025 ThinkAdmin [ thinkadmin.top ]
-// +----------------------------------------------------------------------
-// | 官方网站: https://thinkadmin.top
-// +----------------------------------------------------------------------
-// | 免责声明 ( https://thinkadmin.top/disclaimer )
-// | 会员免费 ( https://thinkadmin.top/vip-introduce )
-// +----------------------------------------------------------------------
-// | gitee 代码仓库：https://gitee.com/zoujingli/think-plugs-wemall
-// | github 代码仓库：https://github.com/zoujingli/think-plugs-wemall
-// +----------------------------------------------------------------------
-
-declare (strict_types=1);
+declare(strict_types=1);
+/**
+ * +----------------------------------------------------------------------
+ * | Payment Plugin for ThinkAdmin
+ * +----------------------------------------------------------------------
+ * | 版权所有 2014~2026 ThinkAdmin [ thinkadmin.top ]
+ * +----------------------------------------------------------------------
+ * | 官方网站: https://thinkadmin.top
+ * +----------------------------------------------------------------------
+ * | 开源协议 ( https://mit-license.org )
+ * | 免责声明 ( https://thinkadmin.top/disclaimer )
+ * | 会员特权 ( https://thinkadmin.top/vip-introduce )
+ * +----------------------------------------------------------------------
+ * | gitee 代码仓库：https://gitee.com/zoujingli/ThinkAdmin
+ * | github 代码仓库：https://github.com/zoujingli/ThinkAdmin
+ * +----------------------------------------------------------------------
+ */
 
 namespace plugin\wemall\model;
 
@@ -22,11 +24,11 @@ use plugin\account\model\PluginAccountUser;
 use think\model\relation\HasOne;
 
 /**
- * 手动创建会员用户模型
+ * 手动创建会员用户模型.
  *
  * @property bool $agent_entry 代理权限
- * @property float $rebate_total 累计返利
- * @property float $rebate_usable 可提返利
+ * @property string $rebate_total 累计返利
+ * @property string $rebate_usable 可提返利
  * @property int $deleted 删除状态(0未删,1已删)
  * @property int $id
  * @property int $status 记录状态(0无效,1有效)
@@ -42,15 +44,13 @@ use think\model\relation\HasOne;
  * @property string $rebate_usable_code 记录编号
  * @property string $rebate_usable_desc 记录描述
  * @property string $update_time 更新时间
- * @property-read \plugin\account\model\PluginAccountUser $agent
+ * @property PluginAccountUser $agent
  * @class PluginWemallUserCreate
- * @package plugin\wemall\model
  */
 class PluginWemallUserCreate extends AbsUser
 {
     /**
-     * 关联代理用户
-     * @return \think\model\relation\HasOne
+     * 关联代理用户.
      */
     public function agent(): HasOne
     {

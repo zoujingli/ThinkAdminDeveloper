@@ -1,20 +1,22 @@
 <?php
 
-// +----------------------------------------------------------------------
-// | Wechat Service Plugin for ThinkAdmin
-// +----------------------------------------------------------------------
-// | 版权所有 2014~2025 Anyon <zoujingli@qq.com>
-// +----------------------------------------------------------------------
-// | 官方网站: https://thinkadmin.top
-// +----------------------------------------------------------------------
-// | 免责声明 ( https://thinkadmin.top/disclaimer )
-// | 会员免费 ( https://thinkadmin.top/vip-introduce )
-// +----------------------------------------------------------------------
-// | gitee 代码仓库：https://gitee.com/zoujingli/think-plugs-wechat-service
-// | github 代码仓库：https://github.com/zoujingli/think-plugs-wechat-service
-// +----------------------------------------------------------------------
-
-declare (strict_types=1);
+declare(strict_types=1);
+/**
+ * +----------------------------------------------------------------------
+ * | Payment Plugin for ThinkAdmin
+ * +----------------------------------------------------------------------
+ * | 版权所有 2014~2026 ThinkAdmin [ thinkadmin.top ]
+ * +----------------------------------------------------------------------
+ * | 官方网站: https://thinkadmin.top
+ * +----------------------------------------------------------------------
+ * | 开源协议 ( https://mit-license.org )
+ * | 免责声明 ( https://thinkadmin.top/disclaimer )
+ * | 会员特权 ( https://thinkadmin.top/vip-introduce )
+ * +----------------------------------------------------------------------
+ * | gitee 代码仓库：https://gitee.com/zoujingli/ThinkAdmin
+ * | github 代码仓库：https://github.com/zoujingli/ThinkAdmin
+ * +----------------------------------------------------------------------
+ */
 
 namespace plugin\wechat\service;
 
@@ -22,52 +24,56 @@ use plugin\wechat\service\model\WechatAuth;
 use think\admin\Exception;
 use think\admin\Model;
 use think\admin\Service;
+use think\db\exception\DataNotFoundException;
+use think\db\exception\DbException;
+use think\db\exception\ModelNotFoundException;
+use WeChat\Exceptions\InvalidResponseException;
+use WeChat\Exceptions\LocalCacheException;
 
 /**
  * 公众号授权配置
- * Class ConfigService
- * @package plugin\wechat\service
+ * Class ConfigService.
  */
 class ConfigService extends Service
 {
     /**
-     * 数据查询条件
+     * 数据查询条件.
      * @var array
      */
     private $map;
 
     /**
-     * 当前微信APPID
+     * 当前微信APPID.
      * @var string
      */
     private $appid;
 
     /**
-     * 当前微信配置
+     * 当前微信配置.
      * @var Model
      */
     private $config;
 
     /**
-     * 授权配置初始化
-     * @param string $appid
+     * 授权配置初始化.
      * @return $this
      * @throws Exception
-     * @throws \think\db\exception\DataNotFoundException
-     * @throws \think\db\exception\DbException
-     * @throws \think\db\exception\ModelNotFoundException
+     * @throws DataNotFoundException
+     * @throws DbException
+     * @throws ModelNotFoundException
      */
     public function init(string $appid): ConfigService
     {
         $this->map = ['authorizer_appid' => $this->appid = $appid];
         $this->config = WechatAuth::mk()->where($this->map)->find();
-        if (empty($this->config)) throw new Exception("公众号{$appid}还没有授权！");
+        if (empty($this->config)) {
+            throw new Exception("公众号{$appid}还没有授权！");
+        }
         return $this;
     }
 
     /**
-     * 获取当前公众号配置
-     * @return array
+     * 获取当前公众号配置.
      */
     public function getConfig(): array
     {
@@ -77,18 +83,18 @@ class ConfigService extends Service
     /**
      * 设置微信接口通知URL地址
      * @param string $notify 接口通知URL地址
-     * @return boolean
      * @throws Exception
      */
     public function setApiNotifyUri(string $notify): bool
     {
-        if (empty($notify)) throw new Exception('请传入微信通知URL');
+        if (empty($notify)) {
+            throw new Exception('请传入微信通知URL');
+        }
         return WechatAuth::mk()->where($this->map)->update(['appuri' => $notify]) !== false;
     }
 
     /**
-     * 更新接口 AppKey
-     * @return string
+     * 更新接口 AppKey.
      */
     public function updateApiAppkey(): string
     {
@@ -98,7 +104,7 @@ class ConfigService extends Service
     }
 
     /**
-     * 获取公众号的配置参数
+     * 获取公众号的配置参数.
      * @param null|string $name 参数名称
      * @return array|string
      */
@@ -108,11 +114,11 @@ class ConfigService extends Service
     }
 
     /**
-     * 微信网页授权
+     * 微信网页授权.
      * @param string $sessid 当前会话id(可用session_id()获取)
      * @param string $source 当前会话URL地址(需包含域名的完整URL地址)
-     * @param integer $type 网页授权模式(0静默模式,1高级授权)
-     * @return array|boolean
+     * @param int $type 网页授权模式(0静默模式,1高级授权)
+     * @return array|bool
      */
     public function oauth(string $sessid, string $source, int $type = 0): array
     {
@@ -130,11 +136,10 @@ class ConfigService extends Service
     }
 
     /**
-     * 微信网页JS签名
+     * 微信网页JS签名.
      * @param string $url 当前会话URL地址(需包含域名的完整URL地址)
-     * @return array
-     * @throws \WeChat\Exceptions\InvalidResponseException
-     * @throws \WeChat\Exceptions\LocalCacheException
+     * @throws InvalidResponseException
+     * @throws LocalCacheException
      */
     public function jsSign(string $url): array
     {

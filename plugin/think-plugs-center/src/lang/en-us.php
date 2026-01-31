@@ -1,6 +1,22 @@
 <?php
 
-// +----------------------------------------------------------------------
+declare(strict_types=1);
+/**
+ * +----------------------------------------------------------------------
+ * | Payment Plugin for ThinkAdmin
+ * +----------------------------------------------------------------------
+ * | 版权所有 2014~2026 ThinkAdmin [ thinkadmin.top ]
+ * +----------------------------------------------------------------------
+ * | 官方网站: https://thinkadmin.top
+ * +----------------------------------------------------------------------
+ * | 开源协议 ( https://mit-license.org )
+ * | 免责声明 ( https://thinkadmin.top/disclaimer )
+ * | 会员特权 ( https://thinkadmin.top/vip-introduce )
+ * +----------------------------------------------------------------------
+ * | gitee 代码仓库：https://gitee.com/zoujingli/ThinkAdmin
+ * | github 代码仓库：https://github.com/zoujingli/ThinkAdmin
+ * +----------------------------------------------------------------------
+ */
 // | Center Plugin for ThinkAdmin
 // +----------------------------------------------------------------------
 // | 版权所有 2014~2025 ThinkAdmin [ thinkadmin.top ]
@@ -20,7 +36,7 @@ return array_merge($extra, [
     '设为默认' => 'Set as Default',
     '未配置菜单' => 'Menu Not Configured',
     '无记录' => 'No Records',
-    
+
     // 用户菜单（与 think-plugs-admin 共享）
     '基本资料' => 'Basic Information',
     '安全设置' => 'Security Setting',
@@ -31,4 +47,3 @@ return array_merge($extra, [
     '确定要退出登录吗？' => 'Are you sure you want to logout?',
     '立即登录' => 'Login',
 ]);
-

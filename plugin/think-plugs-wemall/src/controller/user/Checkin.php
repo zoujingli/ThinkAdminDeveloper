@@ -14,30 +14,48 @@
 // | github 代码仓库：https://github.com/zoujingli/think-plugs-wemall
 // +----------------------------------------------------------------------
 
-declare (strict_types=1);
+declare(strict_types=1);
+/**
+ * +----------------------------------------------------------------------
+ * | Payment Plugin for ThinkAdmin
+ * +----------------------------------------------------------------------
+ * | 版权所有 2014~2026 ThinkAdmin [ thinkadmin.top ]
+ * +----------------------------------------------------------------------
+ * | 官方网站: https://thinkadmin.top
+ * +----------------------------------------------------------------------
+ * | 开源协议 ( https://mit-license.org )
+ * | 免责声明 ( https://thinkadmin.top/disclaimer )
+ * | 会员特权 ( https://thinkadmin.top/vip-introduce )
+ * +----------------------------------------------------------------------
+ * | gitee 代码仓库：https://gitee.com/zoujingli/ThinkAdmin
+ * | github 代码仓库：https://github.com/zoujingli/ThinkAdmin
+ * +----------------------------------------------------------------------
+ */
 
 namespace plugin\wemall\controller\user;
 
 use plugin\account\model\PluginAccountUser;
 use plugin\wemall\model\PluginWemallUserCheckin;
 use think\admin\Controller;
+use think\admin\Exception;
 use think\admin\helper\QueryHelper;
+use think\db\exception\DataNotFoundException;
+use think\db\exception\DbException;
+use think\db\exception\ModelNotFoundException;
 
 /**
- * 用户签到管理
+ * 用户签到管理.
  * @class Checkin
- * @package plugin\wemall\controller\user
  */
 class Checkin extends Controller
 {
     /**
-     * 用户签到管理
+     * 用户签到管理.
      * @auth true
      * @menu true
-     * @return void
-     * @throws \think\db\exception\DataNotFoundException
-     * @throws \think\db\exception\DbException
-     * @throws \think\db\exception\ModelNotFoundException
+     * @throws DataNotFoundException
+     * @throws DbException
+     * @throws ModelNotFoundException
      */
     public function index()
     {
@@ -48,15 +66,16 @@ class Checkin extends Controller
             $query->with('user')->dateBetween('create_time');
             // 按用户资料搜索
             $user = PluginAccountUser::mQuery()->like('nickname|phone#user');
-            if ($user->getOptions('where')) $query->whereRaw("unid in {$user->field('id')->buildSql()}");
+            if ($user->getOptions('where')) {
+                $query->whereRaw("unid in {$user->field('id')->buildSql()}");
+            }
         });
     }
 
     /**
-     * 签到配置管理
+     * 签到配置管理.
      * @auth true
-     * @return void
-     * @throws \think\admin\Exception
+     * @throws Exception
      */
     public function config()
     {

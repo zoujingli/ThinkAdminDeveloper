@@ -1,42 +1,45 @@
 <?php
 
-// +----------------------------------------------------------------------
-// | WeMall Plugin for ThinkAdmin
-// +----------------------------------------------------------------------
-// | 版权所有 2014~2025 ThinkAdmin [ thinkadmin.top ]
-// +----------------------------------------------------------------------
-// | 官方网站: https://thinkadmin.top
-// +----------------------------------------------------------------------
-// | 免责声明 ( https://thinkadmin.top/disclaimer )
-// | 会员免费 ( https://thinkadmin.top/vip-introduce )
-// +----------------------------------------------------------------------
-// | gitee 代码仓库：https://gitee.com/zoujingli/think-plugs-wemall
-// | github 代码仓库：https://github.com/zoujingli/think-plugs-wemall
-// +----------------------------------------------------------------------
-
-declare (strict_types=1);
+declare(strict_types=1);
+/**
+ * +----------------------------------------------------------------------
+ * | Payment Plugin for ThinkAdmin
+ * +----------------------------------------------------------------------
+ * | 版权所有 2014~2026 ThinkAdmin [ thinkadmin.top ]
+ * +----------------------------------------------------------------------
+ * | 官方网站: https://thinkadmin.top
+ * +----------------------------------------------------------------------
+ * | 开源协议 ( https://mit-license.org )
+ * | 免责声明 ( https://thinkadmin.top/disclaimer )
+ * | 会员特权 ( https://thinkadmin.top/vip-introduce )
+ * +----------------------------------------------------------------------
+ * | gitee 代码仓库：https://gitee.com/zoujingli/ThinkAdmin
+ * | github 代码仓库：https://github.com/zoujingli/ThinkAdmin
+ * +----------------------------------------------------------------------
+ */
 
 namespace plugin\wemall\controller\base;
 
 use plugin\wemall\model\PluginWemallConfigLevel;
 use think\admin\Controller;
 use think\admin\helper\QueryHelper;
+use think\db\exception\DataNotFoundException;
+use think\db\exception\DbException;
+use think\db\exception\ModelNotFoundException;
 
 /**
- * 会员等级管理
+ * 会员等级管理.
  * @class Level
- * @package plugin\wemall\controller\base
  */
 class Level extends Controller
 {
     /**
-     * 会员等级管理
+     * 会员等级管理.
      * @auth true
      * @menu true
-     * @return void
-     * @throws \think\db\exception\DataNotFoundException
-     * @throws \think\db\exception\DbException
-     * @throws \think\db\exception\ModelNotFoundException
+     * @throws DataNotFoundException
+     * @throws DbException
+     * @throws ModelNotFoundException
      */
     public function index()
     {
@@ -48,10 +51,9 @@ class Level extends Controller
     }
 
     /**
-     * 添加会员等级
+     * 添加会员等级.
      * @auth true
-     * @return void
-     * @throws \think\db\exception\DbException
+     * @throws DbException
      */
     public function add()
     {
@@ -60,10 +62,9 @@ class Level extends Controller
     }
 
     /**
-     * 编辑会员等级
+     * 编辑会员等级.
      * @auth true
-     * @return void
-     * @throws \think\db\exception\DbException
+     * @throws DbException
      */
     public function edit()
     {
@@ -72,38 +73,10 @@ class Level extends Controller
     }
 
     /**
-     * 表单数据处理
-     * @param array $vo
-     * @throws \think\db\exception\DbException
-     */
-    protected function _form_filter(array &$vo)
-    {
-        if (empty($vo['extra'])) $vo['extra'] = [];
-        if ($this->request->isGet()) {
-            $vo['number'] = $vo['number'] ?? PluginWemallConfigLevel::maxNumber();
-        } else {
-            $vo['utime'] = time();
-            if (empty($vo['number'])) {
-                $vo['extra'] = ['enter_vip_status' => 0, 'order_amount_status' => 0, 'order_amount_number' => 0];
-            } else {
-                $count = $vo['extra']['enter_vip_status'] = empty($vo['extra']['enter_vip_status']) ? 0 : 1;
-                if (empty($vo['extra']['order_amount_status']) || floatval($vo['extra']['order_amount_number']) <= 0) {
-                    $vo['extra'] = array_merge($vo['extra'], ['order_amount_status' => 0, 'order_amount_number' => 0]);
-                } else {
-                    $count += 1;
-                    $vo['extra']['order_amount_status'] = 1;
-                }
-                if (empty($count)) $this->error('升级条件不能为空！');
-            }
-        }
-    }
-
-    /**
-     * 表单结果处理
-     * @param boolean $state
-     * @throws \think\db\exception\DataNotFoundException
-     * @throws \think\db\exception\DbException
-     * @throws \think\db\exception\ModelNotFoundException
+     * 表单结果处理.
+     * @throws DataNotFoundException
+     * @throws DbException
+     * @throws ModelNotFoundException
      */
     public function _form_result(bool $state)
     {
@@ -126,7 +99,7 @@ class Level extends Controller
     }
 
     /**
-     * 删除会员等级
+     * 删除会员等级.
      * @auth true
      */
     public function remove()
@@ -135,11 +108,41 @@ class Level extends Controller
     }
 
     /**
-     * 状态变更处理
+     * 表单数据处理.
+     * @throws DbException
+     */
+    protected function _form_filter(array &$vo)
+    {
+        if (empty($vo['extra'])) {
+            $vo['extra'] = [];
+        }
+        if ($this->request->isGet()) {
+            $vo['number'] = $vo['number'] ?? PluginWemallConfigLevel::maxNumber();
+        } else {
+            $vo['utime'] = time();
+            if (empty($vo['number'])) {
+                $vo['extra'] = ['enter_vip_status' => 0, 'order_amount_status' => 0, 'order_amount_number' => 0];
+            } else {
+                $count = $vo['extra']['enter_vip_status'] = empty($vo['extra']['enter_vip_status']) ? 0 : 1;
+                if (empty($vo['extra']['order_amount_status']) || bccomp(strval($vo['extra']['order_amount_number']), '0.00', 2) <= 0) {
+                    $vo['extra'] = array_merge($vo['extra'], ['order_amount_status' => 0, 'order_amount_number' => 0]);
+                } else {
+                    ++$count;
+                    $vo['extra']['order_amount_status'] = 1;
+                }
+                if (empty($count)) {
+                    $this->error('升级条件不能为空！');
+                }
+            }
+        }
+    }
+
+    /**
+     * 状态变更处理.
      * @auth true
-     * @throws \think\db\exception\DataNotFoundException
-     * @throws \think\db\exception\DbException
-     * @throws \think\db\exception\ModelNotFoundException
+     * @throws DataNotFoundException
+     * @throws DbException
+     * @throws ModelNotFoundException
      */
     protected function _save_result()
     {
@@ -147,10 +150,10 @@ class Level extends Controller
     }
 
     /**
-     * 删除结果处理
-     * @throws \think\db\exception\DataNotFoundException
-     * @throws \think\db\exception\DbException
-     * @throws \think\db\exception\ModelNotFoundException
+     * 删除结果处理.
+     * @throws DataNotFoundException
+     * @throws DbException
+     * @throws ModelNotFoundException
      */
     protected function _delete_result()
     {

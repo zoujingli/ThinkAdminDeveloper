@@ -1,20 +1,22 @@
 <?php
 
-// +----------------------------------------------------------------------
-// | WeMall Plugin for ThinkAdmin
-// +----------------------------------------------------------------------
-// | 版权所有 2014~2025 ThinkAdmin [ thinkadmin.top ]
-// +----------------------------------------------------------------------
-// | 官方网站: https://thinkadmin.top
-// +----------------------------------------------------------------------
-// | 免责声明 ( https://thinkadmin.top/disclaimer )
-// | 会员免费 ( https://thinkadmin.top/vip-introduce )
-// +----------------------------------------------------------------------
-// | gitee 代码仓库：https://gitee.com/zoujingli/think-plugs-wemall
-// | github 代码仓库：https://github.com/zoujingli/think-plugs-wemall
-// +----------------------------------------------------------------------
-
-declare (strict_types=1);
+declare(strict_types=1);
+/**
+ * +----------------------------------------------------------------------
+ * | Payment Plugin for ThinkAdmin
+ * +----------------------------------------------------------------------
+ * | 版权所有 2014~2026 ThinkAdmin [ thinkadmin.top ]
+ * +----------------------------------------------------------------------
+ * | 官方网站: https://thinkadmin.top
+ * +----------------------------------------------------------------------
+ * | 开源协议 ( https://mit-license.org )
+ * | 免责声明 ( https://thinkadmin.top/disclaimer )
+ * | 会员特权 ( https://thinkadmin.top/vip-introduce )
+ * +----------------------------------------------------------------------
+ * | gitee 代码仓库：https://gitee.com/zoujingli/ThinkAdmin
+ * | github 代码仓库：https://github.com/zoujingli/ThinkAdmin
+ * +----------------------------------------------------------------------
+ */
 
 namespace plugin\wemall\controller\shop;
 
@@ -27,37 +29,30 @@ use plugin\wemall\service\UserRefund;
 use think\admin\Controller;
 use think\admin\extend\CodeExtend;
 use think\admin\helper\QueryHelper;
+use think\db\exception\DataNotFoundException;
+use think\db\exception\DbException;
+use think\db\exception\ModelNotFoundException;
 use think\exception\HttpResponseException;
 
 /**
- * 订单数据管理
+ * 订单数据管理.
  * @class Order
- * @package plugin\wemall\controller\shop
  */
 class Order extends Controller
 {
     /**
-     * 支付方式
+     * 支付方式.
      * @var array
      */
     protected $payments = [];
 
     /**
-     * 控制器初始化
-     */
-    protected function initialize()
-    {
-        parent::initialize();
-        $this->payments = Payment::types();
-    }
-
-    /**
-     * 订单数据管理
+     * 订单数据管理.
      * @auth true
      * @menu true
-     * @throws \think\db\exception\DataNotFoundException
-     * @throws \think\db\exception\DbException
-     * @throws \think\db\exception\ModelNotFoundException
+     * @throws DataNotFoundException
+     * @throws DbException
+     * @throws ModelNotFoundException
      */
     public function index()
     {
@@ -71,7 +66,6 @@ class Order extends Controller
                 [$this->total["t{$vo['status']}"] = $vo['total'], $this->total['ta'] += $vo['total']];
             }
         }, function (QueryHelper $query) {
-
             $query->with(['user', 'from', 'items', 'address']);
 
             $query->equal('status,refund_status')->like('order_no');
@@ -80,15 +74,21 @@ class Order extends Controller
             // 发货信息搜索
             $db = PluginWemallOrderSender::mQuery()->dateBetween('express_time')
                 ->like('user_name|user_phone|region_prov|region_city|region_area|region_addr#address,express_code#delivery_express_code')->db();
-            if ($db->getOptions('where')) $query->whereRaw("order_no in {$db->field('order_no')->buildSql()}");
+            if ($db->getOptions('where')) {
+                $query->whereRaw("order_no in {$db->field('order_no')->buildSql()}");
+            }
 
             // 用户搜索查询
             $db = PluginAccountUser::mQuery()->like('phone|nickname#user_keys')->db();
-            if ($db->getOptions('where')) $query->whereRaw("unid in {$db->field('id')->buildSql()}");
+            if ($db->getOptions('where')) {
+                $query->whereRaw("unid in {$db->field('id')->buildSql()}");
+            }
 
             // 代理搜索查询
             $db = PluginAccountUser::mQuery()->like('phone|nickname#from_keys')->db();
-            if ($db->getOptions('where')) $query->whereRaw("puid1 in {$db->field('id')->buildSql()}");
+            if ($db->getOptions('where')) {
+                $query->whereRaw("puid1 in {$db->field('id')->buildSql()}");
+            }
 
             // 列表选项卡
             if (is_numeric($this->type)) {
@@ -101,11 +101,11 @@ class Order extends Controller
     }
 
     /**
-     * 单据凭证支付审核
+     * 单据凭证支付审核.
      * @auth true
-     * @throws \think\db\exception\DataNotFoundException
-     * @throws \think\db\exception\DbException
-     * @throws \think\db\exception\ModelNotFoundException
+     * @throws DataNotFoundException
+     * @throws DbException
+     * @throws ModelNotFoundException
      */
     public function audit()
     {
@@ -114,9 +114,9 @@ class Order extends Controller
         } else {
             $data = $this->_vali([
                 'order_no.require' => '订单单号不能为空！',
-                'status.in:0,1'    => '审核状态数值异常！',
-                'status.require'   => '审核状态不能为空！',
-                'remark.default'   => '',
+                'status.in:0,1' => '审核状态数值异常！',
+                'status.require' => '审核状态不能为空！',
+                'remark.default' => '',
             ]);
             if (empty($data['status'])) {
                 $data['status'] = 0;
@@ -131,9 +131,13 @@ class Order extends Controller
                 $data['payment_remark'] = $data['remark'] ?: '后台审核支付凭证通过';
             }
             $order = PluginWemallOrder::mk()->where(['order_no' => $data['order_no']])->findOrEmpty();
-            if ($order->isEmpty() || $order['status'] !== 3) $this->error('不允许操作审核！');
+            if ($order->isEmpty() || $order['status'] !== 3) {
+                $this->error('不允许操作审核！');
+            }
             // 无需发货时的处理
-            if ($data['status'] === 4 && empty($order['delivery_type'])) $data['status'] = 6;
+            if ($data['status'] === 4 && empty($order['delivery_type'])) {
+                $data['status'] = 6;
+            }
             // 更新订单支付状态
             $map = ['status' => 3, 'order_no' => $data['order_no']];
             if (PluginWemallOrder::mk()->strict(false)->where($map)->update($data) !== false) {
@@ -152,34 +156,34 @@ class Order extends Controller
     }
 
     /**
-     * 订单自动处理
+     * 订单自动处理.
      * @auth true
-     * @return void
      */
     public function clean()
     {
-        $this->_queue('定时清理无效订单数据', "xdata:mall:clear", 0, [], 0, 60);
+        $this->_queue('定时清理无效订单数据', 'xdata:mall:clear', 0, [], 0, 60);
     }
 
     /**
-     * 取消未支付的订单
+     * 取消未支付的订单.
      * @auth true
-     * @return void
      */
     public function cancel()
     {
         $data = $this->_vali(['order_no.require' => '订单号不能为空！']);
         $order = PluginWemallOrder::mk()->where($data)->findOrEmpty();
-        if ($order->isEmpty()) $this->error('订单查询异常！');
+        if ($order->isEmpty()) {
+            $this->error('订单查询异常！');
+        }
         try {
             if (!in_array($order['status'], [1, 2, 3])) {
                 $this->error('订单不能取消！');
             }
             $result = $order->save([
-                'status'        => 0,
+                'status' => 0,
                 'cancel_status' => 1,
                 'cancel_remark' => '后台取消未支付的订单',
-                'cancel_time'   => date('Y-m-d H:i:s'),
+                'cancel_time' => date('Y-m-d H:i:s'),
             ]);
             if ($result !== false) {
                 UserOrder::stock($order['order_no']);
@@ -193,5 +197,14 @@ class Order extends Controller
         } catch (\Exception $exception) {
             $this->error($exception->getMessage());
         }
+    }
+
+    /**
+     * 控制器初始化.
+     */
+    protected function initialize()
+    {
+        parent::initialize();
+        $this->payments = Payment::types();
     }
 }

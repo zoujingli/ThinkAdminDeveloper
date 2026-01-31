@@ -1,20 +1,22 @@
 <?php
 
-// +----------------------------------------------------------------------
-// | WeMall Plugin for ThinkAdmin
-// +----------------------------------------------------------------------
-// | 版权所有 2014~2025 ThinkAdmin [ thinkadmin.top ]
-// +----------------------------------------------------------------------
-// | 官方网站: https://thinkadmin.top
-// +----------------------------------------------------------------------
-// | 免责声明 ( https://thinkadmin.top/disclaimer )
-// | 会员免费 ( https://thinkadmin.top/vip-introduce )
-// +----------------------------------------------------------------------
-// | gitee 代码仓库：https://gitee.com/zoujingli/think-plugs-wemall
-// | github 代码仓库：https://github.com/zoujingli/think-plugs-wemall
-// +----------------------------------------------------------------------
-
-declare (strict_types=1);
+declare(strict_types=1);
+/**
+ * +----------------------------------------------------------------------
+ * | Payment Plugin for ThinkAdmin
+ * +----------------------------------------------------------------------
+ * | 版权所有 2014~2026 ThinkAdmin [ thinkadmin.top ]
+ * +----------------------------------------------------------------------
+ * | 官方网站: https://thinkadmin.top
+ * +----------------------------------------------------------------------
+ * | 开源协议 ( https://mit-license.org )
+ * | 免责声明 ( https://thinkadmin.top/disclaimer )
+ * | 会员特权 ( https://thinkadmin.top/vip-introduce )
+ * +----------------------------------------------------------------------
+ * | gitee 代码仓库：https://gitee.com/zoujingli/ThinkAdmin
+ * | github 代码仓库：https://github.com/zoujingli/ThinkAdmin
+ * +----------------------------------------------------------------------
+ */
 
 namespace plugin\wemall\controller\base;
 
@@ -22,21 +24,23 @@ use plugin\wemall\model\PluginWemallConfigDiscount;
 use plugin\wemall\model\PluginWemallConfigLevel;
 use think\admin\Controller;
 use think\admin\helper\QueryHelper;
+use think\db\exception\DataNotFoundException;
+use think\db\exception\DbException;
+use think\db\exception\ModelNotFoundException;
 
 /**
- * 折扣方案管理
+ * 折扣方案管理.
  * @class Discount
- * @package plugin\wemall\controller\base
  */
 class Discount extends Controller
 {
     /**
-     * 折扣方案管理
+     * 折扣方案管理.
      * @auth true
      * @menu true
-     * @throws \think\db\exception\DataNotFoundException
-     * @throws \think\db\exception\DbException
-     * @throws \think\db\exception\ModelNotFoundException
+     * @throws DataNotFoundException
+     * @throws DbException
+     * @throws ModelNotFoundException
      */
     public function index()
     {
@@ -49,7 +53,7 @@ class Discount extends Controller
     }
 
     /**
-     * 添加折扣方案
+     * 添加折扣方案.
      * @auth true
      */
     public function add()
@@ -58,34 +62,12 @@ class Discount extends Controller
     }
 
     /**
-     * 编辑折扣方案
+     * 编辑折扣方案.
      * @auth true
      */
     public function edit()
     {
         PluginWemallConfigDiscount::mForm('form');
-    }
-
-    /**
-     * 表单数据处理
-     * @param array $vo
-     */
-    protected function _form_filter(array &$vo)
-    {
-        if ($this->request->isPost()) {
-            $rule = [];
-            foreach ($vo as $k => $v) if (stripos($k, '_level_') !== false) {
-                [, $level] = explode('_level_', $k);
-                $rule[] = ['level' => $level, 'discount' => $v];
-            }
-            $vo['items'] = json_encode($rule, JSON_UNESCAPED_UNICODE);
-        } else {
-            $this->levels = PluginWemallConfigLevel::items();
-            if (empty($this->levels)) $this->error('未配置会员等级！');
-            foreach ($vo['items'] ?? [] as $item) {
-                $vo["_level_{$item['level']}"] = $item['discount'];
-            }
-        }
     }
 
     /**
@@ -98,11 +80,36 @@ class Discount extends Controller
     }
 
     /**
-     * 删除折扣方案配置
+     * 删除折扣方案配置.
      * @auth true
      */
     public function remove()
     {
         PluginWemallConfigDiscount::mDelete();
+    }
+
+    /**
+     * 表单数据处理.
+     */
+    protected function _form_filter(array &$vo)
+    {
+        if ($this->request->isPost()) {
+            $rule = [];
+            foreach ($vo as $k => $v) {
+                if (stripos($k, '_level_') !== false) {
+                    [, $level] = explode('_level_', $k);
+                    $rule[] = ['level' => $level, 'discount' => $v];
+                }
+            }
+            $vo['items'] = json_encode($rule, JSON_UNESCAPED_UNICODE);
+        } else {
+            $this->levels = PluginWemallConfigLevel::items();
+            if (empty($this->levels)) {
+                $this->error('未配置会员等级！');
+            }
+            foreach ($vo['items'] ?? [] as $item) {
+                $vo["_level_{$item['level']}"] = $item['discount'];
+            }
+        }
     }
 }

@@ -1,32 +1,36 @@
 <?php
 
-// +----------------------------------------------------------------------
-// | Account Plugin for ThinkAdmin
-// +----------------------------------------------------------------------
-// | 版权所有 2014~2025 ThinkAdmin [ thinkadmin.top ]
-// +----------------------------------------------------------------------
-// | 官方网站: https://thinkadmin.top
-// +----------------------------------------------------------------------
-// | 免责声明 ( https://thinkadmin.top/disclaimer )
-// | 会员免费 ( https://thinkadmin.top/vip-introduce )
-// +----------------------------------------------------------------------
-// | gitee 代码仓库：https://gitee.com/zoujingli/think-plugs-account
-// | github 代码仓库：https://github.com/zoujingli/think-plugs-account
-// +----------------------------------------------------------------------
-
-declare (strict_types=1);
+declare(strict_types=1);
+/**
+ * +----------------------------------------------------------------------
+ * | Payment Plugin for ThinkAdmin
+ * +----------------------------------------------------------------------
+ * | 版权所有 2014~2026 ThinkAdmin [ thinkadmin.top ]
+ * +----------------------------------------------------------------------
+ * | 官方网站: https://thinkadmin.top
+ * +----------------------------------------------------------------------
+ * | 开源协议 ( https://mit-license.org )
+ * | 免责声明 ( https://thinkadmin.top/disclaimer )
+ * | 会员特权 ( https://thinkadmin.top/vip-introduce )
+ * +----------------------------------------------------------------------
+ * | gitee 代码仓库：https://gitee.com/zoujingli/ThinkAdmin
+ * | github 代码仓库：https://github.com/zoujingli/ThinkAdmin
+ * +----------------------------------------------------------------------
+ */
 
 namespace plugin\account\controller\api;
 
 use app\wechat\service\WechatService;
 use plugin\account\service\Account;
 use think\admin\Controller;
+use think\admin\Exception;
 use think\Response;
+use WeChat\Exceptions\InvalidResponseException;
+use WeChat\Exceptions\LocalCacheException;
 
 /**
- * 微信服务号入口
+ * 微信服务号入口.
  * @class Wechat
- * @package plugin\account\controller\api
  * @example 域名请修改为自己的地址，放到网页代码合适位置
  *
  * <meta name="referrer" content="always">
@@ -37,9 +41,8 @@ use think\Response;
  */
 class Wechat extends Controller
 {
-
     /**
-     * 通道认证类型
+     * 通道认证类型.
      * @var string
      */
     private const type = Account::WECHAT;
@@ -51,29 +54,16 @@ class Wechat extends Controller
     private $source;
 
     /**
-     * 微信调度器
+     * 微信调度器.
      * @var WechatService
      */
     private $wechat;
 
     /**
-     * 控制器初始化
-     */
-    protected function initialize()
-    {
-        if (Account::field(static::type)) {
-            $this->wechat = WechatService::instance();
-            $this->source = input('source') ?: $this->request->server('http_referer', $this->request->url(true));
-        } else {
-            $this->error('接口未开通');
-        }
-    }
-
-    /**
-     * 生成微信网页签名
-     * @throws \WeChat\Exceptions\InvalidResponseException
-     * @throws \WeChat\Exceptions\LocalCacheException
-     * @throws \think\admin\Exception
+     * 生成微信网页签名.
+     * @throws InvalidResponseException
+     * @throws LocalCacheException
+     * @throws Exception
      */
     public function jssdk()
     {
@@ -81,11 +71,10 @@ class Wechat extends Controller
     }
 
     /**
-     * 微信网页授权脚本
-     * @return \think\Response
-     * @throws \WeChat\Exceptions\InvalidResponseException
-     * @throws \WeChat\Exceptions\LocalCacheException
-     * @throws \think\admin\Exception
+     * 微信网页授权脚本.
+     * @throws InvalidResponseException
+     * @throws LocalCacheException
+     * @throws Exception
      * @remark 基于 sessionStorage 标识的登录机制
      */
     public function oauth(): Response
@@ -99,9 +88,15 @@ class Wechat extends Controller
             if (empty($fansinfo['is_snapshotuser'])) {
                 // 筛选保存数据
                 $data = ['appid' => WechatService::getAppid(), 'openid' => $result['openid'], 'extra' => $fansinfo];
-                if (isset($fansinfo['unionid'])) $data['unionid'] = $fansinfo['unionid'];
-                if (isset($fansinfo['nickname'])) $data['nickname'] = $fansinfo['nickname'];
-                if (isset($fansinfo['headimgurl'])) $data['headimg'] = $fansinfo['headimgurl'];
+                if (isset($fansinfo['unionid'])) {
+                    $data['unionid'] = $fansinfo['unionid'];
+                }
+                if (isset($fansinfo['nickname'])) {
+                    $data['nickname'] = $fansinfo['nickname'];
+                }
+                if (isset($fansinfo['headimgurl'])) {
+                    $data['headimg'] = $fansinfo['headimgurl'];
+                }
                 $result['userinfo'] = Account::mk(static::type)->set($data, true);
                 // 返回数据给前端
                 $script[] = "window.WeChatOpenid='{$result['openid']}'";
@@ -115,5 +110,18 @@ class Wechat extends Controller
         }
         $script[] = '';
         return Response::create(join(";\n", $script))->contentType('application/javascript');
+    }
+
+    /**
+     * 控制器初始化.
+     */
+    protected function initialize()
+    {
+        if (Account::field(static::type)) {
+            $this->wechat = WechatService::instance();
+            $this->source = input('source') ?: $this->request->server('http_referer', $this->request->url(true));
+        } else {
+            $this->error('接口未开通');
+        }
     }
 }

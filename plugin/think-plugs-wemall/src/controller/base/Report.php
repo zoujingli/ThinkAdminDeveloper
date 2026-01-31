@@ -1,20 +1,22 @@
 <?php
 
-// +----------------------------------------------------------------------
-// | WeMall Plugin for ThinkAdmin
-// +----------------------------------------------------------------------
-// | 版权所有 2014~2025 ThinkAdmin [ thinkadmin.top ]
-// +----------------------------------------------------------------------
-// | 官方网站: https://thinkadmin.top
-// +----------------------------------------------------------------------
-// | 免责声明 ( https://thinkadmin.top/disclaimer )
-// | 会员免费 ( https://thinkadmin.top/vip-introduce )
-// +----------------------------------------------------------------------
-// | gitee 代码仓库：https://gitee.com/zoujingli/think-plugs-wemall
-// | github 代码仓库：https://github.com/zoujingli/think-plugs-wemall
-// +----------------------------------------------------------------------
-
-declare (strict_types=1);
+declare(strict_types=1);
+/**
+ * +----------------------------------------------------------------------
+ * | Payment Plugin for ThinkAdmin
+ * +----------------------------------------------------------------------
+ * | 版权所有 2014~2026 ThinkAdmin [ thinkadmin.top ]
+ * +----------------------------------------------------------------------
+ * | 官方网站: https://thinkadmin.top
+ * +----------------------------------------------------------------------
+ * | 开源协议 ( https://mit-license.org )
+ * | 免责声明 ( https://thinkadmin.top/disclaimer )
+ * | 会员特权 ( https://thinkadmin.top/vip-introduce )
+ * +----------------------------------------------------------------------
+ * | gitee 代码仓库：https://gitee.com/zoujingli/ThinkAdmin
+ * | github 代码仓库：https://github.com/zoujingli/ThinkAdmin
+ * +----------------------------------------------------------------------
+ */
 
 namespace plugin\wemall\controller\base;
 
@@ -25,12 +27,12 @@ use plugin\wemall\model\PluginWemallOrder;
 use plugin\wemall\model\PluginWemallUserRebate;
 use plugin\wemall\model\PluginWemallUserRelation;
 use think\admin\Controller;
+use think\db\exception\DbException;
 use think\Model;
 
 /**
  * 商城数据统计
  * @class Report
- * @package plugin\wemall\controller\base
  */
 class Report extends Controller
 {
@@ -38,7 +40,7 @@ class Report extends Controller
      * 显示数据统计
      * @auth true
      * @menu true
-     * @throws \think\db\exception\DbException
+     * @throws DbException
      */
     public function index()
     {
@@ -63,12 +65,20 @@ class Report extends Controller
             $model = PluginPaymentBalance::mk()->field($field + ['sum(case when amount>0 then amount else 0 end)' => 'amount1', 'sum(case when amount<0 then amount else 0 end)' => 'amount2']);
             $balances = $model->whereTime('create_time', '-10 days')->where(['deleted' => 0])->group('mday')->select()->column(null, 'mday');
             // 数据格式转换
-            foreach ($users as &$user) $user = $user instanceof Model ? $user->toArray() : $user;
-            foreach ($orders as &$order) $order = $order instanceof Model ? $order->toArray() : $order;
-            foreach ($rebates as &$rebate) $rebate = $rebate instanceof Model ? $rebate->toArray() : $rebate;
-            foreach ($balances as &$balance) $balance = $balance instanceof Model ? $balance->toArray() : $balance;
+            foreach ($users as &$user) {
+                $user = $user instanceof Model ? $user->toArray() : $user;
+            }
+            foreach ($orders as &$order) {
+                $order = $order instanceof Model ? $order->toArray() : $order;
+            }
+            foreach ($rebates as &$rebate) {
+                $rebate = $rebate instanceof Model ? $rebate->toArray() : $rebate;
+            }
+            foreach ($balances as &$balance) {
+                $balance = $balance instanceof Model ? $balance->toArray() : $balance;
+            }
             // 组装15天的统计数据
-            for ($i = 15; $i >= 0; $i--) {
+            for ($i = 15; $i >= 0; --$i) {
                 $date = date('Y-m-d', strtotime("-{$i}days"));
                 $this->days[] = [
                     '当天日期' => date('m-d', strtotime("-{$i}days")),

@@ -1,20 +1,22 @@
 <?php
 
-// +----------------------------------------------------------------------
-// | WeMall Plugin for ThinkAdmin
-// +----------------------------------------------------------------------
-// | 版权所有 2014~2025 ThinkAdmin [ thinkadmin.top ]
-// +----------------------------------------------------------------------
-// | 官方网站: https://thinkadmin.top
-// +----------------------------------------------------------------------
-// | 免责声明 ( https://thinkadmin.top/disclaimer )
-// | 会员免费 ( https://thinkadmin.top/vip-introduce )
-// +----------------------------------------------------------------------
-// | gitee 代码仓库：https://gitee.com/zoujingli/think-plugs-wemall
-// | github 代码仓库：https://github.com/zoujingli/think-plugs-wemall
-// +----------------------------------------------------------------------
-
-declare (strict_types=1);
+declare(strict_types=1);
+/**
+ * +----------------------------------------------------------------------
+ * | Payment Plugin for ThinkAdmin
+ * +----------------------------------------------------------------------
+ * | 版权所有 2014~2026 ThinkAdmin [ thinkadmin.top ]
+ * +----------------------------------------------------------------------
+ * | 官方网站: https://thinkadmin.top
+ * +----------------------------------------------------------------------
+ * | 开源协议 ( https://mit-license.org )
+ * | 免责声明 ( https://thinkadmin.top/disclaimer )
+ * | 会员特权 ( https://thinkadmin.top/vip-introduce )
+ * +----------------------------------------------------------------------
+ * | gitee 代码仓库：https://gitee.com/zoujingli/ThinkAdmin
+ * | github 代码仓库：https://github.com/zoujingli/ThinkAdmin
+ * +----------------------------------------------------------------------
+ */
 
 namespace plugin\wemall\service;
 
@@ -24,22 +26,22 @@ use plugin\wemall\model\PluginWemallOrderItem;
 use plugin\wemall\model\PluginWemallUserActionCollect;
 use plugin\wemall\model\PluginWemallUserActionComment;
 use plugin\wemall\model\PluginWemallUserActionHistory;
+use think\admin\Exception;
 use think\admin\Storage;
+use think\db\exception\DbException;
 
 /**
  * 用户行为数据服务
  * @class UserAction
- * @package plugin\wemall\service
  */
 abstract class UserAction
 {
     /**
-     * 设置行为数据
-     * @param integer $unid 用户编号
+     * 设置行为数据.
+     * @param int $unid 用户编号
      * @param string $gcode 商品编号
      * @param string $type 行为类型
-     * @return array
-     * @throws \think\db\exception\DbException
+     * @throws DbException
      */
     public static function set(int $unid, string $gcode, string $type): array
     {
@@ -56,12 +58,11 @@ abstract class UserAction
     }
 
     /**
-     * 删除行为数据
-     * @param integer $unid 用户编号
+     * 删除行为数据.
+     * @param int $unid 用户编号
      * @param string $gcode 商品编号
      * @param string $type 行为类型
-     * @return array
-     * @throws \think\db\exception\DbException
+     * @throws DbException
      */
     public static function del(int $unid, string $gcode, string $type): array
     {
@@ -76,11 +77,10 @@ abstract class UserAction
     }
 
     /**
-     * 清空行为数据
-     * @param integer $unid 用户编号
+     * 清空行为数据.
+     * @param int $unid 用户编号
      * @param string $type 行为类型
-     * @return array
-     * @throws \think\db\exception\DbException
+     * @throws DbException
      */
     public static function clear(int $unid, string $type): array
     {
@@ -96,15 +96,17 @@ abstract class UserAction
 
     /**
      * 刷新用户行为统计
-     * @param integer $unid 用户编号
-     * @param array|null $data 非数组时更新数据
+     * @param int $unid 用户编号
+     * @param null|array $data 非数组时更新数据
      * @return array [collect, history, mycarts]
-     * @throws \think\db\exception\DbException
+     * @throws DbException
      */
     public static function recount(int $unid, ?array &$data = null): array
     {
         $isUpdate = !is_array($data);
-        if ($isUpdate) $data = [];
+        if ($isUpdate) {
+            $data = [];
+        }
         // 更新收藏及足迹数量和购物车
         $map = ['unid' => $unid];
         $data['mycarts_total'] = PluginWemallOrderCart::mk()->where($map)->sum('number');
@@ -117,13 +119,9 @@ abstract class UserAction
     }
 
     /**
-     * 写入商品评论
-     * @param PluginWemallOrderItem $item
-     * @param string|float $rate
-     * @param string $content
-     * @param string $images
-     * @return bool
-     * @throws \think\admin\Exception
+     * 写入商品评论.
+     * @param float|string $rate
+     * @throws Exception
      */
     public static function comment(PluginWemallOrderItem $item, $rate, string $content, string $images): bool
     {
@@ -138,14 +136,14 @@ abstract class UserAction
         // 根据单号+商品规格查询评论
         $code = md5("{$item->getAttr('order_no')}#{$item->getAttr('ghash')}");
         return PluginWemallUserActionComment::mk()->where(['code' => $code])->findOrEmpty()->save([
-            'code'     => $code,
-            'unid'     => $item->getAttr('unid'),
-            'gcode'    => $item->getAttr('gcode'),
-            'ghash'    => $item->getAttr('ghash'),
+            'code' => $code,
+            'unid' => $item->getAttr('unid'),
+            'gcode' => $item->getAttr('gcode'),
+            'ghash' => $item->getAttr('ghash'),
             'order_no' => $item->getAttr('order_no'),
-            'rate'     => $rate,
-            'images'   => $images,
-            'content'  => $content,
+            'rate' => $rate,
+            'images' => $images,
+            'content' => $content,
         ]);
     }
 }

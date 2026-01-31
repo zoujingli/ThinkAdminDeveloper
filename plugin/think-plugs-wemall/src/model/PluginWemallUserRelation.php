@@ -1,20 +1,22 @@
 <?php
 
-// +----------------------------------------------------------------------
-// | WeMall Plugin for ThinkAdmin
-// +----------------------------------------------------------------------
-// | 版权所有 2014~2025 ThinkAdmin [ thinkadmin.top ]
-// +----------------------------------------------------------------------
-// | 官方网站: https://thinkadmin.top
-// +----------------------------------------------------------------------
-// | 免责声明 ( https://thinkadmin.top/disclaimer )
-// | 会员免费 ( https://thinkadmin.top/vip-introduce )
-// +----------------------------------------------------------------------
-// | gitee 代码仓库：https://gitee.com/zoujingli/think-plugs-wemall
-// | github 代码仓库：https://github.com/zoujingli/think-plugs-wemall
-// +----------------------------------------------------------------------
-
-declare (strict_types=1);
+declare(strict_types=1);
+/**
+ * +----------------------------------------------------------------------
+ * | Payment Plugin for ThinkAdmin
+ * +----------------------------------------------------------------------
+ * | 版权所有 2014~2026 ThinkAdmin [ thinkadmin.top ]
+ * +----------------------------------------------------------------------
+ * | 官方网站: https://thinkadmin.top
+ * +----------------------------------------------------------------------
+ * | 开源协议 ( https://mit-license.org )
+ * | 免责声明 ( https://thinkadmin.top/disclaimer )
+ * | 会员特权 ( https://thinkadmin.top/vip-introduce )
+ * +----------------------------------------------------------------------
+ * | gitee 代码仓库：https://gitee.com/zoujingli/ThinkAdmin
+ * | github 代码仓库：https://github.com/zoujingli/ThinkAdmin
+ * +----------------------------------------------------------------------
+ */
 
 namespace plugin\wemall\model;
 
@@ -23,10 +25,13 @@ use plugin\wemall\service\UserAgent;
 use plugin\wemall\service\UserOrder;
 use plugin\wemall\service\UserUpgrade;
 use think\admin\Exception;
+use think\db\exception\DataNotFoundException;
+use think\db\exception\DbException;
+use think\db\exception\ModelNotFoundException;
 use think\model\relation\HasOne;
 
 /**
- * 用户关系数据
+ * 用户关系数据.
  *
  * @property int $agent_level_code 代理等级
  * @property int $agent_state 绑定状态
@@ -48,19 +53,16 @@ use think\model\relation\HasOne;
  * @property string $level_name 会员名称
  * @property string $path 关系路径
  * @property string $update_time 更新时间
- * @property-read \plugin\account\model\PluginAccountUser $user1
- * @property-read \plugin\account\model\PluginAccountUser $user2
- * @property-read \plugin\wemall\model\PluginWemallUserRelation $agent1
- * @property-read \plugin\wemall\model\PluginWemallUserRelation $agent2
+ * @property PluginAccountUser $user1
+ * @property PluginAccountUser $user2
+ * @property PluginWemallUserRelation $agent1
+ * @property PluginWemallUserRelation $agent2
  * @class PluginWemallUserRelation
- * @package plugin\wemall\model
  */
 class PluginWemallUserRelation extends AbsUser
 {
-
     /**
-     * 关联上1级用户
-     * @return \think\model\relation\HasOne
+     * 关联上1级用户.
      */
     public function user1(): HasOne
     {
@@ -68,8 +70,7 @@ class PluginWemallUserRelation extends AbsUser
     }
 
     /**
-     * 关联上2级用户
-     * @return \think\model\relation\HasOne
+     * 关联上2级用户.
      */
     public function user2(): HasOne
     {
@@ -77,8 +78,7 @@ class PluginWemallUserRelation extends AbsUser
     }
 
     /**
-     * 关联上1级关系
-     * @return \think\model\relation\HasOne
+     * 关联上1级关系.
      */
     public function agent1(): HasOne
     {
@@ -86,8 +86,7 @@ class PluginWemallUserRelation extends AbsUser
     }
 
     /**
-     * 关联上2级关系
-     * @return \think\model\relation\HasOne
+     * 关联上2级关系.
      */
     public function agent2(): HasOne
     {
@@ -95,19 +94,23 @@ class PluginWemallUserRelation extends AbsUser
     }
 
     /**
-     * 更新用户推荐关系
-     * @param integer $unid 用户编号
+     * 更新用户推荐关系.
+     * @param int $unid 用户编号
      * @return $this
-     * @throws \think\admin\Exception
-     * @throws \think\db\exception\DataNotFoundException
-     * @throws \think\db\exception\DbException
-     * @throws \think\db\exception\ModelNotFoundException
+     * @throws Exception
+     * @throws DataNotFoundException
+     * @throws DbException
+     * @throws ModelNotFoundException
      */
     public static function withInit(int $unid): PluginWemallUserRelation
     {
         $user = PluginAccountUser::mk()->findOrEmpty($unid);
-        if ($user->isEmpty()) throw new Exception("无效的用户！");
-        if ($user->getAttr('deleted') > 0) throw new Exception('账号已删除！');
+        if ($user->isEmpty()) {
+            throw new Exception('无效的用户！');
+        }
+        if ($user->getAttr('deleted') > 0) {
+            throw new Exception('账号已删除！');
+        }
         $rela = static::mk()->lock(true)->where(['unid' => $unid])->findOrEmpty();
         if ($rela->isEmpty() || empty($rela->getAttr('path')) || empty($rela->getAttr('level_name'))) {
             $data = ['id' => $unid, 'unid' => $unid, 'path' => ',', 'level_name' => '普通会员', 'agent_level_name' => '普通用户'];
@@ -122,22 +125,22 @@ class PluginWemallUserRelation extends AbsUser
     }
 
     /**
-     * 转换用户关联模型
+     * 转换用户关联模型.
      * @param int|PluginWemallUserRelation $unid
      * @return array [Relation, UNID]
-     * @throws \think\admin\Exception
-     * @throws \think\db\exception\DataNotFoundException
-     * @throws \think\db\exception\DbException
-     * @throws \think\db\exception\ModelNotFoundException
+     * @throws Exception
+     * @throws DataNotFoundException
+     * @throws DbException
+     * @throws ModelNotFoundException
      */
     public static function withRelation($unid): array
     {
         if (is_numeric($unid)) {
             return [self::withInit(intval($unid)), intval($unid)];
-        } elseif ($unid instanceof self) {
-            return [$unid, intval($unid->getAttr('unid'))];
-        } else {
-            throw new Exception('无效的参数数据！');
         }
+        if ($unid instanceof self) {
+            return [$unid, intval($unid->getAttr('unid'))];
+        }
+        throw new Exception('无效的参数数据！');
     }
 }

@@ -1,20 +1,22 @@
 <?php
 
-// +----------------------------------------------------------------------
-// | WeMall Plugin for ThinkAdmin
-// +----------------------------------------------------------------------
-// | 版权所有 2014~2025 ThinkAdmin [ thinkadmin.top ]
-// +----------------------------------------------------------------------
-// | 官方网站: https://thinkadmin.top
-// +----------------------------------------------------------------------
-// | 免责声明 ( https://thinkadmin.top/disclaimer )
-// | 会员免费 ( https://thinkadmin.top/vip-introduce )
-// +----------------------------------------------------------------------
-// | gitee 代码仓库：https://gitee.com/zoujingli/think-plugs-wemall
-// | github 代码仓库：https://github.com/zoujingli/think-plugs-wemall
-// +----------------------------------------------------------------------
-
-declare (strict_types=1);
+declare(strict_types=1);
+/**
+ * +----------------------------------------------------------------------
+ * | Payment Plugin for ThinkAdmin
+ * +----------------------------------------------------------------------
+ * | 版权所有 2014~2026 ThinkAdmin [ thinkadmin.top ]
+ * +----------------------------------------------------------------------
+ * | 官方网站: https://thinkadmin.top
+ * +----------------------------------------------------------------------
+ * | 开源协议 ( https://mit-license.org )
+ * | 免责声明 ( https://thinkadmin.top/disclaimer )
+ * | 会员特权 ( https://thinkadmin.top/vip-introduce )
+ * +----------------------------------------------------------------------
+ * | gitee 代码仓库：https://gitee.com/zoujingli/ThinkAdmin
+ * | github 代码仓库：https://github.com/zoujingli/ThinkAdmin
+ * +----------------------------------------------------------------------
+ */
 
 namespace plugin\wemall\controller\base;
 
@@ -25,22 +27,24 @@ use plugin\wemall\service\PosterService;
 use think\admin\Controller;
 use think\admin\extend\CodeExtend;
 use think\admin\helper\QueryHelper;
+use think\db\exception\DataNotFoundException;
+use think\db\exception\DbException;
+use think\db\exception\ModelNotFoundException;
 use think\exception\HttpResponseException;
 
 /**
- * 推广海报管理
+ * 推广海报管理.
  * @class Poster
- * @package plugin\wemall\controller\base
  */
 class Poster extends Controller
 {
     /**
-     * 推广海报管理
+     * 推广海报管理.
      * @auth true
      * @menu true
-     * @throws \think\db\exception\DataNotFoundException
-     * @throws \think\db\exception\DbException
-     * @throws \think\db\exception\ModelNotFoundException
+     * @throws DataNotFoundException
+     * @throws DbException
+     * @throws ModelNotFoundException
      */
     public function index()
     {
@@ -54,7 +58,7 @@ class Poster extends Controller
     }
 
     /**
-     * 添加推广海报
+     * 添加推广海报.
      * @auth true
      */
     public function add()
@@ -64,7 +68,7 @@ class Poster extends Controller
     }
 
     /**
-     * 编辑推广海报
+     * 编辑推广海报.
      * @auth true
      */
     public function edit()
@@ -74,43 +78,8 @@ class Poster extends Controller
     }
 
     /**
-     * 表单数据处理
-     * @param array $data
-     * @return void
-     */
-    protected function _form_filter(array &$data)
-    {
-        if (empty($data['code'])) {
-            $data['code'] = CodeExtend::uniqidNumber(16, 'T');
-        }
-        if ($this->request->isGet()) {
-            $this->levels = PluginWemallConfigLevel::items();
-            array_unshift($this->levels, ['name' => '全部', 'number' => '-']);
-            $this->devices = array_merge(['-' => ['name' => '全部']], Account::types(1));
-        } else {
-            $data['levels'] = arr2str($data['levels'] ?? []);
-            $data['devices'] = arr2str($data['devices'] ?? []);
-        }
-    }
-
-    /**
-     * 表单结果处理
-     * @param bool $result
-     * @return void
-     */
-    protected function _form_result(bool $result)
-    {
-        if ($result) {
-            $this->success('海报保存成功！', 'javascript:history.back()');
-        } else {
-            $this->error('海报保存失败！');
-        }
-    }
-
-    /**
-     * 预览授权书生成
+     * 预览授权书生成.
      * @auth true
-     * @return void
      */
     public function show()
     {
@@ -136,17 +105,47 @@ class Poster extends Controller
     public function state()
     {
         PluginWemallConfigPoster::mSave($this->_vali([
-            'status.in:0,1'  => '状态值范围异常！',
+            'status.in:0,1' => '状态值范围异常！',
             'status.require' => '状态值不能为空！',
         ]));
     }
 
     /**
-     * 删除推广海报
+     * 删除推广海报.
      * @auth true
      */
     public function remove()
     {
         PluginWemallConfigPoster::mDelete();
+    }
+
+    /**
+     * 表单数据处理.
+     */
+    protected function _form_filter(array &$data)
+    {
+        if (empty($data['code'])) {
+            $data['code'] = CodeExtend::uniqidNumber(16, 'T');
+        }
+        if ($this->request->isGet()) {
+            $this->levels = PluginWemallConfigLevel::items();
+            array_unshift($this->levels, ['name' => '全部', 'number' => '-']);
+            $this->devices = array_merge(['-' => ['name' => '全部']], Account::types(1));
+        } else {
+            $data['levels'] = arr2str($data['levels'] ?? []);
+            $data['devices'] = arr2str($data['devices'] ?? []);
+        }
+    }
+
+    /**
+     * 表单结果处理.
+     */
+    protected function _form_result(bool $result)
+    {
+        if ($result) {
+            $this->success('海报保存成功！', 'javascript:history.back()');
+        } else {
+            $this->error('海报保存失败！');
+        }
     }
 }

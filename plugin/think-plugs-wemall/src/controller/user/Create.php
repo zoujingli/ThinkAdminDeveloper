@@ -1,20 +1,22 @@
 <?php
 
-// +----------------------------------------------------------------------
-// | WeMall Plugin for ThinkAdmin
-// +----------------------------------------------------------------------
-// | 版权所有 2014~2025 ThinkAdmin [ thinkadmin.top ]
-// +----------------------------------------------------------------------
-// | 官方网站: https://thinkadmin.top
-// +----------------------------------------------------------------------
-// | 免责声明 ( https://thinkadmin.top/disclaimer )
-// | 会员免费 ( https://thinkadmin.top/vip-introduce )
-// +----------------------------------------------------------------------
-// | gitee 代码仓库：https://gitee.com/zoujingli/think-plugs-wemall
-// | github 代码仓库：https://github.com/zoujingli/think-plugs-wemall
-// +----------------------------------------------------------------------
-
-declare (strict_types=1);
+declare(strict_types=1);
+/**
+ * +----------------------------------------------------------------------
+ * | Payment Plugin for ThinkAdmin
+ * +----------------------------------------------------------------------
+ * | 版权所有 2014~2026 ThinkAdmin [ thinkadmin.top ]
+ * +----------------------------------------------------------------------
+ * | 官方网站: https://thinkadmin.top
+ * +----------------------------------------------------------------------
+ * | 开源协议 ( https://mit-license.org )
+ * | 免责声明 ( https://thinkadmin.top/disclaimer )
+ * | 会员特权 ( https://thinkadmin.top/vip-introduce )
+ * +----------------------------------------------------------------------
+ * | gitee 代码仓库：https://gitee.com/zoujingli/ThinkAdmin
+ * | github 代码仓库：https://github.com/zoujingli/ThinkAdmin
+ * +----------------------------------------------------------------------
+ */
 
 namespace plugin\wemall\controller\user;
 
@@ -25,23 +27,23 @@ use plugin\wemall\model\PluginWemallUserRelation;
 use plugin\wemall\service\UserCreate;
 use think\admin\Controller;
 use think\admin\helper\QueryHelper;
-use think\admin\model\SystemUser;
+use think\db\exception\DataNotFoundException;
+use think\db\exception\DbException;
+use think\db\exception\ModelNotFoundException;
 
 /**
- * 创建会员用户
+ * 创建会员用户.
  * @class Create
- * @package plugin\wemall\controller\user
  */
 class Create extends Controller
 {
     /**
-     * 会员用户管理
-     * @return void
+     * 会员用户管理.
      * @auth true
      * @menu true
-     * @throws \think\db\exception\DataNotFoundException
-     * @throws \think\db\exception\DbException
-     * @throws \think\db\exception\ModelNotFoundException
+     * @throws DataNotFoundException
+     * @throws DbException
+     * @throws ModelNotFoundException
      */
     public function index()
     {
@@ -49,7 +51,6 @@ class Create extends Controller
         PluginWemallUserCreate::mQuery()->layTable(function () {
             $this->title = '会员用户管理';
         }, function (QueryHelper $query) {
-
             $query->equal('agent_entry')->dateBetween('create_time');
             $query->with(['agent', 'user'])->like('name|phone#user')->dateBetween('create_time');
             $query->where(['status' => intval($this->type === 'index'), 'deleted' => 0]);
@@ -57,9 +58,8 @@ class Create extends Controller
     }
 
     /**
-     * 创建会员用户
+     * 创建会员用户.
      * @auth true
-     * @return void
      */
     public function add()
     {
@@ -67,9 +67,8 @@ class Create extends Controller
     }
 
     /**
-     * 编辑会员用户
+     * 编辑会员用户.
      * @auth true
-     * @return void
      */
     public function edit()
     {
@@ -77,9 +76,37 @@ class Create extends Controller
     }
 
     /**
-     * 表单数据处理
-     * @param array $data
-     * @return void
+     * 修改用户状态
+     * @auth true
+     */
+    public function state()
+    {
+        PluginWemallUserCreate::mSave();
+    }
+
+    /**
+     * 数据保存处理.
+     * @throws \think\admin\Exception
+     */
+    public function _save_result(bool $result)
+    {
+        if ($result) {
+            $cuid = intval(input('id'));
+            empty(input('status')) ? UserCreate::cancel($cuid) : UserCreate::create($cuid);
+        }
+    }
+
+    /**
+     * 移除会员用户.
+     * @auth true
+     */
+    public function remove()
+    {
+        PluginWemallUserCreate::mDelete();
+    }
+
+    /**
+     * 表单数据处理.
      * @throws \think\admin\Exception
      */
     protected function _form_filter(array &$data)
@@ -100,64 +127,35 @@ class Create extends Controller
             if (!empty($data['agent_phone'])) {
                 $map = ['phone' => $data['agent_phone'], 'deleted' => 0];
                 $user = PluginAccountUser::mk()->where($map)->findOrEmpty();
-                if ($user->isEmpty()) $this->error('无效推荐人');
+                if ($user->isEmpty()) {
+                    $this->error('无效推荐人');
+                }
                 $relation = PluginWemallUserRelation::mk()->where(['unid' => $user->getAttr('id')])->findOrEmpty();
-                if ($relation->isEmpty()) $this->error('无效推荐人');
-                if (empty($relation->getAttr('entry_agent'))) $this->error('上级无代理权限！');
+                if ($relation->isEmpty()) {
+                    $this->error('无效推荐人');
+                }
+                if (empty($relation->getAttr('entry_agent'))) {
+                    $this->error('上级无代理权限！');
+                }
             }
         }
     }
 
     /**
-     * 表单结果处理
-     * @param boolean $result
-     * @param array $data
-     * @return void
+     * 表单结果处理.
      */
     protected function _form_result(bool $result, array $data)
     {
-        if ($result) try {
-            UserCreate::create(intval($data['id']));
-        } catch (\Exception $exception) {
-            if ($exception->getCode()) {
-                $this->success($exception->getMessage());
-            } else {
-                $this->error($exception->getMessage());
+        if ($result) {
+            try {
+                UserCreate::create(intval($data['id']));
+            } catch (\Exception $exception) {
+                if ($exception->getCode()) {
+                    $this->success($exception->getMessage());
+                } else {
+                    $this->error($exception->getMessage());
+                }
             }
         }
-    }
-
-    /**
-     * 修改用户状态
-     * @auth true
-     * @return void
-     */
-    public function state()
-    {
-        PluginWemallUserCreate::mSave();
-    }
-
-    /**
-     * 数据保存处理
-     * @param boolean $result
-     * @return void
-     * @throws \think\admin\Exception
-     */
-    public function _save_result(bool $result)
-    {
-        if ($result) {
-            $cuid = intval(input('id'));
-            empty(input('status')) ? UserCreate::cancel($cuid) : UserCreate::create($cuid);
-        }
-    }
-
-    /**
-     * 移除会员用户
-     * @auth true
-     * @return void
-     */
-    public function remove()
-    {
-        PluginWemallUserCreate::mDelete();
     }
 }

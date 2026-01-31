@@ -1,27 +1,29 @@
 <?php
 
-// +----------------------------------------------------------------------
-// | WeMall Plugin for ThinkAdmin
-// +----------------------------------------------------------------------
-// | 版权所有 2014~2025 ThinkAdmin [ thinkadmin.top ]
-// +----------------------------------------------------------------------
-// | 官方网站: https://thinkadmin.top
-// +----------------------------------------------------------------------
-// | 免责声明 ( https://thinkadmin.top/disclaimer )
-// | 会员免费 ( https://thinkadmin.top/vip-introduce )
-// +----------------------------------------------------------------------
-// | gitee 代码仓库：https://gitee.com/zoujingli/think-plugs-wemall
-// | github 代码仓库：https://github.com/zoujingli/think-plugs-wemall
-// +----------------------------------------------------------------------
-
-declare (strict_types=1);
+declare(strict_types=1);
+/**
+ * +----------------------------------------------------------------------
+ * | Payment Plugin for ThinkAdmin
+ * +----------------------------------------------------------------------
+ * | 版权所有 2014~2026 ThinkAdmin [ thinkadmin.top ]
+ * +----------------------------------------------------------------------
+ * | 官方网站: https://thinkadmin.top
+ * +----------------------------------------------------------------------
+ * | 开源协议 ( https://mit-license.org )
+ * | 免责声明 ( https://thinkadmin.top/disclaimer )
+ * | 会员特权 ( https://thinkadmin.top/vip-introduce )
+ * +----------------------------------------------------------------------
+ * | gitee 代码仓库：https://gitee.com/zoujingli/ThinkAdmin
+ * | github 代码仓库：https://github.com/zoujingli/ThinkAdmin
+ * +----------------------------------------------------------------------
+ */
 
 namespace plugin\wemall\model;
 
 use think\model\relation\HasOne;
 
 /**
- * 用户卡券数据
+ * 用户卡券数据.
  *
  * @property int $coid 配置编号
  * @property int $deleted 删除状态(0未删除,1已删除)
@@ -39,17 +41,14 @@ use think\model\relation\HasOne;
  * @property string $status_time 修改时间
  * @property string $update_time 更新时间
  * @property string $used_time 使用时间
- * @property-read \plugin\wemall\model\PluginWemallConfigCoupon $bind_coupon
- * @property-read \plugin\wemall\model\PluginWemallConfigCoupon $coupon
+ * @property PluginWemallConfigCoupon $bind_coupon
+ * @property PluginWemallConfigCoupon $coupon
  * @class PluginWemallUserCoupon
- * @package plugin\wemall\model
  */
 class PluginWemallUserCoupon extends AbsUser
 {
-
     /**
-     * 关联卡券
-     * @return \think\model\relation\HasOne
+     * 关联卡券.
      */
     public function coupon(): HasOne
     {
@@ -57,26 +56,24 @@ class PluginWemallUserCoupon extends AbsUser
     }
 
     /**
-     * 绑定卡券
-     * @return HasOne
+     * 绑定卡券.
      */
     public function bindCoupon(): HasOne
     {
         return $this->coupon()->bind([
-            'coupon_name'    => 'name',
-            'coupon_amount'  => 'amount',
-            'coupon_status'  => 'status',
+            'coupon_name' => 'name',
+            'coupon_amount' => 'amount',
+            'coupon_status' => 'status',
             'coupon_deleted' => 'deleted',
-            'limit_times'    => 'limit_times',
-            'limit_amount'   => 'limit_amount',
-            'limit_levels'   => 'limit_levels',
-            'expire_days'    => 'expire_days',
+            'limit_times' => 'limit_times',
+            'limit_amount' => 'limit_amount',
+            'limit_levels' => 'limit_levels',
+            'expire_days' => 'expire_days',
         ]);
     }
 
     /**
-     * 数据转换格式
-     * @return array
+     * 数据转换格式.
      */
     public function toArray(): array
     {

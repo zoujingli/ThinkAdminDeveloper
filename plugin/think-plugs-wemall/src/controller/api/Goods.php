@@ -1,20 +1,22 @@
 <?php
 
-// +----------------------------------------------------------------------
-// | WeMall Plugin for ThinkAdmin
-// +----------------------------------------------------------------------
-// | 版权所有 2014~2025 ThinkAdmin [ thinkadmin.top ]
-// +----------------------------------------------------------------------
-// | 官方网站: https://thinkadmin.top
-// +----------------------------------------------------------------------
-// | 免责声明 ( https://thinkadmin.top/disclaimer )
-// | 会员免费 ( https://thinkadmin.top/vip-introduce )
-// +----------------------------------------------------------------------
-// | gitee 代码仓库：https://gitee.com/zoujingli/think-plugs-wemall
-// | github 代码仓库：https://github.com/zoujingli/think-plugs-wemall
-// +----------------------------------------------------------------------
-
-declare (strict_types=1);
+declare(strict_types=1);
+/**
+ * +----------------------------------------------------------------------
+ * | Payment Plugin for ThinkAdmin
+ * +----------------------------------------------------------------------
+ * | 版权所有 2014~2026 ThinkAdmin [ thinkadmin.top ]
+ * +----------------------------------------------------------------------
+ * | 官方网站: https://thinkadmin.top
+ * +----------------------------------------------------------------------
+ * | 开源协议 ( https://mit-license.org )
+ * | 免责声明 ( https://thinkadmin.top/disclaimer )
+ * | 会员特权 ( https://thinkadmin.top/vip-introduce )
+ * +----------------------------------------------------------------------
+ * | gitee 代码仓库：https://gitee.com/zoujingli/ThinkAdmin
+ * | github 代码仓库：https://github.com/zoujingli/ThinkAdmin
+ * +----------------------------------------------------------------------
+ */
 
 namespace plugin\wemall\controller\api;
 
@@ -27,20 +29,21 @@ use plugin\wemall\model\PluginWemallUserActionSearch;
 use plugin\wemall\model\PluginWemallUserCoupon;
 use plugin\wemall\service\ExpressService;
 use think\admin\Controller;
+use think\admin\Exception;
 use think\admin\helper\QueryHelper;
+use think\db\exception\DataNotFoundException;
+use think\db\exception\DbException;
+use think\db\exception\ModelNotFoundException;
 use think\db\Query;
 
 /**
- * 获取商品数据接口
+ * 获取商品数据接口.
  * @class Goods
- * @package plugin\wemall\controller\api
  */
 class Goods extends Controller
 {
-
     /**
-     * 获取商品列表或详情
-     * @return void
+     * 获取商品列表或详情.
      */
     public function get()
     {
@@ -51,11 +54,15 @@ class Goods extends Controller
             if ($couponCode = input('coupon')) {
                 $where = ['code' => $couponCode, 'deleted' => 0];
                 $userCoupon = PluginWemallUserCoupon::mk()->where($where)->findOrEmpty();
-                if ($userCoupon->isEmpty()) $this->error('无效优惠券！');
+                if ($userCoupon->isEmpty()) {
+                    $this->error('无效优惠券！');
+                }
                 // 追加卡券信息到商品信息
                 $map = ['status' => 1, 'deleted' => 0];
                 $this->coupon = $userCoupon->coupon()->where($map)->field('type,name,extra,amount,limit_amount,limit_times')->findOrEmpty()->toArray();
-                if (empty($this->coupon)) $this->error('优惠券已停用！');
+                if (empty($this->coupon)) {
+                    $this->error('优惠券已停用！');
+                }
                 if ($this->coupon['type'] == 1) {
                     $gcodes = array_column($this->coupon['extra'], 'code');
                     count($gcodes) > 0 ? $query->whereIn('code', $gcodes) : $query->whereRaw('1<>0');
@@ -110,23 +117,10 @@ class Goods extends Controller
     }
 
     /**
-     * 数据结果处理
-     * @param array $data
-     * @param array $result
-     * @return void
-     */
-    protected function _get_page_filter(array &$data, array &$result)
-    {
-        $result['cnames'] = $this->cnames ?? null;
-        $result['coupon'] = $this->coupon ?? null;
-    }
-
-    /**
-     * 获取商品分类及标签
-     * @return void
-     * @throws \think\db\exception\DataNotFoundException
-     * @throws \think\db\exception\DbException
-     * @throws \think\db\exception\ModelNotFoundException
+     * 获取商品分类及标签.
+     * @throws DataNotFoundException
+     * @throws DbException
+     * @throws ModelNotFoundException
      */
     public function cate()
     {
@@ -137,8 +131,7 @@ class Goods extends Controller
     }
 
     /**
-     * 获取商品评论
-     * @return void
+     * 获取商品评论.
      */
     public function comments()
     {
@@ -149,21 +142,8 @@ class Goods extends Controller
     }
 
     /**
-     * 商品评论处理
-     * @param array $data
-     * @return void
-     */
-    protected function _comments_page_filter(array &$data)
-    {
-        foreach ($data as &$item) {
-            $item['user_phone'] = preg_replace('/(^\d{3})\d+(\d{3}$)/', '$1***$2', $item['user_phone']);
-        }
-    }
-
-    /**
      * 获取物流配送区域
-     * @return void
-     * @throws \think\admin\Exception
+     * @throws Exception
      */
     public function region()
     {
@@ -171,11 +151,10 @@ class Goods extends Controller
     }
 
     /**
-     * 获取快递公司数据
-     * @return void
-     * @throws \think\db\exception\DataNotFoundException
-     * @throws \think\db\exception\DbException
-     * @throws \think\db\exception\ModelNotFoundException
+     * 获取快递公司数据.
+     * @throws DataNotFoundException
+     * @throws DbException
+     * @throws ModelNotFoundException
      */
     public function express()
     {
@@ -185,8 +164,7 @@ class Goods extends Controller
     }
 
     /**
-     * 获取搜索热词
-     * @return void
+     * 获取搜索热词.
      */
     public function hotkeys()
     {
@@ -195,5 +173,24 @@ class Goods extends Controller
             $query->field('keys')->group('keys')->cache(true, 60)->order('sort desc');
             $this->success('获取搜索热词！', ['keys' => $query->limit(0, 15)->column('keys')]);
         });
+    }
+
+    /**
+     * 数据结果处理.
+     */
+    protected function _get_page_filter(array &$data, array &$result)
+    {
+        $result['cnames'] = $this->cnames ?? null;
+        $result['coupon'] = $this->coupon ?? null;
+    }
+
+    /**
+     * 商品评论处理.
+     */
+    protected function _comments_page_filter(array &$data)
+    {
+        foreach ($data as &$item) {
+            $item['user_phone'] = preg_replace('/(^\d{3})\d+(\d{3}$)/', '$1***$2', $item['user_phone']);
+        }
     }
 }

@@ -1,43 +1,46 @@
 <?php
 
-// +----------------------------------------------------------------------
-// | WeMall Plugin for ThinkAdmin
-// +----------------------------------------------------------------------
-// | 版权所有 2014~2025 ThinkAdmin [ thinkadmin.top ]
-// +----------------------------------------------------------------------
-// | 官方网站: https://thinkadmin.top
-// +----------------------------------------------------------------------
-// | 免责声明 ( https://thinkadmin.top/disclaimer )
-// | 会员免费 ( https://thinkadmin.top/vip-introduce )
-// +----------------------------------------------------------------------
-// | gitee 代码仓库：https://gitee.com/zoujingli/think-plugs-wemall
-// | github 代码仓库：https://github.com/zoujingli/think-plugs-wemall
-// +----------------------------------------------------------------------
-
-declare (strict_types=1);
+declare(strict_types=1);
+/**
+ * +----------------------------------------------------------------------
+ * | Payment Plugin for ThinkAdmin
+ * +----------------------------------------------------------------------
+ * | 版权所有 2014~2026 ThinkAdmin [ thinkadmin.top ]
+ * +----------------------------------------------------------------------
+ * | 官方网站: https://thinkadmin.top
+ * +----------------------------------------------------------------------
+ * | 开源协议 ( https://mit-license.org )
+ * | 免责声明 ( https://thinkadmin.top/disclaimer )
+ * | 会员特权 ( https://thinkadmin.top/vip-introduce )
+ * +----------------------------------------------------------------------
+ * | gitee 代码仓库：https://gitee.com/zoujingli/ThinkAdmin
+ * | github 代码仓库：https://github.com/zoujingli/ThinkAdmin
+ * +----------------------------------------------------------------------
+ */
 
 namespace plugin\wemall\controller\api\auth\action;
 
 use plugin\wemall\controller\api\Auth;
 use plugin\wemall\model\PluginWemallUserActionSearch;
 use think\admin\helper\QueryHelper;
+use think\db\exception\DbException;
 
 /**
- * 用户搜索数据
+ * 用户搜索数据.
  * @class search
- * @package plugin\wemall\controller\api\auth\action
  */
 class Search extends Auth
 {
     /**
-     * 提交搜索记录
-     * @return void
-     * @throws \think\db\exception\DbException
+     * 提交搜索记录.
+     * @throws DbException
      */
     public function set()
     {
         $data = $this->_vali(['keys.default' => '', 'unid.value' => $this->unid]);
-        if (empty($data['keys'])) $this->success('无需提交！');
+        if (empty($data['keys'])) {
+            $this->success('无需提交！');
+        }
         // 统计 30 天内搜索次数
         $times = PluginWemallUserActionSearch::mk()->where(['keys' => $data['keys']])->whereTime('update_time', '-30 days')->count();
         PluginWemallUserActionSearch::mk()->where($data)->findOrEmpty()->save(array_merge($data, ['sort' => time(), 'times' => $times + 1]));
@@ -45,8 +48,7 @@ class Search extends Auth
     }
 
     /**
-     * 获取我的搜索记录
-     * @return void
+     * 获取我的搜索记录.
      */
     public function get()
     {

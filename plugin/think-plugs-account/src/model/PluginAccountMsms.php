@@ -1,27 +1,29 @@
 <?php
 
-// +----------------------------------------------------------------------
-// | Account Plugin for ThinkAdmin
-// +----------------------------------------------------------------------
-// | 版权所有 2014~2025 ThinkAdmin [ thinkadmin.top ]
-// +----------------------------------------------------------------------
-// | 官方网站: https://thinkadmin.top
-// +----------------------------------------------------------------------
-// | 免责声明 ( https://thinkadmin.top/disclaimer )
-// | 会员免费 ( https://thinkadmin.top/vip-introduce )
-// +----------------------------------------------------------------------
-// | gitee 代码仓库：https://gitee.com/zoujingli/think-plugs-account
-// | github 代码仓库：https://github.com/zoujingli/think-plugs-account
-// +----------------------------------------------------------------------
-
-declare (strict_types=1);
+declare(strict_types=1);
+/**
+ * +----------------------------------------------------------------------
+ * | Payment Plugin for ThinkAdmin
+ * +----------------------------------------------------------------------
+ * | 版权所有 2014~2026 ThinkAdmin [ thinkadmin.top ]
+ * +----------------------------------------------------------------------
+ * | 官方网站: https://thinkadmin.top
+ * +----------------------------------------------------------------------
+ * | 开源协议 ( https://mit-license.org )
+ * | 免责声明 ( https://thinkadmin.top/disclaimer )
+ * | 会员特权 ( https://thinkadmin.top/vip-introduce )
+ * +----------------------------------------------------------------------
+ * | gitee 代码仓库：https://gitee.com/zoujingli/ThinkAdmin
+ * | github 代码仓库：https://github.com/zoujingli/ThinkAdmin
+ * +----------------------------------------------------------------------
+ */
 
 namespace plugin\account\model;
 
 use plugin\account\service\Message;
 
 /**
- * 账号短信验证模型
+ * 账号短信验证模型.
  *
  * @property int $id
  * @property int $status 短信状态(0失败,1成功)
@@ -36,13 +38,11 @@ use plugin\account\service\Message;
  * @property string $type 短信类型
  * @property string $update_time 更新时间
  * @class PluginAccountMsms
- * @package plugin\account\model
  */
 class PluginAccountMsms extends Abs
 {
     /**
-     * 格式化数据
-     * @return array
+     * 格式化数据.
      */
     public function toArray(): array
     {

@@ -14,48 +14,55 @@
 // | github 代码仓库：https://github.com/zoujingli/think-plugs-account
 // +----------------------------------------------------------------------
 
-declare (strict_types=1);
+declare(strict_types=1);
+/**
+ * +----------------------------------------------------------------------
+ * | Payment Plugin for ThinkAdmin
+ * +----------------------------------------------------------------------
+ * | 版权所有 2014~2026 ThinkAdmin [ thinkadmin.top ]
+ * +----------------------------------------------------------------------
+ * | 官方网站: https://thinkadmin.top
+ * +----------------------------------------------------------------------
+ * | 开源协议 ( https://mit-license.org )
+ * | 免责声明 ( https://thinkadmin.top/disclaimer )
+ * | 会员特权 ( https://thinkadmin.top/vip-introduce )
+ * +----------------------------------------------------------------------
+ * | gitee 代码仓库：https://gitee.com/zoujingli/ThinkAdmin
+ * | github 代码仓库：https://github.com/zoujingli/ThinkAdmin
+ * +----------------------------------------------------------------------
+ */
 
 namespace plugin\payment\controller\api\auth;
 
 use plugin\account\controller\api\Auth;
 use plugin\payment\model\PluginPaymentAddress;
+use think\db\exception\DataNotFoundException;
+use think\db\exception\DbException;
+use think\db\exception\ModelNotFoundException;
 
 /**
- * 用户收货地址管理
+ * 用户收货地址管理.
  * @class Address
- * @package plugin\payment\controller\api\auth
  */
 class Address extends Auth
 {
     /**
-     * 初始化检查
-     * @return void
-     */
-    protected function initialize()
-    {
-        parent::initialize();
-        $this->checkUserStatus();
-    }
-
-    /**
      * 修改地址
-     * @return void
-     * @throws \think\db\exception\DbException
+     * @throws DbException
      */
     public function set()
     {
         $data = $this->_vali([
-            'id.default'          => 0,
-            'unid.value'          => $this->unid,
-            'type.default'        => 0,
-            'idcode.default'      => '', // 身份证号码
-            'idimg1.default'      => '', // 身份证正面
-            'idimg2.default'      => '', // 身份证反面
-            'type.in:0,1'         => '状态不在范围！',
-            'user_name.require'   => '姓名不能为空！',
-            'user_phone.mobile'   => '手机格式错误！',
-            'user_phone.require'  => '手机不能为空！',
+            'id.default' => 0,
+            'unid.value' => $this->unid,
+            'type.default' => 0,
+            'idcode.default' => '', // 身份证号码
+            'idimg1.default' => '', // 身份证正面
+            'idimg2.default' => '', // 身份证反面
+            'type.in:0,1' => '状态不在范围！',
+            'user_name.require' => '姓名不能为空！',
+            'user_phone.mobile' => '手机格式错误！',
+            'user_phone.require' => '手机不能为空！',
             'region_prov.require' => '省份不能为空！',
             'region_city.require' => '城市不能为空！',
             'region_area.require' => '区域不能为空！',
@@ -83,9 +90,9 @@ class Address extends Auth
 
     /**
      * 获取地址
-     * @throws \think\db\exception\DataNotFoundException
-     * @throws \think\db\exception\DbException
-     * @throws \think\db\exception\ModelNotFoundException
+     * @throws DataNotFoundException
+     * @throws DbException
+     * @throws ModelNotFoundException
      */
     public function get()
     {
@@ -96,13 +103,12 @@ class Address extends Auth
 
     /**
      * 修改地址状态
-     * @return void
      */
     public function state()
     {
         $data = $this->_vali([
-            'id.require'   => '编号不能为空！',
-            'type.in:0,1'  => '状态不在范围！',
+            'id.require' => '编号不能为空！',
+            'type.in:0,1' => '状态不在范围！',
             'type.require' => '状态不能为空！',
         ]);
 
@@ -131,7 +137,16 @@ class Address extends Auth
     }
 
     /**
-     * 创建数据模型
+     * 初始化检查.
+     */
+    protected function initialize()
+    {
+        parent::initialize();
+        $this->checkUserStatus();
+    }
+
+    /**
+     * 创建数据模型.
      * @param mixed $map 地址查询条件
      * @return mixed
      */
@@ -142,11 +157,10 @@ class Address extends Auth
     }
 
     /**
-     * 取消默认选项
-     * @param integer $id 地址编号
-     * @param integer $type 是否默认
-     * @param boolean $force 强制更新
-     * @return PluginPaymentAddress
+     * 取消默认选项.
+     * @param int $id 地址编号
+     * @param int $type 是否默认
+     * @param bool $force 强制更新
      */
     private function withDefault(int $id = 0, int $type = 1, bool $force = false): PluginPaymentAddress
     {

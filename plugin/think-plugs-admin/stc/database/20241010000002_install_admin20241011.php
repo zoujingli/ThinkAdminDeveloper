@@ -1,19 +1,22 @@
 <?php
 
-// +----------------------------------------------------------------------
-// | Admin Plugin for ThinkAdmin
-// +----------------------------------------------------------------------
-// | 版权所有 2014~2025 ThinkAdmin [ thinkadmin.top ]
-// +----------------------------------------------------------------------
-// | 官方网站: https://thinkadmin.top
-// +----------------------------------------------------------------------
-// | 开源协议 ( https://mit-license.org )
-// | 免责声明 ( https://thinkadmin.top/disclaimer )
-// +----------------------------------------------------------------------
-// | gitee 代码仓库：https://gitee.com/zoujingli/think-plugs-admin
-// | github 代码仓库：https://github.com/zoujingli/think-plugs-admin
-// +----------------------------------------------------------------------
-
+declare(strict_types=1);
+/**
+ * +----------------------------------------------------------------------
+ * | Payment Plugin for ThinkAdmin
+ * +----------------------------------------------------------------------
+ * | 版权所有 2014~2026 ThinkAdmin [ thinkadmin.top ]
+ * +----------------------------------------------------------------------
+ * | 官方网站: https://thinkadmin.top
+ * +----------------------------------------------------------------------
+ * | 开源协议 ( https://mit-license.org )
+ * | 免责声明 ( https://thinkadmin.top/disclaimer )
+ * | 会员特权 ( https://thinkadmin.top/vip-introduce )
+ * +----------------------------------------------------------------------
+ * | gitee 代码仓库：https://gitee.com/zoujingli/ThinkAdmin
+ * | github 代码仓库：https://github.com/zoujingli/ThinkAdmin
+ * +----------------------------------------------------------------------
+ */
 use app\admin\Service;
 use think\admin\extend\PhinxExtend;
 use think\admin\model\SystemConfig;
@@ -24,14 +27,12 @@ use think\migration\Migrator;
 @ini_set('memory_limit', -1);
 
 /**
- * 系统模块数据
+ * 系统模块数据.
  */
 class InstallAdmin20241011 extends Migrator
 {
-
     /**
-     * 获取脚本名称
-     * @return string
+     * 获取脚本名称.
      */
     public function getName(): string
     {
@@ -39,7 +40,7 @@ class InstallAdmin20241011 extends Migrator
     }
 
     /**
-     * 创建数据库
+     * 创建数据库.
      */
     public function change()
     {
@@ -49,24 +50,22 @@ class InstallAdmin20241011 extends Migrator
     }
 
     /**
-     * 初始化用户数据
-     * @return void
+     * 初始化用户数据.
      */
     private function insertUser()
     {
         $model = SystemUser::mk()->whereRaw('1=1')->findOrEmpty();
         $model->isEmpty() && $model->save([
-            'id'       => '10000',
+            'id' => '10000',
             'username' => 'admin',
             'nickname' => '超级管理员',
             'password' => '21232f297a57a5a743894a0e4a801fc3',
-            'headimg'  => 'https://thinkadmin.top/static/img/head.png',
+            'headimg' => 'https://thinkadmin.top/static/img/head.png',
         ], true);
     }
 
     /**
-     * 初始化配置参数
-     * @return void
+     * 初始化配置参数.
      */
     private function insertConf()
     {
@@ -87,13 +86,11 @@ class InstallAdmin20241011 extends Migrator
     }
 
     /**
-     * 初始化系统菜单
-     * @return void
-     * @throws \Exception
+     * 初始化系统菜单.
+     * @throws Exception
      */
     private function insertMenu()
     {
-
         // 初始化菜单数据
         PhinxExtend::write2menu([
             [
@@ -102,7 +99,7 @@ class InstallAdmin20241011 extends Migrator
                 'subs' => Service::menu(),
             ],
         ], [
-            'url|node' => 'admin/config/index'
+            'url|node' => 'admin/config/index',
         ]);
     }
 }

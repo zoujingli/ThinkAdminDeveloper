@@ -1,35 +1,37 @@
 <?php
 
-// +----------------------------------------------------------------------
-// | WeMall Plugin for ThinkAdmin
-// +----------------------------------------------------------------------
-// | 版权所有 2014~2025 ThinkAdmin [ thinkadmin.top ]
-// +----------------------------------------------------------------------
-// | 官方网站: https://thinkadmin.top
-// +----------------------------------------------------------------------
-// | 免责声明 ( https://thinkadmin.top/disclaimer )
-// | 会员免费 ( https://thinkadmin.top/vip-introduce )
-// +----------------------------------------------------------------------
-// | gitee 代码仓库：https://gitee.com/zoujingli/think-plugs-wemall
-// | github 代码仓库：https://github.com/zoujingli/think-plugs-wemall
-// +----------------------------------------------------------------------
-
-declare (strict_types=1);
+declare(strict_types=1);
+/**
+ * +----------------------------------------------------------------------
+ * | Payment Plugin for ThinkAdmin
+ * +----------------------------------------------------------------------
+ * | 版权所有 2014~2026 ThinkAdmin [ thinkadmin.top ]
+ * +----------------------------------------------------------------------
+ * | 官方网站: https://thinkadmin.top
+ * +----------------------------------------------------------------------
+ * | 开源协议 ( https://mit-license.org )
+ * | 免责声明 ( https://thinkadmin.top/disclaimer )
+ * | 会员特权 ( https://thinkadmin.top/vip-introduce )
+ * +----------------------------------------------------------------------
+ * | gitee 代码仓库：https://gitee.com/zoujingli/ThinkAdmin
+ * | github 代码仓库：https://github.com/zoujingli/ThinkAdmin
+ * +----------------------------------------------------------------------
+ */
 
 namespace plugin\wemall\service;
 
 use plugin\wemall\model\PluginWemallUserTransfer;
+use think\admin\Exception;
 
 /**
  * 代理提现数据服务
  * @class UserTransfer
- * @package plugin\wemall\service
  */
 abstract class UserTransfer
 {
     // 提现方式配置
     public const types = [
-        'wechat_wallet'  => '提现到微信零钱',
+        'wechat_wallet' => '提现到微信零钱',
         'alipay_account' => '提现到支付宝账户',
         // 'wechat_banks'   => '转账到银行卡账户（线上）', 微信官方已不支持
         // 'wechat_qrcode'  => '提现到微信收款码（线下）',
@@ -38,8 +40,7 @@ abstract class UserTransfer
     ];
 
     /**
-     * 同步刷新代理返佣
-     * @param integer $unid
+     * 同步刷新代理返佣.
      * @return array [total, count, audit, locks]
      */
     public static function amount(int $unid): array
@@ -50,19 +51,18 @@ abstract class UserTransfer
             $count = abs(PluginWemallUserTransfer::mk()->whereRaw("unid='{$unid}' and status>=4")->sum('amount'));
             $audit = abs(PluginWemallUserTransfer::mk()->whereRaw("unid='{$unid}' and status>=1 and status<3")->sum('amount'));
         } else {
-            $locks = abs(PluginWemallUserTransfer::mk()->whereRaw("status=3")->sum('amount'));
-            $total = abs(PluginWemallUserTransfer::mk()->whereRaw("status>=1")->sum('amount'));
-            $count = abs(PluginWemallUserTransfer::mk()->whereRaw("status>=4")->sum('amount'));
-            $audit = abs(PluginWemallUserTransfer::mk()->whereRaw("status>=1 and status<3")->sum('amount'));
+            $locks = abs(PluginWemallUserTransfer::mk()->whereRaw('status=3')->sum('amount'));
+            $total = abs(PluginWemallUserTransfer::mk()->whereRaw('status>=1')->sum('amount'));
+            $count = abs(PluginWemallUserTransfer::mk()->whereRaw('status>=4')->sum('amount'));
+            $audit = abs(PluginWemallUserTransfer::mk()->whereRaw('status>=1 and status<3')->sum('amount'));
         }
         return [$total, $count, $audit, $locks];
     }
 
     /**
-     * 获取提现配置
-     * @param ?string $name
+     * 获取提现配置.
      * @return array|string
-     * @throws \think\admin\Exception
+     * @throws Exception
      */
     public static function config(?string $name = null)
     {
@@ -72,10 +72,9 @@ abstract class UserTransfer
     }
 
     /**
-     * 获取转账配置
-     * @param ?string $name
+     * 获取转账配置.
      * @return array|string
-     * @throws \think\admin\Exception
+     * @throws Exception
      */
     public static function payment(?string $name = null)
     {

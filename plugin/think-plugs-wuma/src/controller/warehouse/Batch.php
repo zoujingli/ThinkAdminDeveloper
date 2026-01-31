@@ -1,20 +1,22 @@
 <?php
 
-// +----------------------------------------------------------------------
-// | Wuma Plugin for ThinkAdmin
-// +----------------------------------------------------------------------
-// | 版权所有 2014~2025 ThinkAdmin [ thinkadmin.top ]
-// +----------------------------------------------------------------------
-// | 官方网站: https://thinkadmin.top
-// +----------------------------------------------------------------------
-// | 免责声明 ( https://thinkadmin.top/disclaimer )
-// | 收费插件 ( https://thinkadmin.top/fee-introduce.html )
-// +----------------------------------------------------------------------
-// | gitee 代码仓库：https://gitee.com/zoujingli/think-plugs-wuma
-// | github 代码仓库：https://github.com/zoujingli/think-plugs-wuma
-// +----------------------------------------------------------------------
-
-declare (strict_types=1);
+declare(strict_types=1);
+/**
+ * +----------------------------------------------------------------------
+ * | Payment Plugin for ThinkAdmin
+ * +----------------------------------------------------------------------
+ * | 版权所有 2014~2026 ThinkAdmin [ thinkadmin.top ]
+ * +----------------------------------------------------------------------
+ * | 官方网站: https://thinkadmin.top
+ * +----------------------------------------------------------------------
+ * | 开源协议 ( https://mit-license.org )
+ * | 免责声明 ( https://thinkadmin.top/disclaimer )
+ * | 会员特权 ( https://thinkadmin.top/vip-introduce )
+ * +----------------------------------------------------------------------
+ * | gitee 代码仓库：https://gitee.com/zoujingli/ThinkAdmin
+ * | github 代码仓库：https://github.com/zoujingli/ThinkAdmin
+ * +----------------------------------------------------------------------
+ */
 
 namespace plugin\wuma\controller\warehouse;
 
@@ -29,22 +31,23 @@ use think\admin\Controller;
 use think\admin\Exception;
 use think\admin\extend\CodeExtend;
 use think\admin\helper\QueryHelper;
+use think\db\exception\DataNotFoundException;
+use think\db\exception\DbException;
+use think\db\exception\ModelNotFoundException;
 use think\db\Query;
 use think\exception\HttpResponseException;
 
 /**
- * 仓库批次出库
+ * 仓库批次出库.
  * @class Batch
- * @package plugin\wuma\controller\warehouse
  */
 class Batch extends Controller
 {
     /**
-     * 仓库批次出库
-     * @return void
-     * @throws \think\db\exception\DataNotFoundException
-     * @throws \think\db\exception\DbException
-     * @throws \think\db\exception\ModelNotFoundException
+     * 仓库批次出库.
+     * @throws DataNotFoundException
+     * @throws DbException
+     * @throws ModelNotFoundException
      */
     public function index()
     {
@@ -68,25 +71,26 @@ class Batch extends Controller
             // 批量创建筛选规则
             foreach (['minValue' => 'min', 'encValue' => 'min', 'numValue' => 'min'] as $alias => $type) {
                 $db = PluginWumaCodeRuleRange::mQuery($this->get)->valueRange("range_start:range_after#{$alias}")->field('batch')->db();
-                if ($db->getOptions('where')) $query->whereRaw('cbatch in ' . $db->whereIn('code_type', str2arr($type))->buildSql());
+                if ($db->getOptions('where')) {
+                    $query->whereRaw('cbatch in ' . $db->whereIn('code_type', str2arr($type))->buildSql());
+                }
             }
         });
     }
 
     /**
-     * 按批次分区出库
+     * 按批次分区出库.
      * @auth true
-     * @return void
-     * @throws \think\admin\Exception
-     * @throws \think\db\exception\DataNotFoundException
-     * @throws \think\db\exception\DbException
-     * @throws \think\db\exception\ModelNotFoundException
+     * @throws Exception
+     * @throws DataNotFoundException
+     * @throws DbException
+     * @throws ModelNotFoundException
      */
     public function edit()
     {
         $this->title = '按批次分区出库';
         $this->_form(PluginWumaSourceAssign::mk()->with([
-            'coder'    => function ($relation) {
+            'coder' => function ($relation) {
                 $relation->with(['rules']);
             }, 'range' => function ($relation) {
                 $relation->with(['bindProduce']);
@@ -95,16 +99,17 @@ class Batch extends Controller
     }
 
     /**
-     * 表单数据处理
-     * @param array $data
-     * @throws \think\db\exception\DataNotFoundException
-     * @throws \think\db\exception\DbException
-     * @throws \think\db\exception\ModelNotFoundException
+     * 表单数据处理.
+     * @throws DataNotFoundException
+     * @throws DbException
+     * @throws ModelNotFoundException
      */
     protected function _form_filter(array &$data)
     {
         if ($this->request->isGet()) {
-            if (empty($data)) $this->error('出库批次不存在！');
+            if (empty($data)) {
+                $this->error('出库批次不存在！');
+            }
             PluginWumaCodeRule::applyRangeData($data['coder']);
             unset($data['coder']['rules']);
             $this->warehouses = PluginWumaWarehouse::lists([
@@ -113,30 +118,34 @@ class Batch extends Controller
             RelationService::withMergeRange($data['range']);
         } else {
             $input = $this->_vali([
-                'batch.require'  => '赋码批次不能为空！',
-                'wcode.require'  => '出货仓库不能为空！',
-                'items.require'  => '出货分区不能为空！',
+                'batch.require' => '赋码批次不能为空！',
+                'wcode.require' => '出货仓库不能为空！',
+                'items.require' => '出货分区不能为空！',
                 'import.require' => '自动入库不能为空！',
             ], $data);
             $input['items'] = json_decode($input['items'], true);
-            if (empty($input['items'])) $this->error('待出库分区不能为空！');
+            if (empty($input['items'])) {
+                $this->error('待出库分区不能为空！');
+            }
             $items = [];
-            foreach ($input['items'] as &$range) foreach ($range['items'] as &$item) {
-                if ($item['lock'] === 1 && ($item['agent'] ?? 0) > 0) {
-                    $mins = range($item['min'], $item['max']);
-                    if (count($mins) !== count($unis = array_unique($mins))) {
-                        $this->error('分区存在重叠！');
+            foreach ($input['items'] as &$range) {
+                foreach ($range['items'] as &$item) {
+                    if ($item['lock'] === 1 && ($item['agent'] ?? 0) > 0) {
+                        $mins = range($item['min'], $item['max']);
+                        if (count($mins) !== count($unis = array_unique($mins))) {
+                            $this->error('分区存在重叠！');
+                        }
+                        $item['lock'] = 2;
+                        $item['code'] = CodeExtend::uniqidDate(16, 'BK');
+                        $items[] = [
+                            'mins' => join(',', $unis),
+                            'code' => $item['code'],
+                            'agent' => $item['agent'],
+                            'batch' => $item['batch'],
+                            'ghash' => $item['ghash'],
+                            'wcode' => $input['wcode'],
+                        ];
                     }
-                    $item['lock'] = 2;
-                    $item['code'] = CodeExtend::uniqidDate(16, 'BK');
-                    $items[] = [
-                        'mins'  => join(',', $unis),
-                        'code'  => $item['code'],
-                        'agent' => $item['agent'],
-                        'batch' => $item['batch'],
-                        'ghash' => $item['ghash'],
-                        'wcode' => $input['wcode'],
-                    ];
                 }
             }
             try {
@@ -164,11 +173,12 @@ class Batch extends Controller
     }
 
     /**
-     * 表单处理结果处理
-     * @param bool $status
+     * 表单处理结果处理.
      */
     protected function _form_result(bool $status)
     {
-        if ($status) $this->success('数据保存成功', 'javascript:history.back()');
+        if ($status) {
+            $this->success('数据保存成功', 'javascript:history.back()');
+        }
     }
 }

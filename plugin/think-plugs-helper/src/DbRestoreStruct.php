@@ -1,20 +1,22 @@
 <?php
 
-// +----------------------------------------------------------------------
-// | Developer Tools for ThinkAdmin
-// +----------------------------------------------------------------------
-// | 版权所有 2014~2025 Anyon <zoujingli@qq.com>
-// +----------------------------------------------------------------------
-// | 官方网站: https://thinkadmin.top
-// +----------------------------------------------------------------------
-// | 开源协议 ( https://mit-license.org )
-// | 免责声明 ( https://thinkadmin.top/disclaimer )
-// +----------------------------------------------------------------------
-// | gitee 代码仓库：https://gitee.com/zoujingli/think-plugs-helper
-// | github 代码仓库：https://github.com/zoujingli/think-plugs-helper
-// +----------------------------------------------------------------------
-
-declare (strict_types=1);
+declare(strict_types=1);
+/**
+ * +----------------------------------------------------------------------
+ * | Payment Plugin for ThinkAdmin
+ * +----------------------------------------------------------------------
+ * | 版权所有 2014~2026 ThinkAdmin [ thinkadmin.top ]
+ * +----------------------------------------------------------------------
+ * | 官方网站: https://thinkadmin.top
+ * +----------------------------------------------------------------------
+ * | 开源协议 ( https://mit-license.org )
+ * | 免责声明 ( https://thinkadmin.top/disclaimer )
+ * | 会员特权 ( https://thinkadmin.top/vip-introduce )
+ * +----------------------------------------------------------------------
+ * | gitee 代码仓库：https://gitee.com/zoujingli/ThinkAdmin
+ * | github 代码仓库：https://github.com/zoujingli/ThinkAdmin
+ * +----------------------------------------------------------------------
+ */
 
 namespace plugin\helper;
 
@@ -32,15 +34,14 @@ use think\console\input\Option;
  */
 class DbRestoreStruct extends DbBackupStruct
 {
-
     /**
      * 配置命令参数。
      */
     public function configure(): void
     {
-        $this->setName("xadmin:helper:restore");
+        $this->setName('xadmin:helper:restore');
         $this->addOption('force', 'f', Option::VALUE_NONE, 'Force All Update');
-        $this->setDescription("恢复数据前是否强制清空所有表数据");
+        $this->setDescription('恢复数据前是否强制清空所有表数据');
     }
 
     /**
@@ -239,11 +240,11 @@ class DbRestoreStruct extends DbBackupStruct
     {
         $model = SystemUser::mk()->whereRaw('1=1')->findOrEmpty();
         $model->isEmpty() && $model->save([
-            'id'       => '10000',
+            'id' => '10000',
             'username' => 'admin',
             'nickname' => '超级管理员',
             'password' => '21232f297a57a5a743894a0e4a801fc3',
-            'headimg'  => 'https://thinkadmin.top/static/img/head.png',
+            'headimg' => 'https://thinkadmin.top/static/img/head.png',
         ], true);
         $this->output->writeln('✅ 管理员账号恢复成功');
     }

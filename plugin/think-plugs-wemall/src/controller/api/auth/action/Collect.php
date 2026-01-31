@@ -14,7 +14,23 @@
 // | github 代码仓库：https://github.com/zoujingli/think-plugs-wemall
 // +----------------------------------------------------------------------
 
-declare (strict_types=1);
+declare(strict_types=1);
+/**
+ * +----------------------------------------------------------------------
+ * | Payment Plugin for ThinkAdmin
+ * +----------------------------------------------------------------------
+ * | 版权所有 2014~2026 ThinkAdmin [ thinkadmin.top ]
+ * +----------------------------------------------------------------------
+ * | 官方网站: https://thinkadmin.top
+ * +----------------------------------------------------------------------
+ * | 开源协议 ( https://mit-license.org )
+ * | 免责声明 ( https://thinkadmin.top/disclaimer )
+ * | 会员特权 ( https://thinkadmin.top/vip-introduce )
+ * +----------------------------------------------------------------------
+ * | gitee 代码仓库：https://gitee.com/zoujingli/ThinkAdmin
+ * | github 代码仓库：https://github.com/zoujingli/ThinkAdmin
+ * +----------------------------------------------------------------------
+ */
 
 namespace plugin\wemall\controller\api\auth\action;
 
@@ -23,25 +39,24 @@ use plugin\wemall\model\PluginWemallGoods;
 use plugin\wemall\model\PluginWemallUserActionCollect;
 use plugin\wemall\service\UserAction;
 use think\admin\helper\QueryHelper;
+use think\db\exception\DbException;
 use think\db\Query;
 
 /**
- * 用户收藏数据
+ * 用户收藏数据.
  * @class Collect
- * @package plugin\wemall\controller\api\auth\action
  */
 class Collect extends Auth
 {
     /**
-     * 提交搜索记录
-     * @return void
-     * @throws \think\db\exception\DbException
+     * 提交搜索记录.
+     * @throws DbException
      */
     public function set()
     {
         $data = $this->_vali([
-            'unid.value'    => $this->unid,
-            'gcode.require' => '商品不能为空！'
+            'unid.value' => $this->unid,
+            'gcode.require' => '商品不能为空！',
         ]);
         $map = ['code' => $data['gcode'], 'deleted' => 0];
         $goods = PluginWemallGoods::mk()->where($map)->findOrEmpty();
@@ -54,8 +69,7 @@ class Collect extends Auth
     }
 
     /**
-     * 获取我的搜索记录
-     * @return void
+     * 获取我的搜索记录.
      */
     public function get()
     {
@@ -74,9 +88,8 @@ class Collect extends Auth
     }
 
     /**
-     * 删除收藏记录
-     * @return void
-     * @throws \think\db\exception\DbException
+     * 删除收藏记录.
+     * @throws DbException
      */
     public function del()
     {
@@ -86,9 +99,8 @@ class Collect extends Auth
     }
 
     /**
-     * 清空收藏记录
-     * @return void
-     * @throws \think\db\exception\DbException
+     * 清空收藏记录.
+     * @throws DbException
      */
     public function clear()
     {

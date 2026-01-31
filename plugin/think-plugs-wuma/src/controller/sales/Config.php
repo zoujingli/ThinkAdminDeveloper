@@ -1,54 +1,45 @@
 <?php
 
-// +----------------------------------------------------------------------
-// | Wuma Plugin for ThinkAdmin
-// +----------------------------------------------------------------------
-// | 版权所有 2014~2025 ThinkAdmin [ thinkadmin.top ]
-// +----------------------------------------------------------------------
-// | 官方网站: https://thinkadmin.top
-// +----------------------------------------------------------------------
-// | 免责声明 ( https://thinkadmin.top/disclaimer )
-// | 收费插件 ( https://thinkadmin.top/fee-introduce.html )
-// +----------------------------------------------------------------------
-// | gitee 代码仓库：https://gitee.com/zoujingli/think-plugs-wuma
-// | github 代码仓库：https://github.com/zoujingli/think-plugs-wuma
-// +----------------------------------------------------------------------
-
-declare (strict_types=1);
+declare(strict_types=1);
+/**
+ * +----------------------------------------------------------------------
+ * | Payment Plugin for ThinkAdmin
+ * +----------------------------------------------------------------------
+ * | 版权所有 2014~2026 ThinkAdmin [ thinkadmin.top ]
+ * +----------------------------------------------------------------------
+ * | 官方网站: https://thinkadmin.top
+ * +----------------------------------------------------------------------
+ * | 开源协议 ( https://mit-license.org )
+ * | 免责声明 ( https://thinkadmin.top/disclaimer )
+ * | 会员特权 ( https://thinkadmin.top/vip-introduce )
+ * +----------------------------------------------------------------------
+ * | gitee 代码仓库：https://gitee.com/zoujingli/ThinkAdmin
+ * | github 代码仓库：https://github.com/zoujingli/ThinkAdmin
+ * +----------------------------------------------------------------------
+ */
 
 namespace plugin\wuma\controller\sales;
 
 use think\admin\Controller;
+use think\admin\Exception;
 
 /**
- * 平台参数配置
+ * 平台参数配置.
  * @class Config
- * @package plugin\wuma\controller\sales
  */
 class Config extends Controller
 {
     /**
-     * 存储名称
+     * 存储名称.
      * @var string
      */
-    protected $agxkey = "plugin.wuma.agent";
+    protected $agxkey = 'plugin.wuma.agent';
 
     /**
-     * 初始化控制器
-     * @return void
-     * @throws \think\admin\Exception
-     */
-    protected function initialize()
-    {
-        parent::initialize();
-        $this->kfuser = sysdata('kfuser');
-    }
-
-    /**
-     * 平台参数配置
+     * 平台参数配置.
      * @menu true
      * @auth true
-     * @throws \think\admin\Exception
+     * @throws Exception
      */
     public function index()
     {
@@ -58,9 +49,9 @@ class Config extends Controller
     }
 
     /**
-     * 代理参数配置
+     * 代理参数配置.
      * @auth true
-     * @throws \think\admin\Exception
+     * @throws Exception
      */
     public function agxcfg()
     {
@@ -71,5 +62,15 @@ class Config extends Controller
             sysdata($this->agxkey, $this->request->post());
             $this->success('修改配置成功！');
         }
+    }
+
+    /**
+     * 初始化控制器.
+     * @throws Exception
+     */
+    protected function initialize()
+    {
+        parent::initialize();
+        $this->kfuser = sysdata('kfuser');
     }
 }

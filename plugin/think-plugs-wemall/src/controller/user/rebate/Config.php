@@ -1,20 +1,22 @@
 <?php
 
-// +----------------------------------------------------------------------
-// | WeMall Plugin for ThinkAdmin
-// +----------------------------------------------------------------------
-// | 版权所有 2014~2025 ThinkAdmin [ thinkadmin.top ]
-// +----------------------------------------------------------------------
-// | 官方网站: https://thinkadmin.top
-// +----------------------------------------------------------------------
-// | 免责声明 ( https://thinkadmin.top/disclaimer )
-// | 会员免费 ( https://thinkadmin.top/vip-introduce )
-// +----------------------------------------------------------------------
-// | gitee 代码仓库：https://gitee.com/zoujingli/think-plugs-wemall
-// | github 代码仓库：https://github.com/zoujingli/think-plugs-wemall
-// +----------------------------------------------------------------------
-
-declare (strict_types=1);
+declare(strict_types=1);
+/**
+ * +----------------------------------------------------------------------
+ * | Payment Plugin for ThinkAdmin
+ * +----------------------------------------------------------------------
+ * | 版权所有 2014~2026 ThinkAdmin [ thinkadmin.top ]
+ * +----------------------------------------------------------------------
+ * | 官方网站: https://thinkadmin.top
+ * +----------------------------------------------------------------------
+ * | 开源协议 ( https://mit-license.org )
+ * | 免责声明 ( https://thinkadmin.top/disclaimer )
+ * | 会员特权 ( https://thinkadmin.top/vip-introduce )
+ * +----------------------------------------------------------------------
+ * | gitee 代码仓库：https://gitee.com/zoujingli/ThinkAdmin
+ * | github 代码仓库：https://github.com/zoujingli/ThinkAdmin
+ * +----------------------------------------------------------------------
+ */
 
 namespace plugin\wemall\controller\user\rebate;
 
@@ -24,21 +26,22 @@ use plugin\wemall\service\UserRebate;
 use think\admin\Controller;
 use think\admin\extend\CodeExtend;
 use think\admin\helper\QueryHelper;
+use think\db\exception\DataNotFoundException;
+use think\db\exception\DbException;
+use think\db\exception\ModelNotFoundException;
 
 /**
- * 返佣规则配置
+ * 返佣规则配置.
  * @class Config
- * @package plugin\wemall\controller\base
  */
 class Config extends Controller
 {
     /**
-     * 返佣规则配置
+     * 返佣规则配置.
      * @auth true
-     * @return void
-     * @throws \think\db\exception\DataNotFoundException
-     * @throws \think\db\exception\DbException
-     * @throws \think\db\exception\ModelNotFoundException
+     * @throws DataNotFoundException
+     * @throws DbException
+     * @throws ModelNotFoundException
      */
     public function index()
     {
@@ -52,7 +55,7 @@ class Config extends Controller
     }
 
     /**
-     * 添加返佣规则
+     * 添加返佣规则.
      * @auth true
      */
     public function add()
@@ -62,7 +65,7 @@ class Config extends Controller
     }
 
     /**
-     * 编辑返佣规则
+     * 编辑返佣规则.
      * @auth true
      */
     public function edit()
@@ -72,8 +75,28 @@ class Config extends Controller
     }
 
     /**
-     * 表单数据处理
-     * @return void
+     * 修改规则状态
+     * @auth true
+     */
+    public function state()
+    {
+        PluginWemallConfigRebate::mSave($this->_vali([
+            'status.in:0,1' => '状态值范围异常！',
+            'status.require' => '状态值不能为空！',
+        ]));
+    }
+
+    /**
+     * 删除返佣规则.
+     * @auth true
+     */
+    public function remove()
+    {
+        PluginWemallConfigRebate::mDelete();
+    }
+
+    /**
+     * 表单数据处理.
      */
     protected function _form_filter(array &$data)
     {
@@ -87,26 +110,5 @@ class Config extends Controller
         } else {
             $data['path'] = arr2str([$data['p3_level'], $data['p2_level'], $data['p1_level'], $data['p0_level']]);
         }
-    }
-
-    /**
-     * 修改规则状态
-     * @auth true
-     */
-    public function state()
-    {
-        PluginWemallConfigRebate::mSave($this->_vali([
-            'status.in:0,1'  => '状态值范围异常！',
-            'status.require' => '状态值不能为空！',
-        ]));
-    }
-
-    /**
-     * 删除返佣规则
-     * @auth true
-     */
-    public function remove()
-    {
-        PluginWemallConfigRebate::mDelete();
     }
 }

@@ -1,20 +1,22 @@
 <?php
 
-// +----------------------------------------------------------------------
-// | WeMall Plugin for ThinkAdmin
-// +----------------------------------------------------------------------
-// | 版权所有 2014~2025 ThinkAdmin [ thinkadmin.top ]
-// +----------------------------------------------------------------------
-// | 官方网站: https://thinkadmin.top
-// +----------------------------------------------------------------------
-// | 免责声明 ( https://thinkadmin.top/disclaimer )
-// | 会员免费 ( https://thinkadmin.top/vip-introduce )
-// +----------------------------------------------------------------------
-// | gitee 代码仓库：https://gitee.com/zoujingli/think-plugs-wemall
-// | github 代码仓库：https://github.com/zoujingli/think-plugs-wemall
-// +----------------------------------------------------------------------
-
-declare (strict_types=1);
+declare(strict_types=1);
+/**
+ * +----------------------------------------------------------------------
+ * | Payment Plugin for ThinkAdmin
+ * +----------------------------------------------------------------------
+ * | 版权所有 2014~2026 ThinkAdmin [ thinkadmin.top ]
+ * +----------------------------------------------------------------------
+ * | 官方网站: https://thinkadmin.top
+ * +----------------------------------------------------------------------
+ * | 开源协议 ( https://mit-license.org )
+ * | 免责声明 ( https://thinkadmin.top/disclaimer )
+ * | 会员特权 ( https://thinkadmin.top/vip-introduce )
+ * +----------------------------------------------------------------------
+ * | gitee 代码仓库：https://gitee.com/zoujingli/ThinkAdmin
+ * | github 代码仓库：https://github.com/zoujingli/ThinkAdmin
+ * +----------------------------------------------------------------------
+ */
 
 namespace plugin\wemall\service;
 
@@ -25,30 +27,32 @@ use plugin\wemall\model\PluginWemallOrder;
 use plugin\wemall\model\PluginWemallUserRelation;
 use think\admin\Exception;
 use think\admin\Library;
+use think\db\exception\DataNotFoundException;
+use think\db\exception\DbException;
+use think\db\exception\ModelNotFoundException;
 
 /**
  * 用户代理数据服务
  * @class UserAgent
- * @package plugin\wemall\service
  */
 abstract class UserAgent
 {
-
     /**
-     * 同步计算代理等级
-     * @param integer|PluginWemallUserRelation $unid 指定用户UID
-     * @param boolean $parent 同步计算上级
+     * 同步计算代理等级.
+     * @param int|PluginWemallUserRelation $unid 指定用户UID
+     * @param bool $parent 同步计算上级
      * @param ?string $orderNo 升级触发订单
-     * @return PluginWemallUserRelation
-     * @throws \think\admin\Exception
-     * @throws \think\db\exception\DataNotFoundException
-     * @throws \think\db\exception\DbException
-     * @throws \think\db\exception\ModelNotFoundException
+     * @throws Exception
+     * @throws DataNotFoundException
+     * @throws DbException
+     * @throws ModelNotFoundException
      */
     public static function upgrade($unid, bool $parent = true, ?string $orderNo = null): PluginWemallUserRelation
     {
         [$rela, $unid] = PluginWemallUserRelation::withRelation($unid);
-        if ($rela->isEmpty()) throw new Exception("无效用户账号！");
+        if ($rela->isEmpty()) {
+            throw new Exception('无效用户账号！');
+        }
         // 筛选会员等级
         $mLevels = PluginWemallConfigLevel::mk()->where(['status' => 1, 'upgrade_team' => 1])->column('number');
         // 统计团队数据
@@ -82,8 +86,7 @@ abstract class UserAgent
             $l6 = !empty($extra['amount_indirect_status']) && ($extra['amount_indirect_number'] ?? 0.01) <= $amountIndirect;
             if (
                 ($item['upgrade_type'] == 0 && ($l1 || $l2 || $l3 || $l4 || $l5 || $l6)) /* 满足任何条件 */
-                ||
-                ($item['upgrade_type'] == 1 && ($l1 && $l2 && $l3 && $l4 && $l5 || $l6)) /* 满足所有条件 */
+                || ($item['upgrade_type'] == 1 && ($l1 && $l2 && $l3 && $l4 && $l5 || $l6)) /* 满足所有条件 */
             ) {
                 [$levelName, $levelCode] = [$item['name'], $item['number']];
                 break;
@@ -91,15 +94,19 @@ abstract class UserAgent
         }
         // 收集团队数据
         $extra = [
-            'teams_users_total'     => $teamsTotal,
-            'teams_users_direct'    => $teamsDirect,
-            'teams_users_indirect'  => $teamsIndirect,
-            'teams_amount_total'    => $amountTotal,
-            'teams_amount_direct'   => $amountDirect,
+            'teams_users_total' => $teamsTotal,
+            'teams_users_direct' => $teamsDirect,
+            'teams_users_indirect' => $teamsIndirect,
+            'teams_amount_total' => $amountTotal,
+            'teams_amount_direct' => $amountDirect,
             'teams_amount_indirect' => $amountIndirect,
         ];
-        if (!empty($orderNo)) $extra['agent_level_order'] = $orderNo;
-        if ($levelCode !== $levelCurr) $extra['agent_level_change'] = date('Y-m-d H:i:s');
+        if (!empty($orderNo)) {
+            $extra['agent_level_order'] = $orderNo;
+        }
+        if ($levelCode !== $levelCurr) {
+            $extra['agent_level_change'] = date('Y-m-d H:i:s');
+        }
         // 更新用户扩展数据
         $user = PluginAccountUser::mk()->findOrEmpty($unid);
         $user->isExists() && $user->save(['extra' => array_merge($user->getAttr('extra'), $extra)]);

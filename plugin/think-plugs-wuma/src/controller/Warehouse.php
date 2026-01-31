@@ -1,20 +1,22 @@
 <?php
 
-// +----------------------------------------------------------------------
-// | Wuma Plugin for ThinkAdmin
-// +----------------------------------------------------------------------
-// | 版权所有 2014~2025 ThinkAdmin [ thinkadmin.top ]
-// +----------------------------------------------------------------------
-// | 官方网站: https://thinkadmin.top
-// +----------------------------------------------------------------------
-// | 免责声明 ( https://thinkadmin.top/disclaimer )
-// | 收费插件 ( https://thinkadmin.top/fee-introduce.html )
-// +----------------------------------------------------------------------
-// | gitee 代码仓库：https://gitee.com/zoujingli/think-plugs-wuma
-// | github 代码仓库：https://github.com/zoujingli/think-plugs-wuma
-// +----------------------------------------------------------------------
-
-declare (strict_types=1);
+declare(strict_types=1);
+/**
+ * +----------------------------------------------------------------------
+ * | Payment Plugin for ThinkAdmin
+ * +----------------------------------------------------------------------
+ * | 版权所有 2014~2026 ThinkAdmin [ thinkadmin.top ]
+ * +----------------------------------------------------------------------
+ * | 官方网站: https://thinkadmin.top
+ * +----------------------------------------------------------------------
+ * | 开源协议 ( https://mit-license.org )
+ * | 免责声明 ( https://thinkadmin.top/disclaimer )
+ * | 会员特权 ( https://thinkadmin.top/vip-introduce )
+ * +----------------------------------------------------------------------
+ * | gitee 代码仓库：https://gitee.com/zoujingli/ThinkAdmin
+ * | github 代码仓库：https://github.com/zoujingli/ThinkAdmin
+ * +----------------------------------------------------------------------
+ */
 
 namespace plugin\wuma\controller;
 
@@ -22,21 +24,23 @@ use plugin\wuma\model\PluginWumaWarehouse;
 use think\admin\Controller;
 use think\admin\extend\CodeExtend;
 use think\admin\helper\QueryHelper;
+use think\db\exception\DataNotFoundException;
+use think\db\exception\DbException;
+use think\db\exception\ModelNotFoundException;
 
 /**
- * 总部仓库管理
+ * 总部仓库管理.
  * @class Warehouse
- * @package plugin\wuma\controller
  */
 class Warehouse extends Controller
 {
     /**
-     * 总部仓库管理
+     * 总部仓库管理.
      * @menu true
      * @auth true
-     * @throws \think\db\exception\DataNotFoundException
-     * @throws \think\db\exception\DbException
-     * @throws \think\db\exception\ModelNotFoundException
+     * @throws DataNotFoundException
+     * @throws DbException
+     * @throws ModelNotFoundException
      */
     public function index()
     {
@@ -50,7 +54,7 @@ class Warehouse extends Controller
     }
 
     /**
-     * 添加总部仓库
+     * 添加总部仓库.
      * @auth true
      */
     public function add()
@@ -59,32 +63,12 @@ class Warehouse extends Controller
     }
 
     /**
-     * 修改总部仓库
+     * 修改总部仓库.
      * @auth true
      */
     public function edit()
     {
         PluginWumaWarehouse::mForm('form');
-    }
-
-    /**
-     * 表单数据处理
-     * @param array $data
-     * @throws \think\db\exception\DbException
-     */
-    protected function _form_filter(array &$data)
-    {
-        if (empty($data['code'])) {
-            $data['code'] = CodeExtend::uniqidNumber(16, 'W');
-        }
-        if ($this->request->isPost()) {
-            // 检查产品编号是否出现重复
-            $map = [['code', '=', $data['code']]];
-            if (isset($data['id'])) $map[] = ['id', '<>', $data['id']];
-            if (PluginWumaWarehouse::mk()->where($map)->count() > 0) {
-                $this->error("仓库编号已经存在！");
-            }
-        }
     }
 
     /**
@@ -94,5 +78,26 @@ class Warehouse extends Controller
     public function state()
     {
         PluginWumaWarehouse::mSave();
+    }
+
+    /**
+     * 表单数据处理.
+     * @throws DbException
+     */
+    protected function _form_filter(array &$data)
+    {
+        if (empty($data['code'])) {
+            $data['code'] = CodeExtend::uniqidNumber(16, 'W');
+        }
+        if ($this->request->isPost()) {
+            // 检查产品编号是否出现重复
+            $map = [['code', '=', $data['code']]];
+            if (isset($data['id'])) {
+                $map[] = ['id', '<>', $data['id']];
+            }
+            if (PluginWumaWarehouse::mk()->where($map)->count() > 0) {
+                $this->error('仓库编号已经存在！');
+            }
+        }
     }
 }

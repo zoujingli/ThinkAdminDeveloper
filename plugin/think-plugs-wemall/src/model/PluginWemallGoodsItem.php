@@ -1,20 +1,22 @@
 <?php
 
-// +----------------------------------------------------------------------
-// | WeMall Plugin for ThinkAdmin
-// +----------------------------------------------------------------------
-// | 版权所有 2014~2025 ThinkAdmin [ thinkadmin.top ]
-// +----------------------------------------------------------------------
-// | 官方网站: https://thinkadmin.top
-// +----------------------------------------------------------------------
-// | 免责声明 ( https://thinkadmin.top/disclaimer )
-// | 会员免费 ( https://thinkadmin.top/vip-introduce )
-// +----------------------------------------------------------------------
-// | gitee 代码仓库：https://gitee.com/zoujingli/think-plugs-wemall
-// | github 代码仓库：https://github.com/zoujingli/think-plugs-wemall
-// +----------------------------------------------------------------------
-
-declare (strict_types=1);
+declare(strict_types=1);
+/**
+ * +----------------------------------------------------------------------
+ * | Payment Plugin for ThinkAdmin
+ * +----------------------------------------------------------------------
+ * | 版权所有 2014~2026 ThinkAdmin [ thinkadmin.top ]
+ * +----------------------------------------------------------------------
+ * | 官方网站: https://thinkadmin.top
+ * +----------------------------------------------------------------------
+ * | 开源协议 ( https://mit-license.org )
+ * | 免责声明 ( https://thinkadmin.top/disclaimer )
+ * | 会员特权 ( https://thinkadmin.top/vip-introduce )
+ * +----------------------------------------------------------------------
+ * | gitee 代码仓库：https://gitee.com/zoujingli/ThinkAdmin
+ * | github 代码仓库：https://github.com/zoujingli/ThinkAdmin
+ * +----------------------------------------------------------------------
+ */
 
 namespace plugin\wemall\model;
 
@@ -22,15 +24,15 @@ use plugin\account\model\Abs;
 use think\model\relation\HasOne;
 
 /**
- * 商城商品规格数据
+ * 商品规格数据模型.
  *
- * @property float $allow_balance 余额支付
- * @property float $allow_integral 兑换积分
- * @property float $price_cost 进货成本
- * @property float $price_market 市场价格
- * @property float $price_selling 销售价格
- * @property float $reward_balance 奖励余额
- * @property float $reward_integral 奖励积分
+ * @property string $allow_balance 余额支付
+ * @property string $allow_integral 兑换积分
+ * @property string $price_cost 进货成本
+ * @property string $price_market 市场价格
+ * @property string $price_selling 销售价格
+ * @property string $reward_balance 奖励余额
+ * @property string $reward_integral 奖励积分
  * @property int $id
  * @property int $number_express 计件系数
  * @property int $number_virtual 虚拟销量
@@ -45,17 +47,14 @@ use think\model\relation\HasOne;
  * @property string $gspec 商品规格
  * @property string $gunit 商品单位
  * @property string $update_time 更新时间
- * @property-read \plugin\wemall\model\PluginWemallGoods $bind_goods
- * @property-read \plugin\wemall\model\PluginWemallGoods $goods
+ * @property PluginWemallGoods $bind_goods
+ * @property PluginWemallGoods $goods
  * @class PluginWemallGoodsItem
- * @package plugin\wemall\model
  */
 class PluginWemallGoodsItem extends Abs
 {
-
     /**
-     * 关联商品信息
-     * @return \think\model\relation\HasOne
+     * 关联商品信息.
      */
     public function goods(): HasOne
     {
@@ -63,23 +62,20 @@ class PluginWemallGoodsItem extends Abs
     }
 
     /**
-     * 绑定商品信息
-     * @return \think\model\relation\HasOne
+     * 绑定商品信息.
      */
     public function bindGoods(): HasOne
     {
         return $this->goods()->bind([
-            'gname'    => 'name',
-            'gcover'   => 'cover',
-            'gstatus'  => 'status',
-            'gdeleted' => 'deleted'
+            'gname' => 'name',
+            'gcover' => 'cover',
+            'gstatus' => 'status',
+            'gdeleted' => 'deleted',
         ]);
     }
 
     /**
-     * 获取商品规格JSON数据
-     * @param string $code
-     * @return string
+     * 获取商品规格JSON数据.
      */
     public static function itemsJson(string $code): string
     {
@@ -87,27 +83,25 @@ class PluginWemallGoodsItem extends Abs
     }
 
     /**
-     * 获取商品规格数组
-     * @param string $code
-     * @return array
+     * 获取商品规格数组.
      */
     public static function itemsArray(string $code): array
     {
         return self::mk()->where(['gcode' => $code])->column([
-            'gsku'            => 'gsku',
-            'ghash'           => 'hash',
-            'gspec'           => 'spec',
-            'gcode'           => 'gcode',
-            'gimage'          => 'image',
-            'status'          => 'status',
-            'price_cost'      => 'cost',
-            'price_market'    => 'market',
-            'price_selling'   => 'selling',
-            'allow_balance'   => 'allow_balance',
-            'allow_integral'  => 'allow_integral',
-            'number_virtual'  => 'virtual',
-            'number_express'  => 'express',
-            'reward_balance'  => 'balance',
+            'gsku' => 'gsku',
+            'ghash' => 'hash',
+            'gspec' => 'spec',
+            'gcode' => 'gcode',
+            'gimage' => 'image',
+            'status' => 'status',
+            'price_cost' => 'cost',
+            'price_market' => 'market',
+            'price_selling' => 'selling',
+            'allow_balance' => 'allow_balance',
+            'allow_integral' => 'allow_integral',
+            'number_virtual' => 'virtual',
+            'number_express' => 'express',
+            'reward_balance' => 'balance',
             'reward_integral' => 'integral',
         ], 'ghash');
     }

@@ -15,7 +15,23 @@
 // | github 代码仓库：https://github.com/zoujingli/think-plugs-worker
 // +----------------------------------------------------------------------
 
-declare (strict_types=1);
+declare(strict_types=1);
+/**
+ * +----------------------------------------------------------------------
+ * | Payment Plugin for ThinkAdmin
+ * +----------------------------------------------------------------------
+ * | 版权所有 2014~2026 ThinkAdmin [ thinkadmin.top ]
+ * +----------------------------------------------------------------------
+ * | 官方网站: https://thinkadmin.top
+ * +----------------------------------------------------------------------
+ * | 开源协议 ( https://mit-license.org )
+ * | 免责声明 ( https://thinkadmin.top/disclaimer )
+ * | 会员特权 ( https://thinkadmin.top/vip-introduce )
+ * +----------------------------------------------------------------------
+ * | gitee 代码仓库：https://gitee.com/zoujingli/ThinkAdmin
+ * | github 代码仓库：https://github.com/zoujingli/ThinkAdmin
+ * +----------------------------------------------------------------------
+ */
 
 namespace plugin\worker\command;
 
@@ -31,19 +47,19 @@ use think\console\Output;
 use Workerman\Worker as Workerman;
 
 /**
- * Worker Command
+ * Worker Command.
  * @class Worker
- * @package think\admin\server\command
  */
 class Worker extends Command
 {
     protected $config = [];
+
     protected $classes = [];
 
     public function configure()
     {
         $this->setName('xadmin:worker')
-            ->addArgument('action', Argument::OPTIONAL, "start|stop|restart|reload|status|connections", 'start')
+            ->addArgument('action', Argument::OPTIONAL, 'start|stop|restart|reload|status|connections', 'start')
             ->addOption('host', 'H', Option::VALUE_OPTIONAL, 'the host of workerman server.')
             ->addOption('port', 'p', Option::VALUE_OPTIONAL, 'the port of workerman server.')
             ->addOption('custom', 'c', Option::VALUE_OPTIONAL, 'the custom workerman server.', 'default')
@@ -67,9 +83,13 @@ class Worker extends Command
 
         // 初始化运行环境参数
         if ($this->process->iswin()) {
-            if (!$this->winNext($custom, $action, $port)) return;
+            if (!$this->winNext($custom, $action, $port)) {
+                return;
+            }
         } else {
-            if (!$this->unixNext($custom, $action, $port)) return;
+            if (!$this->unixNext($custom, $action, $port)) {
+                return;
+            }
         }
 
         // 设置环境运行文件
@@ -103,7 +123,7 @@ class Worker extends Command
         if (!empty($this->config['classes'])) {
             foreach ((array)$this->config['classes'] as $class) {
                 if (class_exists($class)) {
-                    $this->classes[] = new $class;
+                    $this->classes[] = new $class();
                 } else {
                     $this->output->writeln("<error>Worker Server Class Not Exists : {$class}</error>");
                 }
@@ -113,7 +133,9 @@ class Worker extends Command
         }
 
         if ($custom === 'default') {
-            if ('start' === $action) $output->writeln('Starting Workerman http server...');
+            if ($action === 'start') {
+                $output->writeln('Starting Workerman http server...');
+            }
             $worker = new HttpServer($host, $port, $this->config['context'] ?? [], $this->config['callable'] ?? null);
             $worker->setRoot($this->app->getRootPath());
         } else {
@@ -126,8 +148,8 @@ class Worker extends Command
                 } else {
                     $listen = $this->config['listen'];
                 }
-                if ('start' == $action) {
-                    $output->writeln(sprintf("Starting Workerman %s server...", strstr($listen, ':', true) ?: 'unknow'));
+                if ($action == 'start') {
+                    $output->writeln(sprintf('Starting Workerman %s server...', strstr($listen, ':', true) ?: 'unknow'));
                 }
             }
             $worker = $this->makeWorker($this->config['type'] ?? '', $listen ?? '', $this->config['context'] ?? []);
@@ -135,7 +157,7 @@ class Worker extends Command
 
         // 设置属性参数
         foreach ($this->config['worker'] ?? [] as $name => $value) {
-            $worker->$name = $value;
+            $worker->{$name} = $value;
         }
 
         // 运行环境提示
@@ -148,26 +170,29 @@ class Worker extends Command
     }
 
     /**
-     * 创建 Worker 进程实例
-     * @param string $type
-     * @param string $listen
-     * @param array $context
-     * @return BusinessWorker|Register|Gateway|Workerman
+     * 创建 Worker 进程实例.
+     * @return BusinessWorker|Gateway|Register|Workerman
      */
     protected function makeWorker(string $type, string $listen, array $context = [])
     {
         switch (strtolower($type)) {
             case 'gateway':
-                if (class_exists('GatewayWorker\Gateway')) return new Gateway($listen, $context);
-                $this->output->error("请执行 composer require workerman/gateway-worker 安装 GatewayWorker 组件");
+                if (class_exists('GatewayWorker\Gateway')) {
+                    return new Gateway($listen, $context);
+                }
+                $this->output->error('请执行 composer require workerman/gateway-worker 安装 GatewayWorker 组件');
                 exit(1);
             case 'register':
-                if (class_exists('GatewayWorker\Register')) return new Register($listen, $context);
-                $this->output->error("请执行 composer require workerman/gateway-worker 安装 GatewayWorker 组件");
+                if (class_exists('GatewayWorker\Register')) {
+                    return new Register($listen, $context);
+                }
+                $this->output->error('请执行 composer require workerman/gateway-worker 安装 GatewayWorker 组件');
                 exit(1);
             case 'business':
-                if (class_exists('GatewayWorker\BusinessWorker')) return new BusinessWorker($listen, $context);
-                $this->output->error("请执行 composer require workerman/gateway-worker 安装 GatewayWorker 组件");
+                if (class_exists('GatewayWorker\BusinessWorker')) {
+                    return new BusinessWorker($listen, $context);
+                }
+                $this->output->error('请执行 composer require workerman/gateway-worker 安装 GatewayWorker 组件');
                 exit(1);
             default:
                 return new Workerman($listen, $context);
@@ -175,11 +200,7 @@ class Worker extends Command
     }
 
     /**
-     * 初始化 Windows 环境
-     * @param string $custom
-     * @param string $action
-     * @param integer $port
-     * @return boolean
+     * 初始化 Windows 环境.
      */
     private function winNext(string $custom, string $action, int $port): bool
     {
@@ -200,7 +221,8 @@ class Worker extends Command
                 $this->output->writeln("<error>Worker daemons [{$custom}:{$port}] failed to start. </error>");
             }
             return false;
-        } elseif ($action === 'stop') {
+        }
+        if ($action === 'stop') {
             foreach ($result = $this->process->thinkQuery($command) as $item) {
                 $this->process->close(intval($item['pid']));
                 $this->output->writeln("<info>Send stop signal to Worker daemons [{$custom}:{$port}] Process {$item['pid']} </info>");
@@ -209,14 +231,15 @@ class Worker extends Command
                 $this->output->writeln("<error>The Worker daemons [{$custom}:{$port}] is not running. </error>");
             }
             return false;
-        } elseif ($action === 'status') {
+        }
+        if ($action === 'status') {
             foreach ($result = $this->process->thinkQuery('xadmin:worker') as $item) {
                 if (preg_match('#--custom\s+(.*?)\s+--port\s+(\d+)#', $item['cmd'], $matches)) {
                     $this->output->writeln("Worker daemons [{$matches[1]}:{$matches[2]}] Process {$item['pid']} running");
                 }
             }
             if (empty($result)) {
-                $this->output->writeln("<error>The Worker daemons is not running. </error>");
+                $this->output->writeln('<error>The Worker daemons is not running. </error>');
             }
             return false;
         }
@@ -224,11 +247,7 @@ class Worker extends Command
     }
 
     /**
-     * 初始化 Unix 环境
-     * @param string $custom
-     * @param string $action
-     * @param integer $port
-     * @return boolean
+     * 初始化 Unix 环境.
      */
     private function unixNext(string $custom, string $action, int $port): bool
     {
@@ -243,46 +262,42 @@ class Worker extends Command
     }
 
     /**
-     * 获取监听主机
-     * @return string
+     * 获取监听主机.
      */
     private function withHost(): string
     {
         if ($this->input->hasOption('host')) {
             return $this->input->getOption('host');
-        } elseif (empty($this->config['listen'])) {
-            return empty($this->config['host']) ? '0.0.0.0' : $this->config['host'];
-        } else {
-            return parse_url($this->config['listen'], PHP_URL_HOST) ?: '0.0.0.0';
         }
+        if (empty($this->config['listen'])) {
+            return empty($this->config['host']) ? '0.0.0.0' : $this->config['host'];
+        }
+        return parse_url($this->config['listen'], PHP_URL_HOST) ?: '0.0.0.0';
     }
 
     /**
-     * 获取监听端口
-     * @return integer
+     * 获取监听端口.
      */
     private function withPort(): int
     {
         if ($this->input->hasOption('port')) {
             return intval($this->input->getOption('port'));
-        } elseif (empty($this->config['listen'])) {
-            return empty($this->config['port']) ? 80 : intval($this->config['port']);
-        } else {
-            return intval(parse_url($this->config['listen'], PHP_URL_PORT) ?: 80);
         }
+        if (empty($this->config['listen'])) {
+            return empty($this->config['port']) ? 80 : intval($this->config['port']);
+        }
+        return intval(parse_url($this->config['listen'], PHP_URL_PORT) ?: 80);
     }
 
     /**
-     * 获取配置参数
-     * @return array
+     * 获取配置参数.
      */
     private function withConfig(): array
     {
         if (($custom = $this->input->getOption('custom')) !== 'default') {
             $config = $this->app->config->get("worker.customs.{$custom}", []);
             return [$custom, empty($config) ? false : $config];
-        } else {
-            return [$custom, $this->app->config->get('worker', [])];
         }
+        return [$custom, $this->app->config->get('worker', [])];
     }
 }

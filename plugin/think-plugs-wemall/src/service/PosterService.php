@@ -1,21 +1,22 @@
 <?php
 
-// +----------------------------------------------------------------------
-// | WeMall Plugin for ThinkAdmin
-// +----------------------------------------------------------------------
-// | 版权所有 2014~2025 ThinkAdmin [ thinkadmin.top ]
-// +----------------------------------------------------------------------
-// | 官方网站: https://thinkadmin.top
-// +----------------------------------------------------------------------
-// | 免责声明 ( https://thinkadmin.top/disclaimer )
-// | 会员免费 ( https://thinkadmin.top/vip-introduce )
-// +----------------------------------------------------------------------
-// | gitee 代码仓库：https://gitee.com/zoujingli/think-plugs-wemall
-// | github 代码仓库：https://github.com/zoujingli/think-plugs-wemall
-// +----------------------------------------------------------------------
-
-
-declare (strict_types=1);
+declare(strict_types=1);
+/**
+ * +----------------------------------------------------------------------
+ * | Payment Plugin for ThinkAdmin
+ * +----------------------------------------------------------------------
+ * | 版权所有 2014~2026 ThinkAdmin [ thinkadmin.top ]
+ * +----------------------------------------------------------------------
+ * | 官方网站: https://thinkadmin.top
+ * +----------------------------------------------------------------------
+ * | 开源协议 ( https://mit-license.org )
+ * | 免责声明 ( https://thinkadmin.top/disclaimer )
+ * | 会员特权 ( https://thinkadmin.top/vip-introduce )
+ * +----------------------------------------------------------------------
+ * | gitee 代码仓库：https://gitee.com/zoujingli/ThinkAdmin
+ * | github 代码仓库：https://github.com/zoujingli/ThinkAdmin
+ * +----------------------------------------------------------------------
+ */
 
 namespace plugin\wemall\service;
 
@@ -34,19 +35,18 @@ use think\admin\Exception;
 use think\admin\Library;
 use think\admin\Service;
 use think\admin\Storage;
+use WeChat\Exceptions\InvalidResponseException;
+use WeChat\Exceptions\LocalCacheException;
 use WeMini\Qrcode;
 
 /**
  * 海报图片生成服务
  * @class PosterService
- * @package plugin\wuma\service
  */
 abstract class PosterService extends Service
 {
-
     /**
-     * 获取字体路径
-     * @return string
+     * 获取字体路径.
      */
     public static function font(): string
     {
@@ -54,11 +54,10 @@ abstract class PosterService extends Service
     }
 
     /**
-     * 生成二维码接口
+     * 生成二维码接口.
      * @param string $text 二维码文本内容
      * @param string $label 二维码标签内容
-     * @param integer $labelSize 二维码标签大小
-     * @return \Endroid\QrCode\Writer\Result\ResultInterface
+     * @param int $labelSize 二维码标签大小
      */
     public static function qrcode(string $text, string $label = '', int $labelSize = 12): ResultInterface
     {
@@ -77,14 +76,10 @@ abstract class PosterService extends Service
     }
 
     /**
-     * 创建海报内容
-     * @param string $target
-     * @param array $items
-     * @param array $extra
-     * @return string
-     * @throws \WeChat\Exceptions\InvalidResponseException
-     * @throws \WeChat\Exceptions\LocalCacheException
-     * @throws \think\admin\Exception
+     * 创建海报内容.
+     * @throws InvalidResponseException
+     * @throws LocalCacheException
+     * @throws Exception
      */
     public static function create(string $target, array $items, array $extra = []): string
     {
@@ -99,15 +94,14 @@ abstract class PosterService extends Service
     }
 
     /**
-     * 海报图片图片
+     * 海报图片图片.
      * @param string $target 背景图片
      * @param array $items 配置参数
      * @param array $extra 自定内容
-     * @param string|null $image 合成图片
-     * @return string
-     * @throws \WeChat\Exceptions\InvalidResponseException
-     * @throws \WeChat\Exceptions\LocalCacheException
-     * @throws \think\admin\Exception
+     * @param null|string $image 合成图片
+     * @throws InvalidResponseException
+     * @throws LocalCacheException
+     * @throws Exception
      */
     public static function build(string $target, array $items, array $extra = [], ?string &$image = null): string
     {
@@ -122,36 +116,36 @@ abstract class PosterService extends Service
         $source = self::imageReset(imagecreatefromstring(file_get_contents($file)), 1024);
         [$sw, $wh] = [imagesx($source), imagesy($source)];
         imagecopyresampled($target, $source, 0, 0, 0, 0, $tw, $th, $sw, $wh);
-        foreach ($items as $item) if ($item['state']) {
-            [$size, $item['value']] = [intval($item['size']), $extra[$item['rule']] ?? $item['value']];
-            [$x, $y] = [intval($tw * $item['point']['x'] / 100), intval($th * $item['point']['y'] / 100)];
-            if ($item['type'] === 'ximg') {
-                $simg = self::imageCorners(self::imageReset(self::createImage($item, $extra), 300), 12);
-                imagecopyresampled($target, $simg, $x, $y, 0, 0, intval($size * $zoom), intval($size * $zoom), imagesx($simg), imagesy($simg));
-                imagedestroy($simg);
-            } else {
-                if (preg_match('|^rgba\(\s*([\d.]+),\s*([\d.]+),\s*([\d.]+),\s*([\d.]+)\)$|', $item['color'], $matchs)) {
-                    [, $r, $g, $b, $a] = $matchs;
-                    $black = imagecolorallocatealpha($target, intval($r), intval($g), intval($b), (1 - $a) * 127);
+        foreach ($items as $item) {
+            if ($item['state']) {
+                [$size, $item['value']] = [intval($item['size']), $extra[$item['rule']] ?? $item['value']];
+                [$x, $y] = [intval($tw * $item['point']['x'] / 100), intval($th * $item['point']['y'] / 100)];
+                if ($item['type'] === 'ximg') {
+                    $simg = self::imageCorners(self::imageReset(self::createImage($item, $extra), 300), 12);
+                    imagecopyresampled($target, $simg, $x, $y, 0, 0, intval($size * $zoom), intval($size * $zoom), imagesx($simg), imagesy($simg));
+                    imagedestroy($simg);
                 } else {
-                    $black = imagecolorallocate($target, 0x00, 0x00, 0x00);
+                    if (preg_match('|^rgba\(\s*([\d.]+),\s*([\d.]+),\s*([\d.]+),\s*([\d.]+)\)$|', $item['color'], $matchs)) {
+                        [, $r, $g, $b, $a] = $matchs;
+                        $black = imagecolorallocatealpha($target, intval($r), intval($g), intval($b), (1 - $a) * 127);
+                    } else {
+                        $black = imagecolorallocate($target, 0x00, 0x00, 0x00);
+                    }
+                    imagefttext($target, $size, 0, $x, intval($y + $size / 2 + 16), $black, $font, $item['value']);
                 }
-                imagefttext($target, $size, 0, $x, intval($y + $size / 2 + 16), $black, $font, $item['value']);
             }
         }
         ob_start() && imagepng($target) && ($image = ob_get_contents());
         ob_end_clean() && imagedestroy($target) && imagedestroy($source);
-        return sprintf("data:image/png;base64,%s", base64_encode($image));
+        return sprintf('data:image/png;base64,%s', base64_encode($image));
     }
 
     /**
      * 创建其他图形对象
-     * @param array $item
-     * @param array $extra
      * @return false|\GdImage|resource
-     * @throws \WeChat\Exceptions\InvalidResponseException
-     * @throws \WeChat\Exceptions\LocalCacheException
-     * @throws \think\admin\Exception
+     * @throws InvalidResponseException
+     * @throws LocalCacheException
+     * @throws Exception
      */
     private static function createImage(array $item, array $extra = [])
     {
@@ -171,7 +165,9 @@ abstract class PosterService extends Service
 
             // 动态计算推荐链接
             $link = $item['value'] ?: (empty($extra['user.spreat']) ? '/pages/home/index?from=UNID&fuser=CODE' : $extra['user.spreat']);
-            if (stripos($link, 'from=') === false) $link .= (strpos($link, '?') === false ? '?' : '&') . 'from=UNID';
+            if (stripos($link, 'from=') === false) {
+                $link .= (strpos($link, '?') === false ? '?' : '&') . 'from=UNID';
+            }
             $link = str_replace(['UNID', 'CODE'], [strval($unid), $code], $link);
             // 根据环境生成二维码
             if ($type === Account::WXAPP) {
@@ -179,33 +175,30 @@ abstract class PosterService extends Service
                 $qrcode = Qrcode::instance(WechatService::getWxconf())->createMiniPath($link);
             } else {
                 // 生成网页访问二维码
-                $link = rtrim(ConfigService::get('base_domain'), '\\/') . $link;
+                $link = rtrim(ConfigService::get('base_domain'), '\/') . $link;
             }
-            //elseif (in_array($type, [Account::WAP, Account::WEB, Account::WECHAT, Account::ANDROID])) {
-            //}
-//            elseif ($type === Account::ANDROID) {
-//                $urlscheme = ConfigService::get('scheme_android') ?: 'thinkadminmobile';
-//                $link = "{$urlscheme}://pages/home/index?from={$unid}";
-//            }
+            // elseif (in_array($type, [Account::WAP, Account::WEB, Account::WECHAT, Account::ANDROID])) {
+            // }
+            //            elseif ($type === Account::ANDROID) {
+            //                $urlscheme = ConfigService::get('scheme_android') ?: 'thinkadminmobile';
+            //                $link = "{$urlscheme}://pages/home/index?from={$unid}";
+            //            }
             // 动态读取二维码内容
             if (!empty($qrcode) || !empty($extra['user.qrcode']) && !empty($qrcode = Library::$sapp->cache->get($extra['user.qrcode']))) {
                 return imagecreatefromstring($qrcode);
-            } else {
-                return imagecreatefromstring(MediaService::getQrcode($link)->getString());
             }
-        } else {
-            $file = Storage::down($item['value'] ?: Account::headimg())['file'] ?? '';
-            if (empty($file) || !is_file($file) || filesize($file) < 10) {
-                throw new Exception('读取图片失败！');
-            }
-            return imagecreatefromstring(file_get_contents($file));
+            return imagecreatefromstring(MediaService::getQrcode($link)->getString());
         }
+        $file = Storage::down($item['value'] ?: Account::headimg())['file'] ?? '';
+        if (empty($file) || !is_file($file) || filesize($file) < 10) {
+            throw new Exception('读取图片失败！');
+        }
+        return imagecreatefromstring(file_get_contents($file));
     }
 
     /**
-     * 按最小边绽放图片
+     * 按最小边绽放图片.
      * @param false|\GdImage|resource $image
-     * @param integer $size
      * @return false|\GdImage|resource
      */
     private static function imageReset($image, int $size)
@@ -222,9 +215,8 @@ abstract class PosterService extends Service
     }
 
     /**
-     * 图片圆角处理
+     * 图片圆角处理.
      * @param false|\GdImage|resource $image
-     * @param int $radius
      * @return false|\GdImage|resource
      */
     private static function imageCorners($image, int $radius = 10)
@@ -244,8 +236,9 @@ abstract class PosterService extends Service
         $radius *= $q;
 
         # find unique color
-        do [$r, $g, $b] = [rand(0, 255), rand(0, 255), rand(0, 255)];
-        while (imagecolorexact($src, $r, $g, $b) < 0);
+        do {
+            [$r, $g, $b] = [rand(0, 255), rand(0, 255), rand(0, 255)];
+        } while (imagecolorexact($src, $r, $g, $b) < 0);
 
         $ns = $s * $q;
 
@@ -287,5 +280,3 @@ abstract class PosterService extends Service
         return $image;
     }
 }
-
-

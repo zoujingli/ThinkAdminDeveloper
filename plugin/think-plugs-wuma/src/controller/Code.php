@@ -1,20 +1,22 @@
 <?php
 
-// +----------------------------------------------------------------------
-// | Wuma Plugin for ThinkAdmin
-// +----------------------------------------------------------------------
-// | 版权所有 2014~2025 ThinkAdmin [ thinkadmin.top ]
-// +----------------------------------------------------------------------
-// | 官方网站: https://thinkadmin.top
-// +----------------------------------------------------------------------
-// | 免责声明 ( https://thinkadmin.top/disclaimer )
-// | 收费插件 ( https://thinkadmin.top/fee-introduce.html )
-// +----------------------------------------------------------------------
-// | gitee 代码仓库：https://gitee.com/zoujingli/think-plugs-wuma
-// | github 代码仓库：https://github.com/zoujingli/think-plugs-wuma
-// +----------------------------------------------------------------------
-
-declare (strict_types=1);
+declare(strict_types=1);
+/**
+ * +----------------------------------------------------------------------
+ * | Payment Plugin for ThinkAdmin
+ * +----------------------------------------------------------------------
+ * | 版权所有 2014~2026 ThinkAdmin [ thinkadmin.top ]
+ * +----------------------------------------------------------------------
+ * | 官方网站: https://thinkadmin.top
+ * +----------------------------------------------------------------------
+ * | 开源协议 ( https://mit-license.org )
+ * | 免责声明 ( https://thinkadmin.top/disclaimer )
+ * | 会员特权 ( https://thinkadmin.top/vip-introduce )
+ * +----------------------------------------------------------------------
+ * | gitee 代码仓库：https://gitee.com/zoujingli/ThinkAdmin
+ * | github 代码仓库：https://github.com/zoujingli/ThinkAdmin
+ * +----------------------------------------------------------------------
+ */
 
 namespace plugin\wuma\controller;
 
@@ -23,22 +25,24 @@ use plugin\wuma\model\PluginWumaCodeRuleRange;
 use plugin\wuma\service\CodeService;
 use think\admin\Controller;
 use think\admin\helper\QueryHelper;
+use think\db\exception\DataNotFoundException;
+use think\db\exception\DbException;
+use think\db\exception\ModelNotFoundException;
 use think\exception\HttpResponseException;
 
 /**
- * 物码标签管理
+ * 物码标签管理.
  * @class Code
- * @package plugin\wuma\controller
  */
 class Code extends Controller
 {
     /**
-     * 仓库物码管理
+     * 仓库物码管理.
      * @auth true
      * @menu true
-     * @throws \think\db\exception\DataNotFoundException
-     * @throws \think\db\exception\DbException
-     * @throws \think\db\exception\ModelNotFoundException
+     * @throws DataNotFoundException
+     * @throws DbException
+     * @throws ModelNotFoundException
      */
     public function index()
     {
@@ -61,23 +65,15 @@ class Code extends Controller
             foreach (['minValue#min', 'boxValue#max,mid', 'encValue#min', 'numValue#min'] as $rule) {
                 [$alias, $types] = explode('#', $rule);
                 $db = PluginWumaCodeRuleRange::mQuery($this->get)->valueRange("range_start:range_after#{$alias}")->field('batch')->db();
-                if ($db->getOptions('where')) $query->whereRaw("batch in {$db->whereIn('code_type', str2arr($types))->buildSql()}");
+                if ($db->getOptions('where')) {
+                    $query->whereRaw("batch in {$db->whereIn('code_type', str2arr($types))->buildSql()}");
+                }
             }
         });
     }
 
     /**
-     * 数据列表处理
-     * @param array $data
-     * @return void
-     */
-    protected function _index_page_filter(array &$data)
-    {
-        foreach ($data as &$vo) PluginWumaCodeRule::applyRangeData($vo);
-    }
-
-    /**
-     * 下载物码文件
+     * 下载物码文件.
      * @auth true
      */
     public function download()
@@ -102,12 +98,12 @@ class Code extends Controller
             PluginWumaCodeRule::mForm('template');
         } else {
             $data = $this->_vali([
-                'batch.require'    => "批次号不能为空！",
-                'remark.default'   => '',
+                'batch.require' => '批次号不能为空！',
+                'remark.default' => '',
                 'template.default' => '',
             ]);
             PluginWumaCodeRule::mk()->where(['batch' => $data['batch']])->update([
-                'remark' => $data['remark'], 'template' => $data['template']
+                'remark' => $data['remark'], 'template' => $data['template'],
             ]);
             $this->success('模板修改成功！');
         }
@@ -124,20 +120,20 @@ class Code extends Controller
         } else {
             $tpl = PluginWumaCodeRule::mk()->order('id desc')->value('template');
             $data = $this->_vali([
-                'type.default'       => 1,
+                'type.default' => 1,
                 'sns_length.default' => 0,
                 'max_length.default' => 0,
                 'mid_length.default' => 0,
                 'min_length.default' => 0,
                 'hex_length.default' => 0,
                 'ver_length.default' => 0,
-                'max_mid.default'    => 0,
-                'mid_min.default'    => 0,
+                'max_mid.default' => 0,
+                'mid_min.default' => 0,
                 'max_number.default' => 0,
                 'mid_number.default' => 0,
-                'remark.default'     => '',
-                'number.default'     => 0,
-                'template.default'   => $tpl,
+                'remark.default' => '',
+                'number.default' => 0,
+                'template.default' => $tpl,
             ]);
             // 创建物码规则并返回结果
             throw new HttpResponseException(json(array_merge(CodeService::add($data), ['data' => []])));
@@ -161,8 +157,18 @@ class Code extends Controller
     public function state()
     {
         PluginWumaCodeRule::mSave($this->_vali([
-            'status.in:0,1'  => '状态值范围异常！',
+            'status.in:0,1' => '状态值范围异常！',
             'status.require' => '状态值不能为空！',
         ]));
+    }
+
+    /**
+     * 数据列表处理.
+     */
+    protected function _index_page_filter(array &$data)
+    {
+        foreach ($data as &$vo) {
+            PluginWumaCodeRule::applyRangeData($vo);
+        }
     }
 }

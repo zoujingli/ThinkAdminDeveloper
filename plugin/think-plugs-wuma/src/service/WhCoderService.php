@@ -1,20 +1,22 @@
 <?php
 
-// +----------------------------------------------------------------------
-// | Wuma Plugin for ThinkAdmin
-// +----------------------------------------------------------------------
-// | 版权所有 2014~2025 ThinkAdmin [ thinkadmin.top ]
-// +----------------------------------------------------------------------
-// | 官方网站: https://thinkadmin.top
-// +----------------------------------------------------------------------
-// | 免责声明 ( https://thinkadmin.top/disclaimer )
-// | 收费插件 ( https://thinkadmin.top/fee-introduce.html )
-// +----------------------------------------------------------------------
-// | gitee 代码仓库：https://gitee.com/zoujingli/think-plugs-wuma
-// | github 代码仓库：https://github.com/zoujingli/think-plugs-wuma
-// +----------------------------------------------------------------------
-
-declare (strict_types=1);
+declare(strict_types=1);
+/**
+ * +----------------------------------------------------------------------
+ * | Payment Plugin for ThinkAdmin
+ * +----------------------------------------------------------------------
+ * | 版权所有 2014~2026 ThinkAdmin [ thinkadmin.top ]
+ * +----------------------------------------------------------------------
+ * | 官方网站: https://thinkadmin.top
+ * +----------------------------------------------------------------------
+ * | 开源协议 ( https://mit-license.org )
+ * | 免责声明 ( https://thinkadmin.top/disclaimer )
+ * | 会员特权 ( https://thinkadmin.top/vip-introduce )
+ * +----------------------------------------------------------------------
+ * | gitee 代码仓库：https://gitee.com/zoujingli/ThinkAdmin
+ * | github 代码仓库：https://github.com/zoujingli/ThinkAdmin
+ * +----------------------------------------------------------------------
+ */
 
 namespace plugin\wuma\service;
 
@@ -26,23 +28,24 @@ use plugin\wuma\model\PluginWumaWarehouseOrderDataMins;
 use plugin\wuma\model\PluginWumaWarehouseReplace;
 use think\admin\Exception;
 use think\admin\Service;
+use think\db\exception\DataNotFoundException;
+use think\db\exception\DbException;
+use think\db\exception\ModelNotFoundException;
 use think\db\Query;
 
 /**
  * 仓库物码数据服务
  * @class WhCoderService
- * @package plugin\wuma\service
  */
 class WhCoderService extends Service
 {
-
     /**
-     * 检查物码是否存在
+     * 检查物码是否存在.
      * @param array $codes 物码集合
      * @param string $from 来源类型(encode,number,codes,array)
-     * @param boolean $replace 是否检查替换标签
+     * @param bool $replace 是否检查替换标签
      * @return array [status, mins, exists, array]
-     * @throws \think\admin\Exception
+     * @throws Exception
      */
     public static function checkImportExist(array $codes, string $from = 'encode', bool $replace = false): array
     {
@@ -52,23 +55,27 @@ class WhCoderService extends Service
         $map = [['status', '=', 1], ['deleted', '=', 0], ['code', 'in', $mincodes]];
         if ($items = PluginWumaWarehouseOrderDataMins::mk()->withSearch('inter')->where($map)->column('code')) {
             if ($intersect = array_intersect($items, $mincodes)) {
-                foreach ($intersect as $min) $exists[$min] = $mins[$min];
+                foreach ($intersect as $min) {
+                    $exists[$min] = $mins[$min];
+                }
             }
         }
         // 检查替换码是否存在
         if ($replace && ($reps = static::recheck($mincodes)) && !empty($reps)) {
-            foreach ($reps as $min) $exists[$min] = $mins[$min];
+            foreach ($reps as $min) {
+                $exists[$min] = $mins[$min];
+            }
         }
         return [count($mins) === count($exists) ? 1 : 0, $mins, $exists, []];
     }
 
     /**
-     * 检查出库记录
+     * 检查出库记录.
      * @param array $codes 物码集合
      * @param string $from 来源类型(encode,number,codes,array)
-     * @param boolean $replace 是否检查替换标签
+     * @param bool $replace 是否检查替换标签
      * @return array [status, mins, exists, array]
-     * @throws \think\admin\Exception
+     * @throws Exception
      */
     public static function checkExportExist(array $codes, string $from = 'encode', bool $replace = false): array
     {
@@ -78,77 +85,111 @@ class WhCoderService extends Service
         $where = [['status', '=', 1], ['deleted', '=', 0], ['code', 'in', $mincodes]];
         if ($items = PluginWumaWarehouseOrderDataMins::mk()->withSearch('outer')->where($where)->column('code')) {
             if ($intersect = array_intersect($items, $mincodes)) {
-                foreach ($intersect as $min) $exists[$min] = $mins[$min] ?? '-';
+                foreach ($intersect as $min) {
+                    $exists[$min] = $mins[$min] ?? '-';
+                }
                 return [1, $mins, $exists, []];
             }
         }
         // 检查替换码是否存在
         if ($replace && ($reps = static::recheck($mincodes)) && !empty($reps)) {
-            foreach ($reps as $min) $exists[$min] = $mins[$min];
+            foreach ($reps as $min) {
+                $exists[$min] = $mins[$min];
+            }
         }
         return [0, $mins, [], []];
     }
 
     /**
-     * 检查物码处理
+     * 检查物码处理.
      * @param array $body 源数据 ['nums','ecns','mins','mids','maxs','ghash']
-     * @param boolean $assign 是否检查赋码产品
-     * @param boolean $relation 是否检查物码关联
-     * @param boolean $replace 是否检查替换标签
+     * @param bool $assign 是否检查赋码产品
+     * @param bool $relation 是否检查物码关联
+     * @param bool $replace 是否检查替换标签
      * @return array [min=>code#type]
-     * @throws \think\admin\Exception
-     * @throws \think\db\exception\DataNotFoundException
-     * @throws \think\db\exception\DbException
-     * @throws \think\db\exception\ModelNotFoundException
+     * @throws Exception
+     * @throws DataNotFoundException
+     * @throws DbException
+     * @throws ModelNotFoundException
      */
     public static function code2mins(array &$body, bool $assign = false, bool $relation = true, bool $replace = true): array
     {
         [$oks, $ers, $codes] = [[], [], []];
         if (!empty($body['nums']) && count($items = static::replace(array_unique(str2arr($body['nums'])))) > 0) {
             [$state, $nums] = CodeService::checkValid([], $items, 'number', 'min');
-            if (empty($state)) throw new Exception('物码范围无效！', 0, array_values(array_diff($items, $nums)));
-            if ($relation) foreach ($nums as $num) if (isset($codes[$min = CodeService::num2min($num)])) {
-                throw new Exception("存在包含关系，", 0, [$num, strstr($codes[$min], '#', true)]);
-            } else {
-                $codes[$min] = "{$num}#NUM";
+            if (empty($state)) {
+                throw new Exception('物码范围无效！', 0, array_values(array_diff($items, $nums)));
             }
+            if ($relation) {
+                foreach ($nums as $num) {
+                    if (isset($codes[$min = CodeService::num2min($num)])) {
+                        throw new Exception('存在包含关系，', 0, [$num, strstr($codes[$min], '#', true)]);
+                    }
+                }
+            }
+            $codes[$min] = "{$num}#NUM";
         }
         if (!empty($body['encs']) && count($items = static::replace(array_unique(str2arr($body['encs'])))) > 0) {
             [$state, $encs] = CodeService::checkValid([], $items, 'encode', 'min');
-            if (empty($state)) throw new Exception('物码范围无效！', 0, array_values(array_diff($items, $encs)));
-            if ($relation) foreach ($encs as $enc) if (isset($codes[$min = CodeService::enc2min($enc)])) {
-                throw new Exception("存在包含关系！", 0, [$enc, strstr($codes[$min], '#', true)]);
-            } else {
-                $codes[$min] = "{$enc}#ENC";
+            if (empty($state)) {
+                throw new Exception('物码范围无效！', 0, array_values(array_diff($items, $encs)));
             }
+            if ($relation) {
+                foreach ($encs as $enc) {
+                    if (isset($codes[$min = CodeService::enc2min($enc)])) {
+                        throw new Exception('存在包含关系！', 0, [$enc, strstr($codes[$min], '#', true)]);
+                    }
+                }
+            }
+            $codes[$min] = "{$enc}#ENC";
         }
         if (!empty($body['mins']) && count($items = array_unique(str2arr($body['mins']))) > 0) {
             [$state, $mins] = CodeService::checkValid([], $items, 'min', 'min');
-            if (empty($state)) throw new Exception('小码范围无效！', 0, array_values(array_diff($items, $mins)));
-            if ($relation) foreach ($mins as $min) $codes[$min] = "{$min}#MIN";
+            if (empty($state)) {
+                throw new Exception('小码范围无效！', 0, array_values(array_diff($items, $mins)));
+            }
+            if ($relation) {
+                foreach ($mins as $min) {
+                    $codes[$min] = "{$min}#MIN";
+                }
+            }
         }
         if (!empty($body['mids']) && count($items = array_unique(str2arr($body['mids']))) > 0) {
             [$state, $mids] = CodeService::checkValid([], $items, 'mid', 'mid');
-            if (empty($state)) throw new Exception('中码范围无效！', 0, array_values(array_diff($items, $mids)));
-            if ($relation) foreach ($mids as $mid) foreach (CodeService::tomins('mid', $mid)[1] as $tmids) {
-                foreach ($tmids as $tmins) foreach ($tmins as $min) {
-                    if (isset($codes[$min])) {
-                        throw new Exception("存在包含关系！", 0, [$mid, strstr($codes[$min], '#', true)]);
-                    } else {
-                        $codes[$min] = "{$mid}#MID";
+            if (empty($state)) {
+                throw new Exception('中码范围无效！', 0, array_values(array_diff($items, $mids)));
+            }
+            if ($relation) {
+                foreach ($mids as $mid) {
+                    foreach (CodeService::tomins('mid', $mid)[1] as $tmids) {
+                        foreach ($tmids as $tmins) {
+                            foreach ($tmins as $min) {
+                                if (isset($codes[$min])) {
+                                    throw new Exception('存在包含关系！', 0, [$mid, strstr($codes[$min], '#', true)]);
+                                }
+                                $codes[$min] = "{$mid}#MID";
+                            }
+                        }
                     }
                 }
             }
         }
         if (!empty($body['maxs']) && count($items = array_unique(str2arr($body['maxs']))) > 0) {
             [$state, $maxs] = CodeService::checkValid([], $items, 'max', 'max');
-            if (empty($state)) throw new Exception("大码范围无效", 0, array_values(array_diff($items, $maxs)));
-            if ($relation) foreach ($maxs as $max) foreach (CodeService::tomins('max', $max)[1] as $tmids) {
-                foreach ($tmids as $tmins) foreach ($tmins as $min) {
-                    if (isset($codes[$min])) {
-                        throw new Exception("存在包含关系！", 0, [$max, strstr($codes[$min], '#', true)]);
-                    } else {
-                        $codes[$min] = "{$max}#MAX";
+            if (empty($state)) {
+                throw new Exception('大码范围无效', 0, array_values(array_diff($items, $maxs)));
+            }
+            if ($relation) {
+                foreach ($maxs as $max) {
+                    foreach (CodeService::tomins('max', $max)[1] as $tmids) {
+                        foreach ($tmids as $tmins) {
+                            foreach ($tmins as $min) {
+                                if (isset($codes[$min])) {
+                                    throw new Exception('存在包含关系！', 0, [$max, strstr($codes[$min], '#', true)]);
+                                }
+                                $codes[$min] = "{$max}#MAX";
+                            }
+                        }
                     }
                 }
             }
@@ -164,15 +205,19 @@ class WhCoderService extends Service
         if ($assign) {
             foreach (RelationService::changeAssignLock(array_keys($codes)) as $assign) {
                 // 首次未传商品信息时自动补充
-                if (empty($body['ghash'])) $body['ghash'] = $assign['produce']['ghash'];
+                if (empty($body['ghash'])) {
+                    $body['ghash'] = $assign['produce']['ghash'];
+                }
                 if ($assign['produce']['ghash'] !== $body['ghash']) {
                     $ers[$assign['code']] = strstr($codes[$assign['code']], '#', true);
                 } else {
                     $oks[$assign['code']] = strstr($codes[$assign['code']], '#', true);
                 }
             }
-            foreach ($codes as $min => $code) if (!isset($oks[$min]) && !isset($ers[$min])) {
-                $ers[$min] = strstr($code, '#', true);
+            foreach ($codes as $min => $code) {
+                if (!isset($oks[$min]) && !isset($ers[$min])) {
+                    $ers[$min] = strstr($code, '#', true);
+                }
             }
             if (count($ers) > 0) {
                 throw new Exception('与赋码产品不一致！', 0, array_unique(array_values($ers)));
@@ -182,21 +227,23 @@ class WhCoderService extends Service
     }
 
     /**
-     * 替换为原始数据
+     * 替换为原始数据.
      * @param array $codes 待替换的标签
-     * @return array
      */
     public static function replace(array $codes): array
     {
         $cols = PluginWumaWarehouseReplace::mk()->whereIn('target', $codes)->column('source', 'target');
-        foreach ($codes as &$code) if (isset($cols[$code])) $code = $cols[$code];
+        foreach ($codes as &$code) {
+            if (isset($cols[$code])) {
+                $code = $cols[$code];
+            }
+        }
         return $codes;
     }
 
     /**
-     * 检查替换标签
+     * 检查替换标签.
      * @param array $codes 待检查的小码
-     * @return array
      */
     public static function recheck(array $codes): array
     {
@@ -208,12 +255,12 @@ class WhCoderService extends Service
     }
 
     /**
-     * 物码规则统计数量
+     * 物码规则统计数量.
      * @param array $codes 物码规则 [min=>code#type]
      * @return array [count, maps, unis, array]
-     * @throws \think\db\exception\DataNotFoundException
-     * @throws \think\db\exception\DbException
-     * @throws \think\db\exception\ModelNotFoundException
+     * @throws DataNotFoundException
+     * @throws DbException
+     * @throws ModelNotFoundException
      */
     public static function code2count(array $codes): array
     {
@@ -224,9 +271,9 @@ class WhCoderService extends Service
         $rules = PluginWumaCodeRule::fullRules();
         foreach ($unis as $code) {
             $attr = explode('#', $code);
-            if (in_array($attr[1], ['MIN', "NUM", 'ENC'])) {
+            if (in_array($attr[1], ['MIN', 'NUM', 'ENC'])) {
                 [$count++, $maps[$code] = $code . '#1'];
-            } elseif (in_array($attr[1], ['MAX', "MID"])) {
+            } elseif (in_array($attr[1], ['MAX', 'MID'])) {
                 foreach ($rules['nums'] as $range => $num) {
                     [$start, $after] = explode('-', $range);
                     if (floatval($start) <= floatval($attr[0]) && floatval($attr[0]) <= floatval($after)) {
@@ -243,14 +290,16 @@ class WhCoderService extends Service
 
     /**
      * 商品码查询产品
-     * @param integer|string $code
+     * @param int|string $code
      * @return array|string
      */
     public static function goods($code)
     {
         $map = [['range_start', '<=', $code], ['range_after', '>=', $code]];
         $coder = PluginWumaCodeRuleRange::mk()->where($map)->findOrEmpty()->toArray();
-        if (empty($coder)) return '物码规则异常';
+        if (empty($coder)) {
+            return '物码规则异常';
+        }
 
         // 赋码批次关联
         $item = PluginWumaSourceAssignItem::mk()->with(['produce'])->where(static function (Query $query) use ($coder) {

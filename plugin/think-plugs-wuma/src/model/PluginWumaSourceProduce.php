@@ -1,28 +1,33 @@
 <?php
 
-// +----------------------------------------------------------------------
-// | Wuma Plugin for ThinkAdmin
-// +----------------------------------------------------------------------
-// | 版权所有 2014~2025 ThinkAdmin [ thinkadmin.top ]
-// +----------------------------------------------------------------------
-// | 官方网站: https://thinkadmin.top
-// +----------------------------------------------------------------------
-// | 免责声明 ( https://thinkadmin.top/disclaimer )
-// | 收费插件 ( https://thinkadmin.top/fee-introduce.html )
-// +----------------------------------------------------------------------
-// | gitee 代码仓库：https://gitee.com/zoujingli/think-plugs-wuma
-// | github 代码仓库：https://github.com/zoujingli/think-plugs-wuma
-// +----------------------------------------------------------------------
-
-declare (strict_types=1);
+declare(strict_types=1);
+/**
+ * +----------------------------------------------------------------------
+ * | Payment Plugin for ThinkAdmin
+ * +----------------------------------------------------------------------
+ * | 版权所有 2014~2026 ThinkAdmin [ thinkadmin.top ]
+ * +----------------------------------------------------------------------
+ * | 官方网站: https://thinkadmin.top
+ * +----------------------------------------------------------------------
+ * | 开源协议 ( https://mit-license.org )
+ * | 免责声明 ( https://thinkadmin.top/disclaimer )
+ * | 会员特权 ( https://thinkadmin.top/vip-introduce )
+ * +----------------------------------------------------------------------
+ * | gitee 代码仓库：https://gitee.com/zoujingli/ThinkAdmin
+ * | github 代码仓库：https://github.com/zoujingli/ThinkAdmin
+ * +----------------------------------------------------------------------
+ */
 
 namespace plugin\wuma\model;
 
 use plugin\wemall\model\PluginWemallGoodsItem;
+use think\db\exception\DataNotFoundException;
+use think\db\exception\DbException;
+use think\db\exception\ModelNotFoundException;
 use think\model\relation\HasOne;
 
 /**
- * 生产批次数据模型
+ * 生产批次数据模型.
  *
  * @property int $deleted 删除状态(0未删1已删)
  * @property int $id
@@ -37,23 +42,20 @@ use think\model\relation\HasOne;
  * @property string $remark 批次备注
  * @property string $tcode 关联溯源模板
  * @property string $update_time 更新时间
- * @property-read \plugin\wemall\model\PluginWemallGoodsItem $bind_goods
- * @property-read \plugin\wemall\model\PluginWemallGoodsItem $goods
- * @property-read \plugin\wuma\model\PluginWumaSourceTemplate $bind_template
- * @property-read \plugin\wuma\model\PluginWumaSourceTemplate $template
+ * @property PluginWemallGoodsItem $bind_goods
+ * @property PluginWemallGoodsItem $goods
+ * @property PluginWumaSourceTemplate $bind_template
+ * @property PluginWumaSourceTemplate $template
  * @class PluginWumaSourceProduce
- * @package plugin\wuma\model
  */
 class PluginWumaSourceProduce extends AbstractPrivate
 {
-
     /**
      * 获取所有生产批次
      * @param mixed $map
-     * @return array
-     * @throws \think\db\exception\DataNotFoundException
-     * @throws \think\db\exception\DbException
-     * @throws \think\db\exception\ModelNotFoundException
+     * @throws DataNotFoundException
+     * @throws DbException
+     * @throws ModelNotFoundException
      */
     public static function lists($map = []): array
     {
@@ -62,8 +64,7 @@ class PluginWumaSourceProduce extends AbstractPrivate
     }
 
     /**
-     * 关联产品数据
-     * @return HasOne
+     * 关联产品数据.
      */
     public function goods(): HasOne
     {
@@ -71,23 +72,21 @@ class PluginWumaSourceProduce extends AbstractPrivate
     }
 
     /**
-     * 绑定产品数据
-     * @return HasOne
+     * 绑定产品数据.
      */
     public function bindGoods(): HasOne
     {
         return $this->goods()->bind([
-            'gcode'  => 'gcode',
-            'gname'  => 'gname',
-            'gunit'  => 'gunit',
-            'gspec'  => 'gspec',
+            'gcode' => 'gcode',
+            'gname' => 'gname',
+            'gunit' => 'gunit',
+            'gspec' => 'gspec',
             'gcover' => 'gcover',
         ]);
     }
 
     /**
-     * 关联模板数据
-     * @return \think\model\relation\HasOne
+     * 关联模板数据.
      */
     public function template(): HasOne
     {
@@ -95,15 +94,14 @@ class PluginWumaSourceProduce extends AbstractPrivate
     }
 
     /**
-     * 绑定模板数据
-     * @return HasOne
+     * 绑定模板数据.
      */
     public function bindTemplate(): HasOne
     {
         return $this->template()->bind([
-            'tname'    => 'name',
-            'tstatus'  => 'status',
-            'sdeleted' => 'deleted'
+            'tname' => 'name',
+            'tstatus' => 'status',
+            'sdeleted' => 'deleted',
         ]);
     }
 }

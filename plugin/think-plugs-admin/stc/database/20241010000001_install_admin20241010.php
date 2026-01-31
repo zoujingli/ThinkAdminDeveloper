@@ -1,19 +1,22 @@
 <?php
 
-// +----------------------------------------------------------------------
-// | Admin Plugin for ThinkAdmin
-// +----------------------------------------------------------------------
-// | 版权所有 2014~2025 ThinkAdmin [ thinkadmin.top ]
-// +----------------------------------------------------------------------
-// | 官方网站: https://thinkadmin.top
-// +----------------------------------------------------------------------
-// | 开源协议 ( https://mit-license.org )
-// | 免责声明 ( https://thinkadmin.top/disclaimer )
-// +----------------------------------------------------------------------
-// | gitee 代码仓库：https://gitee.com/zoujingli/think-plugs-admin
-// | github 代码仓库：https://github.com/zoujingli/think-plugs-admin
-// +----------------------------------------------------------------------
-
+declare(strict_types=1);
+/**
+ * +----------------------------------------------------------------------
+ * | Payment Plugin for ThinkAdmin
+ * +----------------------------------------------------------------------
+ * | 版权所有 2014~2026 ThinkAdmin [ thinkadmin.top ]
+ * +----------------------------------------------------------------------
+ * | 官方网站: https://thinkadmin.top
+ * +----------------------------------------------------------------------
+ * | 开源协议 ( https://mit-license.org )
+ * | 免责声明 ( https://thinkadmin.top/disclaimer )
+ * | 会员特权 ( https://thinkadmin.top/vip-introduce )
+ * +----------------------------------------------------------------------
+ * | gitee 代码仓库：https://gitee.com/zoujingli/ThinkAdmin
+ * | github 代码仓库：https://github.com/zoujingli/ThinkAdmin
+ * +----------------------------------------------------------------------
+ */
 use think\admin\extend\PhinxExtend;
 use think\migration\Migrator;
 
@@ -21,14 +24,12 @@ use think\migration\Migrator;
 @ini_set('memory_limit', -1);
 
 /**
- * 系统模块数据
+ * 系统模块数据.
  */
 class InstallAdmin20241010 extends Migrator
 {
-
     /**
-     * 获取脚本名称
-     * @return string
+     * 获取脚本名称.
      */
     public function getName(): string
     {
@@ -36,7 +37,7 @@ class InstallAdmin20241010 extends Migrator
     }
 
     /**
-     * 创建数据库
+     * 创建数据库.
      */
     public function change()
     {
@@ -56,7 +57,6 @@ class InstallAdmin20241010 extends Migrator
      * 创建数据对象
      * @class SystemAuth
      * @table system_auth
-     * @return void
      */
     private function _create_system_auth()
     {
@@ -81,7 +81,6 @@ class InstallAdmin20241010 extends Migrator
      * 创建数据对象
      * @class SystemAuthNode
      * @table system_auth_node
-     * @return void
      */
     private function _create_system_auth_node()
     {
@@ -102,7 +101,6 @@ class InstallAdmin20241010 extends Migrator
      * 创建数据对象
      * @class SystemBase
      * @table system_base
-     * @return void
      */
     private function _create_system_base()
     {
@@ -115,7 +113,7 @@ class InstallAdmin20241010 extends Migrator
             ['type', 'string', ['limit' => 20, 'default' => '', 'null' => true, 'comment' => '数据类型']],
             ['code', 'string', ['limit' => 100, 'default' => '', 'null' => true, 'comment' => '数据代码']],
             ['name', 'string', ['limit' => 500, 'default' => '', 'null' => true, 'comment' => '数据名称']],
-            ['content', 'text', ['default' => NULL, 'null' => true, 'comment' => '数据内容']],
+            ['content', 'text', ['default' => null, 'null' => true, 'comment' => '数据内容']],
             ['sort', 'biginteger', ['limit' => 20, 'default' => 0, 'null' => true, 'comment' => '排序权重']],
             ['status', 'integer', ['limit' => 1, 'default' => 1, 'null' => true, 'comment' => '数据状态(0禁用,1启动)']],
             ['deleted', 'integer', ['limit' => 1, 'default' => 0, 'null' => true, 'comment' => '删除状态(0正常,1已删)']],
@@ -131,7 +129,6 @@ class InstallAdmin20241010 extends Migrator
      * 创建数据对象
      * @class SystemConfig
      * @table system_config
-     * @return void
      */
     private function _create_system_config()
     {
@@ -153,7 +150,6 @@ class InstallAdmin20241010 extends Migrator
      * 创建数据对象
      * @class SystemData
      * @table system_data
-     * @return void
      */
     private function _create_system_data()
     {
@@ -164,9 +160,9 @@ class InstallAdmin20241010 extends Migrator
         // 创建或更新数据表
         PhinxExtend::upgrade($table, [
             ['name', 'string', ['limit' => 100, 'default' => '', 'null' => true, 'comment' => '配置名']],
-            ['value', 'text', ['default' => NULL, 'null' => true, 'comment' => '配置值']],
-            ['create_time', 'datetime', ['default' => NULL, 'null' => true, 'comment' => '创建时间']],
-            ['update_time', 'datetime', ['default' => NULL, 'null' => true, 'comment' => '更新时间']],
+            ['value', 'text', ['default' => null, 'null' => true, 'comment' => '配置值']],
+            ['create_time', 'datetime', ['default' => null, 'null' => true, 'comment' => '创建时间']],
+            ['update_time', 'datetime', ['default' => null, 'null' => true, 'comment' => '更新时间']],
         ], [
             'name', 'create_time',
         ], true);
@@ -176,7 +172,6 @@ class InstallAdmin20241010 extends Migrator
      * 创建数据对象
      * @class SystemFile
      * @table system_file
-     * @return void
      */
     private function _create_system_file()
     {
@@ -200,8 +195,8 @@ class InstallAdmin20241010 extends Migrator
             ['isfast', 'integer', ['limit' => 1, 'default' => 0, 'null' => true, 'comment' => '是否秒传']],
             ['issafe', 'integer', ['limit' => 1, 'default' => 0, 'null' => true, 'comment' => '安全模式']],
             ['status', 'integer', ['limit' => 1, 'default' => 1, 'null' => true, 'comment' => '上传状态(1悬空,2落地)']],
-            ['create_at', 'datetime', ['default' => NULL, 'null' => true, 'comment' => '创建时间']],
-            ['update_at', 'datetime', ['default' => NULL, 'null' => true, 'comment' => '更新时间']],
+            ['create_at', 'datetime', ['default' => null, 'null' => true, 'comment' => '创建时间']],
+            ['update_at', 'datetime', ['default' => null, 'null' => true, 'comment' => '更新时间']],
         ], [
             'type', 'hash', 'uuid', 'xext', 'unid', 'tags', 'name', 'status', 'issafe', 'isfast', 'create_at',
         ], true);
@@ -211,7 +206,6 @@ class InstallAdmin20241010 extends Migrator
      * 创建数据对象
      * @class SystemMenu
      * @table system_menu
-     * @return void
      */
     private function _create_system_menu()
     {
@@ -240,7 +234,6 @@ class InstallAdmin20241010 extends Migrator
      * 创建数据对象
      * @class SystemOplog
      * @table system_oplog
-     * @return void
      */
     private function _create_system_oplog()
     {
@@ -265,7 +258,6 @@ class InstallAdmin20241010 extends Migrator
      * 创建数据对象
      * @class SystemQueue
      * @table system_queue
-     * @return void
      */
     private function _create_system_queue()
     {
@@ -279,14 +271,14 @@ class InstallAdmin20241010 extends Migrator
             ['title', 'string', ['limit' => 100, 'default' => '', 'null' => false, 'comment' => '任务名称']],
             ['command', 'string', ['limit' => 500, 'default' => '', 'null' => true, 'comment' => '执行指令']],
             ['exec_pid', 'biginteger', ['limit' => 20, 'default' => 0, 'null' => true, 'comment' => '执行进程']],
-            ['exec_data', 'text', ['default' => NULL, 'null' => true, 'comment' => '执行参数']],
+            ['exec_data', 'text', ['default' => null, 'null' => true, 'comment' => '执行参数']],
             ['exec_time', 'biginteger', ['limit' => 20, 'default' => 0, 'null' => true, 'comment' => '执行时间']],
             ['exec_desc', 'string', ['limit' => 500, 'default' => '', 'null' => true, 'comment' => '执行描述']],
             ['enter_time', 'decimal', ['precision' => 20, 'scale' => 4, 'default' => '0.0000', 'null' => true, 'comment' => '开始时间']],
             ['outer_time', 'decimal', ['precision' => 20, 'scale' => 4, 'default' => '0.0000', 'null' => true, 'comment' => '结束时间']],
             ['loops_time', 'biginteger', ['limit' => 20, 'default' => 0, 'null' => true, 'comment' => '循环时间']],
             ['attempts', 'biginteger', ['limit' => 20, 'default' => 0, 'null' => true, 'comment' => '执行次数']],
-            ['message', 'text', ['default' => NULL, 'null' => true, 'comment' => '最新消息']],
+            ['message', 'text', ['default' => null, 'null' => true, 'comment' => '最新消息']],
             ['rscript', 'integer', ['limit' => 1, 'default' => 1, 'null' => true, 'comment' => '任务类型(0单例,1多例)']],
             ['status', 'integer', ['limit' => 1, 'default' => 1, 'null' => true, 'comment' => '任务状态(1新任务,2处理中,3成功,4失败)']],
             ['create_at', 'timestamp', ['default' => 'CURRENT_TIMESTAMP', 'null' => false, 'comment' => '创建时间']],
@@ -299,7 +291,6 @@ class InstallAdmin20241010 extends Migrator
      * 创建数据对象
      * @class SystemUser
      * @table system_user
-     * @return void
      */
     private function _create_system_user()
     {

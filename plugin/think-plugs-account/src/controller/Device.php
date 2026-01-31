@@ -1,42 +1,47 @@
 <?php
 
-// +----------------------------------------------------------------------
-// | Account Plugin for ThinkAdmin
-// +----------------------------------------------------------------------
-// | 版权所有 2014~2025 ThinkAdmin [ thinkadmin.top ]
-// +----------------------------------------------------------------------
-// | 官方网站: https://thinkadmin.top
-// +----------------------------------------------------------------------
-// | 免责声明 ( https://thinkadmin.top/disclaimer )
-// | 会员免费 ( https://thinkadmin.top/vip-introduce )
-// +----------------------------------------------------------------------
-// | gitee 代码仓库：https://gitee.com/zoujingli/think-plugs-account
-// | github 代码仓库：https://github.com/zoujingli/think-plugs-account
-// +----------------------------------------------------------------------
-
-declare (strict_types=1);
+declare(strict_types=1);
+/**
+ * +----------------------------------------------------------------------
+ * | Payment Plugin for ThinkAdmin
+ * +----------------------------------------------------------------------
+ * | 版权所有 2014~2026 ThinkAdmin [ thinkadmin.top ]
+ * +----------------------------------------------------------------------
+ * | 官方网站: https://thinkadmin.top
+ * +----------------------------------------------------------------------
+ * | 开源协议 ( https://mit-license.org )
+ * | 免责声明 ( https://thinkadmin.top/disclaimer )
+ * | 会员特权 ( https://thinkadmin.top/vip-introduce )
+ * +----------------------------------------------------------------------
+ * | gitee 代码仓库：https://gitee.com/zoujingli/ThinkAdmin
+ * | github 代码仓库：https://github.com/zoujingli/ThinkAdmin
+ * +----------------------------------------------------------------------
+ */
 
 namespace plugin\account\controller;
 
 use plugin\account\model\PluginAccountBind;
 use plugin\account\service\Account;
 use think\admin\Controller;
+use think\admin\Exception;
 use think\admin\helper\QueryHelper;
+use think\db\exception\DataNotFoundException;
+use think\db\exception\DbException;
+use think\db\exception\ModelNotFoundException;
 
 /**
- * 终端账号管理
+ * 终端账号管理.
  * @class Device
- * @package plugin\account\controller\user
  */
 class Device extends Controller
 {
     /**
-     * 终端账号管理
+     * 终端账号管理.
      * @auth true
      * @menu true
-     * @throws \think\db\exception\DataNotFoundException
-     * @throws \think\db\exception\DbException
-     * @throws \think\db\exception\ModelNotFoundException
+     * @throws DataNotFoundException
+     * @throws DbException
+     * @throws ModelNotFoundException
      */
     public function index()
     {
@@ -51,10 +56,9 @@ class Device extends Controller
     }
 
     /**
-     * 账号接口配置
+     * 账号接口配置.
      * @auth true
-     * @return void
-     * @throws \think\admin\Exception
+     * @throws Exception
      */
     public function config()
     {
@@ -90,13 +94,13 @@ class Device extends Controller
     public function state()
     {
         PluginAccountBind::mSave($this->_vali([
-            'status.in:0,1'  => '状态值范围异常！',
+            'status.in:0,1' => '状态值范围异常！',
             'status.require' => '状态值不能为空！',
         ]));
     }
 
     /**
-     * 删除终端账号
+     * 删除终端账号.
      * @auth true
      */
     public function remove()

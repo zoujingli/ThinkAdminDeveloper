@@ -1,20 +1,22 @@
 <?php
 
-// +----------------------------------------------------------------------
-// | WeMall Plugin for ThinkAdmin
-// +----------------------------------------------------------------------
-// | 版权所有 2014~2025 ThinkAdmin [ thinkadmin.top ]
-// +----------------------------------------------------------------------
-// | 官方网站: https://thinkadmin.top
-// +----------------------------------------------------------------------
-// | 免责声明 ( https://thinkadmin.top/disclaimer )
-// | 会员免费 ( https://thinkadmin.top/vip-introduce )
-// +----------------------------------------------------------------------
-// | gitee 代码仓库：https://gitee.com/zoujingli/think-plugs-wemall
-// | github 代码仓库：https://github.com/zoujingli/think-plugs-wemall
-// +----------------------------------------------------------------------
-
-declare (strict_types=1);
+declare(strict_types=1);
+/**
+ * +----------------------------------------------------------------------
+ * | Payment Plugin for ThinkAdmin
+ * +----------------------------------------------------------------------
+ * | 版权所有 2014~2026 ThinkAdmin [ thinkadmin.top ]
+ * +----------------------------------------------------------------------
+ * | 官方网站: https://thinkadmin.top
+ * +----------------------------------------------------------------------
+ * | 开源协议 ( https://mit-license.org )
+ * | 免责声明 ( https://thinkadmin.top/disclaimer )
+ * | 会员特权 ( https://thinkadmin.top/vip-introduce )
+ * +----------------------------------------------------------------------
+ * | gitee 代码仓库：https://gitee.com/zoujingli/ThinkAdmin
+ * | github 代码仓库：https://github.com/zoujingli/ThinkAdmin
+ * +----------------------------------------------------------------------
+ */
 
 namespace plugin\wemall\controller\help;
 
@@ -24,22 +26,23 @@ use plugin\wemall\model\PluginWemallHelpQuestionX;
 use think\admin\Controller;
 use think\admin\helper\QueryHelper;
 use think\admin\service\AdminService;
+use think\db\exception\DataNotFoundException;
+use think\db\exception\DbException;
+use think\db\exception\ModelNotFoundException;
 
 /**
  * 工单提问管理
- * class Question
- * @package app\data\controller\news
+ * class Question.
  */
 class Question extends Controller
 {
     /**
-     * 工单提问管理
+     * 工单提问管理.
      * @auth true
      * @menu true
-     * @return void
-     * @throws \think\db\exception\DataNotFoundException
-     * @throws \think\db\exception\DbException
-     * @throws \think\db\exception\ModelNotFoundException
+     * @throws DataNotFoundException
+     * @throws DbException
+     * @throws ModelNotFoundException
      */
     public function index()
     {
@@ -51,12 +54,14 @@ class Question extends Controller
             $helper->like('name,content')->equal('status')->dateBetween('create_time');
             // 提交用户搜索
             $db = PluginAccountUser::mQuery()->like('username')->field('id')->db();
-            if ($db->getOptions('where')) $helper->whereRaw("unid in {$db->buildSql()}");
+            if ($db->getOptions('where')) {
+                $helper->whereRaw("unid in {$db->buildSql()}");
+            }
         });
     }
 
     /**
-     * 编辑工单内容
+     * 编辑工单内容.
      * @auth true
      */
     public function edit()
@@ -66,9 +71,28 @@ class Question extends Controller
     }
 
     /**
-     * 表单数据处理
-     * @param array $data
-     * @return void
+     * 修改工单状态
+     * @auth true
+     */
+    public function state()
+    {
+        PluginWemallHelpQuestion::mSave($this->_vali([
+            'status.in:0,1' => '状态值范围异常！',
+            'status.require' => '状态值不能为空！',
+        ]));
+    }
+
+    /**
+     * 删除工单数据.
+     * @auth true
+     */
+    public function remove()
+    {
+        PluginWemallHelpQuestion::mDelete();
+    }
+
+    /**
+     * 表单数据处理.
      */
     protected function _form_filter(array &$data)
     {
@@ -78,44 +102,21 @@ class Question extends Controller
             }
             $data['status'] = 2;
             PluginWemallHelpQuestionX::mk()->save([
-                'ccid'     => $data['id'],
-                'content'  => $data['content'],
-                'reply_by' => AdminService::getUserId()
+                'ccid' => $data['id'],
+                'content' => $data['content'],
+                'reply_by' => AdminService::getUserId(),
             ]);
             unset($data['content']);
         }
-
     }
 
     /**
-     * 表单结果处理
-     * @param boolean $state
+     * 表单结果处理.
      */
     protected function _form_result(bool $state)
     {
         if ($state) {
             $this->success('内容保存成功！', 'javascript:history.back()');
         }
-    }
-
-    /**
-     * 修改工单状态
-     * @auth true
-     */
-    public function state()
-    {
-        PluginWemallHelpQuestion::mSave($this->_vali([
-            'status.in:0,1'  => '状态值范围异常！',
-            'status.require' => '状态值不能为空！',
-        ]));
-    }
-
-    /**
-     * 删除工单数据
-     * @auth true
-     */
-    public function remove()
-    {
-        PluginWemallHelpQuestion::mDelete();
     }
 }

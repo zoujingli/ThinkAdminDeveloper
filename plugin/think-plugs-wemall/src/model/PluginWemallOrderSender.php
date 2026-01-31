@@ -1,29 +1,31 @@
 <?php
 
-// +----------------------------------------------------------------------
-// | WeMall Plugin for ThinkAdmin
-// +----------------------------------------------------------------------
-// | 版权所有 2014~2025 ThinkAdmin [ thinkadmin.top ]
-// +----------------------------------------------------------------------
-// | 官方网站: https://thinkadmin.top
-// +----------------------------------------------------------------------
-// | 免责声明 ( https://thinkadmin.top/disclaimer )
-// | 会员免费 ( https://thinkadmin.top/vip-introduce )
-// +----------------------------------------------------------------------
-// | gitee 代码仓库：https://gitee.com/zoujingli/think-plugs-wemall
-// | github 代码仓库：https://github.com/zoujingli/think-plugs-wemall
-// +----------------------------------------------------------------------
-
-declare (strict_types=1);
+declare(strict_types=1);
+/**
+ * +----------------------------------------------------------------------
+ * | Payment Plugin for ThinkAdmin
+ * +----------------------------------------------------------------------
+ * | 版权所有 2014~2026 ThinkAdmin [ thinkadmin.top ]
+ * +----------------------------------------------------------------------
+ * | 官方网站: https://thinkadmin.top
+ * +----------------------------------------------------------------------
+ * | 开源协议 ( https://mit-license.org )
+ * | 免责声明 ( https://thinkadmin.top/disclaimer )
+ * | 会员特权 ( https://thinkadmin.top/vip-introduce )
+ * +----------------------------------------------------------------------
+ * | gitee 代码仓库：https://gitee.com/zoujingli/ThinkAdmin
+ * | github 代码仓库：https://github.com/zoujingli/ThinkAdmin
+ * +----------------------------------------------------------------------
+ */
 
 namespace plugin\wemall\model;
 
 use think\model\relation\HasOne;
 
 /**
- * 商城订单发货模型
+ * 订单发货数据.
  *
- * @property float $delivery_amount 配送计算金额
+ * @property string $delivery_amount 配送计算金额
  * @property int $deleted 删除状态(0未删,1已删)
  * @property int $delivery_count 快递计费基数
  * @property int $id
@@ -51,15 +53,13 @@ use think\model\relation\HasOne;
  * @property string $user_idimg2 收货人证件反面
  * @property string $user_name 收货人联系名称
  * @property string $user_phone 收货人联系手机
- * @property-read \plugin\wemall\model\PluginWemallOrder $main
+ * @property PluginWemallOrder $main
  * @class PluginWemallOrderSender
- * @package plugin\wemall\model
  */
 class PluginWemallOrderSender extends AbsUser
 {
     /**
-     * 关联订单数据
-     * @return \think\model\relation\HasOne
+     * 关联订单数据.
      */
     public function main(): HasOne
     {
@@ -67,9 +67,8 @@ class PluginWemallOrderSender extends AbsUser
     }
 
     /**
-     * 设置发货时间
+     * 设置发货时间.
      * @param mixed $value
-     * @return string
      */
     public function setExpressTimeAttr($value): string
     {
@@ -77,9 +76,8 @@ class PluginWemallOrderSender extends AbsUser
     }
 
     /**
-     * 获取发货时间
+     * 获取发货时间.
      * @param mixed $value
-     * @return string
      */
     public function getExpressTimeAttr($value): string
     {

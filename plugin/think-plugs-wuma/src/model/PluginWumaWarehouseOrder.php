@@ -1,20 +1,22 @@
 <?php
 
-// +----------------------------------------------------------------------
-// | Wuma Plugin for ThinkAdmin
-// +----------------------------------------------------------------------
-// | 版权所有 2014~2025 ThinkAdmin [ thinkadmin.top ]
-// +----------------------------------------------------------------------
-// | 官方网站: https://thinkadmin.top
-// +----------------------------------------------------------------------
-// | 免责声明 ( https://thinkadmin.top/disclaimer )
-// | 收费插件 ( https://thinkadmin.top/fee-introduce.html )
-// +----------------------------------------------------------------------
-// | gitee 代码仓库：https://gitee.com/zoujingli/think-plugs-wuma
-// | github 代码仓库：https://github.com/zoujingli/think-plugs-wuma
-// +----------------------------------------------------------------------
-
-declare (strict_types=1);
+declare(strict_types=1);
+/**
+ * +----------------------------------------------------------------------
+ * | Payment Plugin for ThinkAdmin
+ * +----------------------------------------------------------------------
+ * | 版权所有 2014~2026 ThinkAdmin [ thinkadmin.top ]
+ * +----------------------------------------------------------------------
+ * | 官方网站: https://thinkadmin.top
+ * +----------------------------------------------------------------------
+ * | 开源协议 ( https://mit-license.org )
+ * | 免责声明 ( https://thinkadmin.top/disclaimer )
+ * | 会员特权 ( https://thinkadmin.top/vip-introduce )
+ * +----------------------------------------------------------------------
+ * | gitee 代码仓库：https://gitee.com/zoujingli/ThinkAdmin
+ * | github 代码仓库：https://github.com/zoujingli/ThinkAdmin
+ * +----------------------------------------------------------------------
+ */
 
 namespace plugin\wuma\model;
 
@@ -22,7 +24,7 @@ use plugin\wemall\model\PluginWemallGoodsItem;
 use think\model\relation\HasOne;
 
 /**
- * 仓库订单模型
+ * 仓库订单模型.
  *
  * @property int $auid 出库代理
  * @property int $deleted 删除状态(0未删,1已删)
@@ -40,16 +42,14 @@ use think\model\relation\HasOne;
  * @property string $ghash 绑定产品
  * @property string $update_time 更新时间
  * @property string $wcode 仓库编号
- * @property-read \plugin\wemall\model\PluginWemallGoodsItem $bind_goods
- * @property-read \plugin\wemall\model\PluginWemallGoodsItem $goods
- * @property-read \plugin\wuma\model\PluginWumaWarehouse $bind_warehouse
- * @property-read \plugin\wuma\model\PluginWumaWarehouse $warehouse
+ * @property PluginWemallGoodsItem $bind_goods
+ * @property PluginWemallGoodsItem $goods
+ * @property PluginWumaWarehouse $bind_warehouse
+ * @property PluginWumaWarehouse $warehouse
  * @class PluginWumaWarehouseOrder
- * @package plugin\wuma\model
  */
 class PluginWumaWarehouseOrder extends AbstractPrivate
 {
-
     // 入库订单类型
     public const interTypes = [1, 2, 3];
 
@@ -60,8 +60,7 @@ class PluginWumaWarehouseOrder extends AbstractPrivate
     public const returnTypes = [8];
 
     /**
-     * 关联商品数据
-     * @return \think\model\relation\HasOne
+     * 关联商品数据.
      */
     public function goods(): HasOne
     {
@@ -69,9 +68,8 @@ class PluginWumaWarehouseOrder extends AbstractPrivate
     }
 
     /**
-     * 出库搜索器
+     * 出库搜索器.
      * @param mixed $query
-     * @return void
      */
     public function searchOuterAttr($query)
     {
@@ -79,9 +77,8 @@ class PluginWumaWarehouseOrder extends AbstractPrivate
     }
 
     /**
-     * 入库搜索器
+     * 入库搜索器.
      * @param mixed $query
-     * @return void
      */
     public function searchInterAttr($query)
     {
@@ -89,9 +86,8 @@ class PluginWumaWarehouseOrder extends AbstractPrivate
     }
 
     /**
-     * 退货搜索器
+     * 退货搜索器.
      * @param mixed $query
-     * @return void
      */
     public function searchReturnAttr($query)
     {
@@ -99,23 +95,21 @@ class PluginWumaWarehouseOrder extends AbstractPrivate
     }
 
     /**
-     * 绑定产品数据
-     * @return HasOne
+     * 绑定产品数据.
      */
     public function bindGoods(): HasOne
     {
         return $this->goods()->bind([
-            'gcode'  => 'gcode',
-            'gname'  => 'gname',
-            'gunit'  => 'gunit',
-            'gspec'  => 'gspec',
+            'gcode' => 'gcode',
+            'gname' => 'gname',
+            'gunit' => 'gunit',
+            'gspec' => 'gspec',
             'gcover' => 'gcover',
         ]);
     }
 
     /**
-     * 关联仓库数据
-     * @return \think\model\relation\HasOne
+     * 关联仓库数据.
      */
     public function warehouse(): HasOne
     {
@@ -123,19 +117,18 @@ class PluginWumaWarehouseOrder extends AbstractPrivate
     }
 
     /**
-     * 绑定仓库数据
-     * @return \think\model\relation\HasOne
+     * 绑定仓库数据.
      */
     public function bindWarehouse(): HasOne
     {
         return $this->warehouse()->bind([
-            'wname'    => 'name',
-            'wperson'  => 'person',
-            'wprov'    => 'addr_prov',
-            'wcity'    => 'addr_city',
-            'warea'    => 'addr_area',
-            'wstatus'  => 'status',
-            'wdeleted' => 'deleted'
+            'wname' => 'name',
+            'wperson' => 'person',
+            'wprov' => 'addr_prov',
+            'wcity' => 'addr_city',
+            'warea' => 'addr_area',
+            'wstatus' => 'status',
+            'wdeleted' => 'deleted',
         ]);
     }
 }

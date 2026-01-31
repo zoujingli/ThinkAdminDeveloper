@@ -1,20 +1,22 @@
 <?php
 
-// +----------------------------------------------------------------------
-// | WeMall Plugin for ThinkAdmin
-// +----------------------------------------------------------------------
-// | 版权所有 2014~2025 ThinkAdmin [ thinkadmin.top ]
-// +----------------------------------------------------------------------
-// | 官方网站: https://thinkadmin.top
-// +----------------------------------------------------------------------
-// | 免责声明 ( https://thinkadmin.top/disclaimer )
-// | 会员免费 ( https://thinkadmin.top/vip-introduce )
-// +----------------------------------------------------------------------
-// | gitee 代码仓库：https://gitee.com/zoujingli/think-plugs-wemall
-// | github 代码仓库：https://github.com/zoujingli/think-plugs-wemall
-// +----------------------------------------------------------------------
-
-declare (strict_types=1);
+declare(strict_types=1);
+/**
+ * +----------------------------------------------------------------------
+ * | Payment Plugin for ThinkAdmin
+ * +----------------------------------------------------------------------
+ * | 版权所有 2014~2026 ThinkAdmin [ thinkadmin.top ]
+ * +----------------------------------------------------------------------
+ * | 官方网站: https://thinkadmin.top
+ * +----------------------------------------------------------------------
+ * | 开源协议 ( https://mit-license.org )
+ * | 免责声明 ( https://thinkadmin.top/disclaimer )
+ * | 会员特权 ( https://thinkadmin.top/vip-introduce )
+ * +----------------------------------------------------------------------
+ * | gitee 代码仓库：https://gitee.com/zoujingli/ThinkAdmin
+ * | github 代码仓库：https://github.com/zoujingli/ThinkAdmin
+ * +----------------------------------------------------------------------
+ */
 
 namespace plugin\wemall\model;
 
@@ -23,10 +25,10 @@ use plugin\wemall\service\UserRebate;
 use think\model\relation\HasOne;
 
 /**
- * 代理返佣数据
+ * 代理返佣数据.
  *
- * @property float $amount 奖励数量
- * @property float $order_amount 订单金额
+ * @property string $amount 奖励数量
+ * @property string $order_amount 订单金额
  * @property int $deleted 删除状态(0未删除,1已删除)
  * @property int $id
  * @property int $layer 上级层级
@@ -43,15 +45,13 @@ use think\model\relation\HasOne;
  * @property string $remark 奖励描述
  * @property string $type 奖励类型
  * @property string $update_time 更新时间
- * @property-read \plugin\account\model\PluginAccountUser $ouser
+ * @property PluginAccountUser $ouser
  * @class PluginWemallUserRebate
- * @package plugin\wemall\model
  */
 class PluginWemallUserRebate extends AbsUser
 {
     /**
-     * 关联订单用户
-     * @return \think\model\relation\HasOne
+     * 关联订单用户.
      */
     public function ouser(): HasOne
     {
@@ -59,8 +59,7 @@ class PluginWemallUserRebate extends AbsUser
     }
 
     /**
-     * 数据转换格式
-     * @return array
+     * 数据转换格式.
      */
     public function toArray(): array
     {

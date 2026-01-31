@@ -1,20 +1,22 @@
 <?php
 
-// +----------------------------------------------------------------------
-// | WeMall Plugin for ThinkAdmin
-// +----------------------------------------------------------------------
-// | 版权所有 2014~2025 ThinkAdmin [ thinkadmin.top ]
-// +----------------------------------------------------------------------
-// | 官方网站: https://thinkadmin.top
-// +----------------------------------------------------------------------
-// | 免责声明 ( https://thinkadmin.top/disclaimer )
-// | 会员免费 ( https://thinkadmin.top/vip-introduce )
-// +----------------------------------------------------------------------
-// | gitee 代码仓库：https://gitee.com/zoujingli/think-plugs-wemall
-// | github 代码仓库：https://github.com/zoujingli/think-plugs-wemall
-// +----------------------------------------------------------------------
-
-declare (strict_types=1);
+declare(strict_types=1);
+/**
+ * +----------------------------------------------------------------------
+ * | Payment Plugin for ThinkAdmin
+ * +----------------------------------------------------------------------
+ * | 版权所有 2014~2026 ThinkAdmin [ thinkadmin.top ]
+ * +----------------------------------------------------------------------
+ * | 官方网站: https://thinkadmin.top
+ * +----------------------------------------------------------------------
+ * | 开源协议 ( https://mit-license.org )
+ * | 免责声明 ( https://thinkadmin.top/disclaimer )
+ * | 会员特权 ( https://thinkadmin.top/vip-introduce )
+ * +----------------------------------------------------------------------
+ * | gitee 代码仓库：https://gitee.com/zoujingli/ThinkAdmin
+ * | github 代码仓库：https://github.com/zoujingli/ThinkAdmin
+ * +----------------------------------------------------------------------
+ */
 
 namespace plugin\wemall\model;
 
@@ -22,11 +24,11 @@ use plugin\account\model\Abs;
 use think\model\relation\HasMany;
 
 /**
- * 商城卡券模型
+ * 商城卡券模型.
  *
  * @property array $limit_levels 授权等级
- * @property float $amount 抵扣金额
- * @property float $limit_amount 金额门槛(0不限制)
+ * @property string $amount 抵扣金额
+ * @property string $limit_amount 金额门槛(0不限制)
  * @property int $deleted 删除状态(1已删,0未删)
  * @property int $expire_days 有效天数
  * @property int $id
@@ -44,9 +46,8 @@ use think\model\relation\HasMany;
  * @property string $name 优惠名称
  * @property string $remark 系统备注
  * @property string $update_time 更新时间
- * @property-read \plugin\wemall\model\PluginWemallUserCoupon[] $usable
+ * @property PluginWemallUserCoupon[] $usable
  * @class PluginWemallConfigCoupon
- * @package plugin\wemall\model
  */
 class PluginWemallConfigCoupon extends Abs
 {
@@ -54,8 +55,7 @@ class PluginWemallConfigCoupon extends Abs
     public const types = ['通用券', '商品券'];
 
     /**
-     * 关联自己的卡券
-     * @return \think\model\relation\HasMany
+     * 关联自己的卡券.
      */
     public function usable(): HasMany
     {
@@ -63,9 +63,8 @@ class PluginWemallConfigCoupon extends Abs
     }
 
     /**
-     * 获取等级限制
+     * 获取等级限制.
      * @param mixed $value
-     * @return array
      */
     public function getLimitLevelsAttr($value): array
     {
@@ -73,9 +72,8 @@ class PluginWemallConfigCoupon extends Abs
     }
 
     /**
-     * 设置等级限制
+     * 设置等级限制.
      * @param mixed $value
-     * @return string
      */
     public function setLimitLevelsAttr($value): string
     {
@@ -83,8 +81,7 @@ class PluginWemallConfigCoupon extends Abs
     }
 
     /**
-     * 输出格式化数据
-     * @return array
+     * 输出格式化数据.
      */
     public function toArray(): array
     {

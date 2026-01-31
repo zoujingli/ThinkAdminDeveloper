@@ -1,20 +1,22 @@
 <?php
 
-// +----------------------------------------------------------------------
-// | Wuma Plugin for ThinkAdmin
-// +----------------------------------------------------------------------
-// | 版权所有 2014~2025 ThinkAdmin [ thinkadmin.top ]
-// +----------------------------------------------------------------------
-// | 官方网站: https://thinkadmin.top
-// +----------------------------------------------------------------------
-// | 免责声明 ( https://thinkadmin.top/disclaimer )
-// | 收费插件 ( https://thinkadmin.top/fee-introduce.html )
-// +----------------------------------------------------------------------
-// | gitee 代码仓库：https://gitee.com/zoujingli/think-plugs-wuma
-// | github 代码仓库：https://github.com/zoujingli/think-plugs-wuma
-// +----------------------------------------------------------------------
-
-declare (strict_types=1);
+declare(strict_types=1);
+/**
+ * +----------------------------------------------------------------------
+ * | Payment Plugin for ThinkAdmin
+ * +----------------------------------------------------------------------
+ * | 版权所有 2014~2026 ThinkAdmin [ thinkadmin.top ]
+ * +----------------------------------------------------------------------
+ * | 官方网站: https://thinkadmin.top
+ * +----------------------------------------------------------------------
+ * | 开源协议 ( https://mit-license.org )
+ * | 免责声明 ( https://thinkadmin.top/disclaimer )
+ * | 会员特权 ( https://thinkadmin.top/vip-introduce )
+ * +----------------------------------------------------------------------
+ * | gitee 代码仓库：https://gitee.com/zoujingli/ThinkAdmin
+ * | github 代码仓库：https://github.com/zoujingli/ThinkAdmin
+ * +----------------------------------------------------------------------
+ */
 
 namespace plugin\wuma\command;
 
@@ -25,21 +27,34 @@ use think\admin\service\ProcessService as Process;
 use think\Exception;
 
 /**
- * 同步物码规则
+ * 同步物码规则.
  * @class Create
- * @package plugin\wuma\command
  */
 class Create extends Command
 {
     /**
-     * 物码批次号
+     * 物码批次号.
      * @var string
      */
     protected $batch;
 
     /**
-     * 指令配置
-     * @return void
+     * 任务执行.
+     * @throws \think\admin\Exception
+     */
+    public function handle()
+    {
+        $this->batch = $this->input->getArgument('batch');
+        if (empty($this->batch)) {
+            $this->setQueueError('批次号不能为空！');
+        }
+        // 物码服务生成文件
+        [$status, $message] = $this->_create($this->batch);
+        empty($status) ? $this->setQueueError($message) : $this->setQueueSuccess($message);
+    }
+
+    /**
+     * 指令配置.
      */
     protected function configure()
     {
@@ -49,21 +64,7 @@ class Create extends Command
     }
 
     /**
-     * 任务执行
-     * @return void
-     * @throws \think\admin\Exception
-     */
-    public function handle()
-    {
-        $this->batch = $this->input->getArgument('batch');
-        if (empty($this->batch)) $this->setQueueError("批次号不能为空！");
-        // 物码服务生成文件
-        [$status, $message] = $this->_create($this->batch);
-        empty($status) ? $this->setQueueError($message) : $this->setQueueSuccess($message);
-    }
-
-    /**
-     * 创建物码规则
+     * 创建物码规则.
      * @param string $batch 物码批次号
      * @return array [state, info, result]
      */
@@ -71,21 +72,18 @@ class Create extends Command
     {
         try {
             $data = $this->_exec("create {$batch}");
-            if (isset($data['code']) && isset($data['data']['file'])) {
+            if (isset($data['code'], $data['data']['file'])) {
                 return [true, $data['info'], $data['data']];
-            } else {
-                return [false, $data['info'], ''];
             }
+            return [false, $data['info'], ''];
         } catch (\Exception $exception) {
             return [false, $exception->getMessage()];
         }
     }
 
     /**
-     * 执行操作指令
-     * @param string $params
-     * @return array
-     * @throws \think\Exception
+     * 执行操作指令.
+     * @throws Exception
      * @throws \think\admin\Exception
      */
     private function _exec(string $params): array
@@ -93,7 +91,7 @@ class Create extends Command
         $auth = CodeExtend::random(20);
         $this->app->cache->set("create_auth_{$this->batch}", $auth, 360);
         $token = base64_encode(json_encode([
-            'auth' => $auth, 'host' => sysconf('site_host'), 'target' => syspath('safefile/code/')
+            'auth' => $auth, 'host' => sysconf('site_host'), 'target' => syspath('safefile/code/'),
         ]));
         $binary = dirname(__DIR__, 2) . '/stc/bin/' . (Process::iswin() ? 'coder.exe' : 'coder');
         // 赋予文件可执行权限

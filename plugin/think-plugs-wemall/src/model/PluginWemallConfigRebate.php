@@ -1,20 +1,22 @@
 <?php
 
-// +----------------------------------------------------------------------
-// | WeMall Plugin for ThinkAdmin
-// +----------------------------------------------------------------------
-// | 版权所有 2014~2025 ThinkAdmin [ thinkadmin.top ]
-// +----------------------------------------------------------------------
-// | 官方网站: https://thinkadmin.top
-// +----------------------------------------------------------------------
-// | 免责声明 ( https://thinkadmin.top/disclaimer )
-// | 会员免费 ( https://thinkadmin.top/vip-introduce )
-// +----------------------------------------------------------------------
-// | gitee 代码仓库：https://gitee.com/zoujingli/think-plugs-wemall
-// | github 代码仓库：https://github.com/zoujingli/think-plugs-wemall
-// +----------------------------------------------------------------------
-
-declare (strict_types=1);
+declare(strict_types=1);
+/**
+ * +----------------------------------------------------------------------
+ * | Payment Plugin for ThinkAdmin
+ * +----------------------------------------------------------------------
+ * | 版权所有 2014~2026 ThinkAdmin [ thinkadmin.top ]
+ * +----------------------------------------------------------------------
+ * | 官方网站: https://thinkadmin.top
+ * +----------------------------------------------------------------------
+ * | 开源协议 ( https://mit-license.org )
+ * | 免责声明 ( https://thinkadmin.top/disclaimer )
+ * | 会员特权 ( https://thinkadmin.top/vip-introduce )
+ * +----------------------------------------------------------------------
+ * | gitee 代码仓库：https://gitee.com/zoujingli/ThinkAdmin
+ * | github 代码仓库：https://github.com/zoujingli/ThinkAdmin
+ * +----------------------------------------------------------------------
+ */
 
 namespace plugin\wemall\model;
 
@@ -22,7 +24,7 @@ use plugin\account\model\Abs;
 use plugin\wemall\service\UserRebate;
 
 /**
- * 商城返佣配置
+ * 商城返佣配置.
  *
  * @property float $p0_reward_number 会员计算系数
  * @property float $p1_reward_number 上1级计算系数
@@ -49,13 +51,11 @@ use plugin\wemall\service\UserRebate;
  * @property string $type 奖励类型
  * @property string $update_time 更新时间
  * @class PluginWemallConfigRebate
- * @package plugin\wemall\model
  */
 class PluginWemallConfigRebate extends Abs
 {
     /**
-     * 数据输出处理
-     * @return array
+     * 数据输出处理.
      */
     public function toArray(): array
     {
@@ -63,11 +63,15 @@ class PluginWemallConfigRebate extends Abs
         if (isset($data['type'])) {
             $data['type_name'] = UserRebate::prizes[$data['type']] ?? $data['type'];
         }
-        if (isset($data['p0_level']) && isset($data['p1_level']) && isset($data['p2_level']) && isset($data['p3_level'])) {
+        if (isset($data['p0_level'], $data['p1_level'], $data['p2_level'], $data['p3_level'])) {
             $levels = sysvar('plugin.wemall.levels') ?: sysvar('plugin.wemall.levels', PluginWemallConfigLevel::items());
             $data['levels'] = join(' - ', array_map(function ($v) use ($levels) {
-                if ($v == -2) return '无';
-                if ($v == -1) return '任意';
+                if ($v == -2) {
+                    return '无';
+                }
+                if ($v == -1) {
+                    return '任意';
+                }
                 return $levels[$v]['name'] ?? $v;
             }, [$data['p3_level'], $data['p2_level'], $data['p1_level'], $data['p0_level']]));
         }

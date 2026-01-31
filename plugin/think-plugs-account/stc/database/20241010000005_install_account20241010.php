@@ -1,5 +1,22 @@
 <?php
 
+declare(strict_types=1);
+/**
+ * +----------------------------------------------------------------------
+ * | Payment Plugin for ThinkAdmin
+ * +----------------------------------------------------------------------
+ * | 版权所有 2014~2026 ThinkAdmin [ thinkadmin.top ]
+ * +----------------------------------------------------------------------
+ * | 官方网站: https://thinkadmin.top
+ * +----------------------------------------------------------------------
+ * | 开源协议 ( https://mit-license.org )
+ * | 免责声明 ( https://thinkadmin.top/disclaimer )
+ * | 会员特权 ( https://thinkadmin.top/vip-introduce )
+ * +----------------------------------------------------------------------
+ * | gitee 代码仓库：https://gitee.com/zoujingli/ThinkAdmin
+ * | github 代码仓库：https://github.com/zoujingli/ThinkAdmin
+ * +----------------------------------------------------------------------
+ */
 use think\admin\extend\PhinxExtend;
 use think\migration\Migrator;
 
@@ -8,10 +25,8 @@ use think\migration\Migrator;
 
 class InstallAccount20241010 extends Migrator
 {
-
     /**
-     * 获取脚本名称
-     * @return string
+     * 获取脚本名称.
      */
     public function getName(): string
     {
@@ -19,7 +34,7 @@ class InstallAccount20241010 extends Migrator
     }
 
     /**
-     * 创建数据库
+     * 创建数据库.
      */
     public function change()
     {
@@ -33,7 +48,6 @@ class InstallAccount20241010 extends Migrator
      * 创建数据对象
      * @class PluginAccountAuth
      * @table plugin_account_auth
-     * @return void
      */
     private function _create_plugin_account_auth()
     {
@@ -48,8 +62,8 @@ class InstallAccount20241010 extends Migrator
             ['type', 'string', ['limit' => 20, 'default' => '', 'null' => true, 'comment' => '授权类型']],
             ['token', 'string', ['limit' => 32, 'default' => '', 'null' => true, 'comment' => '授权令牌']],
             ['tokenv', 'string', ['limit' => 32, 'default' => '', 'null' => true, 'comment' => '授权验证']],
-            ['create_time', 'datetime', ['default' => NULL, 'null' => true, 'comment' => '创建时间']],
-            ['update_time', 'datetime', ['default' => NULL, 'null' => true, 'comment' => '更新时间']],
+            ['create_time', 'datetime', ['default' => null, 'null' => true, 'comment' => '创建时间']],
+            ['update_time', 'datetime', ['default' => null, 'null' => true, 'comment' => '更新时间']],
         ], [
             'usid', 'type', 'time', 'token', 'create_time',
         ], true);
@@ -59,7 +73,6 @@ class InstallAccount20241010 extends Migrator
      * 创建数据对象
      * @class PluginAccountBind
      * @table plugin_account_bind
-     * @return void
      */
     private function _create_plugin_account_bind()
     {
@@ -78,12 +91,12 @@ class InstallAccount20241010 extends Migrator
             ['headimg', 'string', ['limit' => 500, 'default' => '', 'null' => true, 'comment' => '用户头像']],
             ['nickname', 'string', ['limit' => 99, 'default' => '', 'null' => true, 'comment' => '用户昵称']],
             ['password', 'string', ['limit' => 32, 'default' => '', 'null' => true, 'comment' => '登录密码']],
-            ['extra', 'text', ['default' => NULL, 'null' => true, 'comment' => '扩展数据']],
+            ['extra', 'text', ['default' => null, 'null' => true, 'comment' => '扩展数据']],
             ['sort', 'biginteger', ['limit' => 20, 'default' => 0, 'null' => true, 'comment' => '排序权重']],
             ['status', 'integer', ['limit' => 1, 'default' => 1, 'null' => true, 'comment' => '账号状态']],
             ['deleted', 'integer', ['limit' => 1, 'default' => 0, 'null' => true, 'comment' => '删除状态(0未删,1已删)']],
-            ['create_time', 'datetime', ['default' => NULL, 'null' => true, 'comment' => '注册时间']],
-            ['update_time', 'datetime', ['default' => NULL, 'null' => true, 'comment' => '更新时间']],
+            ['create_time', 'datetime', ['default' => null, 'null' => true, 'comment' => '注册时间']],
+            ['update_time', 'datetime', ['default' => null, 'null' => true, 'comment' => '更新时间']],
         ], [
             'type', 'unid', 'sort', 'phone', 'appid', 'status', 'openid', 'unionid', 'deleted', 'create_time',
         ], true);
@@ -93,7 +106,6 @@ class InstallAccount20241010 extends Migrator
      * 创建数据对象
      * @class PluginAccountMsms
      * @table plugin_account_msms
-     * @return void
      */
     private function _create_plugin_account_msms()
     {
@@ -112,8 +124,8 @@ class InstallAccount20241010 extends Migrator
             ['result', 'string', ['limit' => 512, 'default' => '', 'null' => true, 'comment' => '返回结果']],
             ['params', 'string', ['limit' => 512, 'default' => '', 'null' => true, 'comment' => '短信内容']],
             ['status', 'integer', ['limit' => 1, 'default' => 0, 'null' => true, 'comment' => '短信状态(0失败,1成功)']],
-            ['create_time', 'datetime', ['default' => NULL, 'null' => true, 'comment' => '创建时间']],
-            ['update_time', 'datetime', ['default' => NULL, 'null' => true, 'comment' => '更新时间']],
+            ['create_time', 'datetime', ['default' => null, 'null' => true, 'comment' => '创建时间']],
+            ['update_time', 'datetime', ['default' => null, 'null' => true, 'comment' => '更新时间']],
         ], [
             'type', 'usid', 'unid', 'phone', 'smsid', 'scene', 'status', 'create_time',
         ], true);
@@ -123,7 +135,6 @@ class InstallAccount20241010 extends Migrator
      * 创建数据对象
      * @class PluginAccountUser
      * @table plugin_account_user
-     * @return void
      */
     private function _create_plugin_account_user()
     {
@@ -145,12 +156,12 @@ class InstallAccount20241010 extends Migrator
             ['region_city', 'string', ['limit' => 99, 'default' => '', 'null' => true, 'comment' => '所在城市']],
             ['region_area', 'string', ['limit' => 99, 'default' => '', 'null' => true, 'comment' => '所在区域']],
             ['remark', 'string', ['limit' => 500, 'default' => '', 'null' => true, 'comment' => '备注(内部使用)']],
-            ['extra', 'text', ['default' => NULL, 'null' => true, 'comment' => '扩展数据']],
+            ['extra', 'text', ['default' => null, 'null' => true, 'comment' => '扩展数据']],
             ['sort', 'biginteger', ['limit' => 20, 'default' => 0, 'null' => true, 'comment' => '排序权重']],
             ['status', 'integer', ['limit' => 1, 'default' => 1, 'null' => true, 'comment' => '用户状态(0拉黑,1正常)']],
             ['deleted', 'integer', ['limit' => 1, 'default' => 0, 'null' => true, 'comment' => '删除状态(0未删,1已删)']],
-            ['create_time', 'datetime', ['default' => NULL, 'null' => true, 'comment' => '注册时间']],
-            ['update_time', 'datetime', ['default' => NULL, 'null' => true, 'comment' => '更新时间']],
+            ['create_time', 'datetime', ['default' => null, 'null' => true, 'comment' => '注册时间']],
+            ['update_time', 'datetime', ['default' => null, 'null' => true, 'comment' => '更新时间']],
         ], [
             'code', 'sort', 'phone', 'email', 'status', 'unionid', 'deleted', 'username', 'nickname', 'region_prov', 'region_city', 'region_area', 'create_time',
         ], true);

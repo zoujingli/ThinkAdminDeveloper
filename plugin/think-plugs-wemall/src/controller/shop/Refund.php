@@ -1,20 +1,22 @@
 <?php
 
-// +----------------------------------------------------------------------
-// | WeMall Plugin for ThinkAdmin
-// +----------------------------------------------------------------------
-// | 版权所有 2014~2025 ThinkAdmin [ thinkadmin.top ]
-// +----------------------------------------------------------------------
-// | 官方网站: https://thinkadmin.top
-// +----------------------------------------------------------------------
-// | 免责声明 ( https://thinkadmin.top/disclaimer )
-// | 会员免费 ( https://thinkadmin.top/vip-introduce )
-// +----------------------------------------------------------------------
-// | gitee 代码仓库：https://gitee.com/zoujingli/think-plugs-wemall
-// | github 代码仓库：https://github.com/zoujingli/think-plugs-wemall
-// +----------------------------------------------------------------------
-
-declare (strict_types=1);
+declare(strict_types=1);
+/**
+ * +----------------------------------------------------------------------
+ * | Payment Plugin for ThinkAdmin
+ * +----------------------------------------------------------------------
+ * | 版权所有 2014~2026 ThinkAdmin [ thinkadmin.top ]
+ * +----------------------------------------------------------------------
+ * | 官方网站: https://thinkadmin.top
+ * +----------------------------------------------------------------------
+ * | 开源协议 ( https://mit-license.org )
+ * | 免责声明 ( https://thinkadmin.top/disclaimer )
+ * | 会员特权 ( https://thinkadmin.top/vip-introduce )
+ * +----------------------------------------------------------------------
+ * | gitee 代码仓库：https://gitee.com/zoujingli/ThinkAdmin
+ * | github 代码仓库：https://github.com/zoujingli/ThinkAdmin
+ * +----------------------------------------------------------------------
+ */
 
 namespace plugin\wemall\controller\shop;
 
@@ -27,24 +29,25 @@ use plugin\wemall\service\UserRefund;
 use think\admin\Controller;
 use think\admin\helper\QueryHelper;
 use think\admin\service\AdminService;
+use think\db\exception\DataNotFoundException;
+use think\db\exception\DbException;
+use think\db\exception\ModelNotFoundException;
 use think\db\Query;
 use think\exception\HttpResponseException;
 
 /**
- * 售后订单管理
+ * 售后订单管理.
  * @class Refund
- * @package plugin\wemall\controller\shop
  */
 class Refund extends Controller
 {
     /**
-     * 售后订单管理
+     * 售后订单管理.
      * @auth true
      * @menu true
-     * @return void
-     * @throws \think\db\exception\DataNotFoundException
-     * @throws \think\db\exception\DbException
-     * @throws \think\db\exception\ModelNotFoundException
+     * @throws DataNotFoundException
+     * @throws DbException
+     * @throws ModelNotFoundException
      */
     public function index()
     {
@@ -68,9 +71,8 @@ class Refund extends Controller
     }
 
     /**
-     * 处理订单售后
+     * 处理订单售后.
      * @auto true
-     * @return void
      */
     public function edit()
     {
@@ -87,83 +89,91 @@ class Refund extends Controller
     }
 
     /**
-     * 表单数据处理
-     * @param array $data
-     * @return void
+     * 表单数据处理.
      */
     protected function _form_filter(array &$data)
     {
         if ($this->request->isGet()) {
-            if (empty($data)) $this->error('无效售后单！');
-        } else try {
-            $refund = PluginWemallOrderRefund::mk()->findOrEmpty($data['id'] ?? 0);
-            if ($refund->isEmpty()) $this->error('无效的售后单！');
-            $order = UserOrder::widthOrder($refund->getAttr('order_no'));
-            if ($order->isEmpty()) $this->error('订单数据异常！');
-            $this->app->db->transaction(function () use ($data, $order, $refund) {
-                // 根据支付类型，自动合并金额与状态
-                foreach ($data['ptypes'] as $pcode => $type) {
-                    if (($amount = floatval($data['refunds'][$pcode])) > 0) {
-                        $code = $data['pcodes'][$pcode] ?? 0;
-                        if ($type === Payment::INTEGRAL) {
-                            $rcode = $refund->getAttr('integral_code') ?: Payment::withRefundCode();
-                            $data['integral_code'] = $rcode;
-                            $data['integral_amount'] = $amount;
-                        } elseif ($type === Payment::BALANCE) {
-                            $rcode = $refund->getAttr('balance_code') ?: Payment::withRefundCode();
-                            $data['balance_code'] = $rcode;
-                            $data['balance_amount'] = $amount;
-                        } elseif ($type === Payment::COUPON) {
-                            $map = ['code' => $pcode, 'channel_type' => Payment::COUPON];
-                            $coupon = PluginPaymentRecord::mk()->where($map)->findOrEmpty()->toArray();
-                            empty($coupon) || UserCoupon::resume($coupon['payment_trade']);
-                            $amount = floatval($coupon['payment_amount']);
-                        } else {
-                            $rcode = $refund->getAttr('payment_code') ?: Payment::withRefundCode();
-                            $data['payment_code'] = $rcode;
-                            $data['payment_amount'] = $amount;
-                        }
-                        // 状态大于 4 时发起退款操作
-                        // 流程状态(0已取消,1预订单,2待审核,3待退货,4已退货,5待退款,6已退款,7已完成)
-                        if ($data['status'] > 4 && $amount > 0) try {
-                            // 发起退款，如果返回 2 则表示已经存在，不需要处理
-                            Payment::mk($code)->refund($pcode, strval($amount), $data['remark'], $rcode);
-                        } catch (\Exception $exception) {
-                            if ($exception->getCode() !== 2) {
-                                throw $exception;
+            if (empty($data)) {
+                $this->error('无效售后单！');
+            }
+        } else {
+            try {
+                $refund = PluginWemallOrderRefund::mk()->findOrEmpty($data['id'] ?? 0);
+                if ($refund->isEmpty()) {
+                    $this->error('无效的售后单！');
+                }
+                $order = UserOrder::widthOrder($refund->getAttr('order_no'));
+                if ($order->isEmpty()) {
+                    $this->error('订单数据异常！');
+                }
+                $this->app->db->transaction(function () use ($data, $order, $refund) {
+                    // 根据支付类型，自动合并金额与状态
+                    foreach ($data['ptypes'] as $pcode => $type) {
+                        if (bccomp(strval($data['refunds'][$pcode]), '0.00', 2) > 0) {
+                            $code = $data['pcodes'][$pcode] ?? 0;
+                            if ($type === Payment::INTEGRAL) {
+                                $rcode = $refund->getAttr('integral_code') ?: Payment::withRefundCode();
+                                $data['integral_code'] = $rcode;
+                                $data['integral_amount'] = $amount;
+                            } elseif ($type === Payment::BALANCE) {
+                                $rcode = $refund->getAttr('balance_code') ?: Payment::withRefundCode();
+                                $data['balance_code'] = $rcode;
+                                $data['balance_amount'] = $amount;
+                            } elseif ($type === Payment::COUPON) {
+                                $map = ['code' => $pcode, 'channel_type' => Payment::COUPON];
+                                $coupon = PluginPaymentRecord::mk()->where($map)->findOrEmpty()->toArray();
+                                empty($coupon) || UserCoupon::resume($coupon['payment_trade']);
+                                $amount = strval($coupon['payment_amount']);
+                            } else {
+                                $rcode = $refund->getAttr('payment_code') ?: Payment::withRefundCode();
+                                $data['payment_code'] = $rcode;
+                                $data['payment_amount'] = $amount;
+                            }
+                            // 状态大于 4 时发起退款操作
+                            // 流程状态(0已取消,1预订单,2待审核,3待退货,4已退货,5待退款,6已退款,7已完成)
+                            if ($data['status'] > 4 && $amount > 0) {
+                                try {
+                                    // 发起退款，如果返回 2 则表示已经存在，不需要处理
+                                    Payment::mk($code)->refund($pcode, strval($amount), $data['remark'], $rcode);
+                                } catch (\Exception $exception) {
+                                    if ($exception->getCode() !== 2) {
+                                        throw $exception;
+                                    }
+                                }
                             }
                         }
                     }
-                }
-                // 如果已经退款了，不让改金额
-                if ($refund->getAttr('status') > 4) {
-                    // 取消订单奖励
-                    UserOrder::cancel($refund->getAttr('order_no'), true);
-                    // 去除不相关的字段
-                    unset($data['payment_amount'], $data['balance_amount'], $data['integral_amount']);
-                }
-                // 后台操作人
-                $data['admin_by'] = AdminService::getUserId();
-                // 更新售后数据
-                $refund->save($data);
-                // 同步订单状态
-                $order->save(['refund_status' => $data['status']]);
-            });
-            $this->success('保存成功!', 'javascript:history.back()');
-        } catch (HttpResponseException $exception) {
-            throw $exception;
-        } catch (\Exception $exception) {
-            $this->error($exception->getMessage());
+                    // 如果已经退款了，不让改金额
+                    if ($refund->getAttr('status') > 4) {
+                        // 取消订单奖励
+                        UserOrder::cancel($refund->getAttr('order_no'), true);
+                        // 去除不相关的字段
+                        unset($data['payment_amount'], $data['balance_amount'], $data['integral_amount']);
+                    }
+                    // 后台操作人
+                    $data['admin_by'] = AdminService::getUserId();
+                    // 更新售后数据
+                    $refund->save($data);
+                    // 同步订单状态
+                    $order->save(['refund_status' => $data['status']]);
+                });
+                $this->success('保存成功!', 'javascript:history.back()');
+            } catch (HttpResponseException $exception) {
+                throw $exception;
+            } catch (\Exception $exception) {
+                $this->error($exception->getMessage());
+            }
         }
     }
 
     /**
-     * 表单结构管理
-     * @param boolean $state
-     * @return void
+     * 表单结构管理.
      */
     protected function _form_result(bool &$state)
     {
-        if ($state) $this->success('修改成功！', 'javascript:history.back()');
+        if ($state) {
+            $this->success('修改成功！', 'javascript:history.back()');
+        }
     }
 }

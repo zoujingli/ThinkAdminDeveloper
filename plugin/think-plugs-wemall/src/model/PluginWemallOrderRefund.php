@@ -1,20 +1,22 @@
 <?php
 
-// +----------------------------------------------------------------------
-// | WeMall Plugin for ThinkAdmin
-// +----------------------------------------------------------------------
-// | 版权所有 2014~2025 ThinkAdmin [ thinkadmin.top ]
-// +----------------------------------------------------------------------
-// | 官方网站: https://thinkadmin.top
-// +----------------------------------------------------------------------
-// | 免责声明 ( https://thinkadmin.top/disclaimer )
-// | 会员免费 ( https://thinkadmin.top/vip-introduce )
-// +----------------------------------------------------------------------
-// | gitee 代码仓库：https://gitee.com/zoujingli/think-plugs-wemall
-// | github 代码仓库：https://github.com/zoujingli/think-plugs-wemall
-// +----------------------------------------------------------------------
-
-declare (strict_types=1);
+declare(strict_types=1);
+/**
+ * +----------------------------------------------------------------------
+ * | Payment Plugin for ThinkAdmin
+ * +----------------------------------------------------------------------
+ * | 版权所有 2014~2026 ThinkAdmin [ thinkadmin.top ]
+ * +----------------------------------------------------------------------
+ * | 官方网站: https://thinkadmin.top
+ * +----------------------------------------------------------------------
+ * | 开源协议 ( https://mit-license.org )
+ * | 免责声明 ( https://thinkadmin.top/disclaimer )
+ * | 会员特权 ( https://thinkadmin.top/vip-introduce )
+ * +----------------------------------------------------------------------
+ * | gitee 代码仓库：https://gitee.com/zoujingli/ThinkAdmin
+ * | github 代码仓库：https://github.com/zoujingli/ThinkAdmin
+ * +----------------------------------------------------------------------
+ */
 
 namespace plugin\wemall\model;
 
@@ -22,13 +24,13 @@ use plugin\wemall\service\UserRefund;
 use think\model\relation\HasOne;
 
 /**
- * 商品订单售后模型
+ * 商品订单售后模型.
  *
  * @property array $images 申请图片
- * @property float $amount 申请金额
- * @property float $balance_amount 退款余额
- * @property float $integral_amount 退款积分
- * @property float $payment_amount 退款支付
+ * @property string $amount 申请金额
+ * @property string $balance_amount 退款余额
+ * @property string $integral_amount 退款积分
+ * @property string $payment_amount 退款支付
  * @property int $admin_by 后台用户
  * @property int $id
  * @property int $number 退货数量
@@ -52,15 +54,13 @@ use think\model\relation\HasOne;
  * @property string $status_at 状态变更时间
  * @property string $status_ds 状态变更描述
  * @property string $update_time 更新时间
- * @property-read \plugin\wemall\model\PluginWemallOrder $orderinfo
+ * @property PluginWemallOrder $orderinfo
  * @class PluginWemallOrderRefund
- * @package plugin\wemall\model
  */
 class PluginWemallOrderRefund extends AbsUser
 {
     /**
-     * 获取订单信息
-     * @return \think\model\relation\HasOne
+     * 获取订单信息.
      */
     public function orderinfo(): HasOne
     {
@@ -68,9 +68,8 @@ class PluginWemallOrderRefund extends AbsUser
     }
 
     /**
-     * 格式化售后图片
+     * 格式化售后图片.
      * @param mixed $value
-     * @return array
      */
     public function getImagesAttr($value): array
     {

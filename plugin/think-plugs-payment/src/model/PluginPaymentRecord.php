@@ -14,7 +14,23 @@
 // | github 代码仓库：https://github.com/zoujingli/think-plugs-payment
 // +----------------------------------------------------------------------
 
-declare (strict_types=1);
+declare(strict_types=1);
+/**
+ * +----------------------------------------------------------------------
+ * | Payment Plugin for ThinkAdmin
+ * +----------------------------------------------------------------------
+ * | 版权所有 2014~2026 ThinkAdmin [ thinkadmin.top ]
+ * +----------------------------------------------------------------------
+ * | 官方网站: https://thinkadmin.top
+ * +----------------------------------------------------------------------
+ * | 开源协议 ( https://mit-license.org )
+ * | 免责声明 ( https://thinkadmin.top/disclaimer )
+ * | 会员特权 ( https://thinkadmin.top/vip-introduce )
+ * +----------------------------------------------------------------------
+ * | gitee 代码仓库：https://gitee.com/zoujingli/ThinkAdmin
+ * | github 代码仓库：https://github.com/zoujingli/ThinkAdmin
+ * +----------------------------------------------------------------------
+ */
 
 namespace plugin\payment\model;
 
@@ -25,19 +41,19 @@ use plugin\payment\service\Payment;
 use think\model\relation\HasOne;
 
 /**
- * 用户支付行为模型
+ * 用户支付行为模型.
  *
  * @property array $payment_notify 支付通知内容
- * @property float $order_amount 原订单金额
- * @property float $payment_amount 实际支付金额
- * @property float $payment_coupon 平台优惠券金额
- * @property float $refund_amount 累计退款
- * @property float $refund_balance 退回余额
- * @property float $refund_integral 退回积分
- * @property float $refund_payment 退回金额
- * @property float $used_balance 扣除余额
- * @property float $used_integral 扣除积分
- * @property float $used_payment 支付金额
+ * @property string $order_amount 原订单金额
+ * @property string $payment_amount 实际支付金额
+ * @property string $payment_coupon 平台优惠券金额
+ * @property string $refund_amount 累计退款
+ * @property string $refund_balance 退回余额
+ * @property string $refund_integral 退回积分
+ * @property string $refund_payment 退回金额
+ * @property string $used_balance 扣除余额
+ * @property string $used_integral 扣除积分
+ * @property string $used_payment 支付金额
  * @property int $audit_status 审核状态(0已拒,1待审,2已审)
  * @property int $audit_user 审核用户(系统用户ID)
  * @property int $id
@@ -58,16 +74,14 @@ use think\model\relation\HasOne;
  * @property string $payment_time 支付生效时间
  * @property string $payment_trade 平台交易编号
  * @property string $update_time 更新时间
- * @property-read \plugin\account\model\PluginAccountBind $device
- * @property-read array $user
+ * @property PluginAccountBind $device
+ * @property array $user
  * @class PluginPaymentRecord
- * @package plugin\payment\model
  */
 class PluginPaymentRecord extends Abs
 {
     /**
-     * 关联用户数据
-     * @return \think\model\relation\HasOne
+     * 关联用户数据.
      */
     public function user(): HasOne
     {
@@ -75,27 +89,21 @@ class PluginPaymentRecord extends Abs
     }
 
     /**
-     * 关联客户端数据
-     * @return \think\model\relation\HasOne
+     * 关联客户端数据.
      */
     public function device(): HasOne
     {
         return $this->hasOne(PluginAccountBind::class, 'id', 'usid');
     }
 
-    /**
-     * @param $value
-     * @return array
-     */
     public function getUserAttr($value): array
     {
         return is_array($value) ? $value : [];
     }
 
     /**
-     * 格式化时间
+     * 格式化时间.
      * @param mixed $value
-     * @return string
      */
     public function getAuditTimeAttr($value): string
     {
@@ -103,9 +111,8 @@ class PluginPaymentRecord extends Abs
     }
 
     /**
-     * 格式化时间
+     * 格式化时间.
      * @param mixed $value
-     * @return string
      */
     public function setAuditTimeAttr($value): string
     {
@@ -113,9 +120,8 @@ class PluginPaymentRecord extends Abs
     }
 
     /**
-     * 格式化输出时间
+     * 格式化输出时间.
      * @param mixed $value
-     * @return string
      */
     public function getPaymentTimeAttr($value): string
     {
@@ -123,9 +129,8 @@ class PluginPaymentRecord extends Abs
     }
 
     /**
-     * 格式化时间
+     * 格式化时间.
      * @param mixed $value
-     * @return string
      */
     public function setPaymentTimeAttr($value): string
     {
@@ -133,9 +138,8 @@ class PluginPaymentRecord extends Abs
     }
 
     /**
-     *  格式化通知
+     *  格式化通知.
      * @param mixed $value
-     * @return string
      */
     public function setPaymentNotifyAttr($value): string
     {
@@ -143,9 +147,8 @@ class PluginPaymentRecord extends Abs
     }
 
     /**
-     * 格式化通知
+     * 格式化通知.
      * @param mixed $value
-     * @return array
      */
     public function getPaymentNotifyAttr($value): array
     {
@@ -153,8 +156,7 @@ class PluginPaymentRecord extends Abs
     }
 
     /**
-     * 数据输出处理
-     * @return array
+     * 数据输出处理.
      */
     public function toArray(): array
     {

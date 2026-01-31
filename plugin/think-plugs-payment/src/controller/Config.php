@@ -1,29 +1,49 @@
 <?php
 
+declare(strict_types=1);
+/**
+ * +----------------------------------------------------------------------
+ * | Payment Plugin for ThinkAdmin
+ * +----------------------------------------------------------------------
+ * | 版权所有 2014~2026 ThinkAdmin [ thinkadmin.top ]
+ * +----------------------------------------------------------------------
+ * | 官方网站: https://thinkadmin.top
+ * +----------------------------------------------------------------------
+ * | 开源协议 ( https://mit-license.org )
+ * | 免责声明 ( https://thinkadmin.top/disclaimer )
+ * | 会员特权 ( https://thinkadmin.top/vip-introduce )
+ * +----------------------------------------------------------------------
+ * | gitee 代码仓库：https://gitee.com/zoujingli/ThinkAdmin
+ * | github 代码仓库：https://github.com/zoujingli/ThinkAdmin
+ * +----------------------------------------------------------------------
+ */
+
 namespace plugin\payment\controller;
 
 use plugin\account\service\Account;
 use plugin\payment\model\PluginPaymentConfig;
 use plugin\payment\service\Payment;
 use think\admin\Controller;
+use think\admin\Exception;
 use think\admin\extend\CodeExtend;
 use think\admin\helper\QueryHelper;
+use think\db\exception\DataNotFoundException;
+use think\db\exception\DbException;
+use think\db\exception\ModelNotFoundException;
 
 /**
- * 支付配置管理
+ * 支付配置管理.
  * @class Config
- * @package plugin\payment\controller
  */
 class Config extends Controller
 {
-
     /**
-     * 支付配置管理
+     * 支付配置管理.
      * @auth true
      * @menu true
-     * @throws \think\db\exception\DataNotFoundException
-     * @throws \think\db\exception\DbException
-     * @throws \think\db\exception\ModelNotFoundException
+     * @throws DataNotFoundException
+     * @throws DbException
+     * @throws ModelNotFoundException
      */
     public function index()
     {
@@ -39,23 +59,7 @@ class Config extends Controller
     }
 
     /**
-     * 获取支付配置
-     * @param array $data
-     * @return void
-     */
-    protected function _page_filter(array &$data)
-    {
-        [$ptypes, $atypes] = [Payment::types(), Account::types(1)];
-        foreach ($data as &$vo) {
-            [$vo['ntype'], $vo['atype']] = [$ptypes[$vo['type']]['name'] ?? $vo['type'], []];
-            if (isset($ptypes[$vo['type']])) foreach ($ptypes[$vo['type']]['account'] as $account) {
-                if (isset($atypes[$account])) $vo['atype'][$account] = $atypes[$account]['name'];
-            }
-        }
-    }
-
-    /**
-     * 添加支付配置
+     * 添加支付配置.
      * @auth true
      */
     public function add()
@@ -65,7 +69,7 @@ class Config extends Controller
     }
 
     /**
-     * 编辑支付配置
+     * 编辑支付配置.
      * @auth true
      */
     public function edit()
@@ -75,67 +79,19 @@ class Config extends Controller
     }
 
     /**
-     * 数据表单处理
-     * @param array $data
-     */
-    protected function _form_filter(array &$data)
-    {
-        if (empty($data['code'])) {
-            $data['code'] = CodeExtend::uniqidNumber(12, 'M');
-        }
-        if ($this->request->isGet()) {
-            $data['content'] = $data['content'] ?? [];
-            [$this->payments, $types] = [[], Account::types(1)];
-            foreach (Payment::types(1) as $k => $v) {
-                // 屏蔽内置支付方式
-                if (in_array($k, [Payment::BALANCE, Payment::INTEGRAL, Payment::COUPON])) {
-                    continue;
-                }
-                $allow = [];
-                foreach ($v['account'] as $api) if (isset($types[$api])) {
-                    $allow[$api] = $types[$api]['name'];
-                }
-                if (empty($allow)) continue;
-                $this->payments[$k] = array_merge($v, ['allow' => join('、', $allow)]);
-            }
-        } else {
-            if (empty($data['type'])) $this->error('请选择支付方式！');
-            if (empty($data['cover'])) $this->error('请上传支付图标！');
-            // 保存配置参数
-            $data['content'] = $this->request->post();
-            $fields = PluginPaymentConfig::mk()->getTableFields();
-            foreach ($data['content'] as $k => $v) {
-                if (in_array($k, $fields) || $v === '') unset($data['content'][$k]);
-            }
-        }
-    }
-
-    /**
-     * 处理结果处理
-     * @param boolean $state
-     * @return void
-     */
-    protected function _form_result(bool $state)
-    {
-        if ($state) {
-            $this->success('参数保存成功！', 'javascript:history.back()');
-        }
-    }
-
-    /**
      * 修改通道状态
      * @auth true
      */
     public function state()
     {
         PluginPaymentConfig::mSave($this->_vali([
-            'status.in:0,1'  => '状态值范围异常！',
+            'status.in:0,1' => '状态值范围异常！',
             'status.require' => '状态值不能为空！',
         ]));
     }
 
     /**
-     * 删除支付配置
+     * 删除支付配置.
      * @auth true
      */
     public function remove()
@@ -144,9 +100,9 @@ class Config extends Controller
     }
 
     /**
-     * 配置支付方式
+     * 配置支付方式.
      * @auth true
-     * @throws \think\admin\Exception
+     * @throws Exception
      */
     public function types()
     {
@@ -168,6 +124,79 @@ class Config extends Controller
             } else {
                 $this->error('配置保存失败！');
             }
+        }
+    }
+
+    /**
+     * 获取支付配置.
+     */
+    protected function _page_filter(array &$data)
+    {
+        [$ptypes, $atypes] = [Payment::types(), Account::types(1)];
+        foreach ($data as &$vo) {
+            [$vo['ntype'], $vo['atype']] = [$ptypes[$vo['type']]['name'] ?? $vo['type'], []];
+            if (isset($ptypes[$vo['type']])) {
+                foreach ($ptypes[$vo['type']]['account'] as $account) {
+                    if (isset($atypes[$account])) {
+                        $vo['atype'][$account] = $atypes[$account]['name'];
+                    }
+                }
+            }
+        }
+    }
+
+    /**
+     * 数据表单处理.
+     */
+    protected function _form_filter(array &$data)
+    {
+        if (empty($data['code'])) {
+            $data['code'] = CodeExtend::uniqidNumber(12, 'M');
+        }
+        if ($this->request->isGet()) {
+            $data['content'] = $data['content'] ?? [];
+            [$this->payments, $types] = [[], Account::types(1)];
+            foreach (Payment::types(1) as $k => $v) {
+                // 屏蔽内置支付方式
+                if (in_array($k, [Payment::BALANCE, Payment::INTEGRAL, Payment::COUPON])) {
+                    continue;
+                }
+                $allow = [];
+                foreach ($v['account'] as $api) {
+                    if (isset($types[$api])) {
+                        $allow[$api] = $types[$api]['name'];
+                    }
+                }
+                if (empty($allow)) {
+                    continue;
+                }
+                $this->payments[$k] = array_merge($v, ['allow' => join('、', $allow)]);
+            }
+        } else {
+            if (empty($data['type'])) {
+                $this->error('请选择支付方式！');
+            }
+            if (empty($data['cover'])) {
+                $this->error('请上传支付图标！');
+            }
+            // 保存配置参数
+            $data['content'] = $this->request->post();
+            $fields = PluginPaymentConfig::mk()->getTableFields();
+            foreach ($data['content'] as $k => $v) {
+                if (in_array($k, $fields) || $v === '') {
+                    unset($data['content'][$k]);
+                }
+            }
+        }
+    }
+
+    /**
+     * 处理结果处理.
+     */
+    protected function _form_result(bool $state)
+    {
+        if ($state) {
+            $this->success('参数保存成功！', 'javascript:history.back()');
         }
     }
 }

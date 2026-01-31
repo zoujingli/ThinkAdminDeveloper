@@ -1,42 +1,45 @@
 <?php
 
-// +----------------------------------------------------------------------
-// | WeMall Plugin for ThinkAdmin
-// +----------------------------------------------------------------------
-// | 版权所有 2014~2025 ThinkAdmin [ thinkadmin.top ]
-// +----------------------------------------------------------------------
-// | 官方网站: https://thinkadmin.top
-// +----------------------------------------------------------------------
-// | 免责声明 ( https://thinkadmin.top/disclaimer )
-// | 会员免费 ( https://thinkadmin.top/vip-introduce )
-// +----------------------------------------------------------------------
-// | gitee 代码仓库：https://gitee.com/zoujingli/think-plugs-wemall
-// | github 代码仓库：https://github.com/zoujingli/think-plugs-wemall
-// +----------------------------------------------------------------------
-
-declare (strict_types=1);
+declare(strict_types=1);
+/**
+ * +----------------------------------------------------------------------
+ * | Payment Plugin for ThinkAdmin
+ * +----------------------------------------------------------------------
+ * | 版权所有 2014~2026 ThinkAdmin [ thinkadmin.top ]
+ * +----------------------------------------------------------------------
+ * | 官方网站: https://thinkadmin.top
+ * +----------------------------------------------------------------------
+ * | 开源协议 ( https://mit-license.org )
+ * | 免责声明 ( https://thinkadmin.top/disclaimer )
+ * | 会员特权 ( https://thinkadmin.top/vip-introduce )
+ * +----------------------------------------------------------------------
+ * | gitee 代码仓库：https://gitee.com/zoujingli/ThinkAdmin
+ * | github 代码仓库：https://github.com/zoujingli/ThinkAdmin
+ * +----------------------------------------------------------------------
+ */
 
 namespace plugin\wemall\controller\base;
 
 use plugin\wemall\model\PluginWemallConfigAgent;
 use think\admin\Controller;
 use think\admin\helper\QueryHelper;
+use think\db\exception\DataNotFoundException;
+use think\db\exception\DbException;
+use think\db\exception\ModelNotFoundException;
 
 /**
- * 代理等级管理
+ * 代理等级管理.
  * @class Agent
- * @package plugin\wemall\controller\base
  */
 class Agent extends Controller
 {
     /**
-     * 代理等级管理
+     * 代理等级管理.
      * @auth true
      * @menu true
-     * @return void
-     * @throws \think\db\exception\DataNotFoundException
-     * @throws \think\db\exception\DbException
-     * @throws \think\db\exception\ModelNotFoundException
+     * @throws DataNotFoundException
+     * @throws DbException
+     * @throws ModelNotFoundException
      */
     public function index()
     {
@@ -48,10 +51,9 @@ class Agent extends Controller
     }
 
     /**
-     * 添加代理等级
+     * 添加代理等级.
      * @auth true
-     * @return void
-     * @throws \think\db\exception\DbException
+     * @throws DbException
      */
     public function add()
     {
@@ -60,10 +62,9 @@ class Agent extends Controller
     }
 
     /**
-     * 编辑代理等级
+     * 编辑代理等级.
      * @auth true
-     * @return void
-     * @throws \think\db\exception\DbException
+     * @throws DbException
      */
     public function edit()
     {
@@ -72,40 +73,10 @@ class Agent extends Controller
     }
 
     /**
-     * 表单数据处理
-     * @param array $vo
-     * @throws \think\db\exception\DbException
-     */
-    protected function _form_filter(array &$vo)
-    {
-        if ($this->request->isGet()) {
-            if (empty($vo['extra'])) $vo['extra'] = [];
-            $vo['number'] = $vo['number'] ?? PluginWemallConfigAgent::maxNumber();
-        } else {
-            $count = 0;
-            foreach ($vo['extra'] as $k => $v) if (is_numeric(stripos($k, '_number'))) {
-                $ats = explode('_', $k);
-                $key = "{$ats[0]}_{$ats[1]}_status";
-                if ($vo['number'] > 0) {
-                    isset($vo['extra'][$key]) || $vo['extra'][$key] = 0;
-                    floatval($v) > 0 ? $count += 1 : ($vo['extra'][$key] = 0);
-                } else {
-                    $vo['extra'][$k] = 0;
-                    $vo['extra'][$key] = 0;
-                }
-            }
-            if (empty($count) && $vo['number'] > 0) {
-                $this->error('升级条件不能为空！');
-            }
-        }
-    }
-
-    /**
-     * 表单结果处理
-     * @param boolean $state
-     * @throws \think\db\exception\DataNotFoundException
-     * @throws \think\db\exception\DbException
-     * @throws \think\db\exception\ModelNotFoundException
+     * 表单结果处理.
+     * @throws DataNotFoundException
+     * @throws DbException
+     * @throws ModelNotFoundException
      */
     public function _form_result(bool $state)
     {
@@ -128,7 +99,7 @@ class Agent extends Controller
     }
 
     /**
-     * 删除代理等级
+     * 删除代理等级.
      * @auth true
      */
     public function remove()
@@ -137,11 +108,43 @@ class Agent extends Controller
     }
 
     /**
-     * 状态变更处理
+     * 表单数据处理.
+     * @throws DbException
+     */
+    protected function _form_filter(array &$vo)
+    {
+        if ($this->request->isGet()) {
+            if (empty($vo['extra'])) {
+                $vo['extra'] = [];
+            }
+            $vo['number'] = $vo['number'] ?? PluginWemallConfigAgent::maxNumber();
+        } else {
+            $count = 0;
+            foreach ($vo['extra'] as $k => $v) {
+                if (is_numeric(stripos($k, '_number'))) {
+                    $ats = explode('_', $k);
+                    $key = "{$ats[0]}_{$ats[1]}_status";
+                    if ($vo['number'] > 0) {
+                        isset($vo['extra'][$key]) || $vo['extra'][$key] = 0;
+                        floatval($v) > 0 ? ++$count : ($vo['extra'][$key] = 0);
+                    } else {
+                        $vo['extra'][$k] = 0;
+                        $vo['extra'][$key] = 0;
+                    }
+                }
+            }
+            if (empty($count) && $vo['number'] > 0) {
+                $this->error('升级条件不能为空！');
+            }
+        }
+    }
+
+    /**
+     * 状态变更处理.
      * @auth true
-     * @throws \think\db\exception\DataNotFoundException
-     * @throws \think\db\exception\DbException
-     * @throws \think\db\exception\ModelNotFoundException
+     * @throws DataNotFoundException
+     * @throws DbException
+     * @throws ModelNotFoundException
      */
     protected function _save_result()
     {
@@ -149,10 +152,10 @@ class Agent extends Controller
     }
 
     /**
-     * 删除结果处理
-     * @throws \think\db\exception\DataNotFoundException
-     * @throws \think\db\exception\DbException
-     * @throws \think\db\exception\ModelNotFoundException
+     * 删除结果处理.
+     * @throws DataNotFoundException
+     * @throws DbException
+     * @throws ModelNotFoundException
      */
     protected function _delete_result()
     {

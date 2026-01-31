@@ -1,27 +1,29 @@
 <?php
 
-// +----------------------------------------------------------------------
-// | WeMall Plugin for ThinkAdmin
-// +----------------------------------------------------------------------
-// | 版权所有 2014~2025 ThinkAdmin [ thinkadmin.top ]
-// +----------------------------------------------------------------------
-// | 官方网站: https://thinkadmin.top
-// +----------------------------------------------------------------------
-// | 免责声明 ( https://thinkadmin.top/disclaimer )
-// | 会员免费 ( https://thinkadmin.top/vip-introduce )
-// +----------------------------------------------------------------------
-// | gitee 代码仓库：https://gitee.com/zoujingli/think-plugs-wemall
-// | github 代码仓库：https://github.com/zoujingli/think-plugs-wemall
-// +----------------------------------------------------------------------
-
-declare (strict_types=1);
+declare(strict_types=1);
+/**
+ * +----------------------------------------------------------------------
+ * | Payment Plugin for ThinkAdmin
+ * +----------------------------------------------------------------------
+ * | 版权所有 2014~2026 ThinkAdmin [ thinkadmin.top ]
+ * +----------------------------------------------------------------------
+ * | 官方网站: https://thinkadmin.top
+ * +----------------------------------------------------------------------
+ * | 开源协议 ( https://mit-license.org )
+ * | 免责声明 ( https://thinkadmin.top/disclaimer )
+ * | 会员特权 ( https://thinkadmin.top/vip-introduce )
+ * +----------------------------------------------------------------------
+ * | gitee 代码仓库：https://gitee.com/zoujingli/ThinkAdmin
+ * | github 代码仓库：https://github.com/zoujingli/ThinkAdmin
+ * +----------------------------------------------------------------------
+ */
 
 namespace plugin\wemall\model;
 
 use think\model\relation\HasOne;
 
 /**
- * 用户评论数据模型
+ * 用户评论数据模型.
  *
  * @property array $images 评论图片
  * @property float $rate 评论分数
@@ -37,17 +39,15 @@ use think\model\relation\HasOne;
  * @property string $ghash 商品哈希
  * @property string $order_no 订单单号
  * @property string $update_time 更新时间
- * @property-read \plugin\wemall\model\PluginWemallGoods $bind_goods
- * @property-read \plugin\wemall\model\PluginWemallGoods $goods
- * @property-read \plugin\wemall\model\PluginWemallOrder $orderinfo
+ * @property PluginWemallGoods $bind_goods
+ * @property PluginWemallGoods $goods
+ * @property PluginWemallOrder $orderinfo
  * @class PluginWemallUserActionComment
- * @package plugin\wemall\model
  */
 class PluginWemallUserActionComment extends AbsUser
 {
     /**
-     * 关联商品信息
-     * @return \think\model\relation\HasOne
+     * 关联商品信息.
      */
     public function goods(): HasOne
     {
@@ -55,8 +55,7 @@ class PluginWemallUserActionComment extends AbsUser
     }
 
     /**
-     * 关联订单数据
-     * @return \think\model\relation\HasOne
+     * 关联订单数据.
      */
     public function orderinfo(): HasOne
     {
@@ -64,8 +63,7 @@ class PluginWemallUserActionComment extends AbsUser
     }
 
     /**
-     * 绑定商品信息
-     * @return \think\model\relation\HasOne
+     * 绑定商品信息.
      */
     public function bindGoods(): HasOne
     {
@@ -76,9 +74,8 @@ class PluginWemallUserActionComment extends AbsUser
     }
 
     /**
-     * 格式化图片格式
+     * 格式化图片格式.
      * @param mixed $value
-     * @return array
      */
     public function getImagesAttr($value): array
     {

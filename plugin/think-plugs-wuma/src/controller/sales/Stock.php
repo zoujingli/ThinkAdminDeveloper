@@ -1,20 +1,22 @@
 <?php
 
-// +----------------------------------------------------------------------
-// | Wuma Plugin for ThinkAdmin
-// +----------------------------------------------------------------------
-// | 版权所有 2014~2025 ThinkAdmin [ thinkadmin.top ]
-// +----------------------------------------------------------------------
-// | 官方网站: https://thinkadmin.top
-// +----------------------------------------------------------------------
-// | 免责声明 ( https://thinkadmin.top/disclaimer )
-// | 收费插件 ( https://thinkadmin.top/fee-introduce.html )
-// +----------------------------------------------------------------------
-// | gitee 代码仓库：https://gitee.com/zoujingli/think-plugs-wuma
-// | github 代码仓库：https://github.com/zoujingli/think-plugs-wuma
-// +----------------------------------------------------------------------
-
-declare (strict_types=1);
+declare(strict_types=1);
+/**
+ * +----------------------------------------------------------------------
+ * | Payment Plugin for ThinkAdmin
+ * +----------------------------------------------------------------------
+ * | 版权所有 2014~2026 ThinkAdmin [ thinkadmin.top ]
+ * +----------------------------------------------------------------------
+ * | 官方网站: https://thinkadmin.top
+ * +----------------------------------------------------------------------
+ * | 开源协议 ( https://mit-license.org )
+ * | 免责声明 ( https://thinkadmin.top/disclaimer )
+ * | 会员特权 ( https://thinkadmin.top/vip-introduce )
+ * +----------------------------------------------------------------------
+ * | gitee 代码仓库：https://gitee.com/zoujingli/ThinkAdmin
+ * | github 代码仓库：https://github.com/zoujingli/ThinkAdmin
+ * +----------------------------------------------------------------------
+ */
 
 namespace plugin\wuma\controller\sales;
 
@@ -25,21 +27,23 @@ use plugin\wuma\model\PluginWumaSalesUser;
 use plugin\wuma\model\PluginWumaSalesUserStock;
 use think\admin\Controller;
 use think\admin\helper\QueryHelper;
+use think\db\exception\DataNotFoundException;
+use think\db\exception\DbException;
+use think\db\exception\ModelNotFoundException;
 
 /**
- * 代理库存管理
+ * 代理库存管理.
  * @class Stock
- * @package plugin\wuma\controller\sales
  */
 class Stock extends Controller
 {
     /**
-     * 代理库存管理
+     * 代理库存管理.
      * @menu true
      * @auth true
-     * @throws \think\db\exception\DataNotFoundException
-     * @throws \think\db\exception\DbException
-     * @throws \think\db\exception\ModelNotFoundException
+     * @throws DataNotFoundException
+     * @throws DbException
+     * @throws ModelNotFoundException
      */
     public function index()
     {
@@ -56,21 +60,23 @@ class Stock extends Controller
             }
             // 代理搜索查询
             $db = PluginWumaSalesUser::mQuery()->like('phone,username')->db();
-            if ($db->getOptions('where')) $query->whereRaw("auid in {$db->field('id')->buildSql()}");
+            if ($db->getOptions('where')) {
+                $query->whereRaw("auid in {$db->field('id')->buildSql()}");
+            }
         });
     }
 
     /**
-     * 仓库出入库明细
+     * 仓库出入库明细.
      * @auth true
-     * @throws \think\db\exception\DataNotFoundException
-     * @throws \think\db\exception\DbException
-     * @throws \think\db\exception\ModelNotFoundException
+     * @throws DataNotFoundException
+     * @throws DbException
+     * @throws ModelNotFoundException
      */
     public function show()
     {
         $data = $this->_vali([
-            'auid.require'         => '代理用户不能为空！',
+            'auid.require' => '代理用户不能为空！',
             'product_code.require' => '产品编号不能为空！',
             'product_spec.require' => '产品规格不能为空！',
         ]);

@@ -1,42 +1,47 @@
 <?php
 
-// +----------------------------------------------------------------------
-// | Center Plugin for ThinkAdmin
-// +----------------------------------------------------------------------
-// | 版权所有 2014~2025 ThinkAdmin [ thinkadmin.top ]
-// +----------------------------------------------------------------------
-// | 官方网站: https://thinkadmin.top
-// +----------------------------------------------------------------------
-// | 免责声明 ( https://thinkadmin.top/disclaimer )
-// | 开源协议 ( http://www.apache.org/licenses/LICENSE-2.0 )
-// +----------------------------------------------------------------------
-// | gitee 代码仓库：https://gitee.com/zoujingli/think-plugs-center
-// | github 代码仓库：https://github.com/zoujingli/think-plugs-center
-// +----------------------------------------------------------------------
-
-declare (strict_types=1);
+declare(strict_types=1);
+/**
+ * +----------------------------------------------------------------------
+ * | Payment Plugin for ThinkAdmin
+ * +----------------------------------------------------------------------
+ * | 版权所有 2014~2026 ThinkAdmin [ thinkadmin.top ]
+ * +----------------------------------------------------------------------
+ * | 官方网站: https://thinkadmin.top
+ * +----------------------------------------------------------------------
+ * | 开源协议 ( https://mit-license.org )
+ * | 免责声明 ( https://thinkadmin.top/disclaimer )
+ * | 会员特权 ( https://thinkadmin.top/vip-introduce )
+ * +----------------------------------------------------------------------
+ * | gitee 代码仓库：https://gitee.com/zoujingli/ThinkAdmin
+ * | github 代码仓库：https://github.com/zoujingli/ThinkAdmin
+ * +----------------------------------------------------------------------
+ */
 
 namespace plugin\center\controller;
 
 use plugin\center\Service;
 use plugin\center\service\Plugin;
 use think\admin\Controller;
+use think\admin\Exception;
 use think\admin\service\AdminService;
+use think\db\exception\DataNotFoundException;
+use think\db\exception\DbException;
+use think\db\exception\ModelNotFoundException;
 use think\Response;
 
 /**
  * 应用插件管理
- * Class Index
- * @package plugin\center\controller
+ * Class Index.
  */
 class Index extends Controller
 {
     /**
-     * 应用插件入口
+     * 应用插件入口.
      * @menu true
      * @login true
-     * @return void|\think\Response
-     * @throws \think\admin\Exception
+     * @return Response|void
+     * @throws Exception
      */
     public function index()
     {
@@ -59,14 +64,14 @@ class Index extends Controller
     }
 
     /**
-     * 显示插件菜单
+     * 显示插件菜单.
      * @login true
      * @param string $encode 应用插件编码
      * @throws \ReflectionException
-     * @throws \think\admin\Exception
-     * @throws \think\db\exception\DataNotFoundException
-     * @throws \think\db\exception\DbException
-     * @throws \think\db\exception\ModelNotFoundException
+     * @throws Exception
+     * @throws DataNotFoundException
+     * @throws DbException
+     * @throws ModelNotFoundException
      */
     public function layout(string $encode = '')
     {
@@ -75,11 +80,15 @@ class Index extends Controller
         }
         sysvar('CurrentPluginCode', $code);
         $this->plugin = \think\admin\Plugin::get($code);
-        if (empty($this->plugin)) $this->fetchError('插件未安装！');
+        if (empty($this->plugin)) {
+            $this->fetchError('插件未安装！');
+        }
 
         // 读取插件菜单
         $menus = $this->plugin['service']::menu();
-        if (empty($menus)) $this->fetchError('插件未配置菜单！');
+        if (empty($menus)) {
+            $this->fetchError('插件未配置菜单！');
+        }
 
         foreach ($menus as $k1 => &$one) {
             $one['id'] = $k1 + 1;
@@ -104,23 +113,23 @@ class Index extends Controller
             }
         }
 
-        /*! 读取当前用户权限菜单树 */
+        /* ! 读取当前用户权限菜单树 */
         $this->menus = [
             [
-                'id'    => 9999998,
-                'url'   => '#',
-                'sub'   => $menus,
-                'node'  => Service::getAppCode(),
-                'title' => $this->plugin['name']
+                'id' => 9999998,
+                'url' => '#',
+                'sub' => $menus,
+                'node' => Service::getAppCode(),
+                'title' => $this->plugin['name'],
             ],
         ];
         // 如果插件数量大于1，显示返回插件列表
         if (count(Plugin::getLocalPlugs('module', true)) > 1) {
             $this->menus[] = [
-                'id'    => 9999999,
-                'url'   => admuri('index/index', ['from' => 'force']),
-                'node'  => 'plugin-center/index/index',
-                'title' => '返回首页'
+                'id' => 9999999,
+                'url' => admuri('index/index', ['from' => 'force']),
+                'node' => 'plugin-center/index/index',
+                'title' => '返回首页',
             ];
         }
         $this->super = AdminService::isSuper();
@@ -130,24 +139,20 @@ class Index extends Controller
     }
 
     /**
-     * 设置默认插件
+     * 设置默认插件.
      * @auth true
-     * @return void
-     * @throws \think\admin\Exception
+     * @throws Exception
      */
     public function setDefault()
     {
         sysdata('plugin.center.config', $this->_vali([
-            'default.require' => '默认插件不能为空！'
+            'default.require' => '默认插件不能为空！',
         ]));
         $this->success('设置默认插件成功！');
     }
 
     /**
-     * 跳转到指定插件
-     * @param string $code
-     * @param string $name
-     * @return \think\Response
+     * 跳转到指定插件.
      */
     private function openPlugin(string $code, string $name = '打开指定插件'): Response
     {
@@ -157,7 +162,6 @@ class Index extends Controller
 
     /**
      * 显示异常模板
-     * @return void
      */
     private function fetchError(string $content)
     {

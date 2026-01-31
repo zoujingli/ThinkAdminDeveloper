@@ -1,20 +1,22 @@
 <?php
 
-// +----------------------------------------------------------------------
-// | Developer Tools for ThinkAdmin
-// +----------------------------------------------------------------------
-// | 版权所有 2014~2025 Anyon <zoujingli@qq.com>
-// +----------------------------------------------------------------------
-// | 官方网站: https://thinkadmin.top
-// +----------------------------------------------------------------------
-// | 开源协议 ( https://mit-license.org )
-// | 免责声明 ( https://thinkadmin.top/disclaimer )
-// +----------------------------------------------------------------------
-// | gitee 代码仓库：https://gitee.com/zoujingli/think-plugs-helper
-// | github 代码仓库：https://github.com/zoujingli/think-plugs-helper
-// +----------------------------------------------------------------------
-
-declare (strict_types=1);
+declare(strict_types=1);
+/**
+ * +----------------------------------------------------------------------
+ * | Payment Plugin for ThinkAdmin
+ * +----------------------------------------------------------------------
+ * | 版权所有 2014~2026 ThinkAdmin [ thinkadmin.top ]
+ * +----------------------------------------------------------------------
+ * | 官方网站: https://thinkadmin.top
+ * +----------------------------------------------------------------------
+ * | 开源协议 ( https://mit-license.org )
+ * | 免责声明 ( https://thinkadmin.top/disclaimer )
+ * | 会员特权 ( https://thinkadmin.top/vip-introduce )
+ * +----------------------------------------------------------------------
+ * | gitee 代码仓库：https://gitee.com/zoujingli/ThinkAdmin
+ * | github 代码仓库：https://github.com/zoujingli/ThinkAdmin
+ * +----------------------------------------------------------------------
+ */
 
 namespace plugin\helper;
 
@@ -35,9 +37,9 @@ class DbBackupStruct extends Command
      */
     public function configure(): void
     {
-        $this->setName("xadmin:helper:backup");
+        $this->setName('xadmin:helper:backup');
         $this->addOption('all', 'a', Option::VALUE_NONE, 'Backup All Tables');
-        $this->setDescription("恢复数据前是否强制清空所有表数据");
+        $this->setDescription('恢复数据前是否强制清空所有表数据');
     }
 
     /**
@@ -115,7 +117,6 @@ class DbBackupStruct extends Command
 
     /**
      * 获取需要备份的表.
-     * @return array
      */
     protected function getBkTables(bool $all = true): array
     {
@@ -123,7 +124,7 @@ class DbBackupStruct extends Command
         if ($all) {
             [$tables] = SystemService::getTables();
         } elseif (empty($tables = Library::$sapp->config->get('phinx.tables', []))) {
-            $this->output->error("❌ 配置文件未定义数据表列表，请检查配置项：phinx.tables");
+            $this->output->error('❌ 配置文件未定义数据表列表，请检查配置项：phinx.tables');
             return [];
         }
         return $tables;
@@ -149,7 +150,7 @@ class DbBackupStruct extends Command
      */
     protected function getSchemaPath(): string
     {
-        return syspath("database/backup.schema.gz");
+        return syspath('database/backup.schema.gz');
     }
 
     /**
@@ -157,6 +158,6 @@ class DbBackupStruct extends Command
      */
     protected function getBackupPath(): string
     {
-        return syspath("database/backup.data.gz");
+        return syspath('database/backup.data.gz');
     }
 }

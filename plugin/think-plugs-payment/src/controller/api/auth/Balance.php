@@ -14,7 +14,23 @@
 // | github 代码仓库：https://github.com/zoujingli/think-plugs-account
 // +----------------------------------------------------------------------
 
-declare (strict_types=1);
+declare(strict_types=1);
+/**
+ * +----------------------------------------------------------------------
+ * | Payment Plugin for ThinkAdmin
+ * +----------------------------------------------------------------------
+ * | 版权所有 2014~2026 ThinkAdmin [ thinkadmin.top ]
+ * +----------------------------------------------------------------------
+ * | 官方网站: https://thinkadmin.top
+ * +----------------------------------------------------------------------
+ * | 开源协议 ( https://mit-license.org )
+ * | 免责声明 ( https://thinkadmin.top/disclaimer )
+ * | 会员特权 ( https://thinkadmin.top/vip-introduce )
+ * +----------------------------------------------------------------------
+ * | gitee 代码仓库：https://gitee.com/zoujingli/ThinkAdmin
+ * | github 代码仓库：https://github.com/zoujingli/ThinkAdmin
+ * +----------------------------------------------------------------------
+ */
 
 namespace plugin\payment\controller\api\auth;
 
@@ -23,15 +39,13 @@ use plugin\payment\model\PluginPaymentBalance;
 use think\admin\helper\QueryHelper;
 
 /**
- * 余额数据接口
+ * 余额数据接口.
  * @class Balance
- * @package plugin\payment\controller\api\auth
  */
 class Balance extends Auth
 {
     /**
-     * 获取余额记录
-     * @return void
+     * 获取余额记录.
      */
     public function get()
     {

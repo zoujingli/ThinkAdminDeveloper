@@ -1,20 +1,22 @@
 <?php
 
-// +----------------------------------------------------------------------
-// | Account Plugin for ThinkAdmin
-// +----------------------------------------------------------------------
-// | 版权所有 2014~2025 ThinkAdmin [ thinkadmin.top ]
-// +----------------------------------------------------------------------
-// | 官方网站: https://thinkadmin.top
-// +----------------------------------------------------------------------
-// | 免责声明 ( https://thinkadmin.top/disclaimer )
-// | 会员免费 ( https://thinkadmin.top/vip-introduce )
-// +----------------------------------------------------------------------
-// | gitee 代码仓库：https://gitee.com/zoujingli/think-plugs-account
-// | github 代码仓库：https://github.com/zoujingli/think-plugs-account
-// +----------------------------------------------------------------------
-
-declare (strict_types=1);
+declare(strict_types=1);
+/**
+ * +----------------------------------------------------------------------
+ * | Payment Plugin for ThinkAdmin
+ * +----------------------------------------------------------------------
+ * | 版权所有 2014~2026 ThinkAdmin [ thinkadmin.top ]
+ * +----------------------------------------------------------------------
+ * | 官方网站: https://thinkadmin.top
+ * +----------------------------------------------------------------------
+ * | 开源协议 ( https://mit-license.org )
+ * | 免责声明 ( https://thinkadmin.top/disclaimer )
+ * | 会员特权 ( https://thinkadmin.top/vip-introduce )
+ * +----------------------------------------------------------------------
+ * | gitee 代码仓库：https://gitee.com/zoujingli/ThinkAdmin
+ * | github 代码仓库：https://github.com/zoujingli/ThinkAdmin
+ * +----------------------------------------------------------------------
+ */
 
 namespace plugin\account\service\contract;
 
@@ -22,20 +24,19 @@ use plugin\account\model\PluginAccountMsms;
 use think\admin\Exception;
 
 /**
- * 短信通用接口
+ * 短信通用接口.
  * @class MessageUsageTrait
- * @package plugin\account\service\contract
  */
 trait MessageUsageTrait
 {
     /**
-     * 业务场景
+     * 业务场景.
      * @var string[]
      */
     protected $scenes = [];
 
     /**
-     * 获取短信区域配置
+     * 获取短信区域配置.
      * @return array[]
      */
     public static function regions(): array
@@ -49,8 +50,7 @@ trait MessageUsageTrait
      * @param string $phone 手机号码
      * @param array $params 模板变量
      * @param array $options 其他配置
-     * @return array
-     * @throws \think\admin\Exception
+     * @throws Exception
      */
     public function verify(string $scene, string $phone, array $params = [], array $options = []): array
     {
@@ -60,12 +60,12 @@ trait MessageUsageTrait
         }
         $result = $this->send($scenes[strtolower($scene)], $phone, $params, $options);
         PluginAccountMsms::mk()->save([
-            'unid'   => intval(sysvar('plugin_account_user_unid')),
-            'usid'   => intval(sysvar('plugin_account_user_usid')),
-            'type'   => class_basename(static::class),
-            'smsid'  => $result['smsid'] ?? '',
-            'scene'  => $scene,
-            'phone'  => $phone,
+            'unid' => intval(sysvar('plugin_account_user_unid')),
+            'usid' => intval(sysvar('plugin_account_user_usid')),
+            'type' => class_basename(static::class),
+            'smsid' => $result['smsid'] ?? '',
+            'scene' => $scene,
+            'phone' => $phone,
             'status' => 1,
             'result' => json_encode($result['result'], JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE),
             'params' => json_encode($result['params'], JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE),

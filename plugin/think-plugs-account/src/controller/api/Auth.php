@@ -1,61 +1,62 @@
 <?php
 
-// +----------------------------------------------------------------------
-// | Account Plugin for ThinkAdmin
-// +----------------------------------------------------------------------
-// | 版权所有 2014~2025 ThinkAdmin [ thinkadmin.top ]
-// +----------------------------------------------------------------------
-// | 官方网站: https://thinkadmin.top
-// +----------------------------------------------------------------------
-// | 免责声明 ( https://thinkadmin.top/disclaimer )
-// | 会员免费 ( https://thinkadmin.top/vip-introduce )
-// +----------------------------------------------------------------------
-// | gitee 代码仓库：https://gitee.com/zoujingli/think-plugs-account
-// | github 代码仓库：https://github.com/zoujingli/think-plugs-account
-// +----------------------------------------------------------------------
-
-declare (strict_types=1);
+declare(strict_types=1);
+/**
+ * +----------------------------------------------------------------------
+ * | Payment Plugin for ThinkAdmin
+ * +----------------------------------------------------------------------
+ * | 版权所有 2014~2026 ThinkAdmin [ thinkadmin.top ]
+ * +----------------------------------------------------------------------
+ * | 官方网站: https://thinkadmin.top
+ * +----------------------------------------------------------------------
+ * | 开源协议 ( https://mit-license.org )
+ * | 免责声明 ( https://thinkadmin.top/disclaimer )
+ * | 会员特权 ( https://thinkadmin.top/vip-introduce )
+ * +----------------------------------------------------------------------
+ * | gitee 代码仓库：https://gitee.com/zoujingli/ThinkAdmin
+ * | github 代码仓库：https://github.com/zoujingli/ThinkAdmin
+ * +----------------------------------------------------------------------
+ */
 
 namespace plugin\account\controller\api;
 
 use plugin\account\service\Account;
+use plugin\account\service\contract\AccountInterface;
 use think\admin\Controller;
 use think\exception\HttpResponseException;
 
 /**
- * 接口授权抽象类
+ * 接口授权抽象类.
  * @class Auth
- * @package plugin\account\controller\api
  */
 abstract class Auth extends Controller
 {
-
     /**
-     * 接口类型
+     * 接口类型.
      * @var string
      */
     protected $type;
 
     /**
-     * 主账号编号
-     * @var integer
+     * 主账号编号.
+     * @var int
      */
     protected $unid;
 
     /**
-     * 子账号编号
-     * @var integer
+     * 子账号编号.
+     * @var int
      */
     protected $usid;
 
     /**
-     * 终端账号接口
-     * @var \plugin\account\service\contract\AccountInterface
+     * 终端账号接口.
+     * @var AccountInterface
      */
     protected $account;
 
     /**
-     * 控制器初始化
+     * 控制器初始化.
      */
     protected function initialize()
     {
@@ -69,7 +70,9 @@ abstract class Auth extends Controller
             if (empty($token)) {
                 $token = $this->request->header('api-token', '');
             }
-            if (empty($token)) $this->error('需要登录授权', [], 401);
+            if (empty($token)) {
+                $this->error('需要登录授权', [], 401);
+            }
             // 读取用户账号数据
             $this->account = Account::mk('', $token);
             $login = $this->account->check();
@@ -91,7 +94,6 @@ abstract class Auth extends Controller
 
     /**
      * 检查用户状态
-     * @param boolean $isBind
      * @return $this
      */
     protected function checkUserStatus(bool $isBind = true): Auth

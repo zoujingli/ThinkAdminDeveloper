@@ -1,27 +1,32 @@
 <?php
 
-// +----------------------------------------------------------------------
-// | WeMall Plugin for ThinkAdmin
-// +----------------------------------------------------------------------
-// | 版权所有 2014~2025 ThinkAdmin [ thinkadmin.top ]
-// +----------------------------------------------------------------------
-// | 官方网站: https://thinkadmin.top
-// +----------------------------------------------------------------------
-// | 免责声明 ( https://thinkadmin.top/disclaimer )
-// | 会员免费 ( https://thinkadmin.top/vip-introduce )
-// +----------------------------------------------------------------------
-// | gitee 代码仓库：https://gitee.com/zoujingli/think-plugs-wemall
-// | github 代码仓库：https://github.com/zoujingli/think-plugs-wemall
-// +----------------------------------------------------------------------
-
-declare (strict_types=1);
+declare(strict_types=1);
+/**
+ * +----------------------------------------------------------------------
+ * | Payment Plugin for ThinkAdmin
+ * +----------------------------------------------------------------------
+ * | 版权所有 2014~2026 ThinkAdmin [ thinkadmin.top ]
+ * +----------------------------------------------------------------------
+ * | 官方网站: https://thinkadmin.top
+ * +----------------------------------------------------------------------
+ * | 开源协议 ( https://mit-license.org )
+ * | 免责声明 ( https://thinkadmin.top/disclaimer )
+ * | 会员特权 ( https://thinkadmin.top/vip-introduce )
+ * +----------------------------------------------------------------------
+ * | gitee 代码仓库：https://gitee.com/zoujingli/ThinkAdmin
+ * | github 代码仓库：https://github.com/zoujingli/ThinkAdmin
+ * +----------------------------------------------------------------------
+ */
 
 namespace plugin\wemall\model;
 
 use plugin\account\model\Abs;
+use think\db\exception\DataNotFoundException;
+use think\db\exception\DbException;
+use think\db\exception\ModelNotFoundException;
 
 /**
- * 商城快递模板数据
+ * 商城快递模板数据.
  *
  * @property array $company 快递公司
  * @property array $content 模板规则
@@ -35,18 +40,14 @@ use plugin\account\model\Abs;
  * @property string $name 模板名称
  * @property string $update_time 更新时间
  * @class PluginWemallExpressTemplate
- * @package plugin\wemall\model
  */
 class PluginWemallExpressTemplate extends Abs
 {
-
     /**
-     * 获取快递模板数据
-     * @param boolean $allow
-     * @return array
-     * @throws \think\db\exception\DataNotFoundException
-     * @throws \think\db\exception\DbException
-     * @throws \think\db\exception\ModelNotFoundException
+     * 获取快递模板数据.
+     * @throws DataNotFoundException
+     * @throws DbException
+     * @throws ModelNotFoundException
      */
     public static function items(bool $allow = false): array
     {
@@ -55,14 +56,15 @@ class PluginWemallExpressTemplate extends Abs
             'FREE' => ['code' => 'FREE', 'name' => '免费包邮', 'normal' => '', 'content' => '[]', 'company' => ['ALL' => '发货时选快递公司']],
         ] : [];
         $query = self::mk()->where(['status' => 1, 'deleted' => 0])->order('sort desc,id desc');
-        foreach ($query->field('code,name,normal,content,company')->cursor() as $tmpl) $items[$tmpl->getAttr('code')] = $tmpl->toArray();
+        foreach ($query->field('code,name,normal,content,company')->cursor() as $tmpl) {
+            $items[$tmpl->getAttr('code')] = $tmpl->toArray();
+        }
         return $items;
     }
 
     /**
-     * 写入快递公司
+     * 写入快递公司.
      * @param mixed $value
-     * @return string
      */
     public function setCompanyAttr($value): string
     {
@@ -70,24 +72,24 @@ class PluginWemallExpressTemplate extends Abs
     }
 
     /**
-     * 快递公司处理
+     * 快递公司处理.
      * @param mixed $value
-     * @return array
      */
     public function getCompanyAttr($value): array
     {
         [$express, $skey] = [[], 'plugin.wemall.companys'];
         $companys = sysvar($skey) ?: sysvar($skey, PluginWemallExpressCompany::items());
         foreach (is_string($value) ? str2arr($value) : (array)$value as $key) {
-            if (isset($companys[$key])) $express[$key] = $companys[$key];
+            if (isset($companys[$key])) {
+                $express[$key] = $companys[$key];
+            }
         }
         return $express;
     }
 
     /**
-     * 格式化规则数据
+     * 格式化规则数据.
      * @param mixed $value
-     * @return array
      */
     public function getNormalAttr($value): array
     {
@@ -100,9 +102,8 @@ class PluginWemallExpressTemplate extends Abs
     }
 
     /**
-     * 格式化规则数据
+     * 格式化规则数据.
      * @param mixed $value
-     * @return array
      */
     public function getContentAttr($value): array
     {

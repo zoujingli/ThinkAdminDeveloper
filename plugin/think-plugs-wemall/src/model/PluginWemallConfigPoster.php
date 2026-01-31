@@ -1,29 +1,34 @@
 <?php
 
-// +----------------------------------------------------------------------
-// | WeMall Plugin for ThinkAdmin
-// +----------------------------------------------------------------------
-// | 版权所有 2014~2025 ThinkAdmin [ thinkadmin.top ]
-// +----------------------------------------------------------------------
-// | 官方网站: https://thinkadmin.top
-// +----------------------------------------------------------------------
-// | 免责声明 ( https://thinkadmin.top/disclaimer )
-// | 会员免费 ( https://thinkadmin.top/vip-introduce )
-// +----------------------------------------------------------------------
-// | gitee 代码仓库：https://gitee.com/zoujingli/think-plugs-wemall
-// | github 代码仓库：https://github.com/zoujingli/think-plugs-wemall
-// +----------------------------------------------------------------------
-
-declare (strict_types=1);
+declare(strict_types=1);
+/**
+ * +----------------------------------------------------------------------
+ * | Payment Plugin for ThinkAdmin
+ * +----------------------------------------------------------------------
+ * | 版权所有 2014~2026 ThinkAdmin [ thinkadmin.top ]
+ * +----------------------------------------------------------------------
+ * | 官方网站: https://thinkadmin.top
+ * +----------------------------------------------------------------------
+ * | 开源协议 ( https://mit-license.org )
+ * | 免责声明 ( https://thinkadmin.top/disclaimer )
+ * | 会员特权 ( https://thinkadmin.top/vip-introduce )
+ * +----------------------------------------------------------------------
+ * | gitee 代码仓库：https://gitee.com/zoujingli/ThinkAdmin
+ * | github 代码仓库：https://github.com/zoujingli/ThinkAdmin
+ * +----------------------------------------------------------------------
+ */
 
 namespace plugin\wemall\model;
 
 use plugin\account\model\Abs;
 use plugin\account\service\Account;
+use think\db\exception\DataNotFoundException;
+use think\db\exception\DbException;
+use think\db\exception\ModelNotFoundException;
 use think\db\Query;
 
 /**
- * 商城推广海报数据
+ * 商城推广海报数据.
  *
  * @property array $devices 接口通道
  * @property array $levels 用户等级
@@ -39,19 +44,16 @@ use think\db\Query;
  * @property string $remark 推广描述
  * @property string $update_time 更新时间
  * @class PluginWemallConfigPoster
- * @package plugin\wemall\model
  */
 class PluginWemallConfigPoster extends Abs
 {
-
     /**
-     * 指定会员等级获取配置
-     * @param integer $level 指定会员等级
+     * 指定会员等级获取配置.
+     * @param int $level 指定会员等级
      * @param string $device 指定终端类型
-     * @return array
-     * @throws \think\db\exception\DataNotFoundException
-     * @throws \think\db\exception\DbException
-     * @throws \think\db\exception\ModelNotFoundException
+     * @throws DataNotFoundException
+     * @throws DbException
+     * @throws ModelNotFoundException
      */
     public static function items(int $level, string $device = ''): array
     {
@@ -60,16 +62,17 @@ class PluginWemallConfigPoster extends Abs
             $query->whereOr([['levels', 'like', "%,{$level},%"], ['levels', 'like', '%,-,%']]);
         })->where(['status' => 1, 'deleted' => 0])->order('sort desc,id desc');
         // 指定设备终端授权数据筛选
-        if ($device !== '') $query->where(static function (Query $query) use ($device) {
-            $query->whereOr([['devices', 'like', "%,{$device},%"], ['devices', 'like', '%,-,%']]);
-        });
+        if ($device !== '') {
+            $query->where(static function (Query $query) use ($device) {
+                $query->whereOr([['devices', 'like', "%,{$device},%"], ['devices', 'like', '%,-,%']]);
+            });
+        }
         return $query->withoutField('sort,status,deleted')->select()->toArray();
     }
 
     /**
-     * 获取会员等级数据
+     * 获取会员等级数据.
      * @param mixed $value
-     * @return array
      */
     public function getLevelsAttr($value): array
     {
@@ -77,9 +80,8 @@ class PluginWemallConfigPoster extends Abs
     }
 
     /**
-     * 设置会员等级数据
+     * 设置会员等级数据.
      * @param mixed $value
-     * @return string
      */
     public function setLevelsAttr($value): string
     {
@@ -87,9 +89,8 @@ class PluginWemallConfigPoster extends Abs
     }
 
     /**
-     * 获取授权终端设备
+     * 获取授权终端设备.
      * @param mixed $value
-     * @return array
      */
     public function getDevicesAttr($value): array
     {
@@ -97,9 +98,8 @@ class PluginWemallConfigPoster extends Abs
     }
 
     /**
-     * 格式化数据写入
+     * 格式化数据写入.
      * @param mixed $value
-     * @return string
      */
     public function setDevicesAttr($value): string
     {
@@ -107,7 +107,7 @@ class PluginWemallConfigPoster extends Abs
     }
 
     /**
-     * 格式化定位数据
+     * 格式化定位数据.
      * @param mixed $value
      */
     public function getContentAttr($value): array
@@ -121,8 +121,7 @@ class PluginWemallConfigPoster extends Abs
     }
 
     /**
-     * 数据名称转换处理
-     * @return array
+     * 数据名称转换处理.
      */
     public function toArray(): array
     {
@@ -130,14 +129,24 @@ class PluginWemallConfigPoster extends Abs
         if (isset($data['levels'])) {
             $data['levels_names'] = [];
             $types = array_column(PluginWemallConfigLevel::items(), 'name', 'number');
-            if (in_array('-', $data['levels'])) $data['levels_names'] = ['全部'];
-            else foreach ($data['levels'] as $k) $data['levels_names'][] = $types[$k] ?? $k;
+            if (in_array('-', $data['levels'])) {
+                $data['levels_names'] = ['全部'];
+            } else {
+                foreach ($data['levels'] as $k) {
+                    $data['levels_names'][] = $types[$k] ?? $k;
+                }
+            }
         }
         if (isset($data['devices'])) {
             $data['devices_names'] = [];
             $types = array_column(Account::types(), 'name', 'code');
-            if (in_array('-', $data['devices'])) $data['devices_names'] = ['全部'];
-            else foreach ($data['devices'] as $k) $data['devices_names'][] = $types[$k] ?? $k;
+            if (in_array('-', $data['devices'])) {
+                $data['devices_names'] = ['全部'];
+            } else {
+                foreach ($data['devices'] as $k) {
+                    $data['devices_names'][] = $types[$k] ?? $k;
+                }
+            }
         }
         return $data;
     }

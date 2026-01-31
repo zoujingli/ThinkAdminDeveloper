@@ -14,14 +14,30 @@
 // | github 代码仓库：https://github.com/zoujingli/think-plugs-payment
 // +----------------------------------------------------------------------
 
-declare (strict_types=1);
+declare(strict_types=1);
+/**
+ * +----------------------------------------------------------------------
+ * | Payment Plugin for ThinkAdmin
+ * +----------------------------------------------------------------------
+ * | 版权所有 2014~2026 ThinkAdmin [ thinkadmin.top ]
+ * +----------------------------------------------------------------------
+ * | 官方网站: https://thinkadmin.top
+ * +----------------------------------------------------------------------
+ * | 开源协议 ( https://mit-license.org )
+ * | 免责声明 ( https://thinkadmin.top/disclaimer )
+ * | 会员特权 ( https://thinkadmin.top/vip-introduce )
+ * +----------------------------------------------------------------------
+ * | gitee 代码仓库：https://gitee.com/zoujingli/ThinkAdmin
+ * | github 代码仓库：https://github.com/zoujingli/ThinkAdmin
+ * +----------------------------------------------------------------------
+ */
 
 namespace plugin\payment\model;
 
 use plugin\account\model\Abs;
 
 /**
- * 用户支付参数模型
+ * 用户支付参数模型.
  *
  * @property array $content 支付参数
  * @property int $deleted 删除状态
@@ -36,17 +52,16 @@ use plugin\account\model\Abs;
  * @property string $type 支付类型
  * @property string $update_time 更新时间
  * @class PluginPaymentConfig
- * @package plugin\payment\model
  */
 class PluginPaymentConfig extends Abs
 {
     protected $oplogName = '商城支付配置';
+
     protected $oplogType = '商城支付配置';
 
     /**
-     * 格式化数据格式
+     * 格式化数据格式.
      * @param mixed $value
-     * @return string
      */
     public function setContentAttr($value): string
     {
@@ -54,9 +69,8 @@ class PluginPaymentConfig extends Abs
     }
 
     /**
-     * 格式化数据格式
+     * 格式化数据格式.
      * @param mixed $value
-     * @return array
      */
     public function getContentAttr($value): array
     {

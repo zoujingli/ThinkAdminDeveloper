@@ -1,38 +1,39 @@
 <?php
 
-// +----------------------------------------------------------------------
-// | WeMall Plugin for ThinkAdmin
-// +----------------------------------------------------------------------
-// | 版权所有 2014~2025 ThinkAdmin [ thinkadmin.top ]
-// +----------------------------------------------------------------------
-// | 官方网站: https://thinkadmin.top
-// +----------------------------------------------------------------------
-// | 免责声明 ( https://thinkadmin.top/disclaimer )
-// | 会员免费 ( https://thinkadmin.top/vip-introduce )
-// +----------------------------------------------------------------------
-// | gitee 代码仓库：https://gitee.com/zoujingli/think-plugs-wemall
-// | github 代码仓库：https://github.com/zoujingli/think-plugs-wemall
-// +----------------------------------------------------------------------
-
-declare (strict_types=1);
+declare(strict_types=1);
+/**
+ * +----------------------------------------------------------------------
+ * | Payment Plugin for ThinkAdmin
+ * +----------------------------------------------------------------------
+ * | 版权所有 2014~2026 ThinkAdmin [ thinkadmin.top ]
+ * +----------------------------------------------------------------------
+ * | 官方网站: https://thinkadmin.top
+ * +----------------------------------------------------------------------
+ * | 开源协议 ( https://mit-license.org )
+ * | 免责声明 ( https://thinkadmin.top/disclaimer )
+ * | 会员特权 ( https://thinkadmin.top/vip-introduce )
+ * +----------------------------------------------------------------------
+ * | gitee 代码仓库：https://gitee.com/zoujingli/ThinkAdmin
+ * | github 代码仓库：https://github.com/zoujingli/ThinkAdmin
+ * +----------------------------------------------------------------------
+ */
 
 namespace plugin\wemall\controller\api\help;
 
 use plugin\wemall\controller\api\Auth;
 use plugin\wemall\model\PluginWemallHelpFeedback;
+use think\admin\Exception;
 use think\admin\helper\QueryHelper;
 use think\admin\Storage;
 
 /**
- * 意见反馈管理
+ * 意见反馈管理.
  * @class Feedback
- * @package app\data\controller\api\auth
  */
 class Feedback extends Auth
 {
     /**
      * 获取反馈意见
-     * @return void
      */
     public function get()
     {
@@ -44,16 +45,15 @@ class Feedback extends Auth
 
     /**
      * 提交反馈意见
-     * @return void
-     * @throws \think\admin\Exception
+     * @throws Exception
      */
     public function set()
     {
         $data = $this->_vali([
-            'unid.value'      => $this->unid,
+            'unid.value' => $this->unid,
             'content.require' => '内容不能为空!',
-            'phone.default'   => '',
-            'images.default'  => '',
+            'phone.default' => '',
+            'images.default' => '',
         ]);
         if (!empty($data['images'])) {
             $images = explode('|', $data['images']);

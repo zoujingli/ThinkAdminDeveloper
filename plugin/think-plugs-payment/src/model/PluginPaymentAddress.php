@@ -14,14 +14,30 @@
 // | github 代码仓库：https://github.com/zoujingli/think-plugs-account
 // +----------------------------------------------------------------------
 
-declare (strict_types=1);
+declare(strict_types=1);
+/**
+ * +----------------------------------------------------------------------
+ * | Payment Plugin for ThinkAdmin
+ * +----------------------------------------------------------------------
+ * | 版权所有 2014~2026 ThinkAdmin [ thinkadmin.top ]
+ * +----------------------------------------------------------------------
+ * | 官方网站: https://thinkadmin.top
+ * +----------------------------------------------------------------------
+ * | 开源协议 ( https://mit-license.org )
+ * | 免责声明 ( https://thinkadmin.top/disclaimer )
+ * | 会员特权 ( https://thinkadmin.top/vip-introduce )
+ * +----------------------------------------------------------------------
+ * | gitee 代码仓库：https://gitee.com/zoujingli/ThinkAdmin
+ * | github 代码仓库：https://github.com/zoujingli/ThinkAdmin
+ * +----------------------------------------------------------------------
+ */
 
 namespace plugin\payment\model;
 
 use plugin\account\model\Abs;
 
 /**
- * 用户地址模型
+ * 用户地址模型.
  *
  * @property int $deleted 删除状态(1已删,0未删)
  * @property int $id
@@ -39,8 +55,5 @@ use plugin\account\model\Abs;
  * @property string $user_name 收货人姓名
  * @property string $user_phone 收货人手机
  * @class PluginPaymentAddress
- * @package plugin\payment\model
  */
-class PluginPaymentAddress extends Abs
-{
-}
+class PluginPaymentAddress extends Abs {}

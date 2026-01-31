@@ -1,29 +1,34 @@
 <?php
 
-// +----------------------------------------------------------------------
-// | Wechat Service Plugin for ThinkAdmin
-// +----------------------------------------------------------------------
-// | 版权所有 2014~2025 Anyon <zoujingli@qq.com>
-// +----------------------------------------------------------------------
-// | 官方网站: https://thinkadmin.top
-// +----------------------------------------------------------------------
-// | 免责声明 ( https://thinkadmin.top/disclaimer )
-// | 会员免费 ( https://thinkadmin.top/vip-introduce )
-// +----------------------------------------------------------------------
-// | gitee 代码仓库：https://gitee.com/zoujingli/think-plugs-wechat-service
-// | github 代码仓库：https://github.com/zoujingli/think-plugs-wechat-service
-// +----------------------------------------------------------------------
-
-declare (strict_types=1);
+declare(strict_types=1);
+/**
+ * +----------------------------------------------------------------------
+ * | Payment Plugin for ThinkAdmin
+ * +----------------------------------------------------------------------
+ * | 版权所有 2014~2026 ThinkAdmin [ thinkadmin.top ]
+ * +----------------------------------------------------------------------
+ * | 官方网站: https://thinkadmin.top
+ * +----------------------------------------------------------------------
+ * | 开源协议 ( https://mit-license.org )
+ * | 免责声明 ( https://thinkadmin.top/disclaimer )
+ * | 会员特权 ( https://thinkadmin.top/vip-introduce )
+ * +----------------------------------------------------------------------
+ * | gitee 代码仓库：https://gitee.com/zoujingli/ThinkAdmin
+ * | github 代码仓库：https://github.com/zoujingli/ThinkAdmin
+ * +----------------------------------------------------------------------
+ */
 
 namespace plugin\wechat\service;
 
 use plugin\wechat\service\model\WechatAuth;
 use think\admin\Service;
+use think\db\exception\DataNotFoundException;
+use think\db\exception\DbException;
+use think\db\exception\ModelNotFoundException;
+use think\Exception;
 
 /**
- * Class AuthService
- * @package plugin\wechat\service
+ * Class AuthService.
  *
  * @method \WeChat\Card WeChatCard($appid) static 微信卡券管理
  * @method \WeChat\Custom WeChatCustom($appid) static 微信客服消息
@@ -50,7 +55,7 @@ use think\admin\Service;
  * @method \WeMini\Domain WeMiniDomain($appid) static 小程序域名管理
  * @method \WeMini\Tester WeMinitester($appid) static 小程序成员管理
  * @method \WeMini\User WeMiniUser($appid) static 小程序帐号管理
- * --------------------
+ *                                         --------------------
  * @method \WeMini\Crypt WeMiniCrypt($options = []) static 小程序数据加密处理
  * @method \WeMini\Delivery WeMiniDelivery($options = []) static 小程序即时配送
  * @method \WeMini\Image WeMiniImage($options = []) static 小程序图像处理
@@ -83,16 +88,13 @@ use think\admin\Service;
  */
 class AuthService extends Service
 {
-
     /**
      * 静态初始化对象
-     * @param string $name
-     * @param array $arguments
      * @return mixed
      * @throws \think\admin\Exception
-     * @throws \think\db\exception\DataNotFoundException
-     * @throws \think\db\exception\DbException
-     * @throws \think\db\exception\ModelNotFoundException
+     * @throws DataNotFoundException
+     * @throws DbException
+     * @throws ModelNotFoundException
      */
     public static function __callStatic(string $name, array $arguments)
     {
@@ -108,25 +110,25 @@ class AuthService extends Service
         }
         if (in_array($type, ['WeChat', 'WePay', 'WeMini', 'ThinkService'])) {
             if (empty($arguments[0])) {
-                throw new \think\admin\Exception("Appid parameter must be passed in during initialization");
+                throw new \think\admin\Exception('Appid parameter must be passed in during initialization');
             }
         }
         $classname = "\\{$type}\\{$class}";
         if (in_array($type, ['WeChat', 'WeMini', 'WePay'])) {
             return new $classname(self::instance()->getWechatConfig($arguments[0]));
-        } elseif ($type === 'ThinkService' && $class === 'Config') {
-            return ConfigService::instance()->init($arguments[0]);
-        } elseif ($type === 'WeOpen') {
-            return new $classname(self::instance()->getServiceConfig());
-        } else {
-            throw new \think\admin\Exception("class {$classname} not defined.");
         }
+        if ($type === 'ThinkService' && $class === 'Config') {
+            return ConfigService::instance()->init($arguments[0]);
+        }
+        if ($type === 'WeOpen') {
+            return new $classname(self::instance()->getServiceConfig());
+        }
+        throw new \think\admin\Exception("class {$classname} not defined.");
     }
 
     /**
-     * 生成公众号授权信息
+     * 生成公众号授权信息.
      * @param array $info 生成授权信息
-     * @return array
      */
     public static function buildAuthData(array $info): array
     {
@@ -145,50 +147,56 @@ class AuthService extends Service
             $info['miniprograminfo'] = serialize($info['miniprograminfo']);
         }
         $data = [
-            'user_name'       => $info['user_name'],
-            'user_alias'      => $info['alias'],
-            'user_company'    => $info['principal_name'],
-            'user_signature'  => $info['signature'],
-            'user_nickname'   => $info['nick_name'],
-            'service_type'    => $info['service_type'],
-            'service_verify'  => $info['verify_type'],
-            'qrcode_url'      => $info['qrcode_url'],
-            'businessinfo'    => $info['business_info'],
+            'user_name' => $info['user_name'],
+            'user_alias' => $info['alias'],
+            'user_company' => $info['principal_name'],
+            'user_signature' => $info['signature'],
+            'user_nickname' => $info['nick_name'],
+            'service_type' => $info['service_type'],
+            'service_verify' => $info['verify_type'],
+            'qrcode_url' => $info['qrcode_url'],
+            'businessinfo' => $info['business_info'],
             'miniprograminfo' => $info['miniprograminfo'],
         ];
-        if (isset($info['head_img'])) $data['user_headimg'] = $info['head_img'];
+        if (isset($info['head_img'])) {
+            $data['user_headimg'] = $info['head_img'];
+        }
         $keys = 'func_info,expires_in,authorizer_appid,authorizer_access_token,authorizer_refresh_token';
-        foreach (explode(',', $keys) as $key) if (isset($info[$key])) $data[$key] = $info[$key];
+        foreach (explode(',', $keys) as $key) {
+            if (isset($info[$key])) {
+                $data[$key] = $info[$key];
+            }
+        }
         return $data;
     }
 
     /**
-     * 获取公众号配置参数
-     * @param string $appid
-     * @return array
+     * 获取公众号配置参数.
      * @throws \think\admin\Exception
      */
     public function getWechatConfig(string $appid): array
     {
         $conifg = [
-            'appid'          => $appid,
-            'token'          => sysconf('service.component_token'),
-            'appsecret'      => sysconf('service.component_appsecret'),
+            'appid' => $appid,
+            'token' => sysconf('service.component_token'),
+            'appsecret' => sysconf('service.component_appsecret'),
             'encodingaeskey' => sysconf('service.component_encodingaeskey'),
-            'cache_path'     => $this->getCachePath(),
+            'cache_path' => $this->getCachePath(),
         ];
         $conifg['GetAccessTokenCallback'] = function ($authorizerAppid) {
             $map = ['authorizer_appid' => $authorizerAppid];
             $refreshToken = WechatAuth::mk()->where($map)->value('authorizer_refresh_token');
-            if (empty($refreshToken)) throw new \think\admin\Exception('The WeChat information is not configured.', '404');
+            if (empty($refreshToken)) {
+                throw new \think\admin\Exception('The WeChat information is not configured.', '404');
+            }
             // 刷新公众号原授权 AccessToken
             $result = AuthService::WeOpenService()->refreshAccessToken($authorizerAppid, $refreshToken);
             if (empty($result['authorizer_access_token']) || empty($result['authorizer_refresh_token'])) {
-                throw new \think\Exception($result['errmsg']);
+                throw new Exception($result['errmsg']);
             }
             // 更新公众号授权信息
             WechatAuth::mk()->where($map)->update([
-                'authorizer_access_token'  => $result['authorizer_access_token'],
+                'authorizer_access_token' => $result['authorizer_access_token'],
                 'authorizer_refresh_token' => $result['authorizer_refresh_token'],
             ]);
             return $result['authorizer_access_token'];
@@ -197,24 +205,22 @@ class AuthService extends Service
     }
 
     /**
-     * 获取服务平台配置参数
-     * @return array
+     * 获取服务平台配置参数.
      * @throws \think\admin\Exception
      */
     public function getServiceConfig(): array
     {
         return [
-            'cache_path'               => $this->getCachePath(),
-            'component_appid'          => sysconf('service.component_appid'),
-            'component_token'          => sysconf('service.component_token'),
-            'component_appsecret'      => sysconf('service.component_appsecret'),
+            'cache_path' => $this->getCachePath(),
+            'component_appid' => sysconf('service.component_appid'),
+            'component_token' => sysconf('service.component_token'),
+            'component_appsecret' => sysconf('service.component_appsecret'),
             'component_encodingaeskey' => sysconf('service.component_encodingaeskey'),
         ];
     }
 
     /**
-     * 获取缓存目录
-     * @return string
+     * 获取缓存目录.
      */
     private function getCachePath(): string
     {

@@ -1,39 +1,47 @@
 <?php
 
-// +----------------------------------------------------------------------
-// | Worker Plugin for ThinkAdmin
-// +----------------------------------------------------------------------
-// | 版权所有 2014~2025 ThinkAdmin [ thinkadmin.top ]
-// +----------------------------------------------------------------------
-// | 官方网站: https://thinkadmin.top
-// +----------------------------------------------------------------------
-// | 免责声明 ( https://thinkadmin.top/disclaimer )
-// | 开源协议 ( http://www.apache.org/licenses/LICENSE-2.0 )
-// +----------------------------------------------------------------------
-// | gitee 代码仓库：https://gitee.com/zoujingli/think-plugs-worker
-// | github 代码仓库：https://github.com/zoujingli/think-plugs-worker
-// +----------------------------------------------------------------------
-
-declare (strict_types=1);
+declare(strict_types=1);
+/**
+ * +----------------------------------------------------------------------
+ * | Payment Plugin for ThinkAdmin
+ * +----------------------------------------------------------------------
+ * | 版权所有 2014~2026 ThinkAdmin [ thinkadmin.top ]
+ * +----------------------------------------------------------------------
+ * | 官方网站: https://thinkadmin.top
+ * +----------------------------------------------------------------------
+ * | 开源协议 ( https://mit-license.org )
+ * | 免责声明 ( https://thinkadmin.top/disclaimer )
+ * | 会员特权 ( https://thinkadmin.top/vip-introduce )
+ * +----------------------------------------------------------------------
+ * | gitee 代码仓库：https://gitee.com/zoujingli/ThinkAdmin
+ * | github 代码仓库：https://github.com/zoujingli/ThinkAdmin
+ * +----------------------------------------------------------------------
+ */
 
 namespace plugin\worker;
 
 use Workerman\Worker;
 
 /**
- * Worker 服务基础类
+ * Worker 服务基础类.
  * @class Server
- * @package plugin\worker
  */
 abstract class Server
 {
     protected $worker;
+
     protected $socket = '';
+
     protected $protocol = 'http';
+
     protected $host = '0.0.0.0';
+
     protected $port = '2346';
+
     protected $option = [];
+
     protected $context = [];
+
     protected $event = [
         'onWorkerStart',
         'onConnect',
@@ -43,11 +51,11 @@ abstract class Server
         'onBufferFull',
         'onBufferDrain',
         'onWorkerReload',
-        'onWebSocketConnect'
+        'onWebSocketConnect',
     ];
 
     /**
-     * 服务构造方法
+     * 服务构造方法.
      */
     public function __construct()
     {
@@ -57,14 +65,14 @@ abstract class Server
         // 设置参数
         if (!empty($this->option)) {
             foreach ($this->option as $key => $val) {
-                $this->worker->$key = $val;
+                $this->worker->{$key} = $val;
             }
         }
 
         // 设置回调
         foreach ($this->event as $event) {
             if (method_exists($this, $event)) {
-                $this->worker->$event = [$this, $event];
+                $this->worker->{$event} = [$this, $event];
             }
         }
 
@@ -73,30 +81,25 @@ abstract class Server
     }
 
     /**
-     * 服务初始化方法
-     * @return mixed
-     */
-    abstract protected function init();
-
-    /**
-     * 动态设置属性
-     * @param string $name
+     * 动态设置属性.
      * @param mixed $value
-     * @return void
      */
     public function __set(string $name, $value)
     {
-        $this->worker->$name = $value;
+        $this->worker->{$name} = $value;
     }
 
     /**
-     * 动态调用方法
-     * @param string $method
-     * @param array $args
-     * @return void
+     * 动态调用方法.
      */
     public function __call(string $method, array $args)
     {
         call_user_func_array([$this->worker, $method], $args);
     }
+
+    /**
+     * 服务初始化方法.
+     * @return mixed
+     */
+    abstract protected function init();
 }

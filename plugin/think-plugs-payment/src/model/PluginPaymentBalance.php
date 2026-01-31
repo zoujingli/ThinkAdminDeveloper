@@ -14,16 +14,32 @@
 // | github 代码仓库：https://github.com/zoujingli/think-plugs-payment
 // +----------------------------------------------------------------------
 
-declare (strict_types=1);
+declare(strict_types=1);
+/**
+ * +----------------------------------------------------------------------
+ * | Payment Plugin for ThinkAdmin
+ * +----------------------------------------------------------------------
+ * | 版权所有 2014~2026 ThinkAdmin [ thinkadmin.top ]
+ * +----------------------------------------------------------------------
+ * | 官方网站: https://thinkadmin.top
+ * +----------------------------------------------------------------------
+ * | 开源协议 ( https://mit-license.org )
+ * | 免责声明 ( https://thinkadmin.top/disclaimer )
+ * | 会员特权 ( https://thinkadmin.top/vip-introduce )
+ * +----------------------------------------------------------------------
+ * | gitee 代码仓库：https://gitee.com/zoujingli/ThinkAdmin
+ * | github 代码仓库：https://github.com/zoujingli/ThinkAdmin
+ * +----------------------------------------------------------------------
+ */
 
 namespace plugin\payment\model;
 
 /**
- * 用户余额模型
+ * 用户余额模型.
  *
- * @property float $amount 操作金额
- * @property float $amount_next 操作后金额
- * @property float $amount_prev 操作前金额
+ * @property string $amount 操作金额
+ * @property string $amount_next 操作后金额
+ * @property string $amount_prev 操作前金额
  * @property int $cancel 作废状态(0未作废,1已作废)
  * @property int $create_by 系统用户
  * @property int $deleted 删除状态(0未删除,1已删除)
@@ -39,8 +55,5 @@ namespace plugin\payment\model;
  * @property string $unlock_time 解锁时间
  * @property string $update_time 更新时间
  * @class PluginPaymentBalance
- * @package plugin\payment\model
  */
-class PluginPaymentBalance extends PluginPaymentIntegral
-{
-}
+class PluginPaymentBalance extends PluginPaymentIntegral {}

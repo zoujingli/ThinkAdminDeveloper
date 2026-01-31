@@ -1,20 +1,22 @@
 <?php
 
-// +----------------------------------------------------------------------
-// | Wuma Plugin for ThinkAdmin
-// +----------------------------------------------------------------------
-// | 版权所有 2014~2025 ThinkAdmin [ thinkadmin.top ]
-// +----------------------------------------------------------------------
-// | 官方网站: https://thinkadmin.top
-// +----------------------------------------------------------------------
-// | 免责声明 ( https://thinkadmin.top/disclaimer )
-// | 收费插件 ( https://thinkadmin.top/fee-introduce.html )
-// +----------------------------------------------------------------------
-// | gitee 代码仓库：https://gitee.com/zoujingli/think-plugs-wuma
-// | github 代码仓库：https://github.com/zoujingli/think-plugs-wuma
-// +----------------------------------------------------------------------
-
-declare (strict_types=1);
+declare(strict_types=1);
+/**
+ * +----------------------------------------------------------------------
+ * | Payment Plugin for ThinkAdmin
+ * +----------------------------------------------------------------------
+ * | 版权所有 2014~2026 ThinkAdmin [ thinkadmin.top ]
+ * +----------------------------------------------------------------------
+ * | 官方网站: https://thinkadmin.top
+ * +----------------------------------------------------------------------
+ * | 开源协议 ( https://mit-license.org )
+ * | 免责声明 ( https://thinkadmin.top/disclaimer )
+ * | 会员特权 ( https://thinkadmin.top/vip-introduce )
+ * +----------------------------------------------------------------------
+ * | gitee 代码仓库：https://gitee.com/zoujingli/ThinkAdmin
+ * | github 代码仓库：https://github.com/zoujingli/ThinkAdmin
+ * +----------------------------------------------------------------------
+ */
 
 namespace plugin\wuma\controller\warehouse;
 
@@ -29,36 +31,39 @@ use plugin\wuma\service\RemoveService;
 use plugin\wuma\service\WhExportService;
 use think\admin\Controller;
 use think\admin\helper\QueryHelper;
+use think\db\exception\DataNotFoundException;
+use think\db\exception\DbException;
+use think\db\exception\ModelNotFoundException;
 use think\exception\HttpResponseException;
 
 /**
- * 出库订单管理
+ * 出库订单管理.
  * @class Outer
- * @package plugin\wuma\controller\warehouse
  */
 class Outer extends Controller
 {
     /**
-     * 仓库出库订单
+     * 仓库出库订单.
      * @menu true
      * @auth true
-     * @throws \think\db\exception\DataNotFoundException
-     * @throws \think\db\exception\DbException
-     * @throws \think\db\exception\ModelNotFoundException
+     * @throws DataNotFoundException
+     * @throws DbException
+     * @throws ModelNotFoundException
      */
     public function index()
     {
         PluginWumaWarehouseOrder::mQuery()->layTable(function () {
             $this->title = '仓库出库订单';
         }, static function (QueryHelper $query) {
-
             // 加载对应数据
             $query->with(['bindGoods', 'bindWarehouse']);
             $query->withSearch('outer')->where(['deleted' => 0]);
 
             // 仓库搜索查询
             $wdb = PluginWumaWarehouse::mQuery()->like('code|name#wname')->db();
-            if ($wdb->getOptions('where')) $query->whereRaw("wcode in {$wdb->field('code')->buildSql()}");
+            if ($wdb->getOptions('where')) {
+                $query->whereRaw("wcode in {$wdb->field('code')->buildSql()}");
+            }
 
             // 产品搜索查询
             $gdb = PluginWemallGoods::mQuery()->like('code|name#gname')->db();
@@ -69,16 +74,17 @@ class Outer extends Controller
 
             // 代理搜索查询
             $db = PluginWumaSalesUser::mQuery()->like('phone|username#agent')->db();
-            if ($db->getOptions('where')) $query->whereRaw("auid in {$db->field('id')->buildSql()}");
+            if ($db->getOptions('where')) {
+                $query->whereRaw("auid in {$db->field('id')->buildSql()}");
+            }
 
             // 数据列表处理
             $query->like('code')->equal('type#data_type')->dateBetween('create_time');
         });
     }
 
-
     /**
-     * 创建产品出库订
+     * 创建产品出库订.
      * @auth true
      */
     public function add()
@@ -87,42 +93,11 @@ class Outer extends Controller
     }
 
     /**
-     * 出库订数据处理
-     * @param array $data
-     * @throws \think\db\exception\DataNotFoundException
-     * @throws \think\db\exception\DbException
-     * @throws \think\db\exception\ModelNotFoundException
-     */
-    protected function _form_filter(array &$data)
-    {
-        if (empty($data['code'])) {
-            $data['code'] = WhExportService::withCode();
-        }
-        if ($this->request->isGet()) {
-            $this->agents = [];
-            $this->products = PluginWemallGoods::lists();
-            $this->warehouses = PluginWumaWarehouse::lists([
-                'status' => 1, 'deleted' => 0
-            ]);
-        } else {
-            $data['type'] = 4;
-            if (empty($data['auid'])) $this->error('目标代理不能为空！');
-            // 检查出库数量统计
-            if ($data['num_need'] < 1) $this->error('出库数量不能为空！');
-            // 检查编号是否出现重复
-            $map = [['code', '=', $data['code']], ['id', '<>', $data['id'] ?? 0]];
-            if (PluginWumaWarehouseOrder::mk()->where($map)->count() > 0) {
-                $this->error("出库单号已经存在！");
-            }
-        }
-    }
-
-    /**
-     * 查看出库详细
+     * 查看出库详细.
      * @auth true
-     * @throws \think\db\exception\DataNotFoundException
-     * @throws \think\db\exception\DbException
-     * @throws \think\db\exception\ModelNotFoundException
+     * @throws DataNotFoundException
+     * @throws DbException
+     * @throws ModelNotFoundException
      */
     public function show()
     {
@@ -133,7 +108,9 @@ class Outer extends Controller
             $odb = PluginWumaWarehouseOrder::mQuery()->equal('type#data_type')->db();
             // 仓库数据搜索
             $wdb = PluginWumaWarehouse::mQuery()->like('code|name#wname')->db();
-            if ($wdb->getOptions('where')) $odb->whereRaw("wcode in {$wdb->field('code')->buildSql()}");
+            if ($wdb->getOptions('where')) {
+                $odb->whereRaw("wcode in {$wdb->field('code')->buildSql()}");
+            }
             // 产品搜索查询
             $gdb = PluginWemallGoods::mQuery()->like('code|name#gname')->db();
             if ($gdb->getOptions('where')) {
@@ -141,7 +118,9 @@ class Outer extends Controller
                 $query->whereRaw("ghash in {$db2->field('ghash')->buildSql()}");
             }
             // 整合条件到模型
-            if ($odb->getOptions('where')) $query->whereRaw("code in {$odb->field('code')->buildSql()}");
+            if ($odb->getOptions('where')) {
+                $query->whereRaw("code in {$odb->field('code')->buildSql()}");
+            }
             // 加载数据
             $query->with(['main', 'user'])->where(['status' => 1]);
             // 出库数据查询
@@ -150,16 +129,17 @@ class Outer extends Controller
     }
 
     /**
-     * 撤销出库记录
+     * 撤销出库记录.
      * @auth true
-     * @return void
      */
     public function remove()
     {
         try {
             $map = $this->_vali(['code.require' => '出库号不能为空！']);
             $outer = PluginWumaWarehouseOrder::mk()->where($map)->findOrEmpty()->toArray();
-            if (empty($outer)) $this->error('待操作出库单数据异常！');
+            if (empty($outer)) {
+                $this->error('待操作出库单数据异常！');
+            }
             $this->app->db->transaction(static function () use ($map, $outer) {
                 // 清除出库数据
                 if (count($mins = RemoveService::outer([], [$map['code']])) > 0) {
@@ -175,6 +155,40 @@ class Outer extends Controller
         } catch (\Exception$exception) {
             trace_file($exception);
             $this->error("操作失败，{$exception->getMessage()}");
+        }
+    }
+
+    /**
+     * 出库订数据处理.
+     * @throws DataNotFoundException
+     * @throws DbException
+     * @throws ModelNotFoundException
+     */
+    protected function _form_filter(array &$data)
+    {
+        if (empty($data['code'])) {
+            $data['code'] = WhExportService::withCode();
+        }
+        if ($this->request->isGet()) {
+            $this->agents = [];
+            $this->products = PluginWemallGoods::lists();
+            $this->warehouses = PluginWumaWarehouse::lists([
+                'status' => 1, 'deleted' => 0,
+            ]);
+        } else {
+            $data['type'] = 4;
+            if (empty($data['auid'])) {
+                $this->error('目标代理不能为空！');
+            }
+            // 检查出库数量统计
+            if ($data['num_need'] < 1) {
+                $this->error('出库数量不能为空！');
+            }
+            // 检查编号是否出现重复
+            $map = [['code', '=', $data['code']], ['id', '<>', $data['id'] ?? 0]];
+            if (PluginWumaWarehouseOrder::mk()->where($map)->count() > 0) {
+                $this->error('出库单号已经存在！');
+            }
         }
     }
 }

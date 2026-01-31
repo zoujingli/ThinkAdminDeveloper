@@ -1,6 +1,22 @@
 <?php
 
-// +----------------------------------------------------------------------
+declare(strict_types=1);
+/**
+ * +----------------------------------------------------------------------
+ * | Payment Plugin for ThinkAdmin
+ * +----------------------------------------------------------------------
+ * | 版权所有 2014~2026 ThinkAdmin [ thinkadmin.top ]
+ * +----------------------------------------------------------------------
+ * | 官方网站: https://thinkadmin.top
+ * +----------------------------------------------------------------------
+ * | 开源协议 ( https://mit-license.org )
+ * | 免责声明 ( https://thinkadmin.top/disclaimer )
+ * | 会员特权 ( https://thinkadmin.top/vip-introduce )
+ * +----------------------------------------------------------------------
+ * | gitee 代码仓库：https://gitee.com/zoujingli/ThinkAdmin
+ * | github 代码仓库：https://github.com/zoujingli/ThinkAdmin
+ * +----------------------------------------------------------------------
+ */
 // | Wuma Plugin for ThinkAdmin
 // +----------------------------------------------------------------------
 // | 版权所有 2014~2025 ThinkAdmin [ thinkadmin.top ]
@@ -21,22 +37,23 @@ use plugin\wuma\model\PluginWumaSourceCertificate;
 use think\admin\Controller;
 use think\admin\extend\CodeExtend;
 use think\admin\helper\QueryHelper;
+use think\db\exception\DataNotFoundException;
+use think\db\exception\DbException;
+use think\db\exception\ModelNotFoundException;
 
 /**
- * 区块链流程管理
+ * 区块链流程管理.
  * @class Blockchain
- * @package plugin\wuma\controller\source
  */
 class Blockchain extends Controller
 {
-
     /**
-     * 区块链流程管理
+     * 区块链流程管理.
      * @menu true
      * @auth true
-     * @throws \think\db\exception\DataNotFoundException
-     * @throws \think\db\exception\DbException
-     * @throws \think\db\exception\ModelNotFoundException
+     * @throws DataNotFoundException
+     * @throws DbException
+     * @throws ModelNotFoundException
      */
     public function index()
     {
@@ -50,7 +67,7 @@ class Blockchain extends Controller
     }
 
     /**
-     * 添加区块链流程
+     * 添加区块链流程.
      * @auth true
      */
     public function add()
@@ -60,7 +77,7 @@ class Blockchain extends Controller
     }
 
     /**
-     * 编辑区块链流程
+     * 编辑区块链流程.
      * @auth true
      */
     public function edit()
@@ -70,29 +87,7 @@ class Blockchain extends Controller
     }
 
     /**
-     * 表单数据处理
-     * @param array $data
-     * @throws \think\db\exception\DataNotFoundException
-     * @throws \think\db\exception\DbException
-     * @throws \think\db\exception\ModelNotFoundException
-     */
-    protected function _form_filter(array &$data)
-    {
-        if (empty($data['code'])) $data['code'] = CodeExtend::uniqidNumber(16, 'BC');
-        if ($this->request->isGet()) $this->certs = PluginWumaSourceCertificate::lists();
-    }
-
-    /**
-     * 表单结果处理
-     * @param bool $state
-     */
-    protected function _form_result(bool $state)
-    {
-        $state && $this->success('内容修改成功！', 'javascript:history.back()');
-    }
-
-    /**
-     * 流程上链接操作
+     * 流程上链接操作.
      * @auth true
      */
     public function hash()
@@ -101,8 +96,58 @@ class Blockchain extends Controller
     }
 
     /**
-     * 表单数据处理
-     * @param array $data
+     * 查看流程详情.
+     * @auth true
+     */
+    public function view()
+    {
+        PluginWumaSourceBlockchain::mForm('view');
+    }
+
+    /**
+     * 修改区块链流程状态
+     * @auth true
+     */
+    public function state()
+    {
+        PluginWumaSourceBlockchain::mSave();
+    }
+
+    /**
+     * 删除区块链流程.
+     * @auth true
+     */
+    public function remove()
+    {
+        PluginWumaSourceBlockchain::mDelete();
+    }
+
+    /**
+     * 表单数据处理.
+     * @throws DataNotFoundException
+     * @throws DbException
+     * @throws ModelNotFoundException
+     */
+    protected function _form_filter(array &$data)
+    {
+        if (empty($data['code'])) {
+            $data['code'] = CodeExtend::uniqidNumber(16, 'BC');
+        }
+        if ($this->request->isGet()) {
+            $this->certs = PluginWumaSourceCertificate::lists();
+        }
+    }
+
+    /**
+     * 表单结果处理.
+     */
+    protected function _form_result(bool $state)
+    {
+        $state && $this->success('内容修改成功！', 'javascript:history.back()');
+    }
+
+    /**
+     * 表单数据处理.
      */
     protected function _hash_form_filter(array &$data)
     {
@@ -116,49 +161,22 @@ class Blockchain extends Controller
     }
 
     /**
-     * 表单结果处理
-     * @param boolean $state
+     * 表单结果处理.
      */
     protected function _hash_form_result(bool $state)
     {
-        if ($state) $this->success('流程上链成功！');
+        if ($state) {
+            $this->success('流程上链成功！');
+        }
     }
 
     /**
-     * 查看流程详情
-     * @auth true
-     */
-    public function view()
-    {
-        PluginWumaSourceBlockchain::mForm('view');
-    }
-
-    /**
-     * 表单数据处理
-     * @param array $data
+     * 表单数据处理.
      */
     protected function _view_form_filter(array &$data)
     {
         if ($this->request->isGet()) {
             $data['data'] = json_decode($data['data'] ?? '[]', true);
         }
-    }
-
-    /**
-     * 修改区块链流程状态
-     * @auth true
-     */
-    public function state()
-    {
-        PluginWumaSourceBlockchain::mSave();
-    }
-
-    /**
-     * 删除区块链流程
-     * @auth true
-     */
-    public function remove()
-    {
-        PluginWumaSourceBlockchain::mDelete();
     }
 }

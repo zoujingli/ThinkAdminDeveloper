@@ -1,20 +1,22 @@
 <?php
 
-// +----------------------------------------------------------------------
-// | Account Plugin for ThinkAdmin
-// +----------------------------------------------------------------------
-// | 版权所有 2014~2025 ThinkAdmin [ thinkadmin.top ]
-// +----------------------------------------------------------------------
-// | 官方网站: https://thinkadmin.top
-// +----------------------------------------------------------------------
-// | 免责声明 ( https://thinkadmin.top/disclaimer )
-// | 会员免费 ( https://thinkadmin.top/vip-introduce )
-// +----------------------------------------------------------------------
-// | gitee 代码仓库：https://gitee.com/zoujingli/think-plugs-account
-// | github 代码仓库：https://github.com/zoujingli/think-plugs-account
-// +----------------------------------------------------------------------
-
-declare (strict_types=1);
+declare(strict_types=1);
+/**
+ * +----------------------------------------------------------------------
+ * | Payment Plugin for ThinkAdmin
+ * +----------------------------------------------------------------------
+ * | 版权所有 2014~2026 ThinkAdmin [ thinkadmin.top ]
+ * +----------------------------------------------------------------------
+ * | 官方网站: https://thinkadmin.top
+ * +----------------------------------------------------------------------
+ * | 开源协议 ( https://mit-license.org )
+ * | 免责声明 ( https://thinkadmin.top/disclaimer )
+ * | 会员特权 ( https://thinkadmin.top/vip-introduce )
+ * +----------------------------------------------------------------------
+ * | gitee 代码仓库：https://gitee.com/zoujingli/ThinkAdmin
+ * | github 代码仓库：https://github.com/zoujingli/ThinkAdmin
+ * +----------------------------------------------------------------------
+ */
 
 namespace plugin\account\service;
 
@@ -24,47 +26,54 @@ use think\admin\Exception;
 use think\admin\Library;
 
 /**
- * 短信服务调度器
+ * 短信服务调度器.
  * @class Message
  * @mixin MessageInterface
- * @package plugin\account\service
  */
 abstract class Message
 {
     public const tLogin = 'LOGIN';
+
     public const tForget = 'FORGET';
+
     public const tRegister = 'REGISTER';
 
     /**
-     * 业务场景定义
+     * 业务场景定义.
      * @var string[]
      */
     public static $scenes = [
-        self::tLogin    => '用户登录验证',
-        self::tForget   => '找回用户密码',
+        self::tLogin => '用户登录验证',
+        self::tForget => '找回用户密码',
         self::tRegister => '用户注册绑定',
     ];
 
     /**
-     * 创建短信通道
-     * @param array $config
-     * @param ?string $driver
-     * @return MessageInterface
-     * @throws \think\admin\Exception
+     * 静态方法调用.
+     * @return mixed
+     * @throws Exception
+     */
+    public static function __callStatic(string $name, array $arguments)
+    {
+        return static::mk()->{$name}(...$arguments);
+    }
+
+    /**
+     * 创建短信通道.
+     * @throws Exception
      */
     public static function mk(array $config = [], ?string $driver = null): MessageInterface
     {
         if (!is_null($driver) && !isset(class_implements($driver)[MessageInterface::class])) {
-            throw new Exception("Sms driver [$driver] Not implements MessageInterface.");
-        } else {
-            return app($driver ?: Alisms::class)->init($config);
+            throw new Exception("Sms driver [{$driver}] Not implements MessageInterface.");
         }
+        return app($driver ?: Alisms::class)->init($config);
     }
 
     /**
      * 发送短信验证码
      * @param string $phone 手机号码
-     * @param integer $wait 等待时间
+     * @param int $wait 等待时间
      * @param string $scene 业务场景
      * @return array [state, message, [timeout]]
      */
@@ -96,13 +105,14 @@ abstract class Message
      * @param string $vcode 验证码
      * @param string $phone 手机号码
      * @param string $scene 业务场景
-     * @return boolean
-     * @throws \think\admin\Exception
+     * @throws Exception
      */
     public static function checkVerifyCode(string $vcode, string $phone, string $scene = self::tLogin): bool
     {
         if (stripos(Library::$sapp->request->domain(), '.thinkadmin.top') !== false) {
-            if ($vcode === '123456') return true;
+            if ($vcode === '123456') {
+                return true;
+            }
         }
         $cache = Library::$sapp->cache->get(static::genCacheKey($phone, $scene), []);
         return is_array($cache) && isset($cache['code']) && $cache['code'] == $vcode;
@@ -110,9 +120,6 @@ abstract class Message
 
     /**
      * 清理短信验证码
-     * @param string $phone
-     * @param string $scene
-     * @return boolean
      */
     public static function clearVerifyCode(string $phone, string $scene = self::tLogin): bool
     {
@@ -124,30 +131,16 @@ abstract class Message
     }
 
     /**
-     * 生成验证码缓存名
+     * 生成验证码缓存名.
      * @param string $phone 手机号码
      * @param string $scene 业务场景
-     * @return string
-     * @throws \think\admin\Exception
+     * @throws Exception
      */
     private static function genCacheKey(string $phone, string $scene = self::tLogin): string
     {
         if (isset(array_change_key_case(static::$scenes)[strtolower($scene)])) {
             return md5(strtolower("sms-{$scene}-{$phone}"));
-        } else {
-            throw new Exception("未定义的业务");
         }
-    }
-
-    /**
-     * 静态方法调用
-     * @param string $name
-     * @param array $arguments
-     * @return mixed
-     * @throws \think\admin\Exception
-     */
-    public static function __callStatic(string $name, array $arguments)
-    {
-        return static::mk()->$name(...$arguments);
+        throw new Exception('未定义的业务');
     }
 }

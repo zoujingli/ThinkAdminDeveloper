@@ -1,27 +1,29 @@
 <?php
 
-// +----------------------------------------------------------------------
-// | Wechat Service Plugin for ThinkAdmin
-// +----------------------------------------------------------------------
-// | 版权所有 2014~2025 Anyon <zoujingli@qq.com>
-// +----------------------------------------------------------------------
-// | 官方网站: https://thinkadmin.top
-// +----------------------------------------------------------------------
-// | 免责声明 ( https://thinkadmin.top/disclaimer )
-// | 会员免费 ( https://thinkadmin.top/vip-introduce )
-// +----------------------------------------------------------------------
-// | gitee 代码仓库：https://gitee.com/zoujingli/think-plugs-wechat-service
-// | github 代码仓库：https://github.com/zoujingli/think-plugs-wechat-service
-// +----------------------------------------------------------------------
-
-declare (strict_types=1);
+declare(strict_types=1);
+/**
+ * +----------------------------------------------------------------------
+ * | Payment Plugin for ThinkAdmin
+ * +----------------------------------------------------------------------
+ * | 版权所有 2014~2026 ThinkAdmin [ thinkadmin.top ]
+ * +----------------------------------------------------------------------
+ * | 官方网站: https://thinkadmin.top
+ * +----------------------------------------------------------------------
+ * | 开源协议 ( https://mit-license.org )
+ * | 免责声明 ( https://thinkadmin.top/disclaimer )
+ * | 会员特权 ( https://thinkadmin.top/vip-introduce )
+ * +----------------------------------------------------------------------
+ * | gitee 代码仓库：https://gitee.com/zoujingli/ThinkAdmin
+ * | github 代码仓库：https://github.com/zoujingli/ThinkAdmin
+ * +----------------------------------------------------------------------
+ */
 
 namespace plugin\wechat\service\model;
 
 use think\admin\Model;
 
 /**
- * Class WechatAuth
+ * Class WechatAuth.
  *
  * @property int $auth_time 授权时间
  * @property int $deleted 删除状态(0未删除,1已删除)
@@ -47,8 +49,5 @@ use think\admin\Model;
  * @property string $user_name 众众号原账号
  * @property string $user_nickname 公众号昵称
  * @property string $user_signature 公众号描述
- * @package plugin\wechat\service\model
  */
-class WechatAuth extends Model
-{
-}
+class WechatAuth extends Model {}
