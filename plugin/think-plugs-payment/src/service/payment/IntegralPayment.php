@@ -82,7 +82,8 @@ class IntegralPayment implements PaymentInterface
             if (floatval($amount) <= 0) return [1, '无需退款！'];
             $record = static::syncRefund($pcode, $rcode, $amount, $reason);
             $remark = "来自订单 {$record->getAttr('order_no')} 退回积分";
-            $integral = floatval($amount) / floatval($record->getAttr('payment_amount')) * $record->getAttr('used_integral');
+            $integral = bcdiv($amount, $record->getAttr('payment_amount'), 6);
+            $integral = bcmul($integral, $record->getAttr('used_integral'), 2);
             IntegralService::create($record->getAttr('unid'), $rcode, '账号积分退还', floatval($integral), $remark, true);
             return [1, '发起退款成功！'];
         } catch (\Exception $exception) {
@@ -110,7 +111,7 @@ class IntegralPayment implements PaymentInterface
             $unid = $this->withUserUnid($account);
             $integral = IntegralService::recount($unid);
             if ($payAmount > $integral['usable']) throw new Exception('可抵扣的积分不足');
-            $realAmount = $this->checkLeaveAmount($orderNo, sprintf('%01.2f', IntegralService::ratio(floatval($payAmount))), $orderAmount);
+            $realAmount = $this->checkLeaveAmount($orderNo, bcmul($payAmount, '1', 2), $orderAmount);
             $payCode = Payment::withPaymentCode();
             // 创建支付行为
             $this->createAction($orderNo, $orderTitle, $orderAmount, $payCode, strval($realAmount), '', '0.00', $payAmount);

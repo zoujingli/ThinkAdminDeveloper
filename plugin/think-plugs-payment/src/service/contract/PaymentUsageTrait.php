@@ -129,20 +129,23 @@ trait PaymentUsageTrait
      * @param string $orderNo
      * @param mixed $payAmount
      * @param mixed $orderAmount
-     * @return float
+     * @return string
      * @throws \think\admin\Exception
      */
-    protected function checkLeaveAmount($orderNo, $payAmount, $orderAmount): float
+    protected function checkLeaveAmount($orderNo, $payAmount, $orderAmount): string
     {
         // 检查未审核的记录
         $map = ['order_no' => $orderNo, 'audit_status' => 1];
         $model = PluginPaymentRecord::mk()->where($map)->findOrEmpty();
         if ($model->isExists()) throw new Exception('凭证待审核！', 0);
         // 检查支付金额是否超出
-        if (round(floatval($payAmount) + Payment::paidAmount($orderNo, true), 2) > floatval($orderAmount)) {
+        $payAmountFloat = floatval($payAmount);
+        $orderAmountFloat = floatval($orderAmount);
+        $paidAmount = Payment::paidAmount($orderNo, true);
+        if (bcadd(strval($payAmountFloat), strval($paidAmount), 2) > $orderAmountFloat) {
             throw new Exception("支付金额溢出！");
         }
-        return floatval($payAmount);
+        return strval($payAmountFloat);
     }
 
     /**
@@ -163,10 +166,12 @@ trait PaymentUsageTrait
         // 检查是否已经支付
         $map = ['order_no' => $orderNo, 'payment_status' => 1];
         $total = Payment::paidAmount($orderNo, true);
-        if ($total >= floatval($orderAmount) && $orderAmount > 0) {
+        $orderAmountFloat = floatval($orderAmount);
+        if ($total >= $orderAmountFloat && $orderAmountFloat > 0) {
             throw new Exception("已经完成支付！", 1);
         }
-        if (round($total + floatval($payAmount), 2) > floatval($orderAmount)) {
+        $payAmountFloat = floatval($payAmount);
+        if (bcadd(strval($total), strval($payAmountFloat), 2) > $orderAmountFloat) {
             throw new Exception('支付大于金额！', 0);
         }
         $map['code'] = $payCode;
@@ -271,7 +276,9 @@ trait PaymentUsageTrait
             $extra['refund_time'] = date('Y-m-d H:i:s');
         }
         // 支付金额大于0，并需要创建退款记录
-        if ($record->getAttr('payment_amount') >= round($record->getAttr('refund_amount') + floatval($amount), 2)) {
+        $refundAmountFloat = floatval($amount);
+        $currentRefundAmount = $record->getAttr('refund_amount');
+        if (bcadd(strval($currentRefundAmount), strval($refundAmountFloat), 2) <= floatval($record->getAttr('payment_amount'))) {
             PluginPaymentRefund::mk()->save(array_merge([
                 'unid' => $record->getAttr('unid'), 'record_code' => $pCode,
                 'usid' => $record->getAttr('usid'), 'refund_amount' => $amount,

@@ -51,7 +51,7 @@ abstract class Balance
         if ($amount < 0 && abs($amount) > $usable) throw new Exception('扣减余额不足！');
 
         // 余额标准字段
-        $data = ['unid' => $unid, 'code' => $code, 'name' => $name, 'amount' => $amount, 'remark' => $remark];
+        $data = ['unid' => $unid, 'code' => $code, 'name' => $name, 'amount' => strval($amount), 'remark' => $remark];
 
         // 锁定状态处理
         $data['unlock'] = intval($unlock);
@@ -133,10 +133,10 @@ abstract class Balance
         $total = PluginPaymentBalance::mk()->where($map)->where('amount', '>', '0')->sum('amount');
 
         // 更新余额统计
-        $data['balance_lock'] = $lock;
-        $data['balance_used'] = abs($used);
-        $data['balance_total'] = $total;
-        $data['balance_usable'] = round($total - abs($used), 2);
+        $data['balance_lock'] = strval($lock);
+        $data['balance_used'] = bcmul(strval($used), '-1', 2);
+        $data['balance_total'] = strval($total);
+        $data['balance_usable'] = bcsub($data['balance_total'], $data['balance_used'], 2);
         if ($isUpdate) $user->save(['extra' => array_merge($user->getAttr('extra'), $data)]);
         return ['lock' => $lock, 'used' => abs($used), 'total' => $total, 'usable' => $data['balance_usable']];
     }

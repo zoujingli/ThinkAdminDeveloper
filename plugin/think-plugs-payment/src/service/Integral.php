@@ -36,11 +36,11 @@ abstract class Integral
      * @return float
      * @throws \think\admin\Exception
      */
-    public static function ratio(float $integral = 1): float
+    public static function ratio(string $integral = '1'): string
     {
         $cfg = sysdata('plugin.payment.config');
         if (empty($cfg['integral']) || $cfg['integral'] < 1) $cfg['integral'] = 1;
-        return $integral / floatval($cfg['integral']);
+        return bcdiv($integral, strval($cfg['integral']), 6);
     }
 
     /**
@@ -64,8 +64,8 @@ abstract class Integral
         $usable = PluginPaymentIntegral::mk()->where($map)->sum('amount');
         if ($amount < 0 && abs($amount) > $usable) throw new Exception('扣减积分不足！');
 
-        // 积分标准字段
-        $data = ['unid' => $unid, 'code' => $code, 'name' => $name, 'amount' => $amount, 'remark' => $remark];
+            // 积分标准字段
+            $data = ['unid' => $unid, 'code' => $code, 'name' => $name, 'amount' => strval($amount), 'remark' => $remark];
 
         // 统计操作前的金额
         $data['amount_prev'] = $usable;
@@ -140,15 +140,15 @@ abstract class Integral
         }
         // 统计用户积分数据
         $map = ['unid' => $unid, 'cancel' => 0, 'deleted' => 0];
-        $lock = intval(PluginPaymentIntegral::mk()->where($map)->where('unlock', '=', '0')->sum('amount'));
-        $used = intval(PluginPaymentIntegral::mk()->where($map)->where('amount', '<', '0')->sum('amount'));
-        $total = intval(PluginPaymentIntegral::mk()->where($map)->where('amount', '>', '0')->sum('amount'));
+        $lock = PluginPaymentIntegral::mk()->where($map)->where('unlock', '=', '0')->sum('amount');
+        $used = PluginPaymentIntegral::mk()->where($map)->where('amount', '<', '0')->sum('amount');
+        $total = PluginPaymentIntegral::mk()->where($map)->where('amount', '>', '0')->sum('amount');
 
         // 更新积分统计
-        $data['integral_lock'] = $lock;
-        $data['integral_used'] = abs($used);
-        $data['integral_total'] = $total;
-        $data['integral_usable'] = round($total - abs($used), 2);
+        $data['integral_lock'] = strval($lock);
+        $data['integral_used'] = bcmul(strval($used), '-1', 2);
+        $data['integral_total'] = strval($total);
+        $data['integral_usable'] = bcsub($data['integral_total'], $data['integral_used'], 2);
         if ($isUpdate) $user->save(['extra' => array_merge($user->getAttr('extra'), $data)]);
         return ['lock' => $lock, 'used' => abs($used), 'total' => $total, 'usable' => $data['integral_usable']];
     }

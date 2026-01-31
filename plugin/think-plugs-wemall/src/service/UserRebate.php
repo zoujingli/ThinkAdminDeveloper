@@ -142,14 +142,14 @@ abstract class UserRebate
         if (self::$order['puid2'] > 0) {
             $map = ['unid' => self::$order['puid2']];
             self::$rela2 = PluginWemallUserRelation::mk()->where($map)->findOrEmpty()->toArray();
-            if (empty(self::$rela1)) throw new Exception('上二代理不存在');
+            if (empty(self::$rela2)) throw new Exception('上二代理不存在');
         }
 
         // 获取上三级代理数据
         if (self::$order['puid3'] > 0) {
             $map = ['unid' => self::$order['puid3']];
             self::$rela3 = PluginWemallUserRelation::mk()->where($map)->findOrEmpty()->toArray();
-            if (empty(self::$rela1)) throw new Exception('上三代理不存在');
+            if (empty(self::$rela3)) throw new Exception('上三代理不存在');
         }
 
         // 批量查询规则并发放奖励
@@ -196,7 +196,7 @@ abstract class UserRebate
         /** @var PluginWemallUserRebate $item */
         $map = [['status', '=', 0], ['deleted', '=', 0], ['order_no', 'like', "{$order->getAttr('order_no')}%"]];
         foreach (PluginWemallUserRebate::mk()->where($map)->cursor() as $item) {
-            $item->save(['status' => 1, 'remark' => '订单已确认收货！', 'comfirm_time' => date('Y-m-d H:i:s')]);
+            $item->save(['status' => 1, 'remark' => '订单已确认收货！', 'confirm_time' => date('Y-m-d H:i:s')]);
             UserRebate::recount($item->getAttr('unid'));
         }
         return true;
@@ -295,15 +295,17 @@ abstract class UserRebate
         $map = ['hash' => md5("{$config['code']}#{$ono}#{$relation['unid']}#{$config['type']}")];
         if (PluginWemallUserRebate::mk()->where($map)->findOrEmpty()->isExists()) return false;
         // 根据配置计算返利数据
-        $value = floatval($config["p{$layer}_reward_number"] ?: '0.00');
+        $value = $config["p{$layer}_reward_number"] ?: '0.000000';
         if ($config["p{$layer}_reward_type"] == 0) {
-            $val = $value;
+            $val = bcmul($value, '1', 2);
             $name = sprintf('%s，每单 %s 元', $config['name'], $val);
         } elseif ($config["p{$layer}_reward_type"] == 1) {
-            $val = floatval($value * self::$order['rebate_amount'] / 100);
+            $val = bcmul($value, self::$order['rebate_amount'], 2);
+            $val = bcdiv($val, '100', 2);
             $name = sprintf('%s，订单金额 %s%%', $config['name'], $value);
         } elseif ($config["p{$layer}_reward_type"] == 2) {
-            $val = floatval($value * self::$order['amount_profit'] / 100);
+            $val = bcmul($value, self::$order['amount_profit'], 2);
+            $val = bcdiv($val, '100', 2);
             $name = sprintf('%s，分佣金额 %s%%', $config['name'], $value);
         } else {
             return false;
@@ -313,15 +315,15 @@ abstract class UserRebate
     }
 
     /**
-     * 用户首推奖励
+     * 用户首购奖励
      * @param int $layer
      * @param array $relation
      * @return boolean
      */
-    protected static function _frist(int $layer, array $relation): bool
+    protected static function _first(int $layer, array $relation): bool
     {
         // 是否首次购买
-        $orders = PluginWemallUserRebate::mk()->where(['order_unid' => self::$unid])->limit(2)->column('order_no');
+        $orders = PluginWemallUserRebate::mk()->where(['order_unid' => self::$unid, 'status' => 1])->limit(2)->column('order_no');
         if (count($orders) > 1 || (count($orders) === 1 && !in_array(self::$order['order_no'], $orders))) return false;
         // 发放用户首推奖励
         return self::_order($layer, $relation);
@@ -333,10 +335,10 @@ abstract class UserRebate
      * @param array $relation
      * @return boolean
      */
-    protected function _repeat(int $layer, array $relation): bool
+    protected static function _repeat(int $layer, array $relation): bool
     {
         // 是否复购购买
-        $orders = PluginWemallUserRebate::mk()->where(['order_unid' => self::$unid])->limit(2)->column('order_no');
+        $orders = PluginWemallUserRebate::mk()->where(['order_unid' => self::$unid, 'status' => 1])->limit(2)->column('order_no');
         if (count($orders) < 1 || (count($orders) === 1 && in_array(self::$order['order_no'], $orders))) return false;
         // 发放用户复购奖励
         return self::_order($layer, $relation);
@@ -345,11 +347,10 @@ abstract class UserRebate
     /**
      * 用户升级奖励发放
      * @param int $layer
-     * @param array $config
      * @param array $relation
      * @return boolean
      */
-    private static function _upgrade(int $layer, array $relation, array $config): bool
+    private static function _upgrade(int $layer, array $relation): bool
     {
         if (empty(self::$rela1)) return false;
         if (empty(self::$user['extra']['level_order']) || self::$user['extra']['level_order'] !== self::$order['order_no']) return false;
@@ -377,7 +378,7 @@ abstract class UserRebate
      * @param integer $layer 发放序号
      * @return boolean
      */
-    private static function wRebate(int $unid, array $map, string $name, float $amount, int $layer = 0): bool
+    private static function wRebate(int $unid, array $map, string $name, string $amount, int $layer = 0): bool
     {
         $rebate = PluginWemallUserRebate::mk()->where($map)->findOrEmpty();
         if ($rebate->isExists()) return false;

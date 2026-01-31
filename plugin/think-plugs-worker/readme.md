@@ -7,6 +7,24 @@
 [![PHP Version](https://thinkadmin.top/static/icon/php-7.1.svg)](https://thinkadmin.top)
 [![License](https://poser.pugx.org/zoujingli/think-plugs-worker/license)](https://gitee.com/zoujingli/think-plugs-worker/blob/master/license)
 
+### 业务功能特性
+
+**核心异步任务处理：**
+- **HTTP 服务支持**: 基于 Workerman 4.x 提供高性能 HTTP 服务，无需 Nginx/Apache 配置，访问速度显著提升
+- **多协议支持**: 支持 WebSocket、TCP、UDP 等多种通信协议，满足不同应用场景需求
+- **Gateway 模式**: 支持 Gateway 分布式架构，适用于高并发实时通信场景
+- **自定义服务**: 提供灵活的自定义服务配置，支持 Text、WebSocket、Gateway、Register、Business 等多种服务类型
+- **异步任务队列**: 内置高效的异步任务处理机制，响应延时低于 0.5 秒
+- **进程管理**: 完善的进程启动、停止、重载、状态监控等管理功能
+- **跨平台支持**: 同时支持 Windows 和 Linux 平台，提供统一的操作接口
+
+**技术特性：**
+- **Apache2 开源协议**: 遵循 Apache2 开源协议，免费提供使用
+- **高性能架构**: 基于 Workerman 事件驱动架构，单机可支撑数万并发连接
+- **模块化设计**: 各服务类型独立配置，便于扩展和维护
+- **向后兼容**: 保持与现有 ThinkAdmin 版本的兼容性，确保平滑升级
+- **文档完善**: 提供完整的配置示例和使用文档，快速上手
+
 基于 **Workerman 4.x** 且支持多种通信协议的基础插件。
 
 **提示：** 默认支持以 HTTP 方式直接启动 ThinkAdmin 项目，无需配置 Nginx 或 Apache 环境，访问速度提升 N 倍。

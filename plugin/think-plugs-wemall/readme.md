@@ -47,9 +47,36 @@ composer require zoujingli/think-plugs-wemall dev-master --optimize-autoloader
 composer remove zoujingli/think-plugs-wemall
 ```
 
+### 业务功能特性
+
+**核心功能模块：**
+- **多级分销体系**: 支持三级分销模式，可配置不同等级的代理返佣规则
+- **灵活返佣机制**: 支持下单奖励、首购奖励、复购奖励、升级奖励、平推返佣等多种返佣类型
+- **会员等级管理**: 基于订单金额和数量的自动等级升级，支持自定义等级规则
+- **代理等级管理**: 团队业绩统计，支持多维度的代理等级升级条件
+- **混合支付支持**: 集成余额支付、积分抵扣、微信支付、支付宝等多种支付方式
+- **商品管理系统**: 完整的商品分类、规格、库存、价格管理
+- **订单全流程管理**: 从下单、支付、发货到售后的完整订单生命周期管理
+- **推广海报管理**: 支持为不同用户等级生成个性化推广海报
+- **团队业绩统计**: 实时统计团队销售业绩和返佣数据
+
+**技术特性：**
+- **高精度金融计算**: 使用 BC Math 高精度计算，避免浮点数精度丢失问题
+- **事件驱动架构**: 通过支付事件、订单事件等实现业务逻辑解耦
+- **数据库约束优化**: 添加完整的外键约束、检查约束和索引优化
+- **并发安全处理**: 支持高并发场景下的余额、积分、库存操作
+- **数据完整性保障**: 通过数据库约束确保业务数据的一致性和有效性
+
 ### 插件数据
 
-本插件涉及数据表有：--
+本插件涉及数据表有：
+- 商城-配置-等级: `plugin_wemall_config_agent`, `plugin_wemall_config_level`
+- 商城-配置-返利: `plugin_wemall_config_rebate`, `plugin_wemall_config_discount`
+- 商城-商品-内容: `plugin_wemall_goods`, `plugin_wemall_goods_item`, `plugin_wemall_goods_stock`
+- 商城-订单-内容: `plugin_wemall_order`, `plugin_wemall_order_item`, `plugin_wemall_order_sender`
+- 商城-用户-关系: `plugin_wemall_user_relation`, `plugin_wemall_user_rebate`, `plugin_wemall_user_transfer`
+- 数据-快递-公司: `plugin_wemall_express_company`, `plugin_wemall_express_template`
+- 数据-意见-反馈: `plugin_wemall_help_feedback`, `plugin_wemall_help_problem`
 
 ### 版权说明
 

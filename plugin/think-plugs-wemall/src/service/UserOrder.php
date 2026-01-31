@@ -263,6 +263,11 @@ abstract class UserOrder
             'amount_integral' => $ptotal['integral'] ?? 0,
         ], true);
 
+        // 检查订单是否已取消或退款
+        if ($order->getAttr('cancel_status') > 0 || $order->getAttr('refund_status') > 0) {
+            return $order->save();
+        }
+        
         // 订单已经支付完成
         if ($order->getAttr('payment_amount') >= $order->getAttr('amount_real')) {
             // 已完成支付，更新订单状态
@@ -304,6 +309,7 @@ abstract class UserOrder
      */
     public static function cancel($order, bool $setRebate = false): string
     {
+        $code = '';
         try { /* 创建用户奖励 */
             $order = UserReward::cancel($order, $code);
         } catch (\Exception $exception) {
@@ -329,6 +335,7 @@ abstract class UserOrder
      */
     public static function payment($order): string
     {
+        $code = '';
         try { /* 创建用户奖励 */
             UserReward::create($order, $code);
         } catch (\Exception $exception) {
@@ -355,6 +362,7 @@ abstract class UserOrder
      */
     public static function confirm($order): string
     {
+        $code = '';
         try { /* 创建用户奖励 */
             UserReward::confirm($order, $code);
         } catch (\Exception $exception) {
