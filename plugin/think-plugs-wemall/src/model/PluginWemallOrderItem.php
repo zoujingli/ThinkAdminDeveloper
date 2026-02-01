@@ -3,7 +3,7 @@
 declare(strict_types=1);
 /**
  * +----------------------------------------------------------------------
- * | Payment Plugin for ThinkAdmin
+ * | ThinkAdmin Plugin for ThinkAdmin
  * +----------------------------------------------------------------------
  * | 版权所有 2014~2026 ThinkAdmin [ thinkadmin.top ]
  * +----------------------------------------------------------------------
@@ -25,19 +25,19 @@ use think\model\relation\HasOne;
 /**
  * 商城订单明细模型.
  *
- * @property string $amount_cost 商品成本单价
- * @property string $discount_amount 商品优惠金额
- * @property string $discount_rate 销售价格折扣
- * @property string $price_market 商品市场单价
- * @property string $price_selling 商品销售单价
- * @property string $rebate_amount 参与返利金额
- * @property string $total_allow_balance 最大余额支付
- * @property string $total_allow_integral 最大兑换总分
- * @property string $total_price_cost 商品成本总价
- * @property string $total_price_market 商品市场总价
- * @property string $total_price_selling 商品销售总价
- * @property string $total_reward_balance 商品奖励余额
- * @property string $total_reward_integral 商品奖励积分
+ * @property float $amount_cost 商品成本单价
+ * @property float $discount_amount 商品优惠金额
+ * @property float $discount_rate 销售价格折扣
+ * @property float $price_market 商品市场单价
+ * @property float $price_selling 商品销售单价
+ * @property float $rebate_amount 参与返利金额
+ * @property float $total_allow_balance 最大余额支付
+ * @property float $total_allow_integral 最大兑换总分
+ * @property float $total_price_cost 商品成本总价
+ * @property float $total_price_market 商品市场总价
+ * @property float $total_price_selling 商品销售总价
+ * @property float $total_reward_balance 商品奖励余额
+ * @property float $total_reward_integral 商品奖励积分
  * @property int $deleted 删除状态(0未删,1已删)
  * @property int $delivery_count 快递计费基数
  * @property int $discount_id 优惠方案编号

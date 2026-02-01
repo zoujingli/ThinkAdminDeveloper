@@ -17,7 +17,7 @@
 declare(strict_types=1);
 /**
  * +----------------------------------------------------------------------
- * | Payment Plugin for ThinkAdmin
+ * | ThinkAdmin Plugin for ThinkAdmin
  * +----------------------------------------------------------------------
  * | 版权所有 2014~2026 ThinkAdmin [ thinkadmin.top ]
  * +----------------------------------------------------------------------
@@ -41,9 +41,9 @@ use think\model\relation\HasOne;
 /**
  * 用户积分模型.
  *
- * @property string $amount 操作金额
- * @property string $amount_next 操作后金额
- * @property string $amount_prev 操作前金额
+ * @property float $amount 操作金额
+ * @property float $amount_next 操作后金额
+ * @property float $amount_prev 操作前金额
  * @property int $cancel 作废状态(0未作废,1已作废)
  * @property int $create_by 系统用户
  * @property int $deleted 删除状态(0未删除,1已删除)

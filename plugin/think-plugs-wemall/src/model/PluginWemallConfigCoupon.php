@@ -3,7 +3,7 @@
 declare(strict_types=1);
 /**
  * +----------------------------------------------------------------------
- * | Payment Plugin for ThinkAdmin
+ * | ThinkAdmin Plugin for ThinkAdmin
  * +----------------------------------------------------------------------
  * | 版权所有 2014~2026 ThinkAdmin [ thinkadmin.top ]
  * +----------------------------------------------------------------------
@@ -26,9 +26,8 @@ use think\model\relation\HasMany;
 /**
  * 商城卡券模型.
  *
- * @property array $limit_levels 授权等级
- * @property string $amount 抵扣金额
- * @property string $limit_amount 金额门槛(0不限制)
+ * @property float $amount 抵扣金额
+ * @property float $limit_amount 金额门槛(0不限制)
  * @property int $deleted 删除状态(1已删,0未删)
  * @property int $expire_days 有效天数
  * @property int $id
@@ -43,6 +42,7 @@ use think\model\relation\HasMany;
  * @property string $cover 封面图标
  * @property string $create_time 创建时间
  * @property string $extra 扩展数据
+ * @property string $limit_levels 授权等级
  * @property string $name 优惠名称
  * @property string $remark 系统备注
  * @property string $update_time 更新时间

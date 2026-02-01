@@ -3,7 +3,7 @@
 declare(strict_types=1);
 /**
  * +----------------------------------------------------------------------
- * | Payment Plugin for ThinkAdmin
+ * | ThinkAdmin Plugin for ThinkAdmin
  * +----------------------------------------------------------------------
  * | 版权所有 2014~2026 ThinkAdmin [ thinkadmin.top ]
  * +----------------------------------------------------------------------
@@ -25,7 +25,7 @@ use think\model\relation\HasOne;
 /**
  * 订单发货数据.
  *
- * @property string $delivery_amount 配送计算金额
+ * @property float $delivery_amount 配送计算金额
  * @property int $deleted 删除状态(0未删,1已删)
  * @property int $delivery_count 快递计费基数
  * @property int $id

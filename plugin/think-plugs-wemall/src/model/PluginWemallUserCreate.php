@@ -3,7 +3,7 @@
 declare(strict_types=1);
 /**
  * +----------------------------------------------------------------------
- * | Payment Plugin for ThinkAdmin
+ * | ThinkAdmin Plugin for ThinkAdmin
  * +----------------------------------------------------------------------
  * | 版权所有 2014~2026 ThinkAdmin [ thinkadmin.top ]
  * +----------------------------------------------------------------------
@@ -27,8 +27,8 @@ use think\model\relation\HasOne;
  * 手动创建会员用户模型.
  *
  * @property bool $agent_entry 代理权限
- * @property string $rebate_total 累计返利
- * @property string $rebate_usable 可提返利
+ * @property float $rebate_total 累计返利
+ * @property float $rebate_usable 可提返利
  * @property int $deleted 删除状态(0未删,1已删)
  * @property int $id
  * @property int $status 记录状态(0无效,1有效)

@@ -3,7 +3,7 @@
 declare(strict_types=1);
 /**
  * +----------------------------------------------------------------------
- * | Payment Plugin for ThinkAdmin
+ * | ThinkAdmin Plugin for ThinkAdmin
  * +----------------------------------------------------------------------
  * | 版权所有 2014~2026 ThinkAdmin [ thinkadmin.top ]
  * +----------------------------------------------------------------------
@@ -23,8 +23,8 @@ namespace plugin\wemall\model;
 /**
  * 用户签到数据.
  *
- * @property string $balance 赠送余额
- * @property string $integral 赠送积分
+ * @property float $balance 赠送余额
+ * @property float $integral 赠送积分
  * @property int $deleted 删除状态(0未删除,1已删除)
  * @property int $id
  * @property int $status 生效状态(0未生效,1已生效)

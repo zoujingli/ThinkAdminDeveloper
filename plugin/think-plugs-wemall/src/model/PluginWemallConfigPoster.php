@@ -3,7 +3,7 @@
 declare(strict_types=1);
 /**
  * +----------------------------------------------------------------------
- * | Payment Plugin for ThinkAdmin
+ * | ThinkAdmin Plugin for ThinkAdmin
  * +----------------------------------------------------------------------
  * | 版权所有 2014~2026 ThinkAdmin [ thinkadmin.top ]
  * +----------------------------------------------------------------------
@@ -30,8 +30,6 @@ use think\db\Query;
 /**
  * 商城推广海报数据.
  *
- * @property array $devices 接口通道
- * @property array $levels 用户等级
  * @property int $deleted 删除状态(1已删,0未删)
  * @property int $id
  * @property int $sort 排序权重
@@ -39,7 +37,9 @@ use think\db\Query;
  * @property string $code 推广编号
  * @property string $content 二维位置
  * @property string $create_time 创建时间
+ * @property string $devices 接口通道
  * @property string $image 推广图片
+ * @property string $levels 用户等级
  * @property string $name 推广标题
  * @property string $remark 推广描述
  * @property string $update_time 更新时间

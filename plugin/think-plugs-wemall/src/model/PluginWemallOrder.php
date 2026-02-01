@@ -3,7 +3,7 @@
 declare(strict_types=1);
 /**
  * +----------------------------------------------------------------------
- * | Payment Plugin for ThinkAdmin
+ * | ThinkAdmin Plugin for ThinkAdmin
  * +----------------------------------------------------------------------
  * | 版权所有 2014~2026 ThinkAdmin [ thinkadmin.top ]
  * +----------------------------------------------------------------------
@@ -28,25 +28,25 @@ use think\model\relation\HasOne;
 /**
  * 商城订单主模型.
  *
- * @property string $allow_balance 最大余额支付
- * @property string $allow_integral 最大积分抵扣
- * @property string $amount_balance 余额支付
- * @property string $amount_cost 商品成本
- * @property string $amount_discount 折扣后金额
- * @property string $amount_express 快递费用
- * @property string $amount_goods 商品金额
- * @property string $amount_integral 积分抵扣
- * @property string $amount_payment 金额支付
- * @property string $amount_profit 销售利润
- * @property string $amount_real 实际金额
- * @property string $amount_reduct 随机减免
- * @property string $amount_total 订单金额
- * @property string $coupon_amount 优惠券金额
- * @property string $payment_amount 实际支付
- * @property string $ratio_integral 积分兑换比例
- * @property string $rebate_amount 返利金额
- * @property string $reward_balance 奖励余额
- * @property string $reward_integral 奖励积分
+ * @property float $allow_balance 最大余额支付
+ * @property float $allow_integral 最大积分抵扣
+ * @property float $amount_balance 余额支付
+ * @property float $amount_cost 商品成本
+ * @property float $amount_discount 折扣后金额
+ * @property float $amount_express 快递费用
+ * @property float $amount_goods 商品金额
+ * @property float $amount_integral 积分抵扣
+ * @property float $amount_payment 金额支付
+ * @property float $amount_profit 销售利润
+ * @property float $amount_real 实际金额
+ * @property float $amount_reduct 随机减免
+ * @property float $amount_total 订单金额
+ * @property float $coupon_amount 优惠券金额
+ * @property float $payment_amount 实际支付
+ * @property float $ratio_integral 积分兑换比例
+ * @property float $rebate_amount 返利金额
+ * @property float $reward_balance 奖励余额
+ * @property float $reward_integral 奖励积分
  * @property int $cancel_status 取消状态
  * @property int $deleted_status 删除状态(0未删,1已删)
  * @property int $delivery_type 物流类型(0无配送,1需配送)
@@ -82,7 +82,7 @@ use think\model\relation\HasOne;
  * @property PluginWemallOrderItem[] $items
  * @property PluginWemallOrderSender $address
  * @property PluginWemallOrderSender $sender
- * @property array $payment_allows
+ * @property mixed $payment_allows
  * @class PluginWemallOrder
  */
 class PluginWemallOrder extends AbsUser

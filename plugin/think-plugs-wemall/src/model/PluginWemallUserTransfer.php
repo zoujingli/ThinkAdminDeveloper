@@ -3,7 +3,7 @@
 declare(strict_types=1);
 /**
  * +----------------------------------------------------------------------
- * | Payment Plugin for ThinkAdmin
+ * | ThinkAdmin Plugin for ThinkAdmin
  * +----------------------------------------------------------------------
  * | 版权所有 2014~2026 ThinkAdmin [ thinkadmin.top ]
  * +----------------------------------------------------------------------
@@ -25,9 +25,9 @@ use plugin\wemall\service\UserTransfer;
 /**
  * 代理提现数据.
  *
- * @property string $amount 提现转账金额
- * @property string $charge_amount 提现手续费金额
- * @property string $charge_rate 提现手续费比例
+ * @property float $amount 提现转账金额
+ * @property float $charge_amount 提现手续费金额
+ * @property float $charge_rate 提现手续费比例
  * @property int $audit_status 审核状态
  * @property int $id
  * @property int $status 提现状态(0失败,1待审核,2已审核,3打款中,4已打款,5已收款)

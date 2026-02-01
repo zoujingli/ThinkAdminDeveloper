@@ -3,7 +3,7 @@
 declare(strict_types=1);
 /**
  * +----------------------------------------------------------------------
- * | Payment Plugin for ThinkAdmin
+ * | ThinkAdmin Plugin for ThinkAdmin
  * +----------------------------------------------------------------------
  * | 版权所有 2014~2026 ThinkAdmin [ thinkadmin.top ]
  * +----------------------------------------------------------------------
@@ -25,7 +25,6 @@ use think\model\relation\HasOne;
 /**
  * 用户评论数据模型.
  *
- * @property array $images 评论图片
  * @property float $rate 评论分数
  * @property int $deleted 删除状态(0未删,1已删)
  * @property int $id
@@ -37,6 +36,7 @@ use think\model\relation\HasOne;
  * @property string $create_time 创建时间
  * @property string $gcode 商品编号
  * @property string $ghash 商品哈希
+ * @property string $images 评论图片
  * @property string $order_no 订单单号
  * @property string $update_time 更新时间
  * @property PluginWemallGoods $bind_goods

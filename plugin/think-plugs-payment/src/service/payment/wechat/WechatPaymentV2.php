@@ -17,7 +17,7 @@
 declare(strict_types=1);
 /**
  * +----------------------------------------------------------------------
- * | Payment Plugin for ThinkAdmin
+ * | ThinkAdmin Plugin for ThinkAdmin
  * +----------------------------------------------------------------------
  * | 版权所有 2014~2026 ThinkAdmin [ thinkadmin.top ]
  * +----------------------------------------------------------------------
@@ -203,7 +203,7 @@ class WechatPaymentV2 extends WechatPayment
                 'out_trade_no' => $pcode,
                 'out_refund_no' => $rcode,
                 'total_fee' => intval($record->getAttr('payment_amount') * 100),
-                    'refund_fee' => intval(strval(bcmul(strval($amount), '100', 0))),
+                'refund_fee' => intval(strval(bcmul(strval($amount), '100', 0))),
                 'notify_url' => static::withNotifyUrl($rcode, 'refund'),
             ];
             if (strlen($reason) > 0) {

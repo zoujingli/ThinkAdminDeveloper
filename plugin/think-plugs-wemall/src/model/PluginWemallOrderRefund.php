@@ -3,7 +3,7 @@
 declare(strict_types=1);
 /**
  * +----------------------------------------------------------------------
- * | Payment Plugin for ThinkAdmin
+ * | ThinkAdmin Plugin for ThinkAdmin
  * +----------------------------------------------------------------------
  * | 版权所有 2014~2026 ThinkAdmin [ thinkadmin.top ]
  * +----------------------------------------------------------------------
@@ -26,11 +26,10 @@ use think\model\relation\HasOne;
 /**
  * 商品订单售后模型.
  *
- * @property array $images 申请图片
- * @property string $amount 申请金额
- * @property string $balance_amount 退款余额
- * @property string $integral_amount 退款积分
- * @property string $payment_amount 退款支付
+ * @property float $amount 申请金额
+ * @property float $balance_amount 退款余额
+ * @property float $integral_amount 退款积分
+ * @property float $payment_amount 退款支付
  * @property int $admin_by 后台用户
  * @property int $id
  * @property int $number 退货数量
@@ -45,6 +44,7 @@ use think\model\relation\HasOne;
  * @property string $express_code 快递公司
  * @property string $express_name 快递名称
  * @property string $express_no 快递单号
+ * @property string $images 申请图片
  * @property string $integral_code 退回单号
  * @property string $order_no 订单单号
  * @property string $payment_code 退款单号

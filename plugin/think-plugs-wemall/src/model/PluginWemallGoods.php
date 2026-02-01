@@ -3,7 +3,7 @@
 declare(strict_types=1);
 /**
  * +----------------------------------------------------------------------
- * | Payment Plugin for ThinkAdmin
+ * | ThinkAdmin Plugin for ThinkAdmin
  * +----------------------------------------------------------------------
  * | 版权所有 2014~2026 ThinkAdmin [ thinkadmin.top ]
  * +----------------------------------------------------------------------
@@ -30,14 +30,10 @@ use think\model\relation\HasOne;
 /**
  * 商城商品数据数据.
  *
- * @property array $cates 分类编号
- * @property array $marks 商品标签
- * @property array $slider 轮播图片
- * @property array $specs 商品规格(JSON)
- * @property string $allow_balance 最大余额支付
- * @property string $allow_integral 最大积分兑换
- * @property string $price_market 最低市场价格
- * @property string $price_selling 最低销售价格
+ * @property float $allow_balance 最大余额支付
+ * @property float $allow_integral 最大积分兑换
+ * @property float $price_market 最低市场价格
+ * @property float $price_selling 最低销售价格
  * @property int $deleted 删除状态(0未删,1已删)
  * @property int $discount_id 折扣方案编号(0无折扣,其他折扣)
  * @property int $id
@@ -53,13 +49,17 @@ use think\model\relation\HasOne;
  * @property int $stock_sales 商品销售统计
  * @property int $stock_total 商品库存统计
  * @property int $stock_virtual 商品虚拟销量
+ * @property string $cates 分类编号
  * @property string $code 商品编号
  * @property string $content 商品详情
  * @property string $cover 商品封面
  * @property string $create_time 创建时间
  * @property string $delivery_code 物流运费模板
+ * @property string $marks 商品标签
  * @property string $name 商品名称
  * @property string $remark 商品描述
+ * @property string $slider 轮播图片
+ * @property string $specs 商品规格(JSON)
  * @property string $update_time 更新时间
  * @property PluginWemallConfigDiscount $discount
  * @property PluginWemallGoodsItem[] $items

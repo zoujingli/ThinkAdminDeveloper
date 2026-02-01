@@ -3,7 +3,7 @@
 declare(strict_types=1);
 /**
  * +----------------------------------------------------------------------
- * | Payment Plugin for ThinkAdmin
+ * | ThinkAdmin Plugin for ThinkAdmin
  * +----------------------------------------------------------------------
  * | 版权所有 2014~2026 ThinkAdmin [ thinkadmin.top ]
  * +----------------------------------------------------------------------
@@ -27,8 +27,8 @@ use think\model\relation\HasOne;
 /**
  * 代理返佣数据.
  *
- * @property string $amount 奖励数量
- * @property string $order_amount 订单金额
+ * @property float $amount 奖励数量
+ * @property float $order_amount 订单金额
  * @property int $deleted 删除状态(0未删除,1已删除)
  * @property int $id
  * @property int $layer 上级层级

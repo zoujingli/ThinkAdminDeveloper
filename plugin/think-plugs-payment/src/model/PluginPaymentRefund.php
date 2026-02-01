@@ -17,7 +17,7 @@
 declare(strict_types=1);
 /**
  * +----------------------------------------------------------------------
- * | Payment Plugin for ThinkAdmin
+ * | ThinkAdmin Plugin for ThinkAdmin
  * +----------------------------------------------------------------------
  * | 版权所有 2014~2026 ThinkAdmin [ thinkadmin.top ]
  * +----------------------------------------------------------------------
@@ -41,10 +41,10 @@ use think\model\relation\HasOne;
 /**
  * 用户支付退款模型.
  *
- * @property string $refund_amount 退款金额
- * @property string $used_balance 退回余额
- * @property string $used_integral 退回积分
- * @property string $used_payment 退回金额
+ * @property float $refund_amount 退款金额
+ * @property float $used_balance 退回余额
+ * @property float $used_integral 退回积分
+ * @property float $used_payment 退回金额
  * @property int $id
  * @property int $refund_status 支付状态(0未付,1已付,2取消)
  * @property int $unid 主账号编号

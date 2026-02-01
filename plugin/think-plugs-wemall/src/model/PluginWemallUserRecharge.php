@@ -3,7 +3,7 @@
 declare(strict_types=1);
 /**
  * +----------------------------------------------------------------------
- * | Payment Plugin for ThinkAdmin
+ * | ThinkAdmin Plugin for ThinkAdmin
  * +----------------------------------------------------------------------
  * | 版权所有 2014~2026 ThinkAdmin [ thinkadmin.top ]
  * +----------------------------------------------------------------------
@@ -23,7 +23,7 @@ namespace plugin\wemall\model;
 /**
  * 会员充值数据.
  *
- * @property string $amount 操作金额
+ * @property float $amount 操作金额
  * @property int $create_by 系统用户
  * @property int $deleted 删除状态(0未删除,1已删除)
  * @property int $deleted_by 系统用户

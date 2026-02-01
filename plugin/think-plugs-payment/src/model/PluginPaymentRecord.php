@@ -17,7 +17,7 @@
 declare(strict_types=1);
 /**
  * +----------------------------------------------------------------------
- * | Payment Plugin for ThinkAdmin
+ * | ThinkAdmin Plugin for ThinkAdmin
  * +----------------------------------------------------------------------
  * | 版权所有 2014~2026 ThinkAdmin [ thinkadmin.top ]
  * +----------------------------------------------------------------------
@@ -43,17 +43,16 @@ use think\model\relation\HasOne;
 /**
  * 用户支付行为模型.
  *
- * @property array $payment_notify 支付通知内容
- * @property string $order_amount 原订单金额
- * @property string $payment_amount 实际支付金额
- * @property string $payment_coupon 平台优惠券金额
- * @property string $refund_amount 累计退款
- * @property string $refund_balance 退回余额
- * @property string $refund_integral 退回积分
- * @property string $refund_payment 退回金额
- * @property string $used_balance 扣除余额
- * @property string $used_integral 扣除积分
- * @property string $used_payment 支付金额
+ * @property float $order_amount 原订单金额
+ * @property float $payment_amount 实际支付金额
+ * @property float $payment_coupon 平台优惠券金额
+ * @property float $refund_amount 累计退款
+ * @property float $refund_balance 退回余额
+ * @property float $refund_integral 退回积分
+ * @property float $refund_payment 退回金额
+ * @property float $used_balance 扣除余额
+ * @property float $used_integral 扣除积分
+ * @property float $used_payment 支付金额
  * @property int $audit_status 审核状态(0已拒,1待审,2已审)
  * @property int $audit_user 审核用户(系统用户ID)
  * @property int $id
@@ -70,12 +69,13 @@ use think\model\relation\HasOne;
  * @property string $order_name 原订单标题
  * @property string $order_no 原订单编号
  * @property string $payment_images 凭证支付图片
+ * @property string $payment_notify 支付通知内容
  * @property string $payment_remark 支付状态备注
  * @property string $payment_time 支付生效时间
  * @property string $payment_trade 平台交易编号
  * @property string $update_time 更新时间
  * @property PluginAccountBind $device
- * @property array $user
+ * @property PluginAccountUser $user
  * @class PluginPaymentRecord
  */
 class PluginPaymentRecord extends Abs

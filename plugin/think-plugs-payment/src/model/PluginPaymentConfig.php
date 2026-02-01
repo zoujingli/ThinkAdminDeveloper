@@ -17,7 +17,7 @@
 declare(strict_types=1);
 /**
  * +----------------------------------------------------------------------
- * | Payment Plugin for ThinkAdmin
+ * | ThinkAdmin Plugin for ThinkAdmin
  * +----------------------------------------------------------------------
  * | 版权所有 2014~2026 ThinkAdmin [ thinkadmin.top ]
  * +----------------------------------------------------------------------
@@ -39,12 +39,12 @@ use plugin\account\model\Abs;
 /**
  * 用户支付参数模型.
  *
- * @property array $content 支付参数
  * @property int $deleted 删除状态
  * @property int $id
  * @property int $sort 排序权重
  * @property int $status 支付状态(1使用,0禁用)
  * @property string $code 通道编号
+ * @property string $content 支付参数
  * @property string $cover 支付图标
  * @property string $create_time 创建时间
  * @property string $name 支付名称

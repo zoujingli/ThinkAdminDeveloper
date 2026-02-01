@@ -3,7 +3,7 @@
 declare(strict_types=1);
 /**
  * +----------------------------------------------------------------------
- * | Payment Plugin for ThinkAdmin
+ * | ThinkAdmin Plugin for ThinkAdmin
  * +----------------------------------------------------------------------
  * | 版权所有 2014~2026 ThinkAdmin [ thinkadmin.top ]
  * +----------------------------------------------------------------------
@@ -25,7 +25,6 @@ use think\model\relation\HasMany;
 /**
  * 工单数据模型.
  *
- * @property array $images 工单图片
  * @property int $deleted 删除状态(0未删,1已删)
  * @property int $id
  * @property int $sort 排序权重
@@ -33,6 +32,7 @@ use think\model\relation\HasMany;
  * @property int $unid 提问用户
  * @property string $content 工单描述
  * @property string $create_time 创建时间
+ * @property string $images 工单图片
  * @property string $name 工单标题
  * @property string $order_no 关联订单
  * @property string $phone 联系电话

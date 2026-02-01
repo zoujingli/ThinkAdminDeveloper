@@ -3,7 +3,7 @@
 declare(strict_types=1);
 /**
  * +----------------------------------------------------------------------
- * | Payment Plugin for ThinkAdmin
+ * | ThinkAdmin Plugin for ThinkAdmin
  * +----------------------------------------------------------------------
  * | 版权所有 2014~2026 ThinkAdmin [ thinkadmin.top ]
  * +----------------------------------------------------------------------
@@ -26,13 +26,13 @@ use think\model\relation\HasOne;
 /**
  * 商品规格数据模型.
  *
- * @property string $allow_balance 余额支付
- * @property string $allow_integral 兑换积分
- * @property string $price_cost 进货成本
- * @property string $price_market 市场价格
- * @property string $price_selling 销售价格
- * @property string $reward_balance 奖励余额
- * @property string $reward_integral 奖励积分
+ * @property float $allow_balance 余额支付
+ * @property float $allow_integral 兑换积分
+ * @property float $price_cost 进货成本
+ * @property float $price_market 市场价格
+ * @property float $price_selling 销售价格
+ * @property float $reward_balance 奖励余额
+ * @property float $reward_integral 奖励积分
  * @property int $id
  * @property int $number_express 计件系数
  * @property int $number_virtual 虚拟销量

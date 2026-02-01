@@ -3,7 +3,7 @@
 declare(strict_types=1);
 /**
  * +----------------------------------------------------------------------
- * | Payment Plugin for ThinkAdmin
+ * | ThinkAdmin Plugin for ThinkAdmin
  * +----------------------------------------------------------------------
  * | 版权所有 2014~2026 ThinkAdmin [ thinkadmin.top ]
  * +----------------------------------------------------------------------
@@ -28,12 +28,12 @@ use think\db\exception\ModelNotFoundException;
 /**
  * 用户优惠方案数据.
  *
- * @property array $items 方案规则
  * @property int $deleted 删除状态(1已删,0未删)
  * @property int $id
  * @property int $sort 排序权重
  * @property int $status 方案状态(0禁用,1使用)
  * @property string $create_time 创建时间
+ * @property string $items 方案规则
  * @property string $name 方案名称
  * @property string $remark 方案描述
  * @property string $update_time 更新时间

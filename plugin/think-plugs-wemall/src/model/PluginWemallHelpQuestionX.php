@@ -3,7 +3,7 @@
 declare(strict_types=1);
 /**
  * +----------------------------------------------------------------------
- * | Payment Plugin for ThinkAdmin
+ * | ThinkAdmin Plugin for ThinkAdmin
  * +----------------------------------------------------------------------
  * | 版权所有 2014~2026 ThinkAdmin [ thinkadmin.top ]
  * +----------------------------------------------------------------------
@@ -26,7 +26,6 @@ use think\model\relation\HasOne;
 /**
  * 工单交互数据模型.
  *
- * @property array $images 图片内容
  * @property int $ccid 目标编号
  * @property int $deleted 删除状态(0未删,1已删)
  * @property int $id
@@ -35,6 +34,7 @@ use think\model\relation\HasOne;
  * @property int $unid 用户编号
  * @property string $content 文本内容
  * @property string $create_time 创建时间
+ * @property string $images 图片内容
  * @property string $update_time 更新时间
  * @property SystemUser $bind_admin
  * @class PluginWemallHelpQuestionX

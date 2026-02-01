@@ -3,7 +3,7 @@
 declare(strict_types=1);
 /**
  * +----------------------------------------------------------------------
- * | Payment Plugin for ThinkAdmin
+ * | ThinkAdmin Plugin for ThinkAdmin
  * +----------------------------------------------------------------------
  * | 版权所有 2014~2026 ThinkAdmin [ thinkadmin.top ]
  * +----------------------------------------------------------------------
@@ -26,7 +26,6 @@ use think\model\relation\HasOne;
 /**
  * 意见反馈数据模型.
  *
- * @property array $images 反馈图片
  * @property int $deleted 删除状态(0未删,1已删)
  * @property int $id
  * @property int $reply_by 回复用户
@@ -37,6 +36,7 @@ use think\model\relation\HasOne;
  * @property int $unid 反馈用户
  * @property string $content 反馈内容
  * @property string $create_time 创建时间
+ * @property string $images 反馈图片
  * @property string $phone 联系电话
  * @property string $reply 回复内容
  * @property string $reply_time 回复时间

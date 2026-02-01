@@ -43,6 +43,10 @@
     "sync": [
       "php-cs-fixer fix"
     ],
+    "rewrite-model": [
+      "@php think xadmin:helper:model --reset",
+      "php-cs-fixer fix"
+    ],
     "test": [
       "php -m"
     ]
