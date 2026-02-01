@@ -18,6 +18,7 @@
 - **数据统计分析**: 提供扫码数据统计和分析，了解消费者行为
 - **批量操作**: 支持物码的批量生成、导入、导出等操作
 - **权限控制**: 完善的权限管理，确保数据安全
+- **高精度计算支持**: 集成 BC Math 高精度数学函数，确保金融计算的准确性
 - **收费授权**: 作为收费授权插件，提供专业的技术支持和功能更新
 
 **技术特性：**
@@ -26,12 +27,13 @@
 - **安全防护**: 内置数据加密和权限验证，确保系统安全
 - **向后兼容**: 保持与现有 ThinkAdmin 版本的兼容性，确保平滑升级
 - **专业支持**: 提供专业的技术支持和定期功能更新
+- **数据完整性保障**: 通过数据库约束确保业务数据的一致性和有效性
 
 物码标签管理系统，此插件为收费授权插件，请联系作者获取授权，未授权不可商用。
 
 ### 加入我们
 
-我们的代码仓库已移至 **Github**，而 **Gitee** 则仅作为国内镜像仓库，方便广大开发者获取和使用。若想提交 **PR** 或 **ISSUE** 请在 [ThinkAdminDeveloper](https://github.com/zoujingli/ThinkAdminDeveloper) 仓库进行操作，如果在其他仓库操作或提交问题将无法处理！。
+我们的代码仓库已移至 **Github**，而 **Gitee** 则仅作为国内镜像仓库，方便广大开发者获取和使用。若想提交 **PR** 或 **ISSUE** 请在 [ThinkAdminDeveloper](https://github.com/zoujingli/ThinkAdminDeveloper) 仓库进行操作，如果在其他仓库操作或提交问题将无法处理！.
 
 ### 安装插件
 
@@ -67,4 +69,4 @@ composer remove zoujingli/think-plugs-wuma
 
 未获得此插件授权时仅供参考学习不可商用，了解商用授权请阅读 [《付费授权》](https://thinkadmin.top/fee-introduce.html)。
 
-版权所有 Copyright © 2014-2025 by ThinkAdmin (https://thinkadmin.top) All rights reserved。
+版权所有 Copyright © 2014-2026 by ThinkAdmin (https://thinkadmin.top) All rights reserved。

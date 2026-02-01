@@ -84,8 +84,8 @@ class PaymentService
                 return ['code' => 1, 'info' => '已完成支付！', 'data' => [], 'params' => []];
             }
             // 检查剩余支付金额
-            $pAmount = floatval(is_null($pAmount) ? (floatval($oAmount) - $oPayed) : $pAmount);
-            if ($oPayed + $pAmount > floatval($oAmount)) {
+            $pAmount = strval(is_null($pAmount) ? (bcsub(strval($oAmount), strval($oPayed), 2)) : $pAmount);
+            if (bccomp(bcadd(strval($oPayed), $pAmount, 2), strval($oAmount), 2) > 0) {
                 return ['code' => 0, 'info' => '支付总额超出！', 'data' => [], 'params' => []];
             }
             $config = WechatService::getConfig(true);
@@ -218,7 +218,7 @@ class PaymentService
         if ($record->getAttr('refund_amount') >= $record->getAttr('payment_amount')) {
             return [1, '该订单已完成退款！'];
         }
-        if ($record->getAttr('refund_amount') + floatval($amount) > $record->getAttr('payment_amount')) {
+        if (bccomp(bcadd(strval($record->getAttr('refund_amount')), strval($amount), 2), strval($record->getAttr('payment_amount')), 2) > 0) {
             return [0, '退款大于支付金额！'];
         }
         // 创建支付退款申请
@@ -232,7 +232,7 @@ class PaymentService
             'out_refund_no' => $rcode,
             'notify_url' => static::withNotifyUrl($rcode, 'refund'),
             'amount' => [
-                'refund' => intval(floatval($amount) * 100),
+                'refund' => intval(strval(bcmul(strval($amount), '100', 0))),
                 'total' => intval($record->getAttr('payment_amount') * 100),
                 'currency' => 'CNY',
             ],
@@ -372,10 +372,10 @@ class PaymentService
     protected static function createPaymentAction(string $openid, string $oCode, string $oName, string $oAmount, string $pType, string $pCode, string $pAmount): array
     {
         // 检查是否已经支付
-        if (static::withPayed($oCode, $oPayed) >= floatval($oAmount)) {
+        if (bccomp(strval(self::withPayed($oCode, $oPayed)), strval($oAmount), 2) >= 0) {
             throw new Exception('已经完成支付', 1);
         }
-        if ($oPayed + floatval($pAmount) > floatval($oAmount)) {
+        if (bccomp(bcadd(strval($oPayed), strval($pAmount), 2), strval($oAmount), 2) > 0) {
             throw new Exception('总支付超出金额', 0);
         }
         $map = ['order_code' => $oCode, 'payment_status' => 1];

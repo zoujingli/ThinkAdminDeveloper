@@ -38,7 +38,7 @@
 
 ### 加入我们
 
-我们的代码仓库已移至 **Github**，而 **Gitee** 则仅作为国内镜像仓库，方便广大开发者获取和使用。若想提交 **PR** 或 **ISSUE** 请在 [ThinkAdminDeveloper](https://github.com/zoujingli/ThinkAdminDeveloper) 仓库进行操作，如果在其他仓库操作或提交问题将无法处理！。
+我们的代码仓库已移至 **Github**，而 **Gitee** 则仅作为国内镜像仓库，方便广大开发者获取和使用。若想提交 **PR** 或 **ISSUE** 请在 [ThinkAdminDeveloper](https://github.com/zoujingli/ThinkAdminDeveloper) 仓库进行操作，如果在其他仓库操作或提交问题将无法处理！.
 
 ### 开放接口
 
@@ -165,13 +165,14 @@ var_dump($types);
 - **动态通道注册**: 支持运行时动态注册新的登录通道类型，灵活扩展登录方式
 - **手机号绑定验证**: 通过短信验证码实现手机号绑定，确保账号安全性和唯一性
 - **账号解绑管理**: 支持终端账号与主账号的灵活绑定和解绑操作
-
-**技术特性：**
 - **高并发安全**: 支持高并发场景下的账号创建和绑定操作
 - **数据一致性保障**: 通过数据库事务确保账号数据的一致性
+
+**技术特性：**
 - **缓存优化**: 集成缓存机制，提升账号信息查询性能
 - **异常处理完善**: 完善的异常捕获和错误处理机制
 - **扩展性设计**: 抽象的账号接口设计，便于扩展新的认证方式
+- **向后兼容**: 保持 API 稳定性，确保平滑升级
 
 ### 插件数据
 
@@ -188,4 +189,4 @@ var_dump($types);
 
 未获得此插件授权时仅供参考学习不可商用，了解商用授权请阅读 [《会员授权》](https://thinkadmin.top/vip-introduce)。
 
-版权所有 Copyright © 2014-2025 by ThinkAdmin (https://thinkadmin.top) All rights reserved。
+版权所有 Copyright © 2014-2026 by ThinkAdmin (https://thinkadmin.top) All rights reserved。

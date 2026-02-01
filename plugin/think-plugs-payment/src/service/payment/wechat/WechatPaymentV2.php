@@ -92,7 +92,7 @@ class WechatPaymentV2 extends WechatPayment
                 'attach' => $this->cfgCode,
                 'out_trade_no' => $payCode,
                 'trade_type' => static::tradeTypes[$this->cfgType] ?? '',
-                'total_fee' => intval(floatval($payAmount) * 100),
+                'total_fee' => intval(strval(bcmul(strval($payAmount), '100', 0))),
                 'notify_url' => $this->withNotifyUrl($payCode),
                 'spbill_create_ip' => $this->app->request->ip(),
             ];
@@ -203,7 +203,7 @@ class WechatPaymentV2 extends WechatPayment
                 'out_trade_no' => $pcode,
                 'out_refund_no' => $rcode,
                 'total_fee' => intval($record->getAttr('payment_amount') * 100),
-                'refund_fee' => intval(floatval($amount) * 100),
+                    'refund_fee' => intval(strval(bcmul(strval($amount), '100', 0))),
                 'notify_url' => static::withNotifyUrl($rcode, 'refund'),
             ];
             if (strlen($reason) > 0) {

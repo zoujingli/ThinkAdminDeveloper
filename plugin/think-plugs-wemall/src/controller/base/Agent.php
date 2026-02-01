@@ -126,7 +126,7 @@ class Agent extends Controller
                     $key = "{$ats[0]}_{$ats[1]}_status";
                     if ($vo['number'] > 0) {
                         isset($vo['extra'][$key]) || $vo['extra'][$key] = 0;
-                        floatval($v) > 0 ? ++$count : ($vo['extra'][$key] = 0);
+                        bccomp(strval($v), '0.00', 2) > 0 ? ++$count : ($vo['extra'][$key] = 0);
                     } else {
                         $vo['extra'][$k] = 0;
                         $vo['extra'][$key] = 0;

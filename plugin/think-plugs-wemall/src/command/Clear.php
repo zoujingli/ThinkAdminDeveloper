@@ -127,7 +127,7 @@ class Clear extends Command
             $this->queue->message(0, 0, '未启用订单自动取消功能！');
         } else {
             try {
-                $time = time() - intval(floatval($this->config['cancel_time']) * 3600);
+                $time = time() - intval(strval($this->config['cancel_time']) * 3600);
                 $remark = $this->config['cancel_text'] ?? '自动取消未完成支付';
                 $where = [['status', 'in', [1, 2, 3]], ['create_time', '<', date('Y-m-d H:i:s', $time)]];
                 [$count, $total] = [0, ($items = PluginWemallOrder::mk()->where($where)->select())->count()];
@@ -157,7 +157,7 @@ class Clear extends Command
             $this->queue->message(0, 0, '未启用订单自动清理功能！');
         } else {
             try {
-                $time = time() - intval(floatval($this->config['remove_time']) * 3600);
+                $time = time() - intval(strval($this->config['remove_time']) * 3600);
                 $remark = $this->config['remove_text'] ?? '系统自动清理已取消的订单！';
                 $where = [['status', '=', 0], ['deleted_status', '=', 0], ['create_time', '<', date('Y-m-d H:i:s', $time)]];
                 [$count, $total] = [0, ($items = PluginWemallOrder::mk()->where($where)->select())->count()];

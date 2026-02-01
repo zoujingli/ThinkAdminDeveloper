@@ -206,7 +206,7 @@ class WechatPaymentV3 extends WechatPayment
                 'notify_url' => static::withNotifyUrl($rcode, 'refund'),
                 'amount' => [
                     'total' => intval($record->getAttr('payment_amount') * 100),
-                    'refund' => intval(floatval($amount) * 100),
+                    'refund' => intval(strval(bcmul(strval($amount), '100', 0))),
                     'currency' => 'CNY',
                 ],
             ];

@@ -276,7 +276,7 @@ class WhCoderService extends Service
             } elseif (in_array($attr[1], ['MAX', 'MID'])) {
                 foreach ($rules['nums'] as $range => $num) {
                     [$start, $after] = explode('-', $range);
-                    if (floatval($start) <= floatval($attr[0]) && floatval($attr[0]) <= floatval($after)) {
+                    if (bccomp(strval($start), strval($attr[0]), 2) <= 0 && bccomp(strval($attr[0]), strval($after), 2) <= 0) {
                         $number = $num['mode'] === 1 ? $num['tomins'] : substr_count($strs, $code);
                         $maps[$code] = $code . '#' . $number;
                         $count += $number;

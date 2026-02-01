@@ -112,7 +112,7 @@ class Trans extends Command
      */
     private function createTransferV3(PluginWemallUserTransfer $model): array
     {
-        $amount = floatval($model->getAttr('amount')) - floatval($model->getAttr('charge_amount'));
+        $amount = strval(bcmul(bcsub(strval($model->getAttr('amount')), strval($model->getAttr('charge_amount')), 2), '100', 0));
         return TransfersV3::instance($this->getConfig($model))->batchs([
             'out_batch_no' => "B{$model->getAttr('code')}",
             'batch_name' => '微信余额提现',

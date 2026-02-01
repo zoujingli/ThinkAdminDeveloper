@@ -13,7 +13,7 @@
 
 ### 加入我们
 
-我们的代码仓库已移至 **Github**，而 **Gitee** 则仅作为国内镜像仓库，方便广大开发者获取和使用。若想提交 **PR** 或 **ISSUE** 请在 [ThinkAdminDeveloper](https://github.com/zoujingli/ThinkAdminDeveloper) 仓库进行操作，如果在其他仓库操作或提交问题将无法处理！。
+我们的代码仓库已移至 **Github**，而 **Gitee** 则仅作为国内镜像仓库，方便广大开发者获取和使用。若想提交 **PR** 或 **ISSUE** 请在 [ThinkAdminDeveloper](https://github.com/zoujingli/ThinkAdminDeveloper) 仓库进行操作，如果在其他仓库操作或提交问题将无法处理！.
 
 ### 依赖插件
 
@@ -59,6 +59,7 @@ composer remove zoujingli/think-plugs-wemall
 - **订单全流程管理**: 从下单、支付、发货到售后的完整订单生命周期管理
 - **推广海报管理**: 支持为不同用户等级生成个性化推广海报
 - **团队业绩统计**: 实时统计团队销售业绩和返佣数据
+- **高精度计算保障**: 全面采用 BC Math 高精度计算，避免浮点数精度丢失问题
 
 **技术特性：**
 - **高精度金融计算**: 使用 BC Math 高精度计算，避免浮点数精度丢失问题
@@ -66,6 +67,7 @@ composer remove zoujingli/think-plugs-wemall
 - **数据库约束优化**: 添加完整的外键约束、检查约束和索引优化
 - **并发安全处理**: 支持高并发场景下的余额、积分、库存操作
 - **数据完整性保障**: 通过数据库约束确保业务数据的一致性和有效性
+- **向后兼容**: 保持 API 稳定性，确保平滑升级
 
 ### 插件数据
 
@@ -84,4 +86,4 @@ composer remove zoujingli/think-plugs-wemall
 
 未获得此插件授权时仅供参考学习不可商用，了解商用授权请阅读 [《会员授权》](https://thinkadmin.top/vip-introduce)。
 
-版权所有 Copyright © 2014-2025 by ThinkAdmin (https://thinkadmin.top) All rights reserved。
+版权所有 Copyright © 2014-2026 by ThinkAdmin (https://thinkadmin.top) All rights reserved。

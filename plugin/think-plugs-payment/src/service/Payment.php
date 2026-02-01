@@ -3,7 +3,7 @@
 // +----------------------------------------------------------------------
 // | Payment Plugin for ThinkAdmin
 // +----------------------------------------------------------------------
-// | 版权所有 2014~2025 ThinkAdmin [ thinkadmin.top ]
+// | 版权所有 2014~2026 ThinkAdmin [ thinkadmin.top ]
 // +----------------------------------------------------------------------
 // | 官方网站: https://thinkadmin.top
 // +----------------------------------------------------------------------
@@ -427,11 +427,11 @@ abstract class Payment
      * @param string $orderNo 订单单号
      * @param bool $realtime 有效金额
      */
-    public static function paidAmount(string $orderNo, bool $realtime = false): float
+    public static function paidAmount(string $orderNo, bool $realtime = false): string
     {
         $map = ['order_no' => $orderNo, 'payment_status' => 1];
         $raw = new Raw($realtime ? 'payment_amount - refund_amount' : 'payment_amount');
-        return round(PluginPaymentRecord::mk()->where($map)->sum($raw), 2);
+        return bcadd('0.00', strval(PluginPaymentRecord::mk()->where($map)->sum($raw)), 2);
     }
 
     /**
@@ -451,7 +451,7 @@ abstract class Payment
      */
     public static function totalPaymentAmount(string $orderNo): array
     {
-        $total = ['amount' => 0, 'payment' => 0, 'balance' => 0, 'integral' => 0];
+        $total = ['amount' => '0.00', 'payment' => '0.00', 'balance' => '0.00', 'integral' => '0.00'];
         try {
             PluginPaymentRecord::mk()->where(['order_no' => $orderNo, 'payment_status' => 1])->field([
                 'channel_type',
@@ -460,12 +460,12 @@ abstract class Payment
                 'sum(used_balance-refund_balance)' => 'balance',
                 'sum(used_integral-refund_integral)' => 'integral',
             ])->group('channel_type')->select()->map(static function (PluginPaymentRecord $item) use (&$total) {
-                $total['amount'] = round($total['amount'] + $item->getAttr('amount'), 2);
+                $total['amount'] = bcadd($total['amount'], strval($item->getAttr('amount')), 2);
                 $type = $item->getAttr('channel_type');
                 if (!in_array($type, [self::INTEGRAL, self::BALANCE])) {
                     $type = 'payment';
                 }
-                $total[$type] = round($total[$type] + $item[$type] ?? 0, 2);
+                $total[$type] = bcadd($total[$type], strval($item[$type] ?? '0.00'), 2);
             });
         } catch (\Exception $exception) {
             trace_file($exception);
@@ -479,17 +479,17 @@ abstract class Payment
      */
     public static function totalRefundAmount(string $pCode): array
     {
-        $total = ['amount' => 0, 'payment' => 0, 'balance' => 0, 'integral' => 0];
+        $total = ['amount' => '0.00', 'payment' => '0.00', 'balance' => '0.00', 'integral' => '0.00'];
         try {
             PluginPaymentRefund::mk()->where(['record_code' => $pCode, 'refund_status' => [0, 1]])->field([
                 'refund_account', 'sum(refund_amount) amount', 'sum(used_payment)' => 'payment', 'sum(used_balance)' => 'balance', 'sum(used_integral)' => 'integral',
             ])->group('refund_account')->select()->map(static function (PluginPaymentRefund $item) use (&$total) {
-                $total['amount'] = round($total['amount'] + $item->getAttr('amount'), 2);
+                $total['amount'] = bcadd($total['amount'], strval($item->getAttr('amount')), 2);
                 $type = $item->getAttr('refund_account');
                 if (!in_array($type, [self::INTEGRAL, self::BALANCE])) {
                     $type = 'payment';
                 }
-                $total[$type] = round($total[$type] + $item[$type] ?? 0, 2);
+                $total[$type] = bcadd($total[$type], strval($item[$type] ?? '0.00'), 2);
             });
         } catch (\Exception $exception) {
             trace_file($exception);

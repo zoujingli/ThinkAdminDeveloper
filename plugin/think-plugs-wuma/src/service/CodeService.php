@@ -89,7 +89,7 @@ class CodeService
     public static function codever(string $code, int $full, int $size = 4): string
     {
         [$a, $b] = [base_convert($code, 10, $full - 1), base_convert(strrev($code), 10, $full - 2)];
-        return substr(str_pad(strval(floatval($a) + floatval($b)), $size, '0', STR_PAD_LEFT), 0, $size);
+        return substr(str_pad(strval(bcadd(strval($a), strval($b), 2)), $size, '0', STR_PAD_LEFT), 0, $size);
     }
 
     /**
