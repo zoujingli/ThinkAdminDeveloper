@@ -70,7 +70,7 @@ class FixWemallConstraints extends Migrator
         }
 
         // 添加金额非负约束
-        $this->execute("ALTER TABLE `plugin_wemall_user_rebate` MODIFY `amount` DECIMAL(20,2) NOT NULL DEFAULT '0.00' CHECK (amount >= 0)");
+        $this->executeModifyWithCheck('plugin_wemall_user_rebate', 'amount', "DECIMAL(20,2) NOT NULL DEFAULT '0.00'", 'amount >= 0');
     }
 
     /**
@@ -128,13 +128,38 @@ class FixWemallConstraints extends Migrator
         ];
 
         foreach ($amount_fields as $field) {
-            $this->execute("ALTER TABLE `plugin_wemall_order` MODIFY `{$field}` DECIMAL(20,2) NOT NULL DEFAULT '0.00' CHECK ({$field} >= 0)");
+            $this->executeModifyWithCheck('plugin_wemall_order', $field, "DECIMAL(20,2) NOT NULL DEFAULT '0.00'", "{$field} >= 0");
         }
 
         // 添加状态字段的枚举约束
-        $this->execute('ALTER TABLE `plugin_wemall_order` MODIFY `status` TINYINT NOT NULL DEFAULT 1 CHECK (status BETWEEN 0 AND 7)');
-        $this->execute('ALTER TABLE `plugin_wemall_order` MODIFY `refund_status` TINYINT NOT NULL DEFAULT 0 CHECK (refund_status BETWEEN 0 AND 7)');
-        $this->execute('ALTER TABLE `plugin_wemall_order` MODIFY `payment_status` TINYINT NOT NULL DEFAULT 0 CHECK (payment_status BETWEEN 0 AND 2)');
-        $this->execute('ALTER TABLE `plugin_wemall_order` MODIFY `delivery_type` TINYINT NOT NULL DEFAULT 0 CHECK (delivery_type BETWEEN 0 AND 1)');
+        $this->executeModifyWithCheck('plugin_wemall_order', 'status', 'TINYINT NOT NULL DEFAULT 1', 'status BETWEEN 0 AND 7');
+        $this->executeModifyWithCheck('plugin_wemall_order', 'refund_status', 'TINYINT NOT NULL DEFAULT 0', 'refund_status BETWEEN 0 AND 7');
+        $this->executeModifyWithCheck('plugin_wemall_order', 'payment_status', 'TINYINT NOT NULL DEFAULT 0', 'payment_status BETWEEN 0 AND 2');
+        $this->executeModifyWithCheck('plugin_wemall_order', 'delivery_type', 'TINYINT NOT NULL DEFAULT 0', 'delivery_type BETWEEN 0 AND 1');
+    }
+
+    private function executeModifyWithCheck(string $table, string $field, string $definition, string $check): void
+    {
+        $sql = "ALTER TABLE `{$table}` MODIFY `{$field}` {$definition}";
+        if ($this->supportsCheckConstraint()) {
+            $sql .= " CHECK ({$check})";
+        }
+        $this->execute($sql);
+    }
+
+    private function supportsCheckConstraint(): bool
+    {
+        static $supports = null;
+        if ($supports !== null) {
+            return $supports;
+        }
+        $row = $this->getAdapter()->fetchRow('SELECT VERSION() AS version');
+        $raw = (string)($row['version'] ?? reset($row) ?: '0.0.0');
+        preg_match('/\\d+(?:\\.\\d+){1,2}/', $raw, $match);
+        $version = $match[0] ?? '0.0.0';
+        if (stripos($raw, 'mariadb') !== false) {
+            return $supports = version_compare($version, '10.2.1', '>=');
+        }
+        return $supports = version_compare($version, '8.0.16', '>=');
     }
 }
