@@ -24,7 +24,7 @@ use think\admin\model\SystemUser;
 use think\migration\Migrator;
 
 @set_time_limit(0);
-@ini_set('memory_limit', -1);
+@ini_set('memory_limit', '-1');
 
 /**
  * 系统模块数据.

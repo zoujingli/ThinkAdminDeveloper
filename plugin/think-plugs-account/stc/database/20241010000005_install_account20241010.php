@@ -21,7 +21,7 @@ use think\admin\extend\PhinxExtend;
 use think\migration\Migrator;
 
 @set_time_limit(0);
-@ini_set('memory_limit', -1);
+@ini_set('memory_limit', '-1');
 
 class InstallAccount20241010 extends Migrator
 {
