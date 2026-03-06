@@ -77,7 +77,7 @@ class Assign extends Controller
             foreach (['min#minValue', 'min#encValue', 'min#numValue'] as $rule) {
                 [$type, $alias] = explode('#', $rule);
                 $db = PluginWumaCodeRuleRange::mQuery($this->get)->valueRange("range_start:range_after#{$alias}")->field('batch')->db();
-                if ($db->getOptions('where')) {
+                if (!empty($db->getOptions()['where'] ?? [])) {
                     $query->whereRaw("cbatch in {$db->whereIn('code_type', str2arr($type))->buildSql()}");
                 }
             }

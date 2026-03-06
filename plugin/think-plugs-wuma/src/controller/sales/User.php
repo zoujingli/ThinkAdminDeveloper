@@ -53,7 +53,7 @@ class User extends Controller
             $query->where($map)->withCount(['subAgent' => 'subAgentCount'])->with(['supAgent', 'levelinfo']);
             // 上级代理查询
             $db = PluginWumaSalesUser::mQuery()->like('username|phone#super')->db();
-            if ($db->getOptions('where')) {
+            if (!empty($db->getOptions()['where'] ?? [])) {
                 $query->whereRaw("auid in {$db->field('id')->where($map)->buildSql()}");
             }
             // 当前代理查询

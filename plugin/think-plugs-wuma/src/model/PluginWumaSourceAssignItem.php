@@ -1,20 +1,20 @@
-<?php
+﻿<?php
 
 declare(strict_types=1);
 /**
  * +----------------------------------------------------------------------
  * | ThinkAdmin Plugin for ThinkAdmin
  * +----------------------------------------------------------------------
- * | 版权所有 2014~2026 ThinkAdmin [ thinkadmin.top ]
+ * | 鐗堟潈鎵€鏈?2014~2026 ThinkAdmin [ thinkadmin.top ]
  * +----------------------------------------------------------------------
- * | 官方网站: https://thinkadmin.top
+ * | 瀹樻柟缃戠珯: https://thinkadmin.top
  * +----------------------------------------------------------------------
- * | 开源协议 ( https://mit-license.org )
- * | 免责声明 ( https://thinkadmin.top/disclaimer )
- * | 会员特权 ( https://thinkadmin.top/vip-introduce )
+ * | 寮€婧愬崗璁?( https://mit-license.org )
+ * | 鍏嶈矗澹版槑 ( https://thinkadmin.top/disclaimer )
+ * | 浼氬憳鐗规潈 ( https://thinkadmin.top/vip-introduce )
  * +----------------------------------------------------------------------
- * | gitee 代码仓库：https://gitee.com/zoujingli/ThinkAdmin
- * | github 代码仓库：https://github.com/zoujingli/ThinkAdmin
+ * | gitee 浠ｇ爜浠撳簱锛歨ttps://gitee.com/zoujingli/ThinkAdmin
+ * | github 浠ｇ爜浠撳簱锛歨ttps://github.com/zoujingli/ThinkAdmin
  * +----------------------------------------------------------------------
  */
 
@@ -23,18 +23,12 @@ namespace plugin\wuma\model;
 use think\model\relation\HasOne;
 
 /**
- * 赋码批次数据模型.
+ * 璧嬬爜鎵规鏁版嵁妯″瀷.
  *
  * @property int $id
- * @property int $lock 是否已锁定
- * @property int $range_after 结束物码区间
- * @property int $range_start 开始物码区间
- * @property int $real 是否真锁定
- * @property string $batch 赋码批次号
- * @property string $cbatch 物码批次号
- * @property string $create_time 创建时间
- * @property string $pbatch 生产批次号
- * @property string $update_time 更新时间
+ * @property int $lock 鏄惁宸查攣瀹? * @property int $range_after 缁撴潫鐗╃爜鍖洪棿
+ * @property int $range_start 寮€濮嬬墿鐮佸尯闂? * @property int $real 鏄惁鐪熼攣瀹? * @property string $batch 璧嬬爜鎵规鍙? * @property string $cbatch 鐗╃爜鎵规鍙? * @property string $create_time 鍒涘缓鏃堕棿
+ * @property string $pbatch 鐢熶骇鎵规鍙? * @property string $update_time 鏇存柊鏃堕棿
  * @property PluginWumaSourceAssign $assign
  * @property PluginWumaSourceProduce $bind_produce
  * @property PluginWumaSourceProduce $produce
@@ -42,8 +36,10 @@ use think\model\relation\HasOne;
  */
 class PluginWumaSourceAssignItem extends AbstractPrivate
 {
+    protected $deleteTime = false;
+
     /**
-     * 关联生产模板数据.
+     * 鍏宠仈鐢熶骇妯℃澘鏁版嵁.
      */
     public function produce(): HasOne
     {
@@ -52,7 +48,7 @@ class PluginWumaSourceAssignItem extends AbstractPrivate
     }
 
     /**
-     * 关联生产批次数据.
+     * 鍏宠仈鐢熶骇鎵规鏁版嵁.
      */
     public function bindProduce(): HasOne
     {
@@ -69,7 +65,7 @@ class PluginWumaSourceAssignItem extends AbstractPrivate
     }
 
     /**
-     * 关联生产模板数据.
+     * 鍏宠仈鐢熶骇妯℃澘鏁版嵁.
      */
     public function assign(): HasOne
     {

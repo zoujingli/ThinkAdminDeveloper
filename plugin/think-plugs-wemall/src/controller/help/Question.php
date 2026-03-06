@@ -54,7 +54,7 @@ class Question extends Controller
             $helper->like('name,content')->equal('status')->dateBetween('create_time');
             // 提交用户搜索
             $db = PluginAccountUser::mQuery()->like('username')->field('id')->db();
-            if ($db->getOptions('where')) {
+            if (!empty($db->getOptions()['where'] ?? [])) {
                 $helper->whereRaw("unid in {$db->buildSql()}");
             }
         });

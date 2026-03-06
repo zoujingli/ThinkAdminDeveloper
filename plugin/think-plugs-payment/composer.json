@@ -1,6 +1,7 @@
 {
   "type": "think-admin-plugin",
   "name": "zoujingli/think-plugs-payment",
+  "version": "8.0.x-dev",
   "homepage": "https://thinkadmin.top",
   "description": "Payment Plugin for ThinkAdmin",
   "authors": [
@@ -10,13 +11,13 @@
     }
   ],
   "require": {
-    "php": ">7.1",
+    "php": "^8.0",
     "ext-json": "*",
-    "zoujingli/think-plugs-admin": "^1.0|@dev",
-    "zoujingli/think-plugs-account": "^1.0|@dev"
+    "zoujingli/think-plugs-admin": "^8.0",
+    "zoujingli/think-plugs-account": "^8.0"
   },
   "require-dev": {
-    "phpunit/phpunit": "*"
+    "phpunit/phpunit": "^9.5|^10.0"
   },
   "autoload": {
     "psr-4": {

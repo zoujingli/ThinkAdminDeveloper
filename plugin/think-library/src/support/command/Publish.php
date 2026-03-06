@@ -5,7 +5,7 @@ declare(strict_types=1);
  * +----------------------------------------------------------------------
  * | ThinkAdmin Plugin for ThinkAdmin
  * +----------------------------------------------------------------------
- * | 版权所有 2014~2026 ThinkAdmin [ thinkadmin.top ]
+ * | Copyright (c) 2014~2026 ThinkAdmin [ thinkadmin.top ]
  * +----------------------------------------------------------------------
  * | 官方网站: https://thinkadmin.top
  * +----------------------------------------------------------------------
@@ -13,15 +13,15 @@ declare(strict_types=1);
  * | 免责声明 ( https://thinkadmin.top/disclaimer )
  * | 会员特权 ( https://thinkadmin.top/vip-introduce )
  * +----------------------------------------------------------------------
- * | gitee 代码仓库：https://gitee.com/zoujingli/ThinkAdmin
- * | github 代码仓库：https://github.com/zoujingli/ThinkAdmin
+ * | gitee 代码仓库: https://gitee.com/zoujingli/ThinkAdmin
+ * | github 代码仓库: https://github.com/zoujingli/ThinkAdmin
  * +----------------------------------------------------------------------
  */
 
 namespace think\admin\support\command;
 
 use think\admin\extend\ToolsExtend;
-use think\admin\service\ModuleService;
+use think\admin\service\AppService;
 use think\admin\service\RuntimeService;
 use think\console\Command;
 use think\console\Input;
@@ -29,13 +29,19 @@ use think\console\input\Option;
 use think\console\Output;
 
 /**
- * 组件安装指令.
+ * 组件发布指令。
  * @class Publish
  */
 class Publish extends Command
 {
     /**
-     * 任务参数配置.
+     * 已安装组件目录。
+     * @var array<int, string>
+     */
+    protected array $packages = [];
+
+    /**
+     * 配置指令参数。
      */
     public function configure()
     {
@@ -46,7 +52,7 @@ class Publish extends Command
     }
 
     /**
-     * 任务合并执行.
+     * 执行发布任务。
      * @return null|void
      */
     public function execute(Input $input, Output $output)
@@ -56,57 +62,68 @@ class Publish extends Command
     }
 
     /**
-     * 安装数据库.
+     * 发布应用和插件资源。
      * @return $this
      */
-    private function plugin(): Publish
+    private function plugin(): self
     {
-        // 执行子应用安装
         $force = boolval($this->input->getOption('force'));
-        foreach (ModuleService::getModules() as $appName) {
-            $appPath = $this->app->getBasePath() . $appName;
-            is_dir($appPath) && $this->copy($appPath, $force);
+        $plugins = AppService::plugins();
+
+        foreach (AppService::local() as $appName => $app) {
+            if (isset($plugins[$appName])) {
+                continue;
+            }
+            $this->copy($app['path'], $force);
         }
-        // 执行数据库脚本
+
+        foreach (array_unique($this->packages) as $installPath) {
+            $this->copy($installPath, $force);
+        }
+
         if ($this->input->getOption('migrate')) {
             $this->app->console->call('migrate:run', [], 'console');
         }
+
         return $this;
     }
 
     /**
-     * 初始化组件文件.
-     * @param string $copy 应用资源目录
-     * @param bool $force 是否强制替换
+     * 复制组件资源文件。
+     * @param string $copy 组件目录
+     * @param bool $force 是否强制覆盖
      */
-    private function copy(string $copy, bool $force = false)
+    private function copy(string $copy, bool $force = false): void
     {
-        // 复制系统配置文件
-        $frdir = rtrim($copy, '\/') . DIRECTORY_SEPARATOR . 'config';
-        ToolsExtend::copy($frdir, syspath('config'), [], $force, false);
+        $copy = rtrim($copy, '\/');
 
-        // 复制静态资料文件
-        $frdir = rtrim($copy, '\/') . DIRECTORY_SEPARATOR . 'public';
-        ToolsExtend::copy($frdir, syspath('public'), [], true, false);
+        ToolsExtend::copy($copy . DIRECTORY_SEPARATOR . 'config', syspath('config'), [], $force, false);
+        ToolsExtend::copy($copy . DIRECTORY_SEPARATOR . 'public', syspath('public'), [], true, false);
 
-        // 复制数据库脚本
-        $frdir = rtrim($copy, '\/') . DIRECTORY_SEPARATOR . 'database';
-        ToolsExtend::copy($frdir, syspath('database/migrations'), [], $force, false);
+        // 同步两类迁移目录：
+        // 1. 应用模块自带的 database
+        // 2. 插件包自带的 stc/database
+        ToolsExtend::copy($copy . DIRECTORY_SEPARATOR . 'database', syspath('database/migrations'), [], $force, false);
+        ToolsExtend::copy($copy . DIRECTORY_SEPARATOR . 'stc' . DIRECTORY_SEPARATOR . 'database', syspath('database/migrations'), [], $force, false);
     }
 
     /**
-     * 解析 json 包.
+     * 解析已安装组件信息。
      * @return $this
      */
-    private function parse(): Publish
+    private function parse(): self
     {
         [$services, $versions] = [[], []];
+
         if (is_file($file = syspath('vendor/composer/installed.json'))) {
-            $packages = json_decode(@file_get_contents($file), true);
+            $packages = json_decode((string)@file_get_contents($file), true);
             foreach ($packages['packages'] ?? $packages as $package) {
-                // 生成组件版本
+                $installPath = syspath("vendor/{$package['name']}/");
                 $type = $package['type'] ?? '';
                 $config = $package['extra']['config'] ?? [];
+                if ($type === 'think-admin-plugin' || !empty($package['extra']['plugin'])) {
+                    $this->packages[] = rtrim($installPath, '\/');
+                }
                 $versions[$package['name']] = [
                     'type' => $config['type'] ?? ($type === 'think-admin-plugin' ? 'plugin' : 'library'),
                     'name' => $config['name'] ?? ($package['name'] ?? ''),
@@ -120,14 +137,13 @@ class Publish extends Command
                     'platforms' => $config['platforms'] ?? [],
                     'description' => $config['description'] ?? ($package['description'] ?? ''),
                 ];
-                // 生成服务配置
+
                 if (!empty($package['extra']['think']['services'])) {
                     $services = array_merge($services, (array)$package['extra']['think']['services']);
                 }
-                // 复制配置文件
+
                 if (!empty($package['extra']['think']['config'])) {
                     $configPath = $this->app->getConfigPath();
-                    $installPath = syspath("vendor/{$package['name']}/");
                     foreach ((array)$package['extra']['think']['config'] as $name => $file) {
                         if (is_file($target = $configPath . $name . '.php')) {
                             $this->output->info("File {$target} exist!");
@@ -143,12 +159,10 @@ class Publish extends Command
             }
         }
 
-        // 写入服务配置
         $header = '// Automatically Generated At: ' . date('Y-m-d H:i:s') . PHP_EOL . 'declare(strict_types=1);';
         $content = '<?php' . PHP_EOL . $header . PHP_EOL . 'return ' . var_export($services, true) . ';';
         @file_put_contents(syspath('vendor/services.php'), $content);
 
-        // 写入组件版本
         $content = '<?php' . PHP_EOL . $header . PHP_EOL . 'return ' . var_export($versions, true) . ';';
         @file_put_contents(syspath('vendor/versions.php'), preg_replace('#\s+=>\s+array\s+\(#m', ' => array (', $content));
 

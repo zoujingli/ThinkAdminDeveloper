@@ -1,6 +1,7 @@
 {
   "type": "think-admin-plugin",
   "name": "zoujingli/think-plugs-center",
+  "version": "8.0.x-dev",
   "license": "Apache-2.0",
   "homepage": "https://thinkadmin.top",
   "description": "Plugin Center for ThinkAdmin",
@@ -11,10 +12,10 @@
     }
   ],
   "require": {
-    "php": ">7.1",
+    "php": "^8.0",
     "ext-json": "*",
     "zoujingli/think-install": "^1.0|@dev",
-    "zoujingli/think-library": "^6.1|@dev"
+    "zoujingli/think-library": "^8.0"
   },
   "autoload": {
     "files": [

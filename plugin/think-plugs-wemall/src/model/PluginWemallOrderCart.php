@@ -1,20 +1,20 @@
-<?php
+﻿<?php
 
 declare(strict_types=1);
 /**
  * +----------------------------------------------------------------------
  * | ThinkAdmin Plugin for ThinkAdmin
  * +----------------------------------------------------------------------
- * | 版权所有 2014~2026 ThinkAdmin [ thinkadmin.top ]
+ * | 鐗堟潈鎵€鏈?2014~2026 ThinkAdmin [ thinkadmin.top ]
  * +----------------------------------------------------------------------
- * | 官方网站: https://thinkadmin.top
+ * | 瀹樻柟缃戠珯: https://thinkadmin.top
  * +----------------------------------------------------------------------
- * | 开源协议 ( https://mit-license.org )
- * | 免责声明 ( https://thinkadmin.top/disclaimer )
- * | 会员特权 ( https://thinkadmin.top/vip-introduce )
+ * | 寮€婧愬崗璁?( https://mit-license.org )
+ * | 鍏嶈矗澹版槑 ( https://thinkadmin.top/disclaimer )
+ * | 浼氬憳鐗规潈 ( https://thinkadmin.top/vip-introduce )
  * +----------------------------------------------------------------------
- * | gitee 代码仓库：https://gitee.com/zoujingli/ThinkAdmin
- * | github 代码仓库：https://github.com/zoujingli/ThinkAdmin
+ * | gitee 浠ｇ爜浠撳簱锛歨ttps://gitee.com/zoujingli/ThinkAdmin
+ * | github 浠ｇ爜浠撳簱锛歨ttps://github.com/zoujingli/ThinkAdmin
  * +----------------------------------------------------------------------
  */
 
@@ -26,21 +26,22 @@ use think\model\relation\HasOne;
  * Class plugin\wemall\model\PluginWemallOrderCart.
  *
  * @property int $id
- * @property int $number 商品数量
- * @property int $ssid 所属商家
- * @property int $unid 用户编号
- * @property string $create_time 创建时间
- * @property string $gcode 商品编号
- * @property string $ghash 规格哈希
- * @property string $gspec 商品规格
- * @property string $update_time 更新时间
+ * @property int $number 鍟嗗搧鏁伴噺
+ * @property int $ssid 鎵€灞炲晢瀹? * @property int $unid 鐢ㄦ埛缂栧彿
+ * @property string $create_time 鍒涘缓鏃堕棿
+ * @property string $gcode 鍟嗗搧缂栧彿
+ * @property string $ghash 瑙勬牸鍝堝笇
+ * @property string $gspec 鍟嗗搧瑙勬牸
+ * @property string $update_time 鏇存柊鏃堕棿
  * @property PluginWemallGoods $goods
  * @property PluginWemallGoodsItem $specs
  */
 class PluginWemallOrderCart extends AbsUser
 {
+    protected $deleteTime = false;
+
     /**
-     * 关联产品数据.
+     * 鍏宠仈浜у搧鏁版嵁.
      */
     public function goods(): HasOne
     {
@@ -48,7 +49,7 @@ class PluginWemallOrderCart extends AbsUser
     }
 
     /**
-     * 关联规格数据.
+     * 鍏宠仈瑙勬牸鏁版嵁.
      */
     public function specs(): HasOne
     {

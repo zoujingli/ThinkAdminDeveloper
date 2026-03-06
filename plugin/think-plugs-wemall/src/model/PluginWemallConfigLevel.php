@@ -1,20 +1,20 @@
-<?php
+﻿<?php
 
 declare(strict_types=1);
 /**
  * +----------------------------------------------------------------------
  * | ThinkAdmin Plugin for ThinkAdmin
  * +----------------------------------------------------------------------
- * | 版权所有 2014~2026 ThinkAdmin [ thinkadmin.top ]
+ * | 鐗堟潈鎵€鏈?2014~2026 ThinkAdmin [ thinkadmin.top ]
  * +----------------------------------------------------------------------
- * | 官方网站: https://thinkadmin.top
+ * | 瀹樻柟缃戠珯: https://thinkadmin.top
  * +----------------------------------------------------------------------
- * | 开源协议 ( https://mit-license.org )
- * | 免责声明 ( https://thinkadmin.top/disclaimer )
- * | 会员特权 ( https://thinkadmin.top/vip-introduce )
+ * | 寮€婧愬崗璁?( https://mit-license.org )
+ * | 鍏嶈矗澹版槑 ( https://thinkadmin.top/disclaimer )
+ * | 浼氬憳鐗规潈 ( https://thinkadmin.top/vip-introduce )
  * +----------------------------------------------------------------------
- * | gitee 代码仓库：https://gitee.com/zoujingli/ThinkAdmin
- * | github 代码仓库：https://github.com/zoujingli/ThinkAdmin
+ * | gitee 浠ｇ爜浠撳簱锛歨ttps://gitee.com/zoujingli/ThinkAdmin
+ * | github 浠ｇ爜浠撳簱锛歨ttps://github.com/zoujingli/ThinkAdmin
  * +----------------------------------------------------------------------
  */
 
@@ -24,29 +24,31 @@ use plugin\account\model\Abs;
 use think\db\exception\DbException;
 
 /**
- * 商城会员等级数据.
+ * 鍟嗗煄浼氬憳绛夌骇鏁版嵁.
  *
  * @property int $id
- * @property int $number 级别序号
- * @property int $status 等级状态(1使用,0禁用)
- * @property int $upgrade_team 团队人数统计(0不计,1累计)
- * @property int $upgrade_type 升级规则(0单个,1同时)
- * @property int $utime 更新时间
- * @property string $cardbg 等级卡片
- * @property string $cover 等级图标
- * @property string $create_time 创建时间
- * @property string $extra 配置规则
- * @property string $name 级别名称
- * @property string $remark 用户级别描述
- * @property string $update_time 更新时间
+ * @property int $number 绾у埆搴忓彿
+ * @property int $status 绛夌骇鐘舵€?1浣跨敤,0绂佺敤)
+ * @property int $upgrade_team 鍥㈤槦浜烘暟缁熻(0涓嶈,1绱)
+ * @property int $upgrade_type 鍗囩骇瑙勫垯(0鍗曚釜,1鍚屾椂)
+ * @property int $utime 鏇存柊鏃堕棿
+ * @property string $cardbg 绛夌骇鍗＄墖
+ * @property string $cover 绛夌骇鍥炬爣
+ * @property string $create_time 鍒涘缓鏃堕棿
+ * @property string $extra 閰嶇疆瑙勫垯
+ * @property string $name 绾у埆鍚嶇О
+ * @property string $remark 鐢ㄦ埛绾у埆鎻忚堪
+ * @property string $update_time 鏇存柊鏃堕棿
  * @class PluginWemallConfigLevel
  */
 class PluginWemallConfigLevel extends Abs
 {
+    protected $deleteTime = false;
+
     /**
-     * 获取会员等级.
-     * @param ?string $first 增加首项内容
-     * @param string $field 指定查询字段
+     * 鑾峰彇浼氬憳绛夌骇.
+     * @param ?string $first 澧炲姞棣栭」鍐呭
+     * @param string $field 鎸囧畾鏌ヨ瀛楁
      */
     public static function items(?string $first = null, string $field = 'name,number as prefix,number,upgrade_team,extra'): array
     {
@@ -64,7 +66,7 @@ class PluginWemallConfigLevel extends Abs
     }
 
     /**
-     * 获取最大级别数.
+     * 鑾峰彇鏈€澶х骇鍒暟.
      * @throws DbException
      */
     public static function maxNumber(): int

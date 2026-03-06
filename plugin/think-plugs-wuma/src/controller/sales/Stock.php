@@ -54,13 +54,13 @@ class Stock extends Controller
             $query->with(['agent', 'bindGoods']);
             // 产品搜索查询
             $gdb = PluginWemallGoods::mQuery()->like('code|name#gname')->db();
-            if ($gdb->getOptions('where')) {
+            if (!empty($gdb->getOptions()['where'] ?? [])) {
                 $db2 = PluginWemallGoodsItem::mk()->whereRaw("gcode in {$gdb->field('code')->buildSql()}");
                 $query->whereRaw("ghash in {$db2->field('ghash')->buildSql()}");
             }
             // 代理搜索查询
             $db = PluginWumaSalesUser::mQuery()->like('phone,username')->db();
-            if ($db->getOptions('where')) {
+            if (!empty($db->getOptions()['where'] ?? [])) {
                 $query->whereRaw("auid in {$db->field('id')->buildSql()}");
             }
         });

@@ -21,7 +21,9 @@ declare(strict_types=1);
 namespace plugin\helper;
 
 use Ergebnis\Classy\Constructs;
+use plugin\helper\support\NormalizedModelGenerator;
 use think\admin\extend\ToolsExtend;
+use think\console\Output;
 use think\console\input\Argument;
 use think\console\input\Option;
 use think\ide\console\ModelCommand;
@@ -55,6 +57,38 @@ class DbModelStruct extends ModelCommand
             ->addOption('reset', 'R', Option::VALUE_NONE, 'Remove the original phpdocs instead of appending')
             ->addOption('overwrite', 'O', Option::VALUE_NONE, 'Overwrite the phpdocs');
         $this->setDescription('自动生成用于IDE提示的模型注释');
+    }
+
+    protected function generateDocs($loadModels, $ignore = '')
+    {
+        if (empty($loadModels)) {
+            $models = $this->loadModels();
+        } else {
+            $models = [];
+            foreach ($loadModels as $model) {
+                $models = array_merge($models, explode(',', $model));
+            }
+        }
+
+        $ignore = explode(',', $ignore);
+        foreach ($models as $name) {
+            if (in_array($name, $ignore, true)) {
+                if ($this->output->getVerbosity() >= Output::VERBOSITY_VERBOSE) {
+                    $this->output->comment("Ignoring model '{$name}'");
+                }
+                continue;
+            }
+
+            if (!class_exists($name)) {
+                continue;
+            }
+
+            try {
+                (new NormalizedModelGenerator($this->app, $this->output, $name, $this->reset, $this->overwrite))->generate();
+            } catch (\Exception $exception) {
+                $this->output->error("Exception: {$exception->getMessage()}\nCould not analyze class {$name}.");
+            }
+        }
     }
 
     protected function loadModels(): array

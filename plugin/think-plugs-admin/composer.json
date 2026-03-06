@@ -1,6 +1,7 @@
 {
   "type": "think-admin-plugin",
   "name": "zoujingli/think-plugs-admin",
+  "version": "8.0.x-dev",
   "license": "MIT",
   "homepage": "https://thinkadmin.top",
   "description": "Admin Plugin for ThinkAdmin",
@@ -11,14 +12,14 @@
     }
   ],
   "require": {
-    "php": ">7.1",
+    "php": "^8.0",
     "ext-json": "*",
-    "topthink/framework": "^6.0|^8.0",
-    "topthink/think-view": "^1.0|^2.0",
+    "topthink/framework": "^8.1",
+    "topthink/think-view": "^2.0",
     "zoujingli/ip2region": "^1.0|^2.0|^3.0|@dev",
     "zoujingli/think-install": "^1.0|@dev",
-    "zoujingli/think-library": "^6.1|@dev",
-    "zoujingli/think-plugs-static": "^1.0|@dev"
+    "zoujingli/think-library": "^8.0",
+    "zoujingli/think-plugs-static": "^8.0"
   },
   "autoload": {
     "psr-4": {

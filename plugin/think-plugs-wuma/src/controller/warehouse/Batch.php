@@ -71,7 +71,7 @@ class Batch extends Controller
             // 批量创建筛选规则
             foreach (['minValue' => 'min', 'encValue' => 'min', 'numValue' => 'min'] as $alias => $type) {
                 $db = PluginWumaCodeRuleRange::mQuery($this->get)->valueRange("range_start:range_after#{$alias}")->field('batch')->db();
-                if ($db->getOptions('where')) {
+                if (!empty($db->getOptions()['where'] ?? [])) {
                     $query->whereRaw('cbatch in ' . $db->whereIn('code_type', str2arr($type))->buildSql());
                 }
             }

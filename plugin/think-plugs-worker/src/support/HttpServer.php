@@ -22,6 +22,7 @@ namespace plugin\worker\support;
 
 use plugin\worker\Server;
 use think\admin\service\RuntimeService;
+use think\Http;
 use Workerman\Connection\TcpConnection;
 use Workerman\Protocols\Http\Request as WorkerRequest;
 use Workerman\Protocols\Http\Response as WorkerResponse;
@@ -30,8 +31,7 @@ use Workerman\Timer;
 use Workerman\Worker;
 
 /**
- * 自定义 Http 服务
- * @class HttpServer
+ * Custom Http server for ThinkAdmin.
  */
 class HttpServer extends Server
 {
@@ -41,93 +41,147 @@ class HttpServer extends Server
     /** @var string */
     protected $root;
 
-    /** @var callable */
+    /** @var string */
+    protected $public;
+
+    /** @var null|callable */
     protected $callable;
 
-    public function __construct(string $host = '127.0.0.1', int $port = 2346, array $context = [], ?callable $callable = null)
-    {
+    /** @var array */
+    protected $config = [];
+
+    /** @var null|WorkerMonitor */
+    protected $monitor;
+
+    public function __construct(
+        string $host = '127.0.0.1',
+        int $port = 2346,
+        array $context = [],
+        ?callable $callable = null,
+        array $config = [],
+    ) {
         $this->port = $port;
         $this->host = $host;
-        $this->root = dirname(__DIR__, 4);
+        $this->root = dirname(__DIR__, 4) . \DIRECTORY_SEPARATOR;
+        $this->public = $this->root . 'public' . \DIRECTORY_SEPARATOR;
         $this->context = $context;
         $this->protocol = 'http';
         $this->callable = $callable;
+        $this->config = $config;
         parent::__construct();
     }
 
     /**
      * onWorkerStart.
      */
-    public function onWorkerStart(Worker $worker)
+    public function onWorkerStart(Worker $worker): void
     {
-        // 创建基础应用
         $this->app = new ThinkApp($this->root);
-        $this->app->bind('think\Cookie', ThinkCookie::class);
-        $this->app->bind('think\Request', ThinkRequest::class);
+        $this->app->bind([
+            'cookie' => ThinkCookie::class,
+            'request' => ThinkRequest::class,
+            'http' => ThinkHttp::class,
+            'think\Cookie' => ThinkCookie::class,
+            'think\Request' => ThinkRequest::class,
+            Http::class => ThinkHttp::class,
+        ]);
 
-        // 抢占必需替换的类名，并优先加载进内存
         if (!class_exists('think\response\File', false)) {
             class_alias(ThinkResponseFile::class, 'think\response\File');
         }
 
-        // 初始化运行环境
         RuntimeService::init($this->app)->initialize();
+        $this->app->http->warmup();
 
-        // 定时发起数据库请求，防止失效而锁死
-        Timer::add(60, function () {
-            $this->app->db->query(sprintf('select %d as stime', time()));
+        // Keep only active database connections alive.
+        Timer::add(60, function (): void {
+            foreach ($this->app->db->getInstance() as $connection) {
+                try {
+                    $connection->query('SELECT 1');
+                } catch (\Throwable $exception) {
+                    Worker::log($exception->getMessage());
+                }
+            }
         });
 
-        // 初始化会话
+        $this->monitor = new WorkerMonitor($this->app, $worker, $this->config);
+        $this->monitor->start();
+
         Session::$name = $this->app->config->get('session.name', 'ssid');
         Session::$domain = $this->app->config->get('cookie.domain', '');
-        Session::$secure = $this->app->config->get('cookie.secure', false);
-        Session::$httpOnly = $this->app->config->get('cookie.httponly', true);
-        Session::$sameSite = $this->app->config->get('cookie.samesite', '');
-        Session::$lifetime = intval($this->app->config->get('session.expire', 7200));
-        Session::$cookiePath = $this->app->config->get('cookie.path', '/');
-        Session::$cookieLifetime = intval($this->app->config->get('cookie.expire', 0));
+        Session::$secure = (bool)$this->app->config->get('cookie.secure', false);
+        Session::$httpOnly = (bool)$this->app->config->get('cookie.httponly', true);
+        Session::$sameSite = (string)$this->app->config->get('cookie.samesite', '');
+        Session::$lifetime = (int)$this->app->config->get('session.expire', 7200);
+        Session::$cookiePath = (string)$this->app->config->get('cookie.path', '/');
+        Session::$cookieLifetime = (int)$this->app->config->get('cookie.expire', 0);
     }
 
     /**
      * onMessage.
      */
-    public function onMessage(TcpConnection $connection, WorkerRequest $request)
+    public function onMessage(TcpConnection $connection, WorkerRequest $request): void
     {
-        // 请求服务器实体文件，检测文件状态并发送结果
-        if (is_file($file = syspath("public{$request->path()}"))) {
-            // 检查 if-modified-since 头判断文件是否修改过
+        if (($file = $this->resolvePublicFile($request->path())) !== null) {
             if (!empty($modifiedSince = $request->header('if-modified-since'))) {
-                $modifiedTime = date('D, d M Y H:i:s', filemtime($file)) . ' ' . date_default_timezone_get();
-                // 文件未修改则返回 304，直接使用本地文件缓存
-                if ($modifiedTime === $modifiedSince) {
+                $modifiedTime = gmdate('D, d M Y H:i:s', filemtime($file)) . ' GMT';
+                if (trim(strtok($modifiedSince, ';')) === $modifiedTime) {
                     $connection->send(new WorkerResponse(304, ['Server' => 'x-server']));
                     return;
                 }
             }
-            // 文件修改过或者没有 if-modified-since 头则发送文件
+
             $connection->send((new WorkerResponse())->withFile($file)->header('Server', 'x-server'));
             return;
         }
 
-        // 自定义消息回调处理，返回 true 则终止后面的处理
         if (is_callable($this->callable)) {
-            if (call_user_func($this->callable, $connection, $request) === true) {
+            $result = call_user_func($this->callable, $connection, $request);
+            if ($result instanceof WorkerResponse) {
+                $connection->send($result);
+                return;
+            }
+            if ($result === true) {
                 return;
             }
         }
 
-        // 转发消息并初始化框架，调度 path 对应的系统功能
+        RuntimeService::sync();
         $this->app->worker($connection, $request);
     }
 
     /**
-     * 设置系统根路径.
+     * onWorkerReload.
      */
-    public function setRoot(string $path)
+    public function onWorkerReload(Worker $worker): void
     {
-        $this->root = $path;
+        $this->monitor?->stop();
     }
 
-    protected function init() {}
+    /**
+     * Set application root path.
+     */
+    public function setRoot(string $path): void
+    {
+        $this->root = rtrim($path, \DIRECTORY_SEPARATOR) . \DIRECTORY_SEPARATOR;
+        $this->public = $this->root . 'public' . \DIRECTORY_SEPARATOR;
+    }
+
+    protected function init(): void {}
+
+    private function resolvePublicFile(string $path): ?string
+    {
+        $path = rawurldecode($path);
+        if ($path === '' || $path === '/') {
+            return null;
+        }
+
+        $publicRoot = rtrim(realpath($this->public) ?: $this->public, \DIRECTORY_SEPARATOR) . \DIRECTORY_SEPARATOR;
+        $candidate = realpath($this->public . ltrim(str_replace(['/', '\\'], \DIRECTORY_SEPARATOR, $path), \DIRECTORY_SEPARATOR));
+        if ($candidate === false || !is_file($candidate)) {
+            return null;
+        }
+
+        return str_starts_with($candidate, $publicRoot) ? $candidate : null;
+    }
 }

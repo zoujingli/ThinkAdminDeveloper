@@ -56,7 +56,7 @@ class Feedback extends Controller
             $query->where(['status' => intval($this->type === 'index'), 'deleted' => 0]);
             // 提交用户搜索
             $db = PluginAccountUser::mQuery()->like('username')->field('id')->db();
-            if ($db->getOptions('where')) {
+            if (!empty($db->getOptions()['where'] ?? [])) {
                 $query->whereRaw("unid in {$db->buildSql()}");
             }
         });

@@ -21,23 +21,26 @@
     }
   },
   "require": {
-    "php": ">7.1",
+    "php": "^8.0",
     "ext-gd": "*",
     "ext-json": "*",
     "ext-openssl": "*",
-    "zoujingli/think-plugs-account": "*",
-    "zoujingli/think-plugs-admin": "*",
-    "zoujingli/think-plugs-center": "*",
-    "zoujingli/think-plugs-payment": "*",
-    "zoujingli/think-plugs-wechat": "*",
-    "zoujingli/think-plugs-wechat-service": "*",
-    "zoujingli/think-plugs-wemall": "*",
-    "zoujingli/think-plugs-worker": "*",
-    "zoujingli/think-plugs-wuma": "*"
+    "topthink/framework": "^8.1",
+    "topthink/think-orm": "^4.0",
+    "workerman/workerman": "^5.1.9",
+    "zoujingli/think-plugs-account": "^8.0",
+    "zoujingli/think-plugs-admin": "^8.0",
+    "zoujingli/think-plugs-center": "^8.0",
+    "zoujingli/think-plugs-payment": "^8.0",
+    "zoujingli/think-plugs-wechat": "^8.0",
+    "zoujingli/think-plugs-wechat-service": "^8.0",
+    "zoujingli/think-plugs-wemall": "^8.0",
+    "zoujingli/think-plugs-worker": "^8.0",
+    "zoujingli/think-plugs-wuma": "^8.0"
   },
   "require-dev": {
     "friendsofphp/php-cs-fixer": "^3.0",
-    "zoujingli/think-plugs-helper": "*"
+    "zoujingli/think-plugs-helper": "^8.0"
   },
   "scripts": {
     "sync": [
@@ -102,6 +105,7 @@
     }
   ],
   "minimum-stability": "dev",
+  "prefer-stable": true,
   "config": {
     "sort-packages": true,
     "allow-plugins": {

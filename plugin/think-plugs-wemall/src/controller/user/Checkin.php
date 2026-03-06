@@ -66,7 +66,7 @@ class Checkin extends Controller
             $query->with('user')->dateBetween('create_time');
             // 按用户资料搜索
             $user = PluginAccountUser::mQuery()->like('nickname|phone#user');
-            if ($user->getOptions('where')) {
+            if (!empty($user->getOptions()['where'] ?? [])) {
                 $query->whereRaw("unid in {$user->field('id')->buildSql()}");
             }
         });

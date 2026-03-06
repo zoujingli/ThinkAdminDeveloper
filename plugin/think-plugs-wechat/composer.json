@@ -1,6 +1,7 @@
 {
   "type": "think-admin-plugin",
   "name": "zoujingli/think-plugs-wechat",
+  "version": "8.0.x-dev",
   "license": "MIT",
   "homepage": "https://thinkadmin.top",
   "description": "WeChat Plugin for ThinkAdmin",
@@ -11,13 +12,13 @@
     }
   ],
   "require": {
-    "php": ">7.1",
+    "php": "^8.0",
     "ext-json": "*",
     "ext-openssl": "*",
     "ext-mbstring": "*",
     "zoujingli/qrcode": "^1.0|@dev",
     "zoujingli/think-install": "^1.0|@dev",
-    "zoujingli/think-library": "^6.1|@dev",
+    "zoujingli/think-library": "^8.0",
     "zoujingli/wechat-developer": "^1.2|@dev"
   },
   "autoload": {

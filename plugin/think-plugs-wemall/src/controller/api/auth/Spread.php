@@ -48,7 +48,7 @@ class Spread extends Auth
         PluginWemallUserRelation::mQuery(null, function (QueryHelper $query) {
             // 用户搜索查询
             $db = PluginAccountUser::mQuery()->like('phone|nickname#keys')->db();
-            if ($db->getOptions('where')) {
+            if (!empty($db->getOptions()['where'] ?? [])) {
                 $query->whereRaw("unid in {$db->field('id')->buildSql()}");
             }
             // 数据条件查询

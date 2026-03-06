@@ -164,7 +164,7 @@ class QueueService extends Service
                 'enter_time' => 0,
                 'outer_time' => 0,
                 'loops_time' => $loops,
-                'create_at' => date('Y-m-d H:i:s'),
+                'create_time' => date('Y-m-d H:i:s'),
             ]);
             $that = static::instance([], true)->initialize($code);
             $that->progress(1, '>>> 任务创建成功 <<<', '0.00');

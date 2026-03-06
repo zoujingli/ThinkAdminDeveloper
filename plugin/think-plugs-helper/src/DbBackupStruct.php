@@ -98,7 +98,17 @@ class DbBackupStruct extends Command
             if (!empty($fields = $this->app->db->getFields($table))) {
                 $query = $this->app->db->table($table)->order(in_array('id', $fields) ? 'id' : array_values($fields)[0]);
                 in_array('ssid', $fields) && $query = $query->where('ssid', '0');
-                in_array('deleted_at', $fields) && $query = $query->whereNull('deleted_at');
+                if (in_array('delete_time', $fields)) {
+                    $query = $query->whereNull('delete_time');
+                } elseif (in_array('deleted_at', $fields)) {
+                    $query = $query->whereNull('deleted_at');
+                } elseif (in_array('deleted_time', $fields)) {
+                    $query = $query->whereNull('deleted_time');
+                } elseif (in_array('deleted', $fields)) {
+                    $query = $query->where('deleted', '0');
+                } elseif (in_array('is_deleted', $fields)) {
+                    $query = $query->where('is_deleted', '0');
+                }
                 $query->chunk(10000, function ($rows) use ($gz, $table, &$total) {
                     foreach ($rows as $row) {
                         $record = ['table' => $table, 'data' => (array)$row];

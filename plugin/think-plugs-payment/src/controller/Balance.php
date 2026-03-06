@@ -70,7 +70,7 @@ class Balance extends Controller
             $query->with(['user'])->like('code,remark')->dateBetween('create_time');
             $query->where(['deleted' => 0, 'cancel' => intval($this->type !== 'index')]);
             $db = PluginAccountUser::mQuery()->like('email|nickname|username|phone#user')->db();
-            if ($db->getOptions('where')) {
+            if (!empty($db->getOptions()['where'] ?? [])) {
                 $query->whereRaw("unid in {$db->field('id')->buildSql()}");
             }
         });

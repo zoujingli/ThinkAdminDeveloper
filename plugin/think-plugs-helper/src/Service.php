@@ -25,6 +25,7 @@ class Service extends \think\Service
     public function boot()
     {
         $this->commands([
+            DbMigrateStruct::class,
             DbModelStruct::class,
             DbIndexStruct::class,
             DbBackupStruct::class,

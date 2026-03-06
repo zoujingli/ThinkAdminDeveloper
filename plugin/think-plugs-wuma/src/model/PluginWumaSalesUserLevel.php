@@ -1,20 +1,20 @@
-<?php
+﻿<?php
 
 declare(strict_types=1);
 /**
  * +----------------------------------------------------------------------
  * | ThinkAdmin Plugin for ThinkAdmin
  * +----------------------------------------------------------------------
- * | 版权所有 2014~2026 ThinkAdmin [ thinkadmin.top ]
+ * | 鐗堟潈鎵€鏈?2014~2026 ThinkAdmin [ thinkadmin.top ]
  * +----------------------------------------------------------------------
- * | 官方网站: https://thinkadmin.top
+ * | 瀹樻柟缃戠珯: https://thinkadmin.top
  * +----------------------------------------------------------------------
- * | 开源协议 ( https://mit-license.org )
- * | 免责声明 ( https://thinkadmin.top/disclaimer )
- * | 会员特权 ( https://thinkadmin.top/vip-introduce )
+ * | 寮€婧愬崗璁?( https://mit-license.org )
+ * | 鍏嶈矗澹版槑 ( https://thinkadmin.top/disclaimer )
+ * | 浼氬憳鐗规潈 ( https://thinkadmin.top/vip-introduce )
  * +----------------------------------------------------------------------
- * | gitee 代码仓库：https://gitee.com/zoujingli/ThinkAdmin
- * | github 代码仓库：https://github.com/zoujingli/ThinkAdmin
+ * | gitee 浠ｇ爜浠撳簱锛歨ttps://gitee.com/zoujingli/ThinkAdmin
+ * | github 浠ｇ爜浠撳簱锛歨ttps://github.com/zoujingli/ThinkAdmin
  * +----------------------------------------------------------------------
  */
 
@@ -28,17 +28,19 @@ use think\db\exception\ModelNotFoundException;
  * Class plugin\wuma\model\PluginWumaSalesUserLevel.
  *
  * @property int $id
- * @property int $number 代理级别序号
- * @property int $status 代理等级状态(1使用,0禁用)
- * @property int $utime 等级更新时间
- * @property string $create_time 等级创建时间
- * @property string $name 代理级别名称
- * @property string $remark 代理级别描述
+ * @property int $number 浠ｇ悊绾у埆搴忓彿
+ * @property int $status 浠ｇ悊绛夌骇鐘舵€?1浣跨敤,0绂佺敤)
+ * @property int $utime 绛夌骇鏇存柊鏃堕棿
+ * @property string $create_time 绛夌骇鍒涘缓鏃堕棿
+ * @property string $name 浠ｇ悊绾у埆鍚嶇О
+ * @property string $remark 浠ｇ悊绾у埆鎻忚堪
  */
 class PluginWumaSalesUserLevel extends AbstractPrivate
 {
+    protected $deleteTime = false;
+
     /**
-     * 获取所有等级数据.
+     * 鑾峰彇鎵€鏈夌瓑绾ф暟鎹?
      * @param mixed $map
      */
     public static function lists($map = []): array
@@ -48,7 +50,7 @@ class PluginWumaSalesUserLevel extends AbstractPrivate
     }
 
     /**
-     * 获取最大级别数.
+     * 鑾峰彇鏈€澶х骇鍒暟.
      * @throws DbException
      */
     public static function stepMax(): int
@@ -57,7 +59,7 @@ class PluginWumaSalesUserLevel extends AbstractPrivate
     }
 
     /**
-     * 读取模型数据.
+     * 璇诲彇妯″瀷鏁版嵁.
      * @throws DataNotFoundException
      * @throws DbException
      * @throws ModelNotFoundException

@@ -1,20 +1,20 @@
-<?php
+﻿<?php
 
 declare(strict_types=1);
 /**
  * +----------------------------------------------------------------------
  * | ThinkAdmin Plugin for ThinkAdmin
  * +----------------------------------------------------------------------
- * | 版权所有 2014~2026 ThinkAdmin [ thinkadmin.top ]
+ * | 鐗堟潈鎵€鏈?2014~2026 ThinkAdmin [ thinkadmin.top ]
  * +----------------------------------------------------------------------
- * | 官方网站: https://thinkadmin.top
+ * | 瀹樻柟缃戠珯: https://thinkadmin.top
  * +----------------------------------------------------------------------
- * | 开源协议 ( https://mit-license.org )
- * | 免责声明 ( https://thinkadmin.top/disclaimer )
- * | 会员特权 ( https://thinkadmin.top/vip-introduce )
+ * | 寮€婧愬崗璁?( https://mit-license.org )
+ * | 鍏嶈矗澹版槑 ( https://thinkadmin.top/disclaimer )
+ * | 浼氬憳鐗规潈 ( https://thinkadmin.top/vip-introduce )
  * +----------------------------------------------------------------------
- * | gitee 代码仓库：https://gitee.com/zoujingli/ThinkAdmin
- * | github 代码仓库：https://github.com/zoujingli/ThinkAdmin
+ * | gitee 浠ｇ爜浠撳簱锛歨ttps://gitee.com/zoujingli/ThinkAdmin
+ * | github 浠ｇ爜浠撳簱锛歨ttps://github.com/zoujingli/ThinkAdmin
  * +----------------------------------------------------------------------
  */
 
@@ -23,21 +23,23 @@ namespace plugin\wemall\model;
 use plugin\account\model\Abs;
 
 /**
- * 商城商品标签数据.
+ * 鍟嗗煄鍟嗗搧鏍囩鏁版嵁.
  *
  * @property int $id
- * @property int $sort 排序权重
- * @property int $status 标签状态(1使用,0禁用)
- * @property string $create_time 创建时间
- * @property string $name 标签名称
- * @property string $remark 标签描述
- * @property string $update_time 更新时间
+ * @property int $sort 鎺掑簭鏉冮噸
+ * @property int $status 鏍囩鐘舵€?1浣跨敤,0绂佺敤)
+ * @property string $create_time 鍒涘缓鏃堕棿
+ * @property string $name 鏍囩鍚嶇О
+ * @property string $remark 鏍囩鎻忚堪
+ * @property string $update_time 鏇存柊鏃堕棿
  * @class PluginWemallGoodsMark
  */
 class PluginWemallGoodsMark extends Abs
 {
+    protected $deleteTime = false;
+
     /**
-     * 获取所有标签.
+     * 鑾峰彇鎵€鏈夋爣绛?
      */
     public static function items(): array
     {

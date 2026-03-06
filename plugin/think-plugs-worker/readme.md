@@ -1,343 +1,195 @@
 # ThinkPlugsWorker for ThinkAdmin
 
-[![Latest Stable Version](https://poser.pugx.org/zoujingli/think-plugs-worker/v/stable)](https://packagist.org/packages/zoujingli/think-plugs-worker)
-[![Total Downloads](https://poser.pugx.org/zoujingli/think-plugs-worker/downloads)](https://packagist.org/packages/zoujingli/think-plugs-worker)
-[![Monthly Downloads](https://poser.pugx.org/zoujingli/think-plugs-worker/d/monthly)](https://packagist.org/packages/zoujingli/think-plugs-worker)
-[![Daily Downloads](https://poser.pugx.org/zoujingli/think-plugs-worker/d/daily)](https://packagist.org/packages/zoujingli/think-plugs-worker)
-[![PHP Version](https://thinkadmin.top/static/icon/php-7.1.svg)](https://thinkadmin.top)
-[![License](https://poser.pugx.org/zoujingli/think-plugs-worker/license)](https://gitee.com/zoujingli/think-plugs-worker/blob/master/license)
+ThinkPlugsWorker 是 ThinkAdmin 8 的 Workerman 常驻运行插件，当前对齐 `Workerman 5` 正式版运行模型，默认面向 `PHP 8.1+`。
 
-### 业务功能特性
+## 版本基线
 
-**核心异步任务处理：**
-- **HTTP 服务支持**: 基于 Workerman 4.x 提供高性能 HTTP 服务，无需 Nginx/Apache 配置，访问速度显著提升
-- **多协议支持**: 支持 WebSocket、TCP、UDP 等多种通信协议，满足不同应用场景需求
-- **Gateway 模式**: 支持 Gateway 分布式架构，适用于高并发实时通信场景
-- **自定义服务**: 提供灵活的自定义服务配置，支持 Text、WebSocket、Gateway、Register、Business 等多种服务类型
-- **异步任务队列**: 内置高效的异步任务处理机制，响应延时低于 0.5 秒
-- **进程管理**: 完善的进程启动、停止、重载、状态监控等管理功能
-- **跨平台支持**: 同时支持 Windows 和 Linux 平台，提供统一的操作接口
+- ThinkAdmin: `8.x`
+- PHP: `8.1+`
+- Workerman: `5.1+`
+- 当前插件约束: `workerman/workerman:^5.1.9`
 
-**技术特性：**
-- **Apache2 开源协议**: 遵循 Apache2 开源协议，免费提供使用
-- **高性能架构**: 基于 Workerman 事件驱动架构，单机可支撑数万并发连接
-- **模块化设计**: 各服务类型独立配置，便于扩展和维护
-- **向后兼容**: 保持与现有 ThinkAdmin 版本的兼容性，确保平滑升级
-- **文档完善**: 提供完整的配置示例和使用文档，快速上手
+## 特性
 
-基于 **Workerman 4.x** 且支持多种通信协议的基础插件。
+- 默认提供基于 Workerman 5 的 ThinkAdmin HTTP 启动方式
+- 长驻模式下预热路由和中间件，减少重复加载
+- 支持自定义 `Workerman`、`Gateway`、`Register`、`BusinessWorker` 服务
+- 支持静态文件直出和文件下载响应优化
+- 支持调试模式文件变更监控和内存阈值监控
+- Windows 下补充了 `start -d`、`status`、`stop` 的进程识别
 
-**提示：** 默认支持以 HTTP 方式直接启动 ThinkAdmin 项目，无需配置 Nginx 或 Apache 环境，访问速度提升 N 倍。
+## 安装
 
-**注意：** 该插件支持 `Workerman` 或 `Gateway` 两种运行方式，默认只安装了 `Workerman` 组件，如果需要使用 `Gateway` 组件，请另行安装。
-配置文件的根配置参数是启动 **http** 服务进程，用来运行 **ThinkAdmin v6** 程序。
-如果需要使用其他协议，请使用并修改 `customs` 配置或追加配置，并通过指定 `--custom name` 配置名来启动对应服务进程。
-
-### 加入我们
-
-我们的代码仓库已移至 **Github**，而 **Gitee** 则仅作为国内镜像仓库，方便广大开发者获取和使用。若想提交 **PR** 或 **ISSUE** 请在 [ThinkAdminDeveloper](https://github.com/zoujingli/ThinkAdminDeveloper) 仓库进行操作，如果在其他仓库操作或提交问题将无法处理！.
-
-### 安装插件
-
-```shell
-### 安装前建议尝试更新所有组件
-composer update --optimize-autoloader
-
-### 注意，插件仅支持在 ThinkAdmin v6.1 中使用
-composer require zoujingli/think-plugs-worker --optimize-autoloader
+```bash
+composer require zoujingli/think-plugs-worker
 ```
 
-### 卸载插件
+如果项目已经安装旧版依赖，建议同步更新到当前稳定版：
 
-```shell
+```bash
+composer update workerman/workerman zoujingli/think-plugs-worker --with-all-dependencies
+```
+
+## 卸载
+
+```bash
 composer remove zoujingli/think-plugs-worker
 ```
 
-### 配置参数
+## 默认配置
 
-配置文件 `config/worker.php`
+配置文件为 `config/worker.php`，安装插件后会自动生成。
 
 ```php
+<?php
+
+declare(strict_types=1);
+
 return [
-    // 服务监听地址
     'host' => '127.0.0.1',
-    // 服务监听端口
     'port' => 2346,
-    // 套接字上下文选项
     'context' => [],
-    // 高级自定义服务类
     'classes' => '',
-    // 消息请求回调处理
     'callable' => null,
-    // 服务进程参数配置
     'worker' => [
-        // 进程名称
-        "name" => 'ThinkAdmin',
-        // 进程数量
+        'name' => 'ThinkAdmin',
         'count' => 4,
+        // 'logFileMaxSize' => 10 * 1024 * 1024,
+        // 'stopTimeout' => 2,
+        // 'eventLoopClass' => \Workerman\Events\Event::class,
     ],
-    // 自定义服务配置（可选）
+    'files' => [
+        'time' => 3,
+        'path' => [],
+        'exts' => ['php', 'env', 'ini', 'yaml', 'yml'],
+    ],
+    'memory' => [
+        'time' => 60,
+        'limit' => '1G',
+    ],
     'customs' => [
-        // 自定义 text 服务
-        'text' => [
-            // 进程类型(Workerman|Gateway|Register|Business)
-            'type' => 'Workerman',
-            // 监听地址(<协议>://<地址>:<端口>)
-            'listen' => 'text://0.0.0.0:8685',
-            // 高级自定义服务类
-            'classes' => '',
-            // 套接字上下文选项
-            'context' => [],
-            // 服务进程参数配置
-            'worker' => [
-                //'name' => 'TextTest',
-                // onWorkerStart => [class,method]
-                // onWorkerReload => [class,method]
-                // onConnect => [class,method]
-                // onBufferFull => [class,method]
-                // onBufferDrain => [class,method]
-                // onError => [class,method]
-                // 设置连接的 onMessage 回调
-                'onMessage' => function ($connection, $data) {
-                    $connection->send("hello world");
-                }
-            ]
-        ],
-        // 自定义 websocket 服务
         'websocket' => [
-            // 进程类型(Workerman|Gateway|Register|Business)
             'type' => 'Workerman',
-            // 监听地址(<协议>://<地址>:<端口>)
             'listen' => 'websocket://0.0.0.0:8686',
-            // 高级自定义服务类
-            'classes' => '',
-            // 套接字上下文选项
             'context' => [],
-            // 服务进程参数配置
-            'worker' => [
-                //'name' => 'TextTest',
-                // onWorkerStart => [class,method]
-                // onWorkerReload => [class,method]
-                // onConnect => [class,method]
-                // onBufferFull => [class,method]
-                // onBufferDrain => [class,method]
-                // onError => [class,method]
-                // 设置连接的 onMessage 回调
-                'onMessage' => function ($connection, $data) {
-                    $connection->send("hello world");
-                }
-            ]
-        ],
-        // 自定义 Gateway 服务
-        'gateway' => [
-            // 进程类型(Workerman|Gateway|Register|Business)
-            'type' => 'Gateway',
-            // 监听地址(<协议>://<地址>:<端口>)
-            'listen' => 'websocket://127.0.0.1:8689',
-            // 高级自定义服务类
             'classes' => '',
-            // 套接字上下文选项
-            'context' => [],
-            // 服务进程参数配置
             'worker' => [
-                // 进程名称
-                "name" => 'Gateway',
-                // 进程数量
-                 "count" => 4,
-                // 心跳发送时间，针对客户端
-                'pingInterval' => 10,
-                // 心跳容错次数，针对客户端
-                'pingNotResponseLimit' => 0,
-                // 心跳包内容，针对客户端
-                'pingData' => '{"type":"ping"}',
-                 // 服务器内网IP
-                "lanIp" => '127.0.0.1',
-                // Business 回复 Gateway 端口
-                "startPort" => 2000,
-               // 注册服务地址，与 Register 进程对应
-                "registerAddress" => '127.0.0.1:1236',
-                // 进程启动回调
-                "onWorkerStart" => function () {
-                    echo "Gateway onWorkerStart" . PHP_EOL;
+                'name' => 'ThinkAdminWebSocket',
+                'count' => 1,
+                'onMessage' => static function ($connection, $data): void {
+                    $connection->send((string)$data);
                 },
-                 // 进程停止回调
-                "onWorkerStop" => function () {
-                    echo "Gateway onWorkerStop" . PHP_EOL;
-                }
-            ]
-        ],
-        // 自定义 Register 服务
-        'register' => [
-            // 进程类型(Workerman|Gateway|Register|Business)
-            'type' => 'Register',
-            // 监听地址(<协议>://<地址>:<端口>)
-            // 注意：别改这里的协议，只支持 text 协议
-            'listen' => 'text://127.0.0.1:1236'
-        ],
-        // 自定义 Business 服务
-        'business' => [
-            // 进程类型(Workerman|Gateway|Register|Business)
-            'type' => 'Business',
-            // 高级自定义服务类
-            'classes' => '',
-            // 服务进程参数配置
-            'worker' => [
-                // 进程名称
-                "name" => 'Business',
-                // 进程数量
-                "count" => 4,
-                // 注册服务地址，与 Register 进程对应
-                "registerAddress" => '127.0.0.1:1236',
-                // 业务处理类
-                "eventHandler" => Events::class,
-                // 进程启动回调
-                "onWorkerStart" => function () {
-                    echo "Business onWorkerStart" . PHP_EOL;
-                },
-                // 进程停止回调
-                "onWorkerStop" => function () {
-                    echo "Business onWorkerStart" . PHP_EOL;
-                }
-            ]
+            ],
         ],
     ],
 ];
-
-/**
- * 业务处理类
- * @class Events
- */
-class Events
-{
-
-    /**
-     * 业务进程启动
-     * @param $businessWorker
-     * @return void
-     */
-    public static function onWorkerStart($businessWorker)
-    {
-        echo "Events WorkerStart\n";
-    }
-
-    /**
-     * 有消息时触发该方法
-     * @param int $clientid 发消息的client_id
-     * @param mixed $message 消息
-     * @throws \Exception
-     */
-    public static function onMessage($clientid, $message)
-    {
-        // 群聊，转发请求给其它所有的客户端
-        \GatewayWorker\Lib\Gateway::sendToAll("Message By Events : {$message}");
-    }
-}
 ```
 
-### 使用方法
+## 启动方式
 
-在命令行启动服务端
+默认 HTTP 服务：
 
-```shell
-#========= 启动参数配置 =========
-### 守护方式运行  -d
-### 指定监听域名  --host 127.0.0.1
-### 指定监听端口  --port 2346 
-### 启动指定服务  --custom websocket
-
-# 通过 Workerman 方式，启动默认 Http 服务
+```bash
 php think xadmin:worker
+php think xadmin:worker start
+php think xadmin:worker start -d
+```
 
-# 通过 Workerman 方式，启动自定义 text 服务，注意 text 为 customs 配置项
-php think xadmin:worker --custom text
+指定主机和端口：
 
-# 通过 Workerman 方式，启动自定义 WebSocket 服务，注意 websocket 为 customs 配置项
+```bash
+php think xadmin:worker --host 0.0.0.0 --port 9501
+```
+
+启动自定义服务：
+
+```bash
 php think xadmin:worker --custom websocket
-
-# 通过 Gateway 方式，需要同时启动三个进程，另外还需要安装 workerman/gateway-worker 依赖包。
-# 具体业务处理逻辑写在 business 绑定的 Events 中，了解更新多配置请阅读 Workerman 官方文档。
-php think xadmin:worker --custom register
-php think xadmin:worker --custom gateway
-php think xadmin:worker --custom business
-
 ```
 
-然后就可以通过浏览器直接访问当前应用
+## 管理命令
 
+Linux / macOS:
+
+```bash
+php think xadmin:worker [start|stop|reload|restart|status|connections]
+php think xadmin:worker start -d
 ```
-http://localhost:2346
+
+Windows:
+
+```bash
+php think xadmin:worker [start|stop|status]
+php think xadmin:worker start -d
 ```
 
-默认使用 `Workerman` 工作方式，如果需要使用  `Gateway` 方式，需要安装 `GatewayWorker` 组件。
+说明：
 
-安装 `GatewayWorker` 的指令如下：
+- `reload`、`restart`、`connections` 依赖 POSIX 信号，不适用于 Windows
+- Windows 下调试文件监控只输出重启提示，不会像 Linux 一样自动向 master 发送重载信号
+- 生产环境仍建议优先部署在 Linux，并使用 Supervisor、systemd、Docker 或容器编排托管
 
-```shell
-# 安装 GatewayWorker 组件
+## 自定义服务
+
+`customs` 中的每个节点都会通过 `--custom <name>` 启动。常见类型：
+
+- `Workerman`
+- `Gateway`
+- `Register`
+- `Business`
+
+如果你要使用 GatewayWorker，请先安装：
+
+```bash
 composer require workerman/gateway-worker
 ```
 
-**注意：** 启用 `Gateway` 时需要单独启动三个进程，分别是 `Gateway`、`Register`、`Business`，中间需要 `Register` 进程连接。
+示例：
 
-**数据通信模型：**
-
-`Client` `<->` `Gateway` `<->` `Register` `<->` `Business` `<->` `Events`
-
-**Linux** 支持操作指令如下：
-
-```shell
-php think xadmin:worker [start|stop|reload|restart|status|-d]
-
-# 以上所有操作效果与 Workerman 官方操作一致，详情请阅读对应文档。
+```php
+'customs' => [
+    'websocket' => [
+        'type' => 'Workerman',
+        'listen' => 'websocket://0.0.0.0:8686',
+        'worker' => [
+            'name' => 'ThinkAdminWebSocket',
+            'count' => 1,
+            'onMessage' => static function ($connection, $data): void {
+                $connection->send((string)$data);
+            },
+        ],
+    ],
+],
 ```
 
-**Windows** 支持操作指令如下：
+## 反向代理
 
-```shell
-php think xadmin:worker [start|stop|status|-d]
+推荐把公网流量通过 Nginx 转发到 Worker 端口：
 
-# 以上 stop|status|-d 操作是基于 wimc 实现，Workerman 官方不支持此种方式操作。  
-```
+```nginx
+location / {
+    proxy_pass http://127.0.0.1:2346;
+    proxy_http_version 1.1;
 
-其他 **workerman** 的参数可以在应用配置目录下的 **worker.php** 里面 **worker** 项配置。
-
-更多其他特性请阅读 **workerman** 文档 https://www.workerman.net/doc/workerman
-
-### 代理配置
-
-Nginx 代理代理配置参考如下：
-
-```
-location ^~ / {
-
-    # 执行代理访问真实服务器
-    proxy_pass http://127.0.0.1:2346/;
-    
-    # 将客户端的 Host 和 IP 信息一并转发到对应节点
     proxy_set_header Host $http_host;
     proxy_set_header X-Host $http_host;
     proxy_set_header X-Real-IP $remote_addr;
     proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
-    
-    # 将协议转发到对应节点，如果使用非 https 请改为 http
-    proxy_set_header X-scheme https;
-    
-    proxy_set_header REMOTE-HOST $remote_addr;
+    proxy_set_header X-Forwarded-Proto $scheme;
+    proxy_set_header X-Forwarded-Port $server_port;
+
     proxy_set_header Upgrade $http_upgrade;
     proxy_set_header Connection $connection_upgrade;
-    proxy_http_version 1.1;
-    
-    # proxy_hide_header Upgrade;
-    add_header X-Cache $upstream_cache_status;
 }
 ```
 
-### 版权说明
+## 运行建议
 
-**ThinkPlugsWorker** 遵循 **Apache2** 开源协议发布，并提供免费使用。
+- 生产环境建议关闭 ThinkAdmin 调试模式
+- 建议安装 `ext-event` 以获得更好的事件循环性能
+- 大文件下载优先走 Worker 直出，避免 PHP 进程内存暴涨
+- 长驻模式下请避免把请求级状态写到静态变量
 
-本项目包含的第三方源码和二进制文件之版权信息另行标注。
+## 许可证
 
-版权所有 Copyright © 2014-2025 by ThinkAdmin (https://thinkadmin.top) All rights reserved。
-
-更多细节参阅 [LICENSE.txt](license)
+`ThinkPlugsWorker` 基于 `Apache-2.0` 发布。

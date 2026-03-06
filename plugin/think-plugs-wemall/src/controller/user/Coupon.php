@@ -53,7 +53,7 @@ class Coupon extends Controller
             $query->like('code')->dateBetween('create_time');
             // 会员条件查询
             $db = PluginAccountUser::mQuery()->like('nickname|phone#user')->db();
-            if ($db->getOptions('where')) {
+            if (!empty($db->getOptions()['where'] ?? [])) {
                 $query->whereRaw("order_unid in {$db->field('id')->buildSql()}");
             }
         });

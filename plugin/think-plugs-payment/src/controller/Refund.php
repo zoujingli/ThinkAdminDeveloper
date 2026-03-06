@@ -66,7 +66,7 @@ class Refund extends Controller
         }, static function (QueryHelper $query) {
             $query->with(['user', 'record'])->like('order_no|order_name#orderinfo')->dateBetween('create_time');
             $db = PluginAccountUser::mQuery()->like('email|nickname|username|phone#userinfo')->db();
-            if ($db->getOptions('where')) {
+            if (!empty($db->getOptions()['where'] ?? [])) {
                 $query->whereRaw("unid in {$db->field('id')->buildSql()}");
             }
         });

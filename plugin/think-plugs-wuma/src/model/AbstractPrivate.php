@@ -21,6 +21,7 @@ declare(strict_types=1);
 namespace plugin\wuma\model;
 
 use think\admin\Model;
+use think\model\concern\SoftDelete;
 
 /**
  * 抽象基础模型.
@@ -28,6 +29,8 @@ use think\admin\Model;
  */
 abstract class AbstractPrivate extends Model
 {
+    use SoftDelete;
+
     /**
      * 格式化输出时间格式.
      * @param mixed $value

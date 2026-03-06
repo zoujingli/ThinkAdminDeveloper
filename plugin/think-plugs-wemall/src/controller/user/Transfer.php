@@ -84,7 +84,7 @@ class Transfer extends Controller
             $query->with(['user'])->equal('type,status')->dateBetween('create_time');
             // 用户条件搜索
             $db = PluginAccountUser::mQuery()->like('phone|username|nickname#user')->db();
-            if ($db->getOptions('where')) {
+            if (!empty($db->getOptions()['where'] ?? [])) {
                 $query->whereRaw("unid in {$db->field('id')->buildSql()}");
             }
         });

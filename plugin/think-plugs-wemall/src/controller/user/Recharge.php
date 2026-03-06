@@ -54,7 +54,7 @@ class Recharge extends Controller
         }, function (QueryHelper $query) {
             // 按会员资料搜索
             $user = PluginAccountUser::mQuery()->like('nickname|phone#user');
-            if ($user->getOptions('where')) {
+            if (!empty($user->getOptions()['where'] ?? [])) {
                 $query->whereRaw("unid in {$user->field('id')->buildSql()}");
             }
             // 搜索数据表字段搜索

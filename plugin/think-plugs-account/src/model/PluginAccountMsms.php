@@ -41,6 +41,8 @@ use plugin\account\service\Message;
  */
 class PluginAccountMsms extends Abs
 {
+    protected $deleteTime = false;
+
     /**
      * 格式化数据.
      */

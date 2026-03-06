@@ -1,6 +1,7 @@
 {
   "type": "think-admin-plugin",
   "name": "zoujingli/think-plugs-account",
+  "version": "8.0.x-dev",
   "homepage": "https://thinkadmin.top",
   "description": "Account Plugin for ThinkAdmin",
   "authors": [
@@ -10,15 +11,15 @@
     }
   ],
   "require": {
-    "php": ">7.1",
+    "php": "^8.0",
     "ext-gd": "*",
     "ext-curl": "*",
     "ext-json": "*",
     "zoujingli/think-install": "^1.0|@dev",
-    "zoujingli/think-library": "^6.1|@dev"
+    "zoujingli/think-library": "^8.0"
   },
   "require-dev": {
-    "phpunit/phpunit": "^7.0|*"
+    "phpunit/phpunit": "^9.5|^10.0"
   },
   "autoload": {
     "psr-4": {

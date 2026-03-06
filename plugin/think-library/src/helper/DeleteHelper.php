@@ -5,7 +5,7 @@ declare(strict_types=1);
  * +----------------------------------------------------------------------
  * | ThinkAdmin Plugin for ThinkAdmin
  * +----------------------------------------------------------------------
- * | 版权所有 2014~2026 ThinkAdmin [ thinkadmin.top ]
+ * | Copyright (c) 2014~2026 ThinkAdmin [ thinkadmin.top ]
  * +----------------------------------------------------------------------
  * | 官方网站: https://thinkadmin.top
  * +----------------------------------------------------------------------
@@ -13,8 +13,8 @@ declare(strict_types=1);
  * | 免责声明 ( https://thinkadmin.top/disclaimer )
  * | 会员特权 ( https://thinkadmin.top/vip-introduce )
  * +----------------------------------------------------------------------
- * | gitee 代码仓库：https://gitee.com/zoujingli/ThinkAdmin
- * | github 代码仓库：https://github.com/zoujingli/ThinkAdmin
+ * | gitee 代码仓库: https://gitee.com/zoujingli/ThinkAdmin
+ * | github 代码仓库: https://github.com/zoujingli/ThinkAdmin
  * +----------------------------------------------------------------------
  */
 
@@ -26,17 +26,15 @@ use think\db\exception\DbException;
 use think\Model;
 
 /**
- * 通用删除管理器.
+ * 通用删除管理器
  * @class DeleteHelper
  */
 class DeleteHelper extends Helper
 {
     /**
-     * 逻辑器初始化.
      * @param BaseQuery|Model|string $dbQuery
-     * @param string $field 操作数据主键
-     * @param mixed $where 额外更新条件
-     * @return bool|void
+     * @param string $field
+     * @param mixed $where
      * @throws DbException
      */
     public function init($dbQuery, string $field = '', $where = [])
@@ -45,7 +43,6 @@ class DeleteHelper extends Helper
         $field = $field ?: ($query->getPk() ?: 'id');
         $value = $this->app->request->post($field);
 
-        // 查询限制处理
         if (!empty($where)) {
             $query->where($where);
         }
@@ -53,51 +50,25 @@ class DeleteHelper extends Helper
             $query->whereIn($field, str2arr($value));
         }
 
-        // 前置回调处理
         if ($this->class->callback('_delete_filter', $query, $where) === false) {
             return false;
         }
 
-        // 阻止危险操作
-        if (!$query->getOptions('where')) {
+        if (empty($query->getOptions()['where'] ?? [])) {
             $this->class->error('数据删除失败！');
         }
 
-        // 组装执行数据
-        $data = [];
-        if (method_exists($query, 'getTableFields')) {
-            $fields = $query->getTableFields();
-            if (in_array('deleted', $fields)) {
-                $data['deleted'] = 1;
-            }
-            if (in_array('is_deleted', $fields)) {
-                $data['is_deleted'] = 1;
-            }
-            if (isset($data['deleted']) || isset($data['is_deleted'])) {
-                if (in_array('deleted_at', $fields)) {
-                    $data['deleted_at'] = date('Y-m-d H:i:s');
-                }
-                if (in_array('deleted_time', $fields)) {
-                    $data['deleted_time'] = time();
-                }
-            }
-        }
-
-        // 执行删除操作
-        if ($result = (empty($data) ? $query->delete() : $query->update($data)) !== false) {
-            // 模型自定义事件回调
+        if ($result = $query->delete() !== false) {
             $model = $query->getModel();
             if ($model instanceof \think\admin\Model) {
                 $model->onAdminDelete(strval($value));
             }
         }
 
-        // 结果回调处理
         if ($this->class->callback('_delete_result', $result) === false) {
             return $result;
         }
 
-        // 回复返回结果
         if ($result !== false) {
             $this->class->success('数据删除成功！', '');
         } else {

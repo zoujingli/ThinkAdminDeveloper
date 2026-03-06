@@ -50,8 +50,10 @@ abstract class Server
         'onError',
         'onBufferFull',
         'onBufferDrain',
+        'onWorkerStop',
         'onWorkerReload',
         'onWebSocketConnect',
+        'onWebSocketConnected',
     ];
 
     /**

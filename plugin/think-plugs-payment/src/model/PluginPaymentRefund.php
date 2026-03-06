@@ -65,6 +65,8 @@ use think\model\relation\HasOne;
  */
 class PluginPaymentRefund extends Abs
 {
+    protected $deleteTime = false;
+
     /**
      * 关联用户数据.
      */

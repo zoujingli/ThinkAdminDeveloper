@@ -1,5 +1,6 @@
 {
   "name": "zoujingli/think-library",
+  "version": "8.0.x-dev",
   "license": "MIT",
   "homepage": "https://thinkadmin.top",
   "description": "Library for ThinkAdmin",
@@ -17,7 +18,7 @@
     "issues": "https://gitee.com/zoujingli/ThinkLibrary/issues"
   },
   "require": {
-    "php": ">=7.1",
+    "php": "^8.0",
     "ext-gd": "*",
     "ext-curl": "*",
     "ext-json": "*",
@@ -25,10 +26,10 @@
     "ext-iconv": "*",
     "ext-openssl": "*",
     "ext-mbstring": "*",
-    "symfony/process": "^5.4|^6.0|*",
-    "topthink/think-orm": "^2.0|^3.0",
-    "topthink/framework": "^6.0|^8.0|*",
-    "topthink/think-migration": "^3.0|*"
+    "symfony/process": "^6.0|^7.0",
+    "topthink/think-orm": "^4.0",
+    "topthink/framework": "^8.1",
+    "topthink/think-migration": "^3.0"
   },
   "autoload": {
     "files": [
@@ -39,7 +40,7 @@
     }
   },
   "require-dev": {
-    "phpunit/phpunit": "*"
+    "phpunit/phpunit": "^9.5|^10.0"
   },
   "autoload-dev": {
     "psr-4": {

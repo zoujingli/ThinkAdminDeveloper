@@ -61,20 +61,20 @@ class Outer extends Controller
 
             // 仓库搜索查询
             $wdb = PluginWumaWarehouse::mQuery()->like('code|name#wname')->db();
-            if ($wdb->getOptions('where')) {
+            if (!empty($wdb->getOptions()['where'] ?? [])) {
                 $query->whereRaw("wcode in {$wdb->field('code')->buildSql()}");
             }
 
             // 产品搜索查询
             $gdb = PluginWemallGoods::mQuery()->like('code|name#gname')->db();
-            if ($gdb->getOptions('where')) {
+            if (!empty($gdb->getOptions()['where'] ?? [])) {
                 $idb = PluginWemallGoodsItem::mk()->whereRaw("gcode in {$gdb->field('code')->buildSql()}");
                 $query->whereRaw("ghash in {$idb->field('ghash')->buildSql()}");
             }
 
             // 代理搜索查询
             $db = PluginWumaSalesUser::mQuery()->like('phone|username#agent')->db();
-            if ($db->getOptions('where')) {
+            if (!empty($db->getOptions()['where'] ?? [])) {
                 $query->whereRaw("auid in {$db->field('id')->buildSql()}");
             }
 
@@ -108,17 +108,17 @@ class Outer extends Controller
             $odb = PluginWumaWarehouseOrder::mQuery()->equal('type#data_type')->db();
             // 仓库数据搜索
             $wdb = PluginWumaWarehouse::mQuery()->like('code|name#wname')->db();
-            if ($wdb->getOptions('where')) {
+            if (!empty($wdb->getOptions()['where'] ?? [])) {
                 $odb->whereRaw("wcode in {$wdb->field('code')->buildSql()}");
             }
             // 产品搜索查询
             $gdb = PluginWemallGoods::mQuery()->like('code|name#gname')->db();
-            if ($gdb->getOptions('where')) {
+            if (!empty($gdb->getOptions()['where'] ?? [])) {
                 $db2 = PluginWemallGoodsItem::mk()->whereRaw("gcode in {$gdb->field('code')->buildSql()}");
                 $query->whereRaw("ghash in {$db2->field('ghash')->buildSql()}");
             }
             // 整合条件到模型
-            if ($odb->getOptions('where')) {
+            if (!empty($odb->getOptions()['where'] ?? [])) {
                 $query->whereRaw("code in {$odb->field('code')->buildSql()}");
             }
             // 加载数据

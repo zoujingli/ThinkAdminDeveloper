@@ -74,19 +74,19 @@ class Order extends Controller
             // 发货信息搜索
             $db = PluginWemallOrderSender::mQuery()->dateBetween('express_time')
                 ->like('user_name|user_phone|region_prov|region_city|region_area|region_addr#address,express_code#delivery_express_code')->db();
-            if ($db->getOptions('where')) {
+            if (!empty($db->getOptions()['where'] ?? [])) {
                 $query->whereRaw("order_no in {$db->field('order_no')->buildSql()}");
             }
 
             // 用户搜索查询
             $db = PluginAccountUser::mQuery()->like('phone|nickname#user_keys')->db();
-            if ($db->getOptions('where')) {
+            if (!empty($db->getOptions()['where'] ?? [])) {
                 $query->whereRaw("unid in {$db->field('id')->buildSql()}");
             }
 
             // 代理搜索查询
             $db = PluginAccountUser::mQuery()->like('phone|nickname#from_keys')->db();
-            if ($db->getOptions('where')) {
+            if (!empty($db->getOptions()['where'] ?? [])) {
                 $query->whereRaw("puid1 in {$db->field('id')->buildSql()}");
             }
 

@@ -68,7 +68,7 @@ class Integral extends Controller
             $this->integralCount = PluginPaymentIntegral::mk()->where($map)->whereRaw('amount<0')->sum('amount');
         }, function (QueryHelper $query) {
             $db = PluginAccountUser::mQuery()->like('email|nickname|username|phone#user')->db();
-            if ($db->getOptions('where')) {
+            if (!empty($db->getOptions()['where'] ?? [])) {
                 $query->whereRaw("unid in {$db->field('id')->buildSql()}");
             }
             $query->with(['user'])->like('code,remark')->dateBetween('create_time');

@@ -52,7 +52,7 @@ class Stock extends Controller
         }, static function (QueryHelper $query) {
             // 仓库搜索查询
             $wdb = PluginWumaWarehouse::mQuery()->like('code|name#wname')->db();
-            if ($wdb->getOptions('where')) {
+            if (!empty($wdb->getOptions()['where'] ?? [])) {
                 $query->whereRaw("wcode in {$wdb->field('code')->buildSql()}");
             }
 
@@ -61,7 +61,7 @@ class Stock extends Controller
 
             // 产品搜索查询
             $gdb = PluginWemallGoods::mQuery()->like('code|name#gname')->db();
-            if ($gdb->getOptions('where')) {
+            if (!empty($gdb->getOptions()['where'] ?? [])) {
                 $db2 = PluginWemallGoodsItem::mk()->whereRaw("gcode in {$gdb->field('code')->buildSql()}");
                 $query->whereRaw("ghash in {$db2->field('ghash')->buildSql()}");
             }

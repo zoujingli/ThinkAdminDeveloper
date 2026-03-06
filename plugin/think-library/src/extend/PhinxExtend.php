@@ -27,6 +27,7 @@ use think\admin\Library;
 use think\admin\model\SystemMenu;
 use think\admin\service\ProcessService;
 use think\helper\Str;
+use think\migration\Migrator;
 
 /**
  * 数据库迁移扩展.
@@ -34,6 +35,19 @@ use think\helper\Str;
  */
 class PhinxExtend
 {
+    public static function table(Migrator $migrator, string $name, string $comment = ''): Table
+    {
+        return $migrator->table($name, static::tableOptions($comment));
+    }
+
+    public static function tableOptions(string $comment = ''): array
+    {
+        if (strtolower(Library::$sapp->db->connect()->getConfig('type', 'mysql')) === 'mysql') {
+            return ['engine' => 'InnoDB', 'collation' => 'utf8mb4_general_ci', 'comment' => $comment];
+        }
+
+        return [];
+    }
     /**
      * 批量写入菜单.
      * @param array $zdata 菜单数据
@@ -97,10 +111,12 @@ class PhinxExtend
             }
         }
         // 生成索引规则
-        foreach ($indexs as $field) {
-            if (empty($isExists) || !$table->hasIndex($field)) {
-                $table->addIndex($field, ['name' => self::genIndexName($table->getName(), $field)]);
+        foreach ($indexs as $spec) {
+            [$columns, $options] = self::parseIndexSpec($table->getName(), $spec);
+            if (empty($columns) || (!empty($isExists) && $table->hasIndex($columns))) {
+                continue;
             }
+            $table->addIndex($columns, $options);
         }
         $isExists ? $table->update() : $table->create();
         if ($table->hasColumn('id')) {
@@ -219,14 +235,42 @@ class PhinxExtend
      * @param string $name 字段名
      * @return string 生成的索引名称
      */
-    private static function genIndexName(string $table, string $name): string
+    private static function genIndexName(string $table, string|array $name, bool $unique = false): string
     {
         $getInitials = function (string $str): string {
             return implode('', array_map(function ($part) {
                 return $part[0] ?? '';
             }, explode('_', $str)));
         };
-        return sprintf('idx_%s_%s_%s', substr(md5($table), -4), $getInitials($table), $name);
+        $suffix = is_array($name) ? implode('_', $name) : $name;
+        $prefix = $unique ? 'uni' : 'idx';
+        return sprintf('%s_%s_%s_%s', $prefix, substr(md5($table), -4), $getInitials($table), $suffix);
+    }
+
+    /**
+     * @return array{0:array<int, string>,1:array<string, mixed>}
+     */
+    private static function parseIndexSpec(string $table, mixed $spec): array
+    {
+        if (is_string($spec)) {
+            $columns = [$spec];
+            return [$columns, ['name' => self::genIndexName($table, $columns)]];
+        }
+
+        if (is_array($spec) && array_is_list($spec)) {
+            $columns = array_values(array_filter($spec, 'is_string'));
+            return [$columns, ['name' => self::genIndexName($table, $columns)]];
+        }
+
+        if (is_array($spec)) {
+            $columns = array_values(array_filter((array)($spec['columns'] ?? []), 'is_string'));
+            $unique = !empty($spec['unique']);
+            $options = array_diff_key($spec, ['columns' => true]);
+            $options['name'] = $options['name'] ?? self::genIndexName($table, $columns, $unique);
+            return [$columns, $options];
+        }
+
+        return [[], []];
     }
 
     /**

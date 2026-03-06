@@ -25,8 +25,7 @@ use think\exception\HttpResponseException;
 use think\Response;
 
 /**
- * Think File Response.
- * @class ThinkResponseFile
+ * Worker-optimized file response.
  */
 class ThinkResponseFile extends Response
 {
@@ -46,116 +45,107 @@ class ThinkResponseFile extends Response
     }
 
     /**
-     * 发送数据到客户端.
-     * @throws \InvalidArgumentException
+     * Throw the response back to ThinkPHP so Worker can marshal it.
      */
     public function send(): void
     {
-        $this->getContent();
+        $this->prepareDownload();
         throw new HttpResponseException($this);
     }
 
-    /**
-     * 设置是否为内容 必须配合mimeType方法使用.
-     * @return $this
-     */
     public function isContent(bool $content = true)
     {
         $this->isContent = $content;
         return $this;
     }
 
-    /**
-     * 设置有效期
-     * @param int $expire 有效期
-     * @return $this
-     */
     public function expire(int $expire)
     {
         $this->expire = $expire;
         return $this;
     }
 
-    /**
-     * 设置文件类型.
-     * @return $this
-     */
     public function mimeType(string $mimeType)
     {
         $this->mimeType = $mimeType;
         return $this;
     }
 
-    /**
-     * 设置文件强制下载.
-     * @param bool $force 强制浏览器下载
-     * @return $this
-     */
     public function force(bool $force)
     {
         $this->force = $force;
         return $this;
     }
 
-    /**
-     * 设置下载文件的显示名称.
-     * @param string $filename 文件名
-     * @param bool $extension 后缀自动识别
-     * @return $this
-     */
     public function name(string $filename, bool $extension = true)
     {
         $this->name = $filename;
-        if ($extension && !strpos($filename, '.')) {
-            $this->name .= '.' . pathinfo($this->data, PATHINFO_EXTENSION);
+        if ($extension && !str_contains($filename, '.')) {
+            $this->name .= '.' . pathinfo((string)$this->data, PATHINFO_EXTENSION);
         }
+
+        return $this;
+    }
+
+    public function isFileResponse(): bool
+    {
+        return !$this->isContent && is_string($this->data) && is_file($this->data);
+    }
+
+    public function getFilePath(): string
+    {
+        return (string)$this->data;
+    }
+
+    public function prepareDownload(): self
+    {
+        $data = $this->data;
+        if (!$this->isContent && !is_file($data)) {
+            throw new Exception('file not exists:' . $data);
+        }
+
+        $name = $this->name ?: (!$this->isContent ? pathinfo($data, PATHINFO_BASENAME) : '');
+        $name = str_replace(['"', "\r", "\n"], '', $name);
+        $encoded = rawurlencode($name);
+
+        if ($this->isContent) {
+            $mimeType = $this->mimeType;
+            $size = strlen((string)$data);
+            $lastModified = time();
+        } else {
+            $mimeType = $this->getMimeType((string)$data);
+            $size = filesize((string)$data);
+            $lastModified = filemtime((string)$data);
+        }
+
+        $this->header['Pragma'] = 'public';
+        $this->header['Content-Type'] = $mimeType ?: 'application/octet-stream';
+        $this->header['Cache-control'] = 'max-age=' . $this->expire;
+        $this->header['Content-Disposition'] = ($this->force ? 'attachment; ' : '') . 'filename="' . $encoded . '"; filename*=UTF-8\'\'' . $encoded;
+        $this->header['Content-Length'] = $size;
+        $this->header['Content-Transfer-Encoding'] = 'binary';
+        $this->header['Expires'] = gmdate('D, d M Y H:i:s', time() + $this->expire) . ' GMT';
+        $this->lastModified(gmdate('D, d M Y H:i:s', $lastModified) . ' GMT');
+
         return $this;
     }
 
     /**
-     * 处理数据.
-     * @param mixed $data 要处理的数据
-     * @return mixed
-     * @throws \Exception
+     * Render body content only when Worker cannot stream a file directly.
+     * @param mixed $data
      */
     protected function output($data)
     {
-        if (!$this->isContent && !is_file($data)) {
-            throw new Exception('file not exists:' . $data);
-        }
-        if (!empty($this->name)) {
-            $name = $this->name;
-        } else {
-            $name = !$this->isContent ? pathinfo($data, PATHINFO_BASENAME) : '';
-        }
-        if ($this->isContent) {
-            // $size = strlen($data);
-            $mimeType = $this->mimeType;
-        } else {
-            // $size = filesize($data);
-            $mimeType = $this->getMimeType($data);
-        }
-        $this->header['Pragma'] = 'public';
-        $this->header['Content-Type'] = $mimeType ?: 'application/octet-stream';
-        $this->header['Cache-control'] = 'max-age=' . $this->expire;
-        $this->header['Content-Disposition'] = ($this->force ? 'attachment; ' : '') . 'filename="' . $name . '"';
-        // $this->header['Content-Length'] = $size;
-        // $this->header['Transfer-Encoding'] = 'binary';
-        $this->header['Content-Transfer-Encoding'] = 'binary';
-        $this->header['Expires'] = gmdate('D, d M Y H:i:s', time() + $this->expire) . ' GMT';
-        $this->lastModified(gmdate('D, d M Y H:i:s', time()) . ' GMT');
+        $this->prepareDownload();
         return $this->isContent ? $data : file_get_contents($data);
     }
 
-    /**
-     * 获取文件类型信息.
-     * @param string $filename 文件名
-     */
     protected function getMimeType(string $filename): string
     {
         if (!empty($this->mimeType)) {
             return $this->mimeType;
         }
+
         $finfo = finfo_open(FILEINFO_MIME_TYPE);
         return finfo_file($finfo, $filename);
     }

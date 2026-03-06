@@ -5,16 +5,7 @@ declare(strict_types=1);
  * +----------------------------------------------------------------------
  * | ThinkAdmin Plugin for ThinkAdmin
  * +----------------------------------------------------------------------
- * | 版权所有 2014~2026 ThinkAdmin [ thinkadmin.top ]
- * +----------------------------------------------------------------------
- * | 官方网站: https://thinkadmin.top
- * +----------------------------------------------------------------------
- * | 开源协议 ( https://mit-license.org )
- * | 免责声明 ( https://thinkadmin.top/disclaimer )
- * | 会员特权 ( https://thinkadmin.top/vip-introduce )
- * +----------------------------------------------------------------------
- * | gitee 代码仓库：https://gitee.com/zoujingli/ThinkAdmin
- * | github 代码仓库：https://github.com/zoujingli/ThinkAdmin
+ * | Copyright 2014~2026 ThinkAdmin [ thinkadmin.top ]
  * +----------------------------------------------------------------------
  */
 
@@ -25,96 +16,174 @@ use Workerman\Connection\TcpConnection;
 use Workerman\Protocols\Http\Request as WorkerRequest;
 use Workerman\Worker;
 
+use const DIRECTORY_SEPARATOR;
+
 /**
- * 自定义 Request.
- * @class ThinkRequest
+ * ThinkPHP request bridge for Workerman.
  */
 class ThinkRequest extends Request
 {
     /**
-     * 初始化属性.
+     * Reset request state before reusing the same instance.
      */
-    public function reset()
+    public function reset(): void
     {
-        static $props = [];
-        if (empty($props)) {
+        static $props = null;
+        if ($props === null) {
             $props = (new \ReflectionClass(Request::class))->getDefaultProperties();
         }
-        foreach ($props as $k => $v) {
-            isset($this->{$k}) && $this->{$k} = $v;
+
+        foreach ($props as $key => $value) {
+            $this->{$key} = $value;
         }
     }
 
     /**
-     * WorkermanRequest 转换为 ThinkRequest 对象
+     * Convert a Workerman request into a ThinkPHP request.
      */
     public function withWorkerRequest(TcpConnection $connection, WorkerRequest $request): ThinkRequest
     {
-        // 初始化变量
         $this->reset();
 
-        // 赋值新的变量
+        $headers = $request->header();
+        $scheme = $this->resolveScheme($headers, $connection);
+        $host = $this->resolveHost($request, $headers);
+        $port = $this->resolvePort($host, $headers, $connection, $scheme);
+
         $this->get = $request->get();
-        $this->file = $request->file() ?? [];
         $this->post = $request->post();
+        $this->file = $request->file() ?? [];
         $this->cookie = $request->cookie();
-        $this->header = $request->header();
-        $this->method = $request->method();
+        $this->header = $headers;
+        $this->method = strtoupper($request->method());
         $this->request = $this->post + $this->get;
-        $this->pathinfo = ltrim($request->path(), '\/');
+        $this->pathinfo = ltrim($request->path(), '/\\');
+        $this->realIP = $this->resolveRealIp($headers, $connection);
+        $this->host = $this->normalizeHost($host, $port, $scheme);
 
-        // 请求真实IP
-        $this->realIP = $this->header['x-real-ip'] ?? ($this->header['x-forwarded-for'] ?? $connection->getRemoteIp());
+        $server = $this->buildServer($request, $connection, $scheme, $port);
 
-        // 请求服务器的域名处理
-        $this->host = $this->header['x-host'] ?? ($this->header['x-requested-host'] ?? ($this->header['remote-host'] ?? ($this->header['host'] ?? $request->host())));
-
-        // 请求服务器的端口处理
-        if (!is_numeric($port = $this->header['x-port'] ?? ($this->header['x-requested-port'] ?? ($this->header['port'] ?? null)))) {
-            $port = strpos($this->host, ':') !== false ? explode(':', $this->host)[1] : $connection->getRemotePort();
-        }
-
-        // 如果是正常端口，不需要在 host 表示端口
-        if (strpos($this->host, ':') !== false && in_array($port, [80, 443])) {
-            $this->host = strstr($this->host, ':', true);
-        }
-
-        // 替换全局变量
-        $_GET = $request->get();
-        $_POST = $request->post();
-        $_REQUEST = $request->post() + $request->get() + $request->cookie();
-        $_SERVER['REQUEST_METHOD'] = strtoupper($request->method());
+        $_GET = $this->get;
+        $_POST = $this->post;
+        $_COOKIE = $this->cookie;
+        $_FILES = $this->file;
+        $_REQUEST = $this->post + $this->get + $this->cookie;
+        $_SERVER = $server;
         $GLOBALS['HTTP_RAW_POST_DATA'] = $request->rawBody();
 
-        // 服务变量替换
-        return $this->withInput($request->rawBody())->withServer(array_filter([
-            'HTTP_HOST' => $this->host,
-            'PATH_INFO' => $this->pathinfo,
+        return $this
+            ->withInput($request->rawBody())
+            ->withHeader($headers)
+            ->withGet($this->get)
+            ->withPost($this->post)
+            ->withCookie($this->cookie)
+            ->withFiles($this->file)
+            ->withServer($server);
+    }
+
+    private function resolveRealIp(array $headers, TcpConnection $connection): string
+    {
+        if (!empty($headers['x-real-ip'])) {
+            return trim((string)$headers['x-real-ip']);
+        }
+        if (!empty($headers['x-forwarded-for'])) {
+            return trim((string)strtok((string)$headers['x-forwarded-for'], ','));
+        }
+
+        return $connection->getRemoteIp();
+    }
+
+    private function resolveHost(WorkerRequest $request, array $headers): string
+    {
+        return (string)($headers['x-host']
+            ?? $headers['x-requested-host']
+            ?? $headers['x-forwarded-host']
+            ?? $headers['remote-host']
+            ?? $headers['host']
+            ?? $request->host());
+    }
+
+    private function resolveScheme(array $headers, TcpConnection $connection): string
+    {
+        $scheme = strtolower((string)($headers['x-forwarded-proto'] ?? $headers['x-scheme'] ?? ''));
+        if (in_array($scheme, ['http', 'https'], true)) {
+            return $scheme;
+        }
+
+        return $connection->getLocalPort() === 443 ? 'https' : 'http';
+    }
+
+    private function resolvePort(string $host, array $headers, TcpConnection $connection, string $scheme): int
+    {
+        $port = $headers['x-forwarded-port'] ?? $headers['x-requested-port'] ?? $headers['x-port'] ?? null;
+        if (is_numeric($port)) {
+            return (int)$port;
+        }
+
+        if (str_contains($host, ':')) {
+            return (int)substr((string)strrchr($host, ':'), 1);
+        }
+
+        if ($connection->getLocalPort() > 0) {
+            return $connection->getLocalPort();
+        }
+
+        return $scheme === 'https' ? 443 : 80;
+    }
+
+    private function normalizeHost(string $host, int $port, string $scheme): string
+    {
+        $defaultPort = $scheme === 'https' ? 443 : 80;
+        if ($port === $defaultPort && str_contains($host, ':')) {
+            return (string)strstr($host, ':', true);
+        }
+
+        return $host;
+    }
+
+    private function buildServer(WorkerRequest $request, TcpConnection $connection, string $scheme, int $port): array
+    {
+        $root = dirname(__DIR__, 4);
+        $pathInfo = '/' . ltrim($this->pathinfo, '/');
+        $server = [
+            'DOCUMENT_ROOT' => $root . DIRECTORY_SEPARATOR . 'public',
+            'SCRIPT_NAME' => '/index.php',
+            'SCRIPT_FILENAME' => $root . DIRECTORY_SEPARATOR . 'public' . DIRECTORY_SEPARATOR . 'index.php',
+            'PHP_SELF' => '/index.php',
+            'PATH_INFO' => $pathInfo === '/' ? '/' : $pathInfo,
             'REQUEST_URI' => $request->uri(),
-            'SERVER_NAME' => $request->host(true),
+            'QUERY_STRING' => $request->queryString(),
+            'REQUEST_METHOD' => $this->method,
+            'REQUEST_SCHEME' => $scheme,
+            'SERVER_PROTOCOL' => 'HTTP/' . $request->protocolVersion(),
+            'SERVER_SOFTWARE' => 'Workerman/' . Worker::VERSION,
+            'SERVER_NAME' => $request->host(true) ?: $this->host,
             'SERVER_ADDR' => $connection->getLocalIp(),
             'SERVER_PORT' => $port,
             'REMOTE_ADDR' => $this->realIP,
             'REMOTE_PORT' => $connection->getRemotePort(),
-            'QUERY_STRING' => $request->queryString(),
-            'REQUEST_METHOD' => $request->method(),
-            'REQUEST_SCHEME' => $this->header['x-scheme'] ?? null,
-            'HTTP_X_PJAX' => $this->header['x-pjax'] ?? null,
-            'HTTP_X_FORWARDED_HOST' => $this->header['x-forwarded-host'] ?? null,
-            'HTTP_X_REQUESTED_WITH' => $this->header['x-forwarded-with'] ?? null,
-            'HTTP_X_FORWARDED_PORT' => $this->header['x-requested-port'] ?? null,
-            'HTTP_X_FORWARDED_PROTO' => $this->header['x-forwarded-proto'] ?? null,
-            'HTTP_ACCEPT' => $this->header['accept'] ?? null,
-            'HTTP_ACCEPT_ENCODING' => $this->header['accept-encoding'] ?? null,
-            'HTTP_ACCEPT_LANGUAGE' => $this->header['accept-language'] ?? null,
-            'HTTP_USER_AGENT' => $this->header['user-agent'] ?? null,
-            'HTTP_COOKIE' => $this->header['cookie'] ?? null,
-            'HTTP_CACHE_CONTROL' => $this->header['cache-control'] ?? null,
-            'HTTP_PRAGMA' => $this->header['pragma'] ?? null,
-            'SERVER_PROTOCOL' => $this->header['x-scheme'] ?? ($port === 443 ? 'https' : 'http'),
-            'SERVER_SOFTWARE' => 'Server/' . Worker::VERSION,
+            'HTTP_HOST' => $this->host,
             'REQUEST_TIME' => time(),
             'REQUEST_TIME_FLOAT' => microtime(true),
-        ]));
+        ];
+
+        if ($scheme === 'https') {
+            $server['HTTPS'] = 'on';
+        }
+
+        foreach ($this->header as $name => $value) {
+            $key = strtoupper(str_replace('-', '_', $name));
+            if ($key === 'CONTENT_TYPE') {
+                $server['CONTENT_TYPE'] = $value;
+                continue;
+            }
+            if ($key === 'CONTENT_LENGTH') {
+                $server['CONTENT_LENGTH'] = $value;
+                continue;
+            }
+            $server["HTTP_{$key}"] = $value;
+        }
+
+        return array_filter($server, static fn ($value) => $value !== null && $value !== '');
     }
 }

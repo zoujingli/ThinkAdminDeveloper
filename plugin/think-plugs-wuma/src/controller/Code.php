@@ -65,7 +65,7 @@ class Code extends Controller
             foreach (['minValue#min', 'boxValue#max,mid', 'encValue#min', 'numValue#min'] as $rule) {
                 [$alias, $types] = explode('#', $rule);
                 $db = PluginWumaCodeRuleRange::mQuery($this->get)->valueRange("range_start:range_after#{$alias}")->field('batch')->db();
-                if ($db->getOptions('where')) {
+                if (!empty($db->getOptions()['where'] ?? [])) {
                     $query->whereRaw("batch in {$db->whereIn('code_type', str2arr($types))->buildSql()}");
                 }
             }

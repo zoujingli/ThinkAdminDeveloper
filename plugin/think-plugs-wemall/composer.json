@@ -1,6 +1,7 @@
 {
   "type": "think-admin-plugin",
   "name": "zoujingli/think-plugs-wemall",
+  "version": "8.0.x-dev",
   "homepage": "https://thinkadmin.top",
   "description": "WeMall Plugin for ThinkAdmin",
   "authors": [
@@ -10,10 +11,10 @@
     }
   ],
   "require": {
-    "php": ">7.1",
+    "php": "^8.0",
     "ext-json": "*",
-    "zoujingli/think-plugs-account": "^1.0|@dev",
-    "zoujingli/think-plugs-payment": "^1.0|@dev"
+    "zoujingli/think-plugs-account": "^8.0",
+    "zoujingli/think-plugs-payment": "^8.0"
   },
   "autoload": {
     "files": [

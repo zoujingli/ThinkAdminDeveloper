@@ -80,6 +80,8 @@ use think\model\relation\HasOne;
  */
 class PluginPaymentRecord extends Abs
 {
+    protected $deleteTime = false;
+
     /**
      * 关联用户数据.
      */

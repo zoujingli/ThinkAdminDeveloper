@@ -74,7 +74,7 @@ class Sender extends Controller
 
             // 用户搜索查询
             $db = PluginAccountUser::mQuery()->like('phone|nickname#user_keys')->db();
-            if ($db->getOptions('where')) {
+            if (!empty($db->getOptions()['where'] ?? [])) {
                 $query->whereRaw("unid in {$db->field('id')->buildSql()}");
             }
 

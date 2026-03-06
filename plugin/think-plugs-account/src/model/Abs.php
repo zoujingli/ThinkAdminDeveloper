@@ -21,6 +21,7 @@ declare(strict_types=1);
 namespace plugin\account\model;
 
 use think\admin\Model;
+use think\model\concern\SoftDelete;
 
 /**
  * 模型抽象类.
@@ -28,6 +29,8 @@ use think\admin\Model;
  */
 abstract class Abs extends Model
 {
+    use SoftDelete;
+
     /**
      * 格式化输出时间.
      * @param mixed $value

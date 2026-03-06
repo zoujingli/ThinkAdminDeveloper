@@ -54,20 +54,20 @@ class Order extends Controller
 
             // 代理搜索查询
             $db = PluginWumaSalesUser::mQuery()->like('phone|username#agent')->db();
-            if ($db->getOptions('where')) {
+            if (!empty($db->getOptions()['where'] ?? [])) {
                 $query->whereRaw("auid in {$db->field('id')->buildSql()}");
             }
 
             // 产品搜索查询
             $gdb = PluginWemallGoods::mQuery()->like('code|name#gname')->db();
-            if ($gdb->getOptions('where')) {
+            if (!empty($gdb->getOptions()['where'] ?? [])) {
                 $db2 = PluginWemallGoodsItem::mk()->whereRaw("gcode in {$gdb->field('code')->buildSql()}");
                 $query->whereRaw("ghash in {$db2->field('ghash')->buildSql()}");
             }
 
             // 代理搜索查询
             $db = PluginWumaSalesUser::mQuery()->like('phone|username#fromer')->db();
-            if ($db->getOptions('where')) {
+            if (!empty($db->getOptions()['where'] ?? [])) {
                 $query->whereRaw("xuid in {$db->field('id')->buildSql()}");
             }
         });

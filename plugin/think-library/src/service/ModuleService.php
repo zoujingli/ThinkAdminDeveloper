@@ -72,15 +72,15 @@ class ModuleService extends Service
      */
     public static function getModules(array $data = []): array
     {
-        $path = Library::$sapp->getBasePath();
-        foreach (scandir($path) as $item) {
-            if ($item[0] !== '.') {
-                if (is_dir($path . $item)) {
-                    $data[] = $item;
-                }
-            }
-        }
-        return $data;
+        return array_values(array_unique(array_merge($data, array_keys(AppService::local()))));
+    }
+
+    /**
+     * 获取全部应用。
+     */
+    public static function getApps(array $data = []): array
+    {
+        return array_values(array_unique(array_merge($data, array_keys(AppService::all()))));
     }
 
     /**

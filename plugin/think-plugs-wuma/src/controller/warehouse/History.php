@@ -50,7 +50,7 @@ class History extends Controller
         }, function (QueryHelper $query) {
             // 操作单号搜索
             $db = PluginWumaWarehouseOrderData::mQuery()->like('code')->dateBetween('create_time')->db();
-            if ($db->getOptions('where')) {
+            if (!empty($db->getOptions()['where'] ?? [])) {
                 $query->whereRaw("ddid in {$db->field('id')->buildSql()}");
             }
 

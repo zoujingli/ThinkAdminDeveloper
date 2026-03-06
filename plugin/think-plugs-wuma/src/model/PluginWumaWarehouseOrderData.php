@@ -1,20 +1,20 @@
-<?php
+﻿<?php
 
 declare(strict_types=1);
 /**
  * +----------------------------------------------------------------------
  * | ThinkAdmin Plugin for ThinkAdmin
  * +----------------------------------------------------------------------
- * | 版权所有 2014~2026 ThinkAdmin [ thinkadmin.top ]
+ * | 鐗堟潈鎵€鏈?2014~2026 ThinkAdmin [ thinkadmin.top ]
  * +----------------------------------------------------------------------
- * | 官方网站: https://thinkadmin.top
+ * | 瀹樻柟缃戠珯: https://thinkadmin.top
  * +----------------------------------------------------------------------
- * | 开源协议 ( https://mit-license.org )
- * | 免责声明 ( https://thinkadmin.top/disclaimer )
- * | 会员特权 ( https://thinkadmin.top/vip-introduce )
+ * | 寮€婧愬崗璁?( https://mit-license.org )
+ * | 鍏嶈矗澹版槑 ( https://thinkadmin.top/disclaimer )
+ * | 浼氬憳鐗规潈 ( https://thinkadmin.top/vip-introduce )
  * +----------------------------------------------------------------------
- * | gitee 代码仓库：https://gitee.com/zoujingli/ThinkAdmin
- * | github 代码仓库：https://github.com/zoujingli/ThinkAdmin
+ * | gitee 浠ｇ爜浠撳簱锛歨ttps://gitee.com/zoujingli/ThinkAdmin
+ * | github 浠ｇ爜浠撳簱锛歨ttps://github.com/zoujingli/ThinkAdmin
  * +----------------------------------------------------------------------
  */
 
@@ -23,22 +23,24 @@ namespace plugin\wuma\model;
 use think\model\relation\HasOne;
 
 /**
- * 仓库订单数据模型.
+ * 浠撳簱璁㈠崟鏁版嵁妯″瀷.
  *
  * @property int $id
- * @property int $mode 操作方式(1扫码操作,2虚拟操作)
- * @property int $number 标签总数
- * @property int $status 记录状态(0无效,1有效)
- * @property int $type 操作类型(1订单入库,2直接入库,3调货入库,4订单出库,5直接出库,6调货出库,7关联出库,8直接退货)
- * @property string $code 操作单号
- * @property string $create_time 创建时间
+ * @property int $mode 鎿嶄綔鏂瑰紡(1鎵爜鎿嶄綔,2铏氭嫙鎿嶄綔)
+ * @property int $number 鏍囩鎬绘暟
+ * @property int $status 璁板綍鐘舵€?0鏃犳晥,1鏈夋晥)
+ * @property int $type 鎿嶄綔绫诲瀷(1璁㈠崟鍏ュ簱,2鐩存帴鍏ュ簱,3璋冭揣鍏ュ簱,4璁㈠崟鍑哄簱,5鐩存帴鍑哄簱,6璋冭揣鍑哄簱,7鍏宠仈鍑哄簱,8鐩存帴閫€璐?
+ * @property string $code 鎿嶄綔鍗曞彿
+ * @property string $create_time 鍒涘缓鏃堕棿
  * @property PluginWumaWarehouseOrder $main
  * @class PluginWumaWarehouseOrderData
  */
 class PluginWumaWarehouseOrderData extends AbstractPrivate
 {
+    protected $deleteTime = false;
+
     /**
-     * 关联订单数据.
+     * 鍏宠仈璁㈠崟鏁版嵁.
      */
     public function main(): HasOne
     {
@@ -46,7 +48,7 @@ class PluginWumaWarehouseOrderData extends AbstractPrivate
     }
 
     /**
-     * 出库搜索器.
+     * 鍑哄簱鎼滅储鍣?
      * @param mixed $query
      */
     public function searchOuterAttr($query)
@@ -55,7 +57,7 @@ class PluginWumaWarehouseOrderData extends AbstractPrivate
     }
 
     /**
-     * 入库搜索器.
+     * 鍏ュ簱鎼滅储鍣?
      * @param mixed $query
      */
     public function searchInterAttr($query)
@@ -64,7 +66,7 @@ class PluginWumaWarehouseOrderData extends AbstractPrivate
     }
 
     /**
-     * 退货搜索器.
+     * 閫€璐ф悳绱㈠櫒.
      * @param mixed $query
      */
     public function searchReturnAttr($query)

@@ -23,13 +23,13 @@ namespace think\admin\service;
 use think\admin\Exception;
 use think\admin\extend\ToolsExtend;
 use think\admin\Library;
-use think\admin\Plugin;
 use think\admin\Service;
 
 /**
  * 应用节点服务管理.
  * @class NodeService
  * @method static array getModules() 获取应用列表
+ * @method static array getApps() 获取全部应用
  * @method static array scanDirectory() 扫描目录列表
  */
 class NodeService extends Service
@@ -56,6 +56,9 @@ class NodeService extends Service
         }
         if ($name === 'getModules') {
             return ModuleService::getModules(...$arguments);
+        }
+        if ($name === 'getApps') {
+            return ModuleService::getApps(...$arguments);
         }
         throw new Exception("method not exists: NodeService::{$name}()");
     }
@@ -143,25 +146,17 @@ class NodeService extends Service
         // 排除内置方法，禁止访问内置方法及忽略的应用模块配置
         $ignoreMethods = get_class_methods('\think\admin\Controller');
         $ignoreAppNames = Library::$sapp->config->get('app.rbac_ignore', []);
-        // 扫描所有代码控制器节点，更新节点缓存
-        foreach (ToolsExtend::scan(Library::$sapp->getBasePath(), null, 'php') as $name) {
-            if (preg_match('|^(\w+)/controller/(.+)\.php$|i', strtr($name, '\\', '/'), $matches)) {
-                [, $appName, $className] = $matches;
-                if (in_array($appName, $ignoreAppNames)) {
-                    continue;
-                }
-                static::_parseClass($appName, self::space($appName), $className, $ignoreMethods, $data);
-            }
-        }
-        // 扫描所有插件代码
-        foreach (Plugin::get() as $appName => $plugin) {
+        // 扫描全部应用控制器节点
+        foreach (AppService::all() as $appName => $app) {
             if (in_array($appName, $ignoreAppNames)) {
                 continue;
             }
-            [$appPath, $appSpace] = [$plugin['path'], $plugin['space']];
-            foreach (ToolsExtend::scan($appPath, null, 'php') as $name) {
+            if (empty($app['path']) || !is_dir($app['path'])) {
+                continue;
+            }
+            foreach (ToolsExtend::scan($app['path'], null, 'php') as $name) {
                 if (preg_match('|^.*?controller/(.+)\.php$|i', strtr($name, '\\', '/'), $matches)) {
-                    static::_parseClass($appName, $appSpace, $matches[1], $ignoreMethods, $data);
+                    static::_parseClass($appName, $app['space'], $matches[1], $ignoreMethods, $data);
                 }
             }
         }

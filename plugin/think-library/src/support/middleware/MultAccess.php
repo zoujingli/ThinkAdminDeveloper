@@ -22,7 +22,7 @@ namespace think\admin\support\middleware;
 
 use think\admin\extend\ToolsExtend;
 use think\admin\Library;
-use think\admin\Plugin;
+use think\admin\service\AppService;
 use think\admin\service\NodeService;
 use think\admin\service\SystemService;
 use think\App;
@@ -82,6 +82,7 @@ class MultAccess
     private function parseMultiApp(): bool
     {
         $defaultApp = $this->app->config->get('route.default_app') ?: 'index';
+        $apps = AppService::get();
         [$script, $pathinfo] = [$this->scriptName(), $this->app->request->pathinfo()];
         if ($script && !in_array($script, ['index', 'router', 'think'])) {
             $this->app->request->setPathinfo(preg_replace("#^{$script}\\.php(/|\\.|$)#i", '', $pathinfo) ?: '/');
@@ -101,7 +102,6 @@ class MultAccess
             $name = strstr($name, '.', true);
         }
         // 应用绑定与插件处理
-        $addons = Plugin::get();
         $appmap = $this->app->config->get('app.app_map', []);
         if (isset($appmap[$name])) {
             $appName = $appmap[$name] instanceof \Closure ? (call_user_func_array($appmap[$name], [$this->app]) ?: $name) : $appmap[$name];
@@ -111,13 +111,13 @@ class MultAccess
             $appName = $appmap['*'];
         } else {
             $appName = $name ?: $defaultApp;
-            if (!isset($addons[$appName]) && !is_dir($this->app->getBasePath() . $appName)) {
+            if (!isset($apps[$appName])) {
                 return $this->app->config->get('app.app_express', false) && $this->setMultiApp($defaultApp, false);
             }
         }
-        // 插件绑定处理
-        if (isset($addons[$appName])) {
-            [$this->appPath, $this->appSpace] = [$addons[$appName]['path'], $addons[$appName]['space']];
+        // 应用绑定处理
+        if (isset($apps[$appName])) {
+            [$this->appPath, $this->appSpace] = [$apps[$appName]['path'], $apps[$appName]['space']];
         }
         if ($name) {
             $this->app->request->setRoot('/' . $name);
@@ -145,7 +145,10 @@ class MultAccess
     private function setMultiApp(string $appName, bool $appBind): bool
     {
         sysvar('CurrentPluginCode', $appName);
-        if (is_dir($this->appPath = $this->appPath ?: syspath("app/{$appName}/"))) {
+        if (empty($this->appPath) && ($app = AppService::get($appName))) {
+            [$this->appPath, $this->appSpace] = [$app['path'], $app['space']];
+        }
+        if (is_dir($this->appPath)) {
             // 设置多应用模式
             $this->app->setNamespace($this->appSpace ?: NodeService::space($appName))->setAppPath($this->appPath);
             $this->app->http->setBind($appBind)->name($appName)->path($this->appPath)->setRoutePath($this->appPath . 'route' . DIRECTORY_SEPARATOR);
@@ -171,13 +174,15 @@ class MultAccess
             Library::load($file);
         }
         // 加载应用配置文件
-        ToolsExtend::find($appPath . 'config', 1, function (\SplFileInfo $info) use ($ext) {
+        ToolsExtend::find($appPath . 'config', 1, function (\SplFileInfo $info) use ($ext, &$fmaps) {
             if ($info->isFile() && strtolower(".{$info->getExtension()}") === $ext) {
-                $this->app->config->load($info->getPathname(), $info->getBasename($ext));
+                $name = $info->getBasename($ext);
+                $fmaps[] = $name;
+                $this->app->config->load($info->getPathname(), $name);
             }
         });
         // 加载应用路由配置
-        if (in_array('route', $fmaps) && method_exists($this->app->route, 'reload')) {
+        if ((in_array('route', $fmaps, true) || is_dir($appPath . 'route')) && method_exists($this->app->route, 'reload')) {
             $this->app->route->reload();
         }
         // 加载应用映射配置

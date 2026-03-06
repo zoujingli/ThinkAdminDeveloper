@@ -22,25 +22,28 @@ namespace plugin\worker\support;
 
 use think\App;
 use think\exception\Handle;
+use think\Response;
 use Workerman\Connection\TcpConnection;
 use Workerman\Protocols\Http\Request as WorkerRequest;
 use Workerman\Protocols\Http\Response as WorkerResponse;
 
 /**
- * 自定义基础类.
- * @class ThinkApp
+ * Worker-aware application wrapper.
+ *
  * @property ThinkCookie $cookie
  * @property ThinkRequest $request
+ * @property ThinkHttp $http
  */
 class ThinkApp extends App
 {
+    protected int $requests = 0;
+
     /**
-     * 访问请求处理.
+     * Handle a Workerman request.
      */
-    public function worker(TcpConnection $connection, WorkerRequest $request)
+    public function worker(TcpConnection $connection, WorkerRequest $request): void
     {
         try {
-            // 初始化请求
             $this->delete('view');
             $this->db->clearQueryTimes();
             $this->beginTime = microtime(true);
@@ -49,52 +52,84 @@ class ThinkApp extends App
                 ob_end_clean();
             }
 
-            // 切换进程数据
             $this->session->clear();
             $this->session->setId($request->sessionId());
             $this->request->withWorkerRequest($connection, $request);
             $response = $this->cookie->withWorkerResponse();
 
             ob_start();
-            // 执行处理请求
-            $thinkres = $this->http->run($this->request);
-            $response->withBody(ob_get_clean() . $thinkres->getContent());
-            $response->withStatus($thinkres->getCode()) && $this->cookie->save();
-            $response->withHeaders($thinkres->getHeader() + ['Server' => 'x-server']);
-            if (strtolower($request->header('connection', '')) === 'keep-alive') {
+            $thinkResponse = $this->http->run($this->request);
+            $response = $this->marshalResponse($response, $thinkResponse, ob_get_clean());
+            $this->cookie->save();
+
+            if ($this->shouldKeepAlive($request)) {
                 $connection->send($response);
             } else {
                 $connection->close($response);
             }
 
-            // 结束当前请求
-            $this->http->end($thinkres);
-        } catch (\Error|\Exception|\RuntimeException|\Throwable $exception) {
-            // 其他异常处理
+            $this->http->end($thinkResponse);
+            $this->collectGarbage();
+        } catch (\Throwable $exception) {
             $this->showException($connection, $exception);
         }
     }
 
     /**
-     * 是否运行在命令行下.
+     * Worker must behave as a web runtime instead of console.
      */
     public function runningInConsole(): bool
     {
         return false;
     }
 
-    /**
-     * 输出异常信息.
-     * @param \Exception|\RuntimeException|\Throwable $exception
-     */
-    private function showException(TcpConnection $connection, $exception)
+    private function marshalResponse(WorkerResponse $response, Response $thinkResponse, string $buffer): WorkerResponse
     {
-        if ($exception instanceof \Exception) {
-            ($handler = $this->make(Handle::class))->report($exception);
-            $resp = $handler->render($this->request, $exception);
-            $connection->send(new WorkerResponse($resp->getCode(), ['Server' => 'x-server'], $resp->getContent()));
-        } else {
-            $connection->send(new WorkerResponse(500, ['Server' => 'x-server'], $exception->getMessage()));
+        $response->withStatus($thinkResponse->getCode());
+        $response->withHeaders($thinkResponse->getHeader() + ['Server' => 'x-server']);
+
+        if ($thinkResponse instanceof ThinkResponseFile) {
+            $thinkResponse->prepareDownload();
+            $response->withHeaders($thinkResponse->getHeader() + ['Server' => 'x-server']);
+            if ($thinkResponse->isFileResponse()) {
+                return $response->withFile($thinkResponse->getFilePath());
+            }
+        }
+
+        return $response->withBody($buffer . $thinkResponse->getContent());
+    }
+
+    private function shouldKeepAlive(WorkerRequest $request): bool
+    {
+        $connection = strtolower((string)$request->header('connection', ''));
+        if ($request->protocolVersion() === '1.0') {
+            return $connection === 'keep-alive';
+        }
+
+        return $connection !== 'close';
+    }
+
+    private function showException(TcpConnection $connection, \Throwable $exception): void
+    {
+        while (ob_get_level() > 1) {
+            ob_end_clean();
+        }
+
+        $handler = $this->make(Handle::class);
+        $handler->report($exception);
+        $response = $handler->render($this->request, $exception);
+        $connection->close($this->marshalResponse(new WorkerResponse(), $response, ''));
+    }
+
+    private function collectGarbage(): void
+    {
+        if (++$this->requests % 100 !== 0) {
+            return;
+        }
+
+        gc_collect_cycles();
+        if (function_exists('gc_mem_caches')) {
+            gc_mem_caches();
         }
     }
 }

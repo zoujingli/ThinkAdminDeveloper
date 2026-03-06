@@ -51,12 +51,12 @@ class Reply extends Controller
         }, function (QueryHelper $query) {
             // 用户查询
             $db = PluginAccountUser::mQuery()->like('phone|nickname#user_keys')->db();
-            if ($db->getOptions('where')) {
+            if (!empty($db->getOptions()['where'] ?? [])) {
                 $query->whereRaw("unid in {$db->field('id')->buildSql()}");
             }
             // 商品查询
             $db = PluginWemallGoods::mQuery()->like('code|name#goods_keys')->db();
-            if ($db->getOptions('where')) {
+            if (!empty($db->getOptions()['where'] ?? [])) {
                 $query->whereRaw("gcode in {$db->field('code')->buildSql()}");
             }
             // 数据过滤

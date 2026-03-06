@@ -1,20 +1,5 @@
 <?php
 
-// +----------------------------------------------------------------------
-// | Worker Plugin for ThinkAdmin
-// +----------------------------------------------------------------------
-// | 版权所有 2014~2025 ThinkAdmin [ thinkadmin.top ]
-// +----------------------------------------------------------------------
-// | 官方网站: https://thinkadmin.top
-// +----------------------------------------------------------------------
-// | 免责声明 ( https://thinkadmin.top/disclaimer )
-// | 开源协议 ( http://www.apache.org/licenses/LICENSE-2.0 )
-// | 参考文件 ( https://github.com/top-think/think-worker/blob/3.0/src/command/Worker.php )
-// +----------------------------------------------------------------------
-// | gitee 代码仓库：https://gitee.com/zoujingli/think-plugs-worker
-// | github 代码仓库：https://github.com/zoujingli/think-plugs-worker
-// +----------------------------------------------------------------------
-
 declare(strict_types=1);
 /**
  * +----------------------------------------------------------------------
@@ -40,6 +25,7 @@ use GatewayWorker\Gateway;
 use GatewayWorker\Register;
 use plugin\worker\support\HttpServer;
 use think\admin\Command;
+use think\admin\service\ProcessService;
 use think\console\Input;
 use think\console\input\Argument;
 use think\console\input\Option;
@@ -108,7 +94,19 @@ class Worker extends Command
 
         // 静态属性设置
         foreach ($this->config['worker'] ?? [] as $name => $value) {
-            if (in_array($name, ['daemonize', 'statusFile', 'stdoutFile', 'pidFile', 'logFile'])) {
+            if (in_array($name, [
+                'daemonize',
+                'statusFile',
+                'stdoutFile',
+                'pidFile',
+                'logFile',
+                'logFileMaxSize',
+                'stopTimeout',
+                'eventLoopClass',
+                'onMasterReload',
+                'onMasterStop',
+                'onWorkerExit',
+            ], true)) {
                 Workerman::${$name} = $value;
                 unset($this->config['worker'][$name]);
             }
@@ -136,7 +134,7 @@ class Worker extends Command
             if ($action === 'start') {
                 $output->writeln('Starting Workerman http server...');
             }
-            $worker = new HttpServer($host, $port, $this->config['context'] ?? [], $this->config['callable'] ?? null);
+            $worker = new HttpServer($host, $port, $this->config['context'] ?? [], $this->config['callable'] ?? null, $this->config);
             $worker->setRoot($this->app->getRootPath());
         } else {
             if (strtolower($this->config['type']) !== 'business') {
@@ -210,12 +208,12 @@ class Worker extends Command
         }
         $command = "xadmin:worker --custom {$custom} --port {$port}";
         if ($action === 'start' && $this->input->hasOption('daemon')) {
-            if (count($query = $this->process->thinkQuery($command)) > 0) {
+            if (count($query = $this->findWindowsWorkers($custom, $port)) > 0) {
                 $this->output->writeln("<info>Worker daemons [{$custom}:{$port}] already exists for Process {$query[0]['pid']} </info>");
                 return false;
             }
             $this->process->thinkExec($command, 500);
-            if (count($query = $this->process->thinkQuery($command)) > 0) {
+            if (count($query = $this->findWindowsWorkers($custom, $port)) > 0) {
                 $this->output->writeln("<info>Worker daemons [{$custom}:{$port}] started successfully for Process {$query[0]['pid']} </info>");
             } else {
                 $this->output->writeln("<error>Worker daemons [{$custom}:{$port}] failed to start. </error>");
@@ -223,7 +221,7 @@ class Worker extends Command
             return false;
         }
         if ($action === 'stop') {
-            foreach ($result = $this->process->thinkQuery($command) as $item) {
+            foreach ($result = $this->findWindowsWorkers($custom, $port) as $item) {
                 $this->process->close(intval($item['pid']));
                 $this->output->writeln("<info>Send stop signal to Worker daemons [{$custom}:{$port}] Process {$item['pid']} </info>");
             }
@@ -233,13 +231,11 @@ class Worker extends Command
             return false;
         }
         if ($action === 'status') {
-            foreach ($result = $this->process->thinkQuery('xadmin:worker') as $item) {
-                if (preg_match('#--custom\s+(.*?)\s+--port\s+(\d+)#', $item['cmd'], $matches)) {
-                    $this->output->writeln("Worker daemons [{$matches[1]}:{$matches[2]}] Process {$item['pid']} running");
-                }
+            foreach ($result = $this->findWindowsWorkers($custom, $port) as $item) {
+                $this->output->writeln("Worker daemons [{$custom}:{$port}] Process {$item['pid']} running");
             }
             if (empty($result)) {
-                $this->output->writeln('<error>The Worker daemons is not running. </error>');
+                $this->output->writeln("<error>The Worker daemons [{$custom}:{$port}] is not running. </error>");
             }
             return false;
         }
@@ -299,5 +295,59 @@ class Worker extends Command
             return [$custom, empty($config) ? false : $config];
         }
         return [$custom, $this->app->config->get('worker', [])];
+    }
+
+    private function findWindowsWorkers(string $custom, int $port): array
+    {
+        $command = "xadmin:worker --custom {$custom} --port {$port}";
+        if ($result = $this->process->thinkQuery($command)) {
+            return $result;
+        }
+
+        $workers = [];
+        foreach ($this->queryWindowsListenerPids($port) as $pid) {
+            $cmd = $this->queryWindowsCommandLine($pid);
+            if ($cmd === '' || stripos($cmd, 'xadmin:worker') === false) {
+                continue;
+            }
+
+            $workers[] = ['pid' => (string)$pid, 'cmd' => $cmd];
+        }
+
+        return $workers;
+    }
+
+    private function queryWindowsListenerPids(int $port): array
+    {
+        $pids = [];
+        $lines = ProcessService::exec("netstat -ano -p tcp | findstr LISTENING | findstr :{$port}", true);
+        foreach ($lines as $line) {
+            $line = trim(preg_replace('#\s+#', ' ', trim($line)));
+            if ($line === '') {
+                continue;
+            }
+
+            $parts = explode(' ', $line);
+            $address = $parts[1] ?? '';
+            $pid = $parts[count($parts) - 1] ?? '';
+            if ($pid !== '' && is_numeric($pid) && str_ends_with($address, ':' . $port)) {
+                $pids[] = (int)$pid;
+            }
+        }
+
+        return array_values(array_unique($pids));
+    }
+
+    private function queryWindowsCommandLine(int $pid): string
+    {
+        $lines = ProcessService::exec("wmic process where processid=\"{$pid}\" get CommandLine /value", true);
+        foreach ($lines as $line) {
+            $line = trim($line);
+            if (str_starts_with($line, 'CommandLine=')) {
+                return trim(substr($line, 12));
+            }
+        }
+
+        return '';
     }
 }

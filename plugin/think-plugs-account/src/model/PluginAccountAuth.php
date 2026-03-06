@@ -38,6 +38,8 @@ use think\model\relation\HasOne;
  */
 class PluginAccountAuth extends Abs
 {
+    protected $deleteTime = false;
+
     /**
      * 关联子账号.
      */

@@ -60,14 +60,14 @@ class Inter extends Controller
 
             // 产品搜索查询
             $gdb = PluginWemallGoods::mQuery()->like('code|name#gname')->db();
-            if ($gdb->getOptions('where')) {
+            if (!empty($gdb->getOptions()['where'] ?? [])) {
                 $db2 = PluginWemallGoodsItem::mk()->whereRaw("gcode in {$gdb->field('code')->buildSql()}");
                 $query->whereRaw("ghash in {$db2->field('ghash')->buildSql()}");
             }
 
             // 仓库搜索查询
             $db = PluginWumaWarehouse::mQuery()->like('code|name#wname')->db();
-            if ($db->getOptions('where')) {
+            if (!empty($db->getOptions()['where'] ?? [])) {
                 $query->whereRaw("wcode in {$db->field('code')->buildSql()}");
             }
 
@@ -105,19 +105,19 @@ class Inter extends Controller
 
             // 产品搜索查询
             $gdb = PluginWemallGoods::mQuery()->like('code|name#gname')->db();
-            if ($gdb->getOptions('where')) {
+            if (!empty($gdb->getOptions()['where'] ?? [])) {
                 $db2 = PluginWemallGoodsItem::mk()->whereRaw("gcode in {$gdb->field('code')->buildSql()}");
                 $query->whereRaw("ghash in {$db2->field('ghash')->buildSql()}");
             }
 
             // 仓库数据搜索
             $db = PluginWumaWarehouse::mQuery()->like('name|code#wname')->db();
-            if ($db->getOptions('where')) {
+            if (!empty($db->getOptions()['where'] ?? [])) {
                 $odb->whereRaw("wcode in {$db->field('code')->buildSql()}");
             }
 
             // 整合条件到模型
-            if ($odb->getOptions('where')) {
+            if (!empty($odb->getOptions()['where'] ?? [])) {
                 $query->whereRaw("code in {$odb->field('code')->buildSql()}");
             }
 

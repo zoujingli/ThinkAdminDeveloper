@@ -70,7 +70,7 @@ class Record extends Controller
             }
         }, static function (QueryHelper $query) {
             $db = PluginAccountUser::mQuery()->like('email|nickname|username|phone#userinfo')->db();
-            if ($db->getOptions('where')) {
+            if (!empty($db->getOptions()['where'] ?? [])) {
                 $query->whereRaw("unid in {$db->field('id')->buildSql()}");
             }
             $query->with(['user'])->like('order_no|order_name#orderinfo')->dateBetween('create_time');
@@ -102,7 +102,7 @@ class Record extends Controller
             if ($action->getAttr('channel_type') !== Payment::VOUCHER) {
                 $this->error('无需审核操作！');
             }
-            if ($action->getAttr('payemnt_status') === 1) {
+            if ($action->getAttr('payment_status') === 1) {
                 $this->success('该凭证已审核！');
             }
             $data['audit_user'] = AdminService::getUserId();

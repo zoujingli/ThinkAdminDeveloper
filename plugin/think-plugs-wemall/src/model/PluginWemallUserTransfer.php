@@ -1,20 +1,20 @@
-<?php
+﻿<?php
 
 declare(strict_types=1);
 /**
  * +----------------------------------------------------------------------
  * | ThinkAdmin Plugin for ThinkAdmin
  * +----------------------------------------------------------------------
- * | 版权所有 2014~2026 ThinkAdmin [ thinkadmin.top ]
+ * | 鐗堟潈鎵€鏈?2014~2026 ThinkAdmin [ thinkadmin.top ]
  * +----------------------------------------------------------------------
- * | 官方网站: https://thinkadmin.top
+ * | 瀹樻柟缃戠珯: https://thinkadmin.top
  * +----------------------------------------------------------------------
- * | 开源协议 ( https://mit-license.org )
- * | 免责声明 ( https://thinkadmin.top/disclaimer )
- * | 会员特权 ( https://thinkadmin.top/vip-introduce )
+ * | 寮€婧愬崗璁?( https://mit-license.org )
+ * | 鍏嶈矗澹版槑 ( https://thinkadmin.top/disclaimer )
+ * | 浼氬憳鐗规潈 ( https://thinkadmin.top/vip-introduce )
  * +----------------------------------------------------------------------
- * | gitee 代码仓库：https://gitee.com/zoujingli/ThinkAdmin
- * | github 代码仓库：https://github.com/zoujingli/ThinkAdmin
+ * | gitee 浠ｇ爜浠撳簱锛歨ttps://gitee.com/zoujingli/ThinkAdmin
+ * | github 浠ｇ爜浠撳簱锛歨ttps://github.com/zoujingli/ThinkAdmin
  * +----------------------------------------------------------------------
  */
 
@@ -23,44 +23,36 @@ namespace plugin\wemall\model;
 use plugin\wemall\service\UserTransfer;
 
 /**
- * 代理提现数据.
+ * 浠ｇ悊鎻愮幇鏁版嵁.
  *
- * @property float $amount 提现转账金额
- * @property float $charge_amount 提现手续费金额
- * @property float $charge_rate 提现手续费比例
- * @property int $audit_status 审核状态
- * @property int $id
- * @property int $status 提现状态(0失败,1待审核,2已审核,3打款中,4已打款,5已收款)
- * @property int $unid 用户UNID
- * @property string $alipay_code 支付宝账号
- * @property string $alipay_user 支付宝姓名
- * @property string $appid 公众号APPID
- * @property string $audit_remark 审核描述
- * @property string $audit_time 审核时间
- * @property string $bank_bran 开户分行名称
- * @property string $bank_code 开户银行卡号
- * @property string $bank_name 开户银行名称
- * @property string $bank_user 开户账号姓名
- * @property string $bank_wseq 微信银行编号
- * @property string $change_desc 处理描述
- * @property string $change_time 处理时间
- * @property string $code 提现单号
- * @property string $create_time 创建时间
- * @property string $date 提现日期
- * @property string $openid 公众号OPENID
- * @property string $qrcode 收款码图片地址
- * @property string $remark 提现描述
- * @property string $trade_no 交易单号
- * @property string $trade_time 打款时间
- * @property string $type 提现方式
- * @property string $update_time 更新时间
- * @property string $username 公众号真实姓名
- * @class PluginWemallUserTransfer
+ * @property float $amount 鎻愮幇杞处閲戦
+ * @property float $charge_amount 鎻愮幇鎵嬬画璐归噾棰? * @property float $charge_rate 鎻愮幇鎵嬬画璐规瘮渚? * @property int $audit_status 瀹℃牳鐘舵€? * @property int $id
+ * @property int $status 鎻愮幇鐘舵€?0澶辫触,1寰呭鏍?2宸插鏍?3鎵撴涓?4宸叉墦娆?5宸叉敹娆?
+ * @property int $unid 鐢ㄦ埛UNID
+ * @property string $alipay_code 鏀粯瀹濊处鍙? * @property string $alipay_user 鏀粯瀹濆鍚? * @property string $appid 鍏紬鍙稟PPID
+ * @property string $audit_remark 瀹℃牳鎻忚堪
+ * @property string $audit_time 瀹℃牳鏃堕棿
+ * @property string $bank_bran 寮€鎴峰垎琛屽悕绉? * @property string $bank_code 寮€鎴烽摱琛屽崱鍙? * @property string $bank_name 寮€鎴烽摱琛屽悕绉? * @property string $bank_user 寮€鎴疯处鍙峰鍚? * @property string $bank_wseq 寰俊閾惰缂栧彿
+ * @property string $change_desc 澶勭悊鎻忚堪
+ * @property string $change_time 澶勭悊鏃堕棿
+ * @property string $code 鎻愮幇鍗曞彿
+ * @property string $create_time 鍒涘缓鏃堕棿
+ * @property string $date 鎻愮幇鏃ユ湡
+ * @property string $openid 鍏紬鍙稯PENID
+ * @property string $qrcode 鏀舵鐮佸浘鐗囧湴鍧€
+ * @property string $remark 鎻愮幇鎻忚堪
+ * @property string $trade_no 浜ゆ槗鍗曞彿
+ * @property string $trade_time 鎵撴鏃堕棿
+ * @property string $type 鎻愮幇鏂瑰紡
+ * @property string $update_time 鏇存柊鏃堕棿
+ * @property string $username 鍏紬鍙风湡瀹炲鍚? * @class PluginWemallUserTransfer
  */
 class PluginWemallUserTransfer extends AbsUser
 {
+    protected $deleteTime = false;
+
     /**
-     * 格式化输出时间.
+     * 鏍煎紡鍖栬緭鍑烘椂闂?
      * @param mixed $value
      */
     public function getChangeTimeAttr($value): string
@@ -69,13 +61,13 @@ class PluginWemallUserTransfer extends AbsUser
     }
 
     /**
-     * 自动显示类型名称.
+     * 鑷姩鏄剧ず绫诲瀷鍚嶇О.
      */
     public function toArray(): array
     {
         $data = parent::toArray();
         if (isset($data['type'])) {
-            $map = ['platform' => '平台发放'];
+            $map = ['platform' => '骞冲彴鍙戞斁'];
             $data['type_name'] = $map[$data['type']] ?? (UserTransfer::types[$data['type']] ?? $data['type']);
         }
         return $data;

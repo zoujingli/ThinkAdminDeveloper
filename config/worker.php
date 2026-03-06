@@ -1,52 +1,74 @@
 <?php
 
 declare(strict_types=1);
+
 /**
- * +----------------------------------------------------------------------
- * | ThinkAdmin Plugin for ThinkAdmin
- * +----------------------------------------------------------------------
- * | 版权所有 2014~2026 ThinkAdmin [ thinkadmin.top ]
- * +----------------------------------------------------------------------
- * | 官方网站: https://thinkadmin.top
- * +----------------------------------------------------------------------
- * | 开源协议 ( https://mit-license.org )
- * | 免责声明 ( https://thinkadmin.top/disclaimer )
- * | 会员特权 ( https://thinkadmin.top/vip-introduce )
- * +----------------------------------------------------------------------
- * | gitee 代码仓库：https://gitee.com/zoujingli/ThinkAdmin
- * | github 代码仓库：https://github.com/zoujingli/ThinkAdmin
- * +----------------------------------------------------------------------
+ * ThinkPlugsWorker runtime configuration.
+ *
+ * Targets:
+ * - ThinkAdmin 8
+ * - PHP 8.1+
+ * - Workerman 5.1+
  */
 return [
-    // 服务监听地址
+    // Http server listen host.
     'host' => '127.0.0.1',
-    // 服务监听端口
+
+    // Http server listen port.
     'port' => 2346,
-    // 套接字上下文选项
+
+    // Socket context options.
     'context' => [],
-    // 高级自定义服务类
+
+    // Custom server classes instantiated before Workerman::runAll().
     'classes' => '',
-    // 消息请求回调处理
+
+    // Optional message callback for the default http server.
+    // Return true to stop default ThinkAdmin dispatch,
+    // or return Workerman\Protocols\Http\Response directly.
     'callable' => null,
-    // 服务进程参数配置
+
+    // Workerman worker options.
     'worker' => [
         'name' => 'ThinkAdmin',
         'count' => 4,
+
+        // Optional Workerman static options:
+        // 'logFileMaxSize' => 10 * 1024 * 1024,
+        // 'stopTimeout' => 2,
+        // 'eventLoopClass' => \Workerman\Events\Event::class,
     ],
-    // 监控文件变更重载，仅 Debug 模式有效
+
+    // File change monitor.
+    // Only effective in debug mode. On Windows it logs a restart hint,
+    // on Linux/macOS it triggers a graceful reload.
     'files' => [
-        // 监控检测间隔（单位秒，零不监控）
         'time' => 3,
-        // 文件监控目录（默认监控 app+config 目录）
         'path' => [],
-        // 文件监控后缀（默认监控 所有 文件）
-        'exts' => ['*'],
+        'exts' => ['php', 'env', 'ini', 'yaml', 'yml'],
     ],
-    // 监控内存超限重载，仅 Debug 模式有效
+
+    // Memory usage monitor.
+    // When exceeded, workers are reloaded on POSIX platforms.
     'memory' => [
-        // 监控检测间隔（单位秒，零不监控）
         'time' => 60,
-        // 限制内存大小（可选单位有 G M K ）
         'limit' => '1G',
+    ],
+
+    // Custom servers.
+    'customs' => [
+        'websocket' => [
+            'type' => 'Workerman',
+            'listen' => 'websocket://0.0.0.0:8686',
+            'context' => [],
+            'classes' => '',
+            'worker' => [
+                'name' => 'ThinkAdminWebSocket',
+                'count' => 1,
+                'onMessage' => static function ($connection, $data): void {
+                    $connection->send((string)$data);
+                },
+            ],
+        ],
     ],
 ];

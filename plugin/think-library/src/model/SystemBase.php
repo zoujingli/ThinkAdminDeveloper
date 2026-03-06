@@ -21,6 +21,7 @@ declare(strict_types=1);
 namespace think\admin\model;
 
 use think\admin\Model;
+use think\model\concern\SoftDelete;
 
 /**
  * 数据字典模型.
@@ -40,7 +41,7 @@ use think\admin\Model;
  */
 class SystemBase extends Model
 {
-    protected $createTime = 'create_at';
+    use SoftDelete;
 
     protected $updateTime = false;
 
@@ -65,7 +66,7 @@ class SystemBase extends Model
      */
     public static function items(string $type, array &$data = [], string $field = 'base_code', string $bind = 'base_info'): array
     {
-        $map = ['type' => $type, 'status' => 1, 'deleted' => 0];
+        $map = ['type' => $type, 'status' => 1];
         $bases = static::mk()->where($map)->order('sort desc,id asc')->column('code,name,content', 'code');
         if (count($data) > 0) {
             foreach ($data as &$vo) {
@@ -81,7 +82,7 @@ class SystemBase extends Model
      */
     public static function types(bool $simple = false): array
     {
-        $types = static::mk()->where(['deleted' => 0])->distinct()->column('type');
+        $types = static::mk()->distinct()->column('type');
         if (empty($types) && empty($simple)) {
             $types = ['身份权限'];
         }
@@ -92,7 +93,7 @@ class SystemBase extends Model
      * 格式化创建时间.
      * @param mixed $value
      */
-    public function getCreateAtAttr($value): string
+    public function getCreateTimeAttr($value): string
     {
         return format_datetime($value);
     }
