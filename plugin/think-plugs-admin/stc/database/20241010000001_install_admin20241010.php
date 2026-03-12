@@ -17,7 +17,8 @@ declare(strict_types=1);
  * | github 代码仓库：https://github.com/zoujingli/ThinkAdmin
  * +----------------------------------------------------------------------
  */
-use think\admin\extend\PhinxExtend;
+use plugin\admin\Service;
+use plugin\helper\support\PhinxExtend;
 use think\migration\Migrator;
 
 @set_time_limit(0);
@@ -51,6 +52,9 @@ class InstallAdmin20241010 extends Migrator
         $this->_create_system_oplog();
         $this->_create_system_queue();
         $this->_create_system_user();
+        $this->insertUser();
+        $this->insertMenu();
+        $this->insertConf();
     }
 
     /**
@@ -71,7 +75,7 @@ class InstallAdmin20241010 extends Migrator
             ['desc', 'string', ['limit' => 500, 'default' => '', 'null' => true, 'comment' => '备注说明']],
             ['sort', 'biginteger', ['limit' => 20, 'default' => 0, 'null' => true, 'comment' => '排序权重']],
             ['status', 'integer', ['limit' => 1, 'default' => 1, 'null' => true, 'comment' => '权限状态(1使用,0禁用)']],
-            ['create_at', 'timestamp', ['default' => 'CURRENT_TIMESTAMP', 'null' => true, 'comment' => '创建时间']],
+            ['create_time', 'timestamp', ['default' => 'CURRENT_TIMESTAMP', 'null' => true, 'comment' => '创建时间']],
         ], [
             'sort', 'title', 'status',
         ], true);
@@ -116,12 +120,11 @@ class InstallAdmin20241010 extends Migrator
             ['content', 'text', ['default' => null, 'null' => true, 'comment' => '数据内容']],
             ['sort', 'biginteger', ['limit' => 20, 'default' => 0, 'null' => true, 'comment' => '排序权重']],
             ['status', 'integer', ['limit' => 1, 'default' => 1, 'null' => true, 'comment' => '数据状态(0禁用,1启动)']],
-            ['deleted', 'integer', ['limit' => 1, 'default' => 0, 'null' => true, 'comment' => '删除状态(0正常,1已删)']],
-            ['deleted_at', 'string', ['limit' => 20, 'default' => '', 'null' => true, 'comment' => '删除时间']],
+            ['delete_time', 'datetime', ['default' => null, 'null' => true, 'comment' => '删除时间']],
             ['deleted_by', 'biginteger', ['limit' => 20, 'default' => 0, 'null' => true, 'comment' => '删除用户']],
-            ['create_at', 'timestamp', ['default' => 'CURRENT_TIMESTAMP', 'null' => true, 'comment' => '创建时间']],
+            ['create_time', 'timestamp', ['default' => 'CURRENT_TIMESTAMP', 'null' => true, 'comment' => '创建时间']],
         ], [
-            'type', 'code', 'sort', 'status', 'deleted',
+            'type', 'code', 'sort', 'status', 'delete_time',
         ], true);
     }
 
@@ -195,10 +198,10 @@ class InstallAdmin20241010 extends Migrator
             ['isfast', 'integer', ['limit' => 1, 'default' => 0, 'null' => true, 'comment' => '是否秒传']],
             ['issafe', 'integer', ['limit' => 1, 'default' => 0, 'null' => true, 'comment' => '安全模式']],
             ['status', 'integer', ['limit' => 1, 'default' => 1, 'null' => true, 'comment' => '上传状态(1悬空,2落地)']],
-            ['create_at', 'datetime', ['default' => null, 'null' => true, 'comment' => '创建时间']],
-            ['update_at', 'datetime', ['default' => null, 'null' => true, 'comment' => '更新时间']],
+            ['create_time', 'datetime', ['default' => null, 'null' => true, 'comment' => '创建时间']],
+            ['update_time', 'datetime', ['default' => null, 'null' => true, 'comment' => '更新时间']],
         ], [
-            'type', 'hash', 'uuid', 'xext', 'unid', 'tags', 'name', 'status', 'issafe', 'isfast', 'create_at',
+            'type', 'hash', 'uuid', 'xext', 'unid', 'tags', 'name', 'status', 'issafe', 'isfast', 'create_time',
         ], true);
     }
 
@@ -224,7 +227,7 @@ class InstallAdmin20241010 extends Migrator
             ['target', 'string', ['limit' => 20, 'default' => '_self', 'null' => true, 'comment' => '打开方式']],
             ['sort', 'biginteger', ['limit' => 20, 'default' => 0, 'null' => true, 'comment' => '排序权重']],
             ['status', 'integer', ['limit' => 1, 'default' => 1, 'null' => true, 'comment' => '状态(0:禁用,1:启用)']],
-            ['create_at', 'timestamp', ['default' => 'CURRENT_TIMESTAMP', 'null' => true, 'comment' => '创建时间']],
+            ['create_time', 'timestamp', ['default' => 'CURRENT_TIMESTAMP', 'null' => true, 'comment' => '创建时间']],
         ], [
             'pid', 'sort', 'status',
         ], true);
@@ -248,9 +251,9 @@ class InstallAdmin20241010 extends Migrator
             ['action', 'string', ['limit' => 200, 'default' => '', 'null' => false, 'comment' => '操作行为名称']],
             ['content', 'string', ['limit' => 1024, 'default' => '', 'null' => false, 'comment' => '操作内容描述']],
             ['username', 'string', ['limit' => 50, 'default' => '', 'null' => false, 'comment' => '操作人用户名']],
-            ['create_at', 'timestamp', ['default' => 'CURRENT_TIMESTAMP', 'null' => false, 'comment' => '创建时间']],
+            ['create_time', 'timestamp', ['default' => 'CURRENT_TIMESTAMP', 'null' => false, 'comment' => '创建时间']],
         ], [
-            'create_at',
+            'create_time',
         ], true);
     }
 
@@ -281,9 +284,9 @@ class InstallAdmin20241010 extends Migrator
             ['message', 'text', ['default' => null, 'null' => true, 'comment' => '最新消息']],
             ['rscript', 'integer', ['limit' => 1, 'default' => 1, 'null' => true, 'comment' => '任务类型(0单例,1多例)']],
             ['status', 'integer', ['limit' => 1, 'default' => 1, 'null' => true, 'comment' => '任务状态(1新任务,2处理中,3成功,4失败)']],
-            ['create_at', 'timestamp', ['default' => 'CURRENT_TIMESTAMP', 'null' => false, 'comment' => '创建时间']],
+            ['create_time', 'timestamp', ['default' => 'CURRENT_TIMESTAMP', 'null' => false, 'comment' => '创建时间']],
         ], [
-            'code', 'title', 'status', 'rscript', 'create_at', 'exec_time',
+            'code', 'title', 'status', 'rscript', 'create_time', 'exec_time',
         ], true);
     }
 
@@ -315,10 +318,63 @@ class InstallAdmin20241010 extends Migrator
             ['describe', 'string', ['limit' => 255, 'default' => '', 'null' => true, 'comment' => '备注说明']],
             ['sort', 'biginteger', ['limit' => 20, 'default' => 0, 'null' => true, 'comment' => '排序权重']],
             ['status', 'integer', ['limit' => 1, 'default' => 1, 'null' => true, 'comment' => '状态(0禁用,1启用)']],
-            ['is_deleted', 'integer', ['limit' => 1, 'default' => 0, 'null' => true, 'comment' => '删除(1删除,0未删)']],
-            ['create_at', 'timestamp', ['default' => 'CURRENT_TIMESTAMP', 'null' => true, 'comment' => '创建时间']],
+            ['delete_time', 'datetime', ['default' => null, 'null' => true, 'comment' => '删除时间']],
+            ['create_time', 'timestamp', ['default' => 'CURRENT_TIMESTAMP', 'null' => true, 'comment' => '创建时间']],
         ], [
-            'sort', 'status', 'username', 'is_deleted',
+            'sort', 'status', 'username', 'delete_time',
         ], true);
+    }
+
+    /**
+     * 初始化用户数据.
+     */
+    private function insertUser()
+    {
+        if (PhinxExtend::migrationRowExists($this, 'system_user')) {
+            return;
+        }
+
+        $this->table('system_user')->insert([[
+            'id' => 10000,
+            'username' => 'admin',
+            'nickname' => '超级管理员',
+            'password' => '21232f297a57a5a743894a0e4a801fc3',
+            'headimg' => 'https://thinkadmin.top/static/img/head.png',
+        ]])->saveData();
+    }
+
+    /**
+     * 初始化配置参数.
+     */
+    private function insertConf()
+    {
+        if (PhinxExtend::migrationRowExists($this, 'system_config')) {
+            return;
+        }
+
+        $this->table('system_config')->insert([
+            ['type' => 'base', 'name' => 'app_name', 'value' => 'ThinkAdmin'],
+            ['type' => 'base', 'name' => 'app_version', 'value' => 'v8'],
+            ['type' => 'base', 'name' => 'editor', 'value' => 'ckeditor5'],
+            ['type' => 'base', 'name' => 'login_name', 'value' => '系统管理'],
+            ['type' => 'base', 'name' => 'site_copy', 'value' => '©版权所有 2014-' . date('Y') . ' ThinkAdmin'],
+            ['type' => 'base', 'name' => 'site_icon', 'value' => 'https://thinkadmin.top/static/img/logo.png'],
+            ['type' => 'base', 'name' => 'site_name', 'value' => 'ThinkAdmin'],
+            ['type' => 'base', 'name' => 'site_theme', 'value' => 'default'],
+            ['type' => 'storage', 'name' => 'driver', 'value' => 'local'],
+            ['type' => 'storage', 'name' => 'naming', 'value' => 'xmd5'],
+            ['type' => 'storage', 'name' => 'link', 'value' => 'none'],
+            ['type' => 'storage', 'name' => 'allowed_exts', 'value' => 'doc,gif,ico,jpg,mp3,mp4,p12,pem,png,zip,rar,xls,xlsx'],
+            ['type' => 'wechat', 'name' => 'type', 'value' => 'api'],
+        ])->saveData();
+    }
+
+    /**
+     * 初始化系统菜单.
+     * @throws Exception
+     */
+    private function insertMenu()
+    {
+        PhinxExtend::writePluginMenu(Service::class, [], [], $this);
     }
 }

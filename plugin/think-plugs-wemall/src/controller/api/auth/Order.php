@@ -35,7 +35,7 @@ use plugin\wemall\service\GoodsService;
 use plugin\wemall\service\UserAction;
 use plugin\wemall\service\UserOrder;
 use plugin\wemall\service\UserUpgrade;
-use think\admin\extend\CodeExtend;
+use think\admin\extend\codec\CodeToolkit;
 use think\admin\helper\QueryHelper;
 use think\admin\Storage;
 use think\db\exception\DataNotFoundException;
@@ -90,7 +90,7 @@ class Order extends Auth
             $order = UserUpgrade::withAgent($this->relation, intval($input['agent']));
             // 生成统一编号
             do {
-                $extra = ['order_no' => $order['order_no'] = CodeExtend::uniqidNumber(16, 'N')];
+                $extra = ['order_no' => $order['order_no'] = CodeToolkit::uniqidNumber(16, 'N')];
             } while (PluginWemallOrder::mk()->master()->where($extra)->findOrEmpty()->isExists());
             [$items, $deliveryType] = [[], 0];
             // 组装订单数据

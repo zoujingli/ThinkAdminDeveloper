@@ -18,11 +18,11 @@
     </ul>
     <ul class="layui-nav layui-layout-right">
         <li lay-unselect class="layui-nav-item"><a data-reload><i class="layui-icon layui-icon-refresh-3"></i></a></li>
-        {if session('user.username')}
+        {if admin_user('username')}
         <li class="layui-nav-item">
             <dl class="layui-nav-child">
-                <dd lay-unselect><a data-modal="{:sysuri('admin/index/info',['id'=>session('user.id')])}"><i class="layui-icon layui-icon-set-fill"></i> {:lang('基本资料')}</a></dd>
-                <dd lay-unselect><a data-modal="{:sysuri('admin/index/pass',['id'=>session('user.id')])}"><i class="layui-icon layui-icon-component"></i> {:lang('安全设置')}</a></dd>
+                <dd lay-unselect><a data-modal="{:sysuri('admin/index/info',['id'=>admin_user('id')])}"><i class="layui-icon layui-icon-set-fill"></i> {:lang('基本资料')}</a></dd>
+                <dd lay-unselect><a data-modal="{:sysuri('admin/index/pass',['id'=>admin_user('id')])}"><i class="layui-icon layui-icon-component"></i> {:lang('安全设置')}</a></dd>
                 {if isset($super) and $super}
                 <dd lay-unselect><a data-load="{:sysuri('admin/api.system/push')}"><i class="layui-icon layui-icon-template-1"></i> {:lang('缓存加速')}</a></dd>
                 <dd lay-unselect><a data-load="{:sysuri('admin/api.system/clear')}"><i class="layui-icon layui-icon-fonts-clear"></i> {:lang('清理缓存')}</a></dd>
@@ -31,8 +31,8 @@
                 <dd lay-unselect><a data-load="{:sysuri('admin/login/out')}" data-confirm="{:lang('确定要退出登录吗？')}"><i class="layui-icon layui-icon-release"></i> {:lang('退出登录')}</a></dd>
             </dl>
             <a class="layui-elip">
-                <span class="headimg" data-lazy-src="{:htmlentities(session('user.headimg'))}"></span>
-                <span>{:htmlentities(lang(session('user.nickname')?:session('user.username')))}</span>
+                <span class="headimg" data-lazy-src="{:htmlentities(admin_user('headimg',''))}"></span>
+                <span>{:htmlentities(lang(admin_user('nickname')?:admin_user('username')))}</span>
             </a>
         </li>
         {else}

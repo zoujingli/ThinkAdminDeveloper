@@ -37,15 +37,36 @@
             {if !empty($bases)}
             <div class="layui-form-item">
                 <div class="help-label"><b>{:lang('角色身份')}</b>Role Identity</div>
+                <div class="margin-bottom-10">
+                    <div class="layui-input-inline">
+                        <select name="usertype_plugin_filter" lay-filter="UserBasePluginFilter">
+                            <option value="">{:lang('全部插件')}</option>
+                            {foreach $baseGroups as $group}
+                            <option value="{$group.code}">{$group.name}</option>
+                            {/foreach}
+                        </select>
+                    </div>
+                    <div class="layui-form-mid color-desc">{:lang('只切换显示的身份分组，不会影响已选中的角色身份。')}</div>
+                </div>
                 <div class="layui-textarea help-checks">
-                    {foreach $bases as $base}
-                    <label class="think-checkbox">
-                        {if isset($vo.usertype) and $vo.usertype eq $base.code}
-                        <input type="radio" checked name="usertype" value="{$base.code}" lay-ignore>{$base.name}
-                        {else}
-                        <input type="radio" name="usertype" value="{$base.code}" lay-ignore>{$base.name}
-                        {/if}
-                    </label>
+                    {foreach $baseGroups as $group}
+                    <div class="user-base-group" data-base-group="{$group.code}">
+                        <div class="padding-left-5 margin-bottom-5">
+                            <span class="layui-badge layui-bg-blue">{$group.name}</span>
+                        </div>
+                        {foreach $group.items as $base}
+                        <label class="think-checkbox">
+                            {if isset($vo.usertype) and $vo.usertype eq $base.code}
+                            <input type="radio" checked name="usertype" value="{$base.code}" lay-ignore>{$base.name}
+                            {else}
+                            <input type="radio" name="usertype" value="{$base.code}" lay-ignore>{$base.name}
+                            {/if}
+                            {if !empty($base.plugin_text) and $base.plugin_count gt 1}
+                            <span class="color-desc">({$base.plugin_text})</span>
+                            {/if}
+                        </label>
+                        {/foreach}
+                    </div>
                     {/foreach}
                 </div>
             </div>
@@ -53,17 +74,38 @@
             {if !empty($auths)}
             <div class="layui-form-item">
                 <div class="help-label"><b>{:lang('访问权限')}</b>Role Permission</div>
+                <div class="margin-bottom-10">
+                    <div class="layui-input-inline">
+                        <select name="authorize_plugin_filter" lay-filter="UserAuthPluginFilter">
+                            <option value="">{:lang('全部插件')}</option>
+                            {foreach $authGroups as $group}
+                            <option value="{$group.code}">{$group.name}</option>
+                            {/foreach}
+                        </select>
+                    </div>
+                    <div class="layui-form-mid color-desc">{:lang('只切换显示的权限分组，不会影响已选中的其它插件权限。')}</div>
+                </div>
                 <div class="layui-textarea help-checks">
                     {if isset($vo.username) and $vo.username eq $super}
-                    <span class="color-desc padding-left-5">{:lang('超级用户拥所有访问权限，不需要配置权限。')}</span>
-                    {else}{foreach $auths as $authorize}
-                    <label class="think-checkbox">
-                        {if in_array($authorize.id, $vo.authorize)}
-                        <input type="checkbox" checked name="authorize[]" value="{$authorize.id}" lay-ignore>{$authorize.title}
-                        {else}
-                        <input type="checkbox" name="authorize[]" value="{$authorize.id}" lay-ignore>{$authorize.title}
-                        {/if}
-                    </label>
+                    <span class="color-desc padding-left-5">{:lang('超级用户拥有所有访问权限，不需要配置权限。')}</span>
+                    {else}{foreach $authGroups as $group}
+                    <div class="user-auth-group" data-auth-group="{$group.code}">
+                        <div class="padding-left-5 margin-bottom-5">
+                            <span class="layui-badge layui-bg-blue">{$group.name}</span>
+                        </div>
+                        {foreach $group.items as $authorize}
+                        <label class="think-checkbox">
+                            {if in_array($authorize.id, $vo.authorize)}
+                            <input type="checkbox" checked name="authorize[]" value="{$authorize.id}" lay-ignore>{$authorize.title}
+                            {else}
+                            <input type="checkbox" name="authorize[]" value="{$authorize.id}" lay-ignore>{$authorize.title}
+                            {/if}
+                            {if !empty($authorize.plugin_text) and $authorize.plugin_count gt 1}
+                            <span class="color-desc">({$authorize.plugin_text})</span>
+                            {/if}
+                        </label>
+                        {/foreach}
+                    </div>
                     {/foreach}{/if}
                 </div>
             </div>
@@ -112,3 +154,21 @@
         <button class="layui-btn layui-btn-danger" type='button' data-confirm="{:lang('确定要取消编辑吗？')}" data-close>{:lang('取消编辑')}</button>
     </div>
 </form>
+
+<script>
+    $.module.use([], function () {
+        layui.form.on('select(UserBasePluginFilter)', function (object) {
+            $('.user-base-group').each(function () {
+                let active = !object.value || $(this).data('base-group') === object.value;
+                $(this)[active ? 'show' : 'hide']();
+            });
+        });
+
+        layui.form.on('select(UserAuthPluginFilter)', function (object) {
+            $('.user-auth-group').each(function () {
+                let active = !object.value || $(this).data('auth-group') === object.value;
+                $(this)[active ? 'show' : 'hide']();
+            });
+        });
+    });
+</script>

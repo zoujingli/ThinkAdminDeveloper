@@ -74,7 +74,7 @@
 
 <script>
     let defData = JSON.parse(document.getElementById('DefaultData').value) || [];
-    require(['vue', 'ckeditor'], (Vue) => {
+    $.module.use(['vue', 'ckeditor'], (Vue) => {
         window.createEditor('[name=content]')
         new Vue({
             el: '#CheckInVueTpl',

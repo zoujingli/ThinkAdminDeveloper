@@ -21,6 +21,7 @@ declare(strict_types=1);
 namespace think\admin\helper;
 
 use think\admin\Helper;
+use think\admin\query\QueryFactory;
 use think\db\BaseQuery;
 use think\db\exception\DbException;
 use think\Model;
@@ -39,7 +40,7 @@ class DeleteHelper extends Helper
      */
     public function init($dbQuery, string $field = '', $where = [])
     {
-        $query = static::buildQuery($dbQuery);
+        $query = QueryFactory::build($dbQuery);
         $field = $field ?: ($query->getPk() ?: 'id');
         $value = $this->app->request->post($field);
 

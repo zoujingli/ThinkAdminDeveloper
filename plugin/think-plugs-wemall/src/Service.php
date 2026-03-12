@@ -45,13 +45,13 @@ class Service extends Plugin
      * 定义插件名称.
      * @var string
      */
-    protected $appName = '分销商城';
+    protected string $appName = '分销商城';
 
     /**
      * 定义安装包名.
      * @var string
      */
-    protected $package = 'zoujingli/think-plugs-wemall';
+    protected string $package = 'zoujingli/think-plugs-wemall';
 
     /**
      * 插件服务注册.

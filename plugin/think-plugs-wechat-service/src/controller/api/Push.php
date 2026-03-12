@@ -93,12 +93,12 @@ class Push extends Controller
             # 授权成功通知
             if ($data['InfoType'] === 'authorized') {
                 $map = ['authorizer_appid' => $data['AuthorizerAppid']];
-                WechatAuth::mk()->where($map)->update(['deleted' => 0]);
+                WechatAuth::mk()->withTrashed()->where($map)->update(['delete_time' => null]);
             }
             # 取消授权通知
             if ($data['InfoType'] === 'unauthorized') {
                 $map = ['authorizer_appid' => $data['AuthorizerAppid']];
-                WechatAuth::mk()->where($map)->update(['deleted' => 1]);
+                WechatAuth::mk()->where($map)->update(['delete_time' => date('Y-m-d H:i:s')]);
             }
             # 授权更新通知
             if ($data['InfoType'] === 'updateauthorized') {
@@ -117,24 +117,24 @@ class Push extends Controller
      */
     public function oauth()
     {
-        [$mode, $appid, $enurl, $sessid] = [
+        [$mode, $appid, $enurl, $oauthid] = [
             $this->request->get('mode'), $this->request->get('state'),
-            $this->request->get('enurl'), $this->request->get('sessid'),
+            $this->request->get('enurl'), $this->request->get('oauthid'),
         ];
         $result = AuthService::WeOpenService()->getOauthAccessToken($appid);
         if (empty($result['openid'])) {
             throw new Exception('网页授权失败, 无法进一步操作！');
         }
         $expire = empty($result['is_snapshotuser']) ? 3600 : 10;
-        $this->app->cache->set("{$appid}_{$sessid}_token", $result, $expire);
-        $this->app->cache->set("{$appid}_{$sessid}_openid", $result['openid'], $expire);
+        $this->app->cache->set("{$appid}_{$oauthid}_token", $result, $expire);
+        $this->app->cache->set("{$appid}_{$oauthid}_openid", $result['openid'], $expire);
         if (!empty($mode)) {
             $fans = AuthService::WeChatOauth($appid)->getUserInfo($result['access_token'], $result['openid']);
             if (empty($fans)) {
                 throw new Exception('网页授权信息获取失败, 无法进一步操作！');
             }
             $fans['is_snapshotuser'] = empty($result['is_snapshotuser']) ? 0 : 1;
-            $this->app->cache->set("{$appid}_{$sessid}_fans", $fans, $expire);
+            $this->app->cache->set("{$appid}_{$oauthid}_fans", $fans, $expire);
         }
         $this->redirect(debase64url($enurl));
     }
@@ -196,14 +196,14 @@ class Push extends Controller
 
         // 生成公众号授权参数
         $data = array_merge(AuthService::buildAuthData($data), [
-            'deleted' => 0, 'expires_in' => time() + 7000, 'create_at' => date('y-m-d H:i:s'),
+            'delete_time' => null, 'expires_in' => time() + 7000, 'create_time' => date('Y-m-d H:i:s'),
         ]);
 
         // 公众号授权数据更新
-        $defa = WechatAuth::mk()->where(['authorizer_appid' => $result['authorizer_appid']])->find();
+        $defa = WechatAuth::mk()->withTrashed()->where(['authorizer_appid' => $result['authorizer_appid']])->find();
         $data['appkey'] = empty($defa['appkey']) ? md5(uniqid() . rand(1000, 9999)) : $defa['appkey'];
         $data['auth_time'] = empty($defa['auth_time']) ? time() : $defa['auth_time'];
-        WechatAuth::mUpdate($data, 'authorizer_appid');
+        ($defa ?: WechatAuth::mk())->save($data, ['authorizer_appid' => $result['authorizer_appid']]);
 
         // 授权成功后跳转地址处理
         if (empty($redirect)) {

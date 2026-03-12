@@ -18,16 +18,17 @@ declare(strict_types=1);
  * +----------------------------------------------------------------------
  */
 
-namespace app\admin\controller;
+namespace plugin\admin\controller;
 
 use think\admin\Controller;
 use think\admin\Exception;
-use think\admin\extend\CodeExtend;
+use think\admin\extend\codec\CodeToolkit;
 use think\admin\model\SystemUser;
-use think\admin\service\AdminService;
-use think\admin\service\CaptchaService;
-use think\admin\service\RuntimeService;
-use think\admin\service\SystemService;
+use think\admin\auth\AdminService;
+use think\admin\auth\CaptchaService;
+use think\admin\runtime\RuntimeService;
+use think\admin\system\SystemService;
+use think\exception\HttpResponseException;
 
 /**
  * 用户登录管理.
@@ -49,9 +50,11 @@ class Login extends Controller
                 $this->title = '系统登录';
                 // 登录验证令牌
                 $this->captchaType = 'LoginCaptcha';
-                $this->captchaToken = CodeExtend::uuid();
+                $this->captchaToken = CodeToolkit::uuid();
                 // 当前运行模式
                 $this->runtimeMode = RuntimeService::check();
+                $this->tokenValueJson = json_encode('', JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
+                $this->tokenBootstrapJson = json_encode(AdminService::getBootstrapQuery(), JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
                 // 后台背景处理
                 $images = str2arr(sysconf('login_image|raw') ?: '', '|');
                 if (empty($images)) {
@@ -80,31 +83,31 @@ class Login extends Controller
                 $this->error('图形验证码验证失败，请重新输入!');
             }
             /* ! 用户信息验证 */
-            $map = ['username' => $data['username'], 'is_deleted' => 0];
-            $user = SystemUser::mk()->where($map)->findOrEmpty();
+            $user = SystemUser::mk()->where(['username' => $data['username']])->findOrEmpty();
             if ($user->isEmpty()) {
-                $this->app->session->set('LoginInputSessionError', true);
+                $this->markCaptchaError($data['uniqid']);
                 $this->error('登录账号或密码错误，请重新输入!');
             }
             if (empty($user['status'])) {
-                $this->app->session->set('LoginInputSessionError', true);
+                $this->markCaptchaError($data['uniqid']);
                 $this->error('账号已经被禁用，请联系管理员!');
             }
             if (md5("{$user['password']}{$data['uniqid']}") !== $data['password']) {
-                $this->app->session->set('LoginInputSessionError', true);
+                $this->markCaptchaError($data['uniqid']);
                 $this->error('登录账号或密码错误，请重新输入!');
             }
-            $user->hidden(['sort', 'status', 'password', 'is_deleted']);
-            $this->app->session->set('user', $user->toArray());
-            $this->app->session->delete('LoginInputSessionError');
+            // 登录态签发 JWT 需要保留密码摘要参与载荷校验。
+            AdminService::login($user->toArray());
+            $this->clearCaptchaError($data['uniqid']);
+            $token = AdminService::buildToken();
             // 更新登录次数
             $user->where(['id' => $user->getAttr('id')])->inc('login_num')->update([
                 'login_at' => date('Y-m-d H:i:s'), 'login_ip' => $this->app->request->ip(),
             ]);
-            // 刷新用户权限
-            AdminService::apply(true);
             sysoplog('系统用户登录', '登录系统后台成功');
-            $this->success('登录成功', sysuri('admin/index/index'));
+            $this->success('登录成功', sysuri('admin/index/index', [
+                AdminService::getBootstrapQuery() => AdminService::buildBootstrap($token),
+            ]));
         }
     }
 
@@ -119,8 +122,9 @@ class Login extends Controller
         ]);
         $image = CaptchaService::instance()->initialize();
         $captcha = ['image' => $image->getData(), 'uniqid' => $image->getUniqid()];
+        $this->rememberCaptchaToken($captcha['uniqid'], $input['type'], $input['token']);
         // 未发生异常时，直接返回验证码内容
-        if (!$this->app->session->get('LoginInputSessionError')) {
+        if (!$this->hasCaptchaError($input['type'], $input['token'])) {
             $captcha['code'] = $image->getCode();
         }
         $this->success('生成验证码成功', $captcha);
@@ -131,7 +135,67 @@ class Login extends Controller
      */
     public function out()
     {
-        $this->app->session->destroy();
-        $this->success('退出登录成功!', sysuri('admin/login/index'));
+        AdminService::logout();
+        throw new HttpResponseException(json([
+            'code' => 1,
+            'info' => lang('退出登录成功!'),
+            'data' => sysuri('admin/login/index'),
+            'token' => '',
+        ]));
+    }
+
+    /**
+     * 记录验证码与登录页标识关联.
+     */
+    private function rememberCaptchaToken(string $uniqid, string $type, string $token): void
+    {
+        $this->app->cache->set($this->captchaMapKey($uniqid), ['type' => $type, 'token' => $token], 600);
+    }
+
+    /**
+     * 标记登录验证码失败.
+     */
+    private function markCaptchaError(string $uniqid): void
+    {
+        $map = $this->app->cache->get($this->captchaMapKey($uniqid), []);
+        if (!empty($map['type']) && !empty($map['token'])) {
+            $this->app->cache->set($this->captchaFailKey($map['type'], $map['token']), 1, 600);
+        }
+    }
+
+    /**
+     * 清理登录验证码失败标记.
+     */
+    private function clearCaptchaError(string $uniqid): void
+    {
+        $map = $this->app->cache->get($this->captchaMapKey($uniqid), []);
+        if (!empty($map['type']) && !empty($map['token'])) {
+            $this->app->cache->delete($this->captchaFailKey($map['type'], $map['token']));
+        }
+        $this->app->cache->delete($this->captchaMapKey($uniqid));
+    }
+
+    /**
+     * 判断当前登录页是否已有验证码失败记录.
+     */
+    private function hasCaptchaError(string $type, string $token): bool
+    {
+        return boolval($this->app->cache->get($this->captchaFailKey($type, $token), 0));
+    }
+
+    /**
+     * 登录页验证码失败缓存键.
+     */
+    private function captchaFailKey(string $type, string $token): string
+    {
+        return 'think.admin.login.captcha.fail.' . md5("{$type}:{$token}");
+    }
+
+    /**
+     * 验证码映射缓存键.
+     */
+    private function captchaMapKey(string $uniqid): string
+    {
+        return 'think.admin.login.captcha.map.' . md5($uniqid);
     }
 }

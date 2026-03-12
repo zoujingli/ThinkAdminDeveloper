@@ -95,13 +95,13 @@ return array_merge($extra, [
     '微信消息接收地址' => 'WeChat Message Receiving Address',
     '微信开放平台对接所需参数，通过该 URL 接收微信消息和事件推送，$APPID$ 将被替换为微信 AppId' => 'Required parameter for WeChat Open Platform docking. Receive WeChat messages and event pushes through this URL. $APPID$ will be replaced with WeChat AppId',
     '微信授权绑定跳转入口' => 'WeChat Authorization Binding Redirect Entry',
-    '应用插件 ThinkPlugsWechat 对接所需参数，使用微信第三方授权时会跳转到这个页面，由微信管理员进行扫码授权' => 'Required parameter for ThinkPlugsWechat plugin docking. When using WeChat third-party authorization, it will jump to this page for WeChat administrator to scan code for authorization',
+    '应用插件 ThinkPlugsWechatClient 对接所需参数，使用微信第三方授权时会跳转到这个页面，由微信管理员进行扫码授权' => 'Required parameter for ThinkPlugsWechatClient plugin docking. When using WeChat third-party authorization, it will jump to this page for WeChat administrator to scan code for authorization',
     '客户端系统 Yar 调用接口' => 'Client System Yar Call Interface',
-    '应用插件 ThinkPlugsWechat 对接所需参数，客户端 Yar 接口，TOKEN 包含 class appid time nostr sign 的加密内容' => 'Required parameter for ThinkPlugsWechat plugin docking. Client Yar interface. TOKEN contains encrypted content of class appid time nostr sign',
+    '应用插件 ThinkPlugsWechatClient 对接所需参数，客户端 Yar 接口，TOKEN 包含 class appid time nostr sign 的加密内容' => 'Required parameter for ThinkPlugsWechatClient plugin docking. Client Yar interface. TOKEN contains encrypted content of class appid time nostr sign',
     '客户端系统 Soap 调用接口' => 'Client System Soap Call Interface',
-    '应用插件 ThinkPlugsWechat 对接所需参数，客户端 Soap 接口，TOKEN 包含 class appid time nostr sign 的加密内容' => 'Required parameter for ThinkPlugsWechat plugin docking. Client Soap interface. TOKEN contains encrypted content of class appid time nostr sign',
+    '应用插件 ThinkPlugsWechatClient 对接所需参数，客户端 Soap 接口，TOKEN 包含 class appid time nostr sign 的加密内容' => 'Required parameter for ThinkPlugsWechatClient plugin docking. Client Soap interface. TOKEN contains encrypted content of class appid time nostr sign',
     '客户端系统 JsonRpc 调用接口' => 'Client System JsonRpc Call Interface',
-    '应用插件 ThinkPlugsWechat 对接所需参数，客户端 JsonRpc 接口链接，TOKEN 包含 class appid time nostr sign 的加密内容' => 'Required parameter for ThinkPlugsWechat plugin docking. Client JsonRpc interface link. TOKEN contains encrypted content of class appid time nostr sign',
+    '应用插件 ThinkPlugsWechatClient 对接所需参数，客户端 JsonRpc 接口链接，TOKEN 包含 class appid time nostr sign 的加密内容' => 'Required parameter for ThinkPlugsWechatClient plugin docking. Client JsonRpc interface link. TOKEN contains encrypted content of class appid time nostr sign',
 
     // 未授权页面
     '还没有授权，请授权公众号' => 'Not yet authorized, please authorize the official account',

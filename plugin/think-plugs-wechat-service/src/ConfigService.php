@@ -115,21 +115,21 @@ class ConfigService extends Service
 
     /**
      * 微信网页授权.
-     * @param string $sessid 当前会话id(可用session_id()获取)
-     * @param string $source 当前会话URL地址(需包含域名的完整URL地址)
+     * @param string $oauthid 当前网页授权标识
+     * @param string $source 当前网页授权URL地址(需包含域名的完整URL地址)
      * @param int $type 网页授权模式(0静默模式,1高级授权)
      * @return array|bool
      */
-    public function oauth(string $sessid, string $source, int $type = 0): array
+    public function oauth(string $oauthid, string $source, int $type = 0): array
     {
-        $fans = $this->app->cache->get("{$this->appid}_{$sessid}_fans", []);
-        $token = $this->app->cache->get("{$this->appid}_{$sessid}_token", []);
-        $openid = $this->app->cache->get("{$this->appid}_{$sessid}_openid", '');
+        $fans = $this->app->cache->get("{$this->appid}_{$oauthid}_fans", []);
+        $token = $this->app->cache->get("{$this->appid}_{$oauthid}_token", []);
+        $openid = $this->app->cache->get("{$this->appid}_{$oauthid}_openid", '');
         if (!empty($openid) && !empty($type) && !empty($fans)) {
             return ['openid' => $openid, 'token' => $token, 'fans' => $fans, 'url' => ''];
         }
         $mode = empty($type) ? 'snsapi_base' : 'snsapi_userinfo';
-        $params = ['mode' => $type, 'sessid' => $sessid, 'enurl' => enbase64url($source)];
+        $params = ['mode' => $type, 'oauthid' => $oauthid, 'enurl' => enbase64url($source)];
         $location = url('api.push/oauth', [], false, true)->build() . '?' . http_build_query($params);
         $oauthurl = AuthService::WeOpenService()->getOauthRedirect($this->appid, $location, $mode);
         return ['openid' => $openid, 'token' => $token, 'fans' => $fans, 'url' => $oauthurl];

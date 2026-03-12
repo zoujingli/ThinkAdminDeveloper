@@ -23,8 +23,8 @@ namespace plugin\account\service\message;
 use plugin\account\service\contract\MessageInterface;
 use plugin\account\service\contract\MessageUsageTrait;
 use think\admin\Exception;
-use think\admin\extend\CodeExtend;
-use think\admin\extend\HttpExtend;
+use think\admin\extend\codec\CodeToolkit;
+use think\admin\extend\http\HttpClient;
 
 /**
  * 阿里云短信服务
@@ -121,12 +121,12 @@ class Alisms implements MessageInterface
             'Format' => 'JSON',
             'RegionId' => $this->region,
             'SignatureMethod' => 'HMAC-SHA1',
-            'SignatureNonce' => CodeExtend::uuid(),
+            'SignatureNonce' => CodeToolkit::uuid(),
             'SignatureVersion' => '1.0',
             'Timestamp' => date('Y-m-d\TH:i:s\Z'),
             'Version' => '2017-05-25',
         ], $params);
-        $result = HttpExtend::request($method, "https://{$this->getway}", [
+        $result = HttpClient::request($method, "https://{$this->getway}", [
             'data' => $params, 'query' => ['Signature' => $this->buildSign($method, $querys)] + $querys,
         ]);
         if (is_string($result) && is_array($json = json_decode($result, true))) {

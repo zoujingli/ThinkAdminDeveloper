@@ -27,8 +27,8 @@ use plugin\wemall\model\PluginWemallUserRelation;
 use plugin\wemall\service\ConfigService;
 use plugin\wemall\service\UserUpgrade;
 use think\admin\Controller;
-use think\admin\extend\CodeExtend;
-use think\admin\extend\JwtExtend;
+use think\admin\extend\codec\CodeToolkit;
+use think\admin\extend\auth\JwtToken;
 use think\admin\helper\QueryHelper;
 use think\db\exception\DataNotFoundException;
 use think\db\exception\DbException;
@@ -117,7 +117,7 @@ class Admin extends Controller
     public function view()
     {
         $data = $this->_vali(['unid.require' => '编号不能为空！']);
-        $token = CodeExtend::encrypt($data, JwtExtend::jwtkey());
+        $token = CodeToolkit::encrypt($data, JwtToken::jwtkey());
         $domain = ConfigService::get('base_domain');
         $this->redirect("{$domain}?autologin={$token}");
     }

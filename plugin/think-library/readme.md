@@ -1,421 +1,277 @@
 # ThinkLibrary for ThinkAdmin
 
-[![Latest Stable Version](https://poser.pugx.org/zoujingli/think-library/v/stable)](https://packagist.org/packages/zoujingli/think-library)
-[![Latest Unstable Version](https://poser.pugx.org/zoujingli/think-library/v/unstable)](https://packagist.org/packages/zoujingli/think-library)
-[![Total Downloads](https://poser.pugx.org/zoujingli/think-library/downloads)](https://packagist.org/packages/zoujingli/think-library)
-[![Monthly Downloads](https://poser.pugx.org/zoujingli/think-library/d/monthly)](https://packagist.org/packages/zoujingli/think-library)
-[![Daily Downloads](https://poser.pugx.org/zoujingli/think-library/d/daily)](https://packagist.org/packages/zoujingli/think-library)
-[![PHP Version](https://thinkadmin.top/static/icon/php-7.1.svg)](https://thinkadmin.top)
-[![License](https://thinkadmin.top/static/icon/license-mit.svg)](https://mit-license.org)
+**ThinkLibrary** 是 ThinkAdmin 8 / ThinkPHP 8.1 的核心基础库，负责控制器基类、模型基类、运行时路由绑定、插件元数据解析、JWT 认证、任务执行协议、通用工具和公共门面。
 
-**ThinkLibrary** 是一个针对 **ThinkPHP 6 & 8** 的封装库，它提供了完整的 **CRUD**（创建、读取、更新、删除）操作和一系列常用工具。
+## 版本基线
 
-## 业务功能特性
+- ThinkAdmin `8.x`
+- ThinkPHP `8.1+`
+- PHP `8.1+`
 
-**核心架构功能：**
-- **标准控制器基类**: 提供完整的 CRUD 操作封装，包括分页、表单、验证、队列等通用功能
-- **基础模型类**: 实现魔术方法和静态助手调用，支持操作日志记录和数据一致性保障
-- **自定义服务基类**: 提供依赖注入和实例化机制，支持服务的统一管理和扩展
-- **全局函数库**: 包含数据处理、系统配置、HTTP 请求、JWT 认证等实用函数
-- **快捷查询逻辑器**: 提供链式查询构建，简化数据库操作
-- **表单验证机制**: 支持规则别名和自定义验证，确保数据输入安全
-- **异步任务队列**: 支持延时执行和循环任务，提升系统响应性能
-- **CSRF 令牌验证**: 内置表单安全验证，防止跨站请求伪造攻击
-- **高精度计算支持**: 集成 BC Math 高精度数学函数，确保金融计算的准确性
+## 详细描述
 
-**技术特性：**
-- **PSR-12 标准**: 严格遵循 PHP-FIG 编码规范，确保代码质量和可维护性
-- **模块化设计**: 各功能模块独立封装，便于扩展和维护
-- **高性能优化**: 针对高并发场景进行专门优化，支持缓存和数据库连接池
-- **异常处理完善**: 完善的异常捕获和日志记录机制，便于问题排查
-- **向后兼容**: 保持 API 稳定性，确保平滑升级
-- **数据完整性保障**: 通过数据库约束确保业务数据的一致性和有效性
+- `ThinkLibrary` 是整个仓库的核心基础库，负责定义统一的控制器基类、模型基类、插件基类、命令基类和运行时公共能力。
+- 它承载的是“框架级通用能力”，包括插件优先路由、JWT 认证、任务执行协议、菜单节点扫描、模型与查询标准化、系统配置和通用工具。
+- 当前已经不再保留旧多应用模式的历史兼容结构，也不再承担存储驱动、守护进程、发布导出、物流短信等非核心实现。
+- 组件目标是作为所有插件共享的核心层，而不是再继续堆放具体业务逻辑。
 
-## 功能说明
+## 架构说明
 
-1. **数据列表展示组件**
+- 基础入口层：`Controller`、`Model`、`Service`、`Plugin`、`Command` 为所有插件提供统一基类和调用约定。
+- 运行时层：`runtime` 负责插件发现、URL 前缀绑定、单应用兜底、URL 生成和运行时同步。
+- 请求上下文层：`context` 负责当前插件、当前后台用户、当前令牌这类请求级状态，不再散落在 `sysvar()` 字符串键中。
+- 认证层：`auth` 负责后台 JWT、图形验证码、令牌校验和认证中间件。
+- 任务层：`queue` 只保留任务记录、任务执行协议和执行命令，常驻调度已交给 `ThinkPlugsWorker`。
+- 支撑层：`menu / node / module / process / system / query / model / view / extend / contract / helper` 负责菜单、节点、模块、进程、系统配置、查询工厂、模型工厂、视图工具和通用工具集合。
 
-* 功能：展示数据列表，支持分页、排序和高级搜索。
-* 优化点：提供友好的用户界面和交互体验，确保数据展示的准确性和实时性。
-* 高级特性：支持多种排序方式、自定义搜索字段和条件。
+## 组件边界
 
-2. **表单处理模块**
+- 提供 `think\admin\Controller`、`Model`、`Service`、`Plugin` 等基础类型
+- 提供插件优先、单应用兜底的运行时路由能力
+- 提供后台 JWT 签发、解析、续签和认证中间件
+- 提供队列记录、任务执行协议和执行层命令
+- 提供 `Storage` 门面、契约和公共 Trait
+- 根层基类已改为显式 getter 与强类型属性，不再依赖魔术属性读取插件元数据
+- 不负责守护进程管理，`http/queue` 常驻运行由 `ThinkPlugsWorker` 负责
+- 不负责具体存储驱动和上传授权，驱动实现由 `ThinkPlugsStorage` 负责
+- 不负责数据库脚本导出、安装包生成和发布命令，这些能力已迁到 `ThinkPlugsHelper`
+- 不负责具体物流查询和短信厂商实现，这类非核心能力应放到 `ThinkPlugsHelper` 或独立插件
 
-* 功能：用于创建、展示和提交表单数据。
-* 优化点：表单验证和错误处理机制，确保数据的有效性和完整性。
-* 高级特性：支持多种表单元素、表单验证规则和动态表单生成。
+## 内部分域
 
-3. **数据状态快速处理模块**
+当前核心实现已经按职责收敛到这些域：
 
-* 功能：根据业务需求快速更新数据状态。
-* 优化点：提供简洁的接口和操作方式，支持多字段同时更新。
-* 高级特性：支持条件判断和事务处理，确保数据一致性和完整性。
+- `runtime`
+  负责插件发现、前缀绑定、单应用兜底、URL 生成和运行时同步。
+- `context`
+  负责请求级上下文，例如当前插件、当前后台用户和当前令牌。
+- `auth`
+  负责后台认证、图形验证码、表单令牌和认证中间件。
+- `queue`
+  负责任务运行时、任务命令和任务基类。
+- `command`
+  负责基础命令入口，例如数据库维护、内容替换和菜单重建。
+- `process`
+  负责 PHP / Think / Composer 进程封装与跨平台进程查询。
+- `module`
+  负责模块列表、版本信息和运行时二进制路径解析。
+- `node`
+  负责控制器节点扫描、节点命名规范和当前节点解析。
+- `menu`
+  负责后台菜单树和插件菜单过滤。
+- `model`
+  负责基础模型、系统模型和 `ModelFactory` 等模型标准化能力。
+- `system`
+  负责系统配置、系统数据、系统日志、静态资源路径和 favicon 处理。
+- `view`
+  负责轻量视图构建工具，例如 `FormBuilder`。
+- `query`
+  负责查询对象标准化与查询前事件挂载，例如 `QueryFactory`。
+- `extend/auth|codec|data|filesystem|http|image|model|rpc`
+  负责 JWT、编码、树结构、文件、HTTP、图像、虚拟模型和 RPC 工具。
+- `contract`
+  负责 `QueueRuntimeInterface`、`QueueHandlerInterface`、`StorageInterface` 等基础契约。
+- `helper`
+  负责 Token、查询、分页和列表表格输出等控制器辅助类。
 
-4. **数据安全删除模块**
+## 依赖关系
 
-* 功能：根据业务需求安全地删除数据。
-* 优化点：提供软删除和硬删除两种方式，确保数据彻底消失或标记为已删除。
-* 高级特性：支持根据条件自动软删除、可配置的软删除标记字段。
+- 必需：`topthink/framework`
+- 必需：`topthink/think-orm`
+- 必需：`symfony/process`
+- 可选上层：`zoujingli/think-plugs-admin`
+- 可选上层：`zoujingli/think-plugs-worker`
+- 可选上层：`zoujingli/think-plugs-storage`
+- 可选上层：`zoujingli/think-plugs-helper`
 
-5. **文件存储通用组件**
+## 安装组件
 
-* 功能：支持多种文件存储方式，包括本地服务存储、云存储等。
-* 优化点：提供统一的接口和配置方式，方便开发者快速集成和使用。
-* 高级特性：支持文件上传、下载、删除和版本控制等功能。
+```bash
+composer require zoujingli/think-library
+```
 
-6. **通用数据保存更新模块**
+## 服务注册
 
-* 功能：根据 key 值及 where 条件判断数据是否存在，进行更新或新增操作。
-* 优化点：提供简洁的接口和操作方式，减少冗余代码和重复工作量。
-* 高级特性：支持乐观锁和悲观锁机制，确保并发控制和数据一致性。
+`ThinkLibrary` 基于 ThinkPHP 原生 `Service` 机制注册：
 
-7. **通用网络请求模块**
+- `composer.json > extra.think.services`
+- 服务类：`think\admin\Library`
 
-* 功能：支持 GET、POST 和 PUT 请求，可配置请求参数、证书等。
-* 优化点：提供统一的接口和配置方式，方便开发者快速发起网络请求。
-* 高级特性：支持请求重试、超时设置、自动捕获异常等功能。
+插件标准元数据约定：
 
-8. **系统参数通用 g-k-v 配置模块**
+- `extra.xadmin.service`
+- `extra.xadmin.menu`
+- `extra.xadmin.migrate`
 
-* 功能：快速配置系统参数，支持长久化保存。
-* 优化点：提供简洁的接口和操作方式，方便开发者管理和维护系统参数。
-* 高级特性：支持参数加密存储、权限控制和日志记录等功能。
+标准服务声明示例：
 
-9. **UTF8 加密算法支持模块**
-
-* 功能：提供 UTF8 字符串的加密和解密功能。
-* 优化点：确保加密过程的安全性和数据的机密性。
-* 高级特性：支持多种加密算法、密钥管理等功能。
-
-10. **接口 CORS 跨域默认支持模块**
-
-* 功能：默认支持跨域请求，输出标准化 JSON 数据。
-* 优化点：减少开发者的工作量，自动处理跨域问题。
-* 高级特性：支持定制化响应头、跨域请求限制等功能。
-
-11. **表单 CSRF 安全验证模块**
-
-* 功能：自动为表单添加 CSRF 安全验证字段，防止恶意提交。
-* 优化点：简化开发者的工作流程，提高表单提交的安全性。
-* 高级特性：支持自定义验证规则、多种验证方式等功能。
-
-## 参考项目
-
-#### ThinkAdmin - V6
-
-* Gitee 仓库 https://gitee.com/zoujingli/ThinkAdmin
-* Github 仓库 https://github.com/zoujingli/ThinkAdmin
-* Gitcode 仓库 https://gitcode.com/ThinkAdmin/ThinkAdmin
-* 体验地址 ( 账号密码都是 admin ) https://v6.thinkadmin.top
-
-## 代码仓库
-
-**ThinkLibrary** 遵循 **MIT** 开源协议发布，并免费提供使用。
-
-部分代码来自互联网，若有异议可以联系作者进行删除。
-
-* 在线体验地址：https://v6.thinkadmin.top ( 账号和密码都是 `admin` )
-* **Gitee** 仓库地址：https://gitee.com/zoujingli/ThinkLibrary
-* **Github** 仓库地址：https://github.com/zoujingli/ThinkLibrary
-* **Gitcode** 仓库地址： https://gitcode.com/ThinkAdmin/ThinkLibrary
-
-版权所有 Copyright © 2014-2026 by ThinkAdmin (https://thinkadmin.top) All rights reserved。
-
-## 使用说明
-
-1. **依赖管理**：ThinkLibrary 需要 Composer 支持进行安装和依赖管理。
-2. **安装指南**：您可以使用以下命令通过 Composer 安装 ThinkLibrary：`composer require zoujingli/think-library`。
-3. **使用示例**：在使用 ThinkLibrary 时，确保您的控制器类继承自 `think\admin\Controller`。一旦继承完成，您就可以通过 `$this` 对象访问并使用全部功能。
-
-```php
-// 定义 MyController 控制器
-class MyController extend \think\admin\Controller {
-
-    // 指定当前数据表名
-    protected $dbQuery = '数据表名';
-    
-    // 显示数据列表
-    public function index(){
-        $this->_page($this->dbQuery);
+```json
+{
+  "extra": {
+    "think": {
+      "services": [
+        "plugin\\\\demo\\\\Service"
+      ]
+    },
+    "xadmin": {
+      "service": {
+        "code": "demo",
+        "prefix": "demo",
+        "type": "plugin",
+        "name": "演示插件"
+      }
     }
-    
-    // 当前列表数据处理
-    protected function _index_page_filter(&$data){
-         foreach($data as &$vo){
-            // @todo 修改原列表
-         }
-    }
-    
+  }
 }
 ```
 
-* 必要数据库表SQL（sysdata 函数需要用这个表）
+## 运行时机制
 
-```sql
-CREATE TABLE `system_data`
-(
-    `id`    bigint(11) unsigned NOT NULL AUTO_INCREMENT,
-    `name`  varchar(100) DEFAULT NULL COMMENT '配置名',
-    `value` longtext COMMENT '配置值',
-    PRIMARY KEY (`id`) USING BTREE,
-    KEY     `idx_system_data_name` (`name`) USING BTREE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='系统-数据';
-```
+当前运行时约定为：
 
-* 必要数据库表SQl（sysoplog 函数需要用的这个表）
+- `app` 只保留一个 `single_app`
+- 插件通过 URL 前缀注册访问入口
+- 请求首段命中已注册前缀时切换到对应插件
+- 未命中插件前缀时回退到单应用
+- 动态插件切换默认关闭，需要显式开启 `app.plugin.switch.enabled`
 
-```sql
-CREATE TABLE `system_oplog`
-(
-    `id`        bigint(20) unsigned NOT NULL AUTO_INCREMENT,
-    `node`      varchar(200)  NOT NULL DEFAULT '' COMMENT '当前操作节点',
-    `geoip`     varchar(15)   NOT NULL DEFAULT '' COMMENT '操作者IP地址',
-    `action`    varchar(200)  NOT NULL DEFAULT '' COMMENT '操作行为名称',
-    `content`   varchar(1024) NOT NULL DEFAULT '' COMMENT '操作内容描述',
-    `username`  varchar(50)   NOT NULL DEFAULT '' COMMENT '操作人用户名',
-    `create_at` timestamp     NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
-    PRIMARY KEY (`id`) USING BTREE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='系统-日志';
-```
-
-* 必要数据库表SQL（`sysconf`函数需要用到这个表）
-
-```sql
-CREATE TABLE `system_config`
-(
-    `type`  varchar(20)  DEFAULT '' COMMENT '分类',
-    `name`  varchar(100) DEFAULT '' COMMENT '配置名',
-    `value` varchar(500) DEFAULT '' COMMENT '配置值',
-    KEY     `idx_system_config_type` (`type`),
-    KEY     `idx_system_config_name` (`name`) USING BTREE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='系统-配置';
-```
-
-* 系统任务列队支持需要的数据表
-
-```sql
-CREATE TABLE `system_queue`
-(
-    `id`         bigint(20) NOT NULL AUTO_INCREMENT,
-    `code`       varchar(20)          DEFAULT '' COMMENT '任务编号',
-    `title`      varchar(50) NOT NULL DEFAULT '' COMMENT '任务名称',
-    `command`    varchar(500)         DEFAULT '' COMMENT '执行指令',
-    `exec_data`  longtext COMMENT '执行参数',
-    `exec_time`  bigint(20) unsigned DEFAULT '0' COMMENT '执行时间',
-    `exec_desc`  varchar(500)         DEFAULT '' COMMENT '状态描述',
-    `enter_time` bigint(20) DEFAULT '0' COMMENT '开始时间',
-    `outer_time` bigint(20) DEFAULT '0' COMMENT '结束时间',
-    `attempts`   bigint(20) DEFAULT '0' COMMENT '执行次数',
-    `rscript`    tinyint(1) DEFAULT '1' COMMENT '单例模式',
-    `status`     tinyint(1) DEFAULT '1' COMMENT '任务状态(1新任务,2处理中,3成功,4失败)',
-    `create_at`  timestamp   NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
-    PRIMARY KEY (`id`) USING BTREE,
-    KEY          `idx_system_queue_code` (`code`),
-    KEY          `idx_system_queue_title` (`title`) USING BTREE,
-    KEY          `idx_system_queue_status` (`status`) USING BTREE,
-    KEY          `idx_system_queue_rscript` (`rscript`) USING BTREE,
-    KEY          `idx_system_queue_create_at` (`create_at`) USING BTREE,
-    KEY          `idx_system_queue_exec_time` (`exec_time`) USING BTREE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='系统-任务';
-```
-
-#### 列表处理
+配置示例：
 
 ```php
-// 列表展示
-$this->_page($dbQuery, $isPage, $isDisplay, $total);
-
-// 列表展示搜索器（按 name、title 模糊搜索；按 status 精确搜索）
-$this->_query($dbQuery)->like('name,title')->equal('status')->page();
-
-// 对列表查询器进行二次处理
-$query = $this->_query($dbQuery)->like('name, title')->equal('status');
-$db = $query->db(); // @todo 这里可以对db进行操作
-$this->_page($db); // 显示列表分页
+return [
+    'single_app' => 'index',
+    'plugin' => [
+        'bindings' => [
+            'admin' => 'admin',
+            'wechat' => ['wechat', 'mp'],
+        ],
+        'switch' => [
+            'enabled' => false,
+            'query' => '_plugin',
+            'header' => 'X-Plugin-App',
+        ],
+    ],
+];
 ```
 
-#### 表单处理
+## 认证机制
+
+- 后台统一使用 `Authorization: Bearer <JWT>`
+- 不再使用 Session/Cookie 承载后台登录态
+- `ThinkLibrary` 负责 JWT 签发、解析、续签和认证中间件
+- 表单防重与一次性令牌基于缓存实现，不再依赖 Session
+
+## 队列机制
+
+- `ThinkLibrary` 负责 `system_queue` 记录、任务状态、进度和任务执行协议
+- `xadmin:queue` 只保留执行层动作，不再管理守护进程
+- 守护进程统一通过 `ThinkPlugsWorker queue` 运行
+
+队列相关契约：
+
+- `think\admin\contract\QueueRuntimeInterface`
+- `think\admin\contract\QueueHandlerInterface`
+
+## 命令说明
+
+`ThinkLibrary` 当前提供这些基础命令：
+
+- `php think xadmin:queue`
+  只支持 `clean` 和 `dorun`
+- `php think xadmin:database`
+  数据库修复与辅助处理
+- `php think xadmin:replace`
+  项目内容替换工具
+- `php think xadmin:sysmenu`
+  系统菜单辅助命令
+
+## 常用能力
+
+- 控制器 CRUD 封装
+- QueryHelper 列表查询、分页与 Layui.Table 输出能力
+- QueryFactory / ModelFactory 标准工厂
+- 全局函数与系统配置读取
+- JWT Token 认证
+- 存储门面与统一调用入口
+- HTTP / RPC / 文件 / 编码工具
+- 插件元数据读取与菜单解析
+
+## 使用示例
+
+控制器示例：
 
 ```php
-// 表单显示及数据更新
-$this->_form($dbQuery, $tplFile, $pkField , $where, $data);
+namespace app\index\controller;
+
+use think\admin\Controller;
+
+class Demo extends Controller
+{
+    protected $dbQuery = 'SystemUser';
+
+    public function index()
+    {
+        $this->_page($this->dbQuery);
+    }
+}
 ```
 
-#### 删除处理
+工具示例：
 
 ```php
-// 数据删除处理
-$this->_deleted($dbQuery);
+use think\admin\extend\codec\CodeToolkit;
+use think\admin\extend\data\ArrayTree;
+
+$uuid = CodeToolkit::uuid();
+$tree = ArrayTree::arr2tree($data);
 ```
 
-#### 禁用启用处理
+## 发布与迁移
 
-```php
-// 数据禁用处理
-$this->_save($dbQuery, ['status'=>'0']);
+`ThinkLibrary` 自身不提供：
 
-// 数据启用处理
-$this->_save($dbQuery, ['status'=>'1']);
-```
+- `stc/config`
+- `stc/database`
+- 静态资源发布模板
 
-#### 文件存储组件（ oss 及 qiniu 需要配置参数）
+这些能力已经拆分到独立组件：
 
-```php
+- `ThinkPlugsStatic`
+- `ThinkPlugsHelper`
+- `ThinkPlugsWorker`
+- `ThinkPlugsStorage`
 
-// 配置默认存储方式    
-sysconf('storage.type','文件存储类型');
+## 命名空间约定
 
-// 七牛云存储配置
-sysconf('storage.qiniu_region', '文件存储节点');
-sysconf('storage.qiniu_domain', '文件访问域名');
-sysconf('storage.qiniu_bucket', '文件存储空间名称');
-sysconf('storage.qiniu_is_https', '文件HTTP访问协议');
-sysconf('storage.qiniu_access_key', '接口授权AccessKey');
-sysconf('storage.qiniu_secret_key', '接口授权SecretKey');
+历史兼容包装层已经移除，当前应直接引用真实分域实现：
 
+- 认证相关：`auth/*`
+- 队列相关：`queue/*`
+- 基础命令：`command/*`
+- 运行时相关：`runtime/*`
+- 模块相关：`module/*`
+- 节点相关：`node/*`
+- 系统相关：`system/*`
+- 视图构建：`view/*`
 
-// 生成文件名称(链接url或文件md5)
-$filename = \think\admin\Storage::name($url, $ext, $prv, $fun);
+## 数据依赖
 
-// 获取文件内容（自动存储方式）
-$result = \think\admin\Storage::get($filename);
+`ThinkLibrary` 本身不附带安装迁移，但部分能力依赖这些系统表：
 
-// 保存内容到文件（自动存储方式）
-$result = \think\admin\Storage::save($filename, $content);
+- `system_config`
+- `system_data`
+- `system_oplog`
+- `system_queue`
 
-// 判断文件是否存在
-boolean \think\admin\Storage::has($filename);
+这类系统表通常由 `ThinkPlugsAdmin` 的迁移脚本统一创建。
 
-// 获取文件信息
-$result = \think\admin\Storage::info($filename);
+## 平台说明
 
-//指定存储类型（调用方法）
-$result = \think\admin\Storage::instance('local')->save($filename, $content);
-$result = \think\admin\Storage::instance('qiniu')->save($filename, $content);
-$result = \think\admin\Storage::instance('txcos')->save($filename, $content);
-$result = \think\admin\Storage::instance('upyun')->save($filename, $content);
-$result = \think\admin\Storage::instance('alioss')->save($filename, $content);
+- Windows 兼容
+- Linux 兼容
+- 不依赖平台专有守护机制
+- 常驻进程建议交由 `ThinkPlugsWorker` 处理
 
-// 读取文件内容
-$result = \think\admin\Storage::instance('local')->get($filename);
-$result = \think\admin\Storage::instance('qiniu')->get($filename);
-$result = \think\admin\Storage::instance('txcos')->get($filename);
-$result = \think\admin\Storage::instance('upyun')->get($filename);
-$result = \think\admin\Storage::instance('alioss')->get($filename);
+## 许可证
 
-// 生成 URL 访问地址
-$result = \think\admin\Storage::instance('local')->url($filename);
-$result = \think\admin\Storage::instance('qiniu')->url($filename);
-$result = \think\admin\Storage::instance('txcos')->url($filename);
-$result = \think\admin\Storage::instance('upyun')->url($filename);
-$result = \think\admin\Storage::instance('alioss')->url($filename);
-
-// 检查文件是否存在
-boolean \think\admin\Storage::instance('local')->has($filename);
-boolean \think\admin\Storage::instance('qiniu')->has($filename);
-boolean \think\admin\Storage::instance('txcos')->has($filename);
-boolean \think\admin\Storage::instance('upyun')->has($filename);
-boolean \think\admin\Storage::instance('alioss')->has($filename);
-
-// 生成文件信息
-$resutl = \think\admin\Storage::instance('local')->info($filename);
-$resutl = \think\admin\Storage::instance('qiniu')->info($filename);
-$resutl = \think\admin\Storage::instance('txcos')->info($filename);
-$resutl = \think\admin\Storage::instance('upyun')->info($filename);
-$resutl = \think\admin\Storage::instance('alioss')->info($filename);
-```
-
-#### 通用数据保存
-
-```php
-// 指定关键列更新（$where 为扩展条件）
-boolean data_save($dbQuery, $data, 'pkname', $where);
-```
-
-#### 通用网络请求
-
-```php
-// 发起get请求
-$result = http_get($url, $query, $options);
-
-// 发起post请求
-$result = http_post($url, $data, $options);
-```
-
-#### 系统参数配置（基于 system_config 数据表）
-
-```php
-// 设置参数
-sysconf($keyname, $keyvalue);
-
-// 获取参数
-$keyvalue = sysconf($kename);
-```
-
-### 数据加密
-
-**自研 UTF8 加密**
-
-```php
-// 自研 UTF8 字符串加密操作
-$string = encode($content);
-
-// 自研 UTF8 加密字符串解密
-$content = decode($string);
-```
-
-**数据解密**
-
-```php
-use think\admin\extend\CodeExtend;
-
-// 数据 AES-256-CBC 对称加密
-$encrypt = CodeExtend::encrypt($content, $enckey);
-
-// 数据 AES-256-CBC 对称解密
-$content = CodeExtend::decrypt($encrypt, $enckey);
-```
-
-**文本转 UTF8 编码**
-
-```php
-use think\admin\extend\CodeExtend;
-
-// 文本转 UTF8 编码
-$content = CodeExtend::text2utf8($content)
-```
-
-**文本 Base64 URL 编码**
-
-```php
-use think\admin\extend\CodeExtend;
-
-// 文本 Base64 URL 编码
-$safe64 = CodeExtend::enSafe64($content)
-
-// 文本 Base64 URL 解码
-$content = CodeExtend::deSafe64($safe64)
-```
-
-### 数据压缩处理
-
-```php
-use think\admin\extend\CodeExtend;
-
-// 数据压缩 ( 内容越大效果越好 )
-$enzip = CodeExtend::enzip($content)
-
-// 数据解压 ( 内容越大效果越好 )
-$content = CodeExtend::dezip($enzip)
-```
-
-### 数组结构处理
-
-```php
-use think\admin\extend\CodeExtend;
-
-// 二维数组 转为 立体数据结构，需要存在 id 及 pid 关系
-$tree = CodeExtend::arr2tree($list);
-
-// 二维数组 转为 扁平数据结构，需要存在 id 及 pid 关系
-$tree = CodeExtend::arr2table($list);
+`ThinkLibrary` 基于 `MIT` 发布。

@@ -35,7 +35,7 @@ namespace plugin\wuma\controller\source;
 use plugin\wuma\model\PluginWumaSourceBlockchain;
 use plugin\wuma\model\PluginWumaSourceCertificate;
 use think\admin\Controller;
-use think\admin\extend\CodeExtend;
+use think\admin\extend\codec\CodeToolkit;
 use think\admin\helper\QueryHelper;
 use think\db\exception\DataNotFoundException;
 use think\db\exception\DbException;
@@ -131,7 +131,7 @@ class Blockchain extends Controller
     protected function _form_filter(array &$data)
     {
         if (empty($data['code'])) {
-            $data['code'] = CodeExtend::uniqidNumber(16, 'BC');
+            $data['code'] = CodeToolkit::uniqidNumber(16, 'BC');
         }
         if ($this->request->isGet()) {
             $this->certs = PluginWumaSourceCertificate::lists();

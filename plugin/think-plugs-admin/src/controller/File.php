@@ -18,12 +18,12 @@ declare(strict_types=1);
  * +----------------------------------------------------------------------
  */
 
-namespace app\admin\controller;
+namespace plugin\admin\controller;
 
 use think\admin\Controller;
 use think\admin\helper\QueryHelper;
 use think\admin\model\SystemFile;
-use think\admin\service\AdminService;
+use think\admin\auth\AdminService;
 use think\admin\Storage;
 use think\db\exception\DataNotFoundException;
 use think\db\exception\DbException;
@@ -55,7 +55,7 @@ class File extends Controller
             $this->title = '系统文件管理';
             $this->xexts = SystemFile::mk()->distinct()->column('xext');
         }, static function (QueryHelper $query) {
-            $query->like('name,hash,xext')->equal('type')->dateBetween('create_at');
+            $query->like('name,hash,xext')->equal('type')->dateBetween('create_time');
             $query->where(['issafe' => 0, 'status' => 2, 'uuid' => AdminService::getUserId()]);
         });
     }

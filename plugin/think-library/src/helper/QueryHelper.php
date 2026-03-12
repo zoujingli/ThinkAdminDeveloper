@@ -21,17 +21,21 @@ declare(strict_types=1);
 namespace think\admin\helper;
 
 use think\admin\Helper;
-use think\admin\service\SystemService;
+use think\admin\Library;
+use think\admin\auth\AdminService;
+use think\admin\query\QueryFactory;
+use think\admin\system\SystemService;
 use think\Container;
 use think\db\BaseQuery;
 use think\db\exception\DataNotFoundException;
 use think\db\exception\DbException;
 use think\db\exception\ModelNotFoundException;
 use think\db\Query;
+use think\exception\HttpResponseException;
 use think\Model;
 
 /**
- * 搜索条件处理器.
+ * 查询、分页与表格处理器.
  * @see Query
  * @mixin \think\db\Query
  * @class QueryHelper
@@ -43,29 +47,20 @@ use think\Model;
 class QueryHelper extends Helper
 {
     /**
-     * 分页助手工具.
-     * @var PageHelper
-     */
-    protected $page;
-
-    /**
      * 当前数据操作.
-     * @var Query
      */
-    protected $query;
+    protected Query $query;
 
     /**
      * 初始化默认数据.
-     * @var array
      */
-    protected $input;
+    protected array $input = [];
 
     /**
      * 克隆属性复制.
      */
     public function __clone()
     {
-        $this->page = clone $this->page;
         $this->query = clone $this->query;
     }
 
@@ -110,9 +105,8 @@ class QueryHelper extends Helper
      */
     public function init($dbQuery, $input = null, ?callable $callable = null): QueryHelper
     {
-        $this->page = PageHelper::instance();
         $this->input = $this->getInputData($input);
-        $this->query = $this->page->autoSortQuery($dbQuery);
+        $this->query = $this->autoSortQuery($dbQuery);
         is_callable($callable) && call_user_func($callable, $this, $this->query);
         return $this;
     }
@@ -267,7 +261,7 @@ class QueryHelper extends Helper
     }
 
     /**
-     * 实例化分页管理器.
+     * 执行分页查询并按控制器约定渲染结果。
      * @param bool|int $page 是否启用分页
      * @param bool $display 是否渲染模板
      * @param bool|int $total 集合分页记录数
@@ -279,7 +273,47 @@ class QueryHelper extends Helper
      */
     public function page($page = true, bool $display = true, $total = false, int $limit = 0, string $template = ''): array
     {
-        return $this->page->init($this->query, $page, $display, $total, $limit, $template);
+        if ($page !== false) {
+            $get = $this->app->request->get();
+            $limits = [10, 20, 30, 40, 50, 60, 70, 80, 90, 100, 110, 120, 130, 140, 150, 160, 170, 180, 190, 200];
+            if ($limit <= 1) {
+                $limit = intval($get['limit'] ?? 20);
+                if (!in_array($limit, $limits, true)) {
+                    $limit = 20;
+                }
+            }
+            $inner = strpos($get['spm'] ?? '', 'm-') === 0;
+            $prefix = $inner ? (sysuri('admin/index/index') . '#') : '';
+            $config = ['list_rows' => $limit, 'query' => $get];
+            if (is_numeric($page)) {
+                $config['page'] = $page;
+            }
+            $data = ($paginate = $this->query->paginate($config, static::getCount($this->query, $total)))->toArray();
+            $result = ['page' => ['limit' => $data['per_page'], 'total' => $data['total'], 'pages' => $data['last_page'], 'current' => $data['current_page']], 'list' => $data['data']];
+            $select = "<select onchange='location.href=this.options[this.selectedIndex].value'>";
+            if (in_array($limit, $limits, true)) {
+                foreach ($limits as $num) {
+                    $get = array_merge($get, ['limit' => $num, 'page' => 1]);
+                    $url = $this->app->request->baseUrl() . '?' . http_build_query($get, '', '&', PHP_QUERY_RFC3986);
+                    $select .= sprintf('<option data-num="%d" value="%s" %s>%d</option>', $num, $prefix . $url, $limit === $num ? 'selected' : '', $num);
+                }
+            } else {
+                $select .= "<option selected>{$limit}</option>";
+            }
+            $html = lang('共 %s 条记录，每页显示 %s 条，共 %s 页当前显示第 %s 页。', [$data['total'], "{$select}</select>", $data['last_page'], $data['current_page']]);
+            $link = $inner ? str_replace('<a href="', '<a data-open="' . $prefix, $paginate->render() ?: '') : ($paginate->render() ?: '');
+            $this->class->assign('pagehtml', "<div class='pagination-container nowrap'><span>{$html}</span>{$link}</div>");
+        } else {
+            $result = ['list' => $this->query->select()->toArray()];
+        }
+        if ($this->class->callback('_page_filter', $result['list'], $result) !== false && $display) {
+            if ($this->output === 'get.json') {
+                $this->class->success('JSON-DATA', $result);
+            } else {
+                $this->class->fetch($template, $result);
+            }
+        }
+        return $result;
     }
 
     /**
@@ -315,7 +349,7 @@ class QueryHelper extends Helper
     }
 
     /**
-     * Layui.Table 组件数据.
+     * 输出 Layui.Table 组件数据或普通列表 JSON。
      * @param ?callable $befor 表单前置操作
      * @param ?callable $after 表单后置操作
      * @param string $template 视图模板文件
@@ -329,12 +363,31 @@ class QueryHelper extends Helper
             if (is_callable($after)) {
                 call_user_func($after, $this, $this->query);
             }
-            $this->page->layTable($this->query, $template);
+            if ($this->output === 'get.json') {
+                $this->applyOrderParams($this->query);
+                return $this->page(true, true, false, 0, $template);
+            }
+            $this->applyOrderParams($this->query);
+            $get = $this->app->request->get();
+            if (empty($get['page']) || empty($get['limit'])) {
+                $data = $this->query->select()->toArray();
+                $result = ['msg' => '', 'code' => 0, 'count' => count($data), 'data' => $data];
+            } else {
+                $cfg = ['list_rows' => $get['limit'], 'query' => $get];
+                $data = $this->query->paginate($cfg, static::getCount($this->query))->toArray();
+                $result = ['msg' => '', 'code' => 0, 'count' => $data['total'], 'data' => $data['data']];
+            }
+            if ($this->class->callback('_page_filter', $result['data'], $result) !== false) {
+                static::xssFilter($result['data']);
+                throw new HttpResponseException(json($result));
+            }
+            return $result;
         } else {
             if (is_callable($befor)) {
                 call_user_func($befor, $this, $this->query);
             }
             $this->class->fetch($template);
+            return null;
         }
     }
 
@@ -357,6 +410,33 @@ class QueryHelper extends Helper
             return Container::getInstance()->invokeClass($class)->{$method}($model, ...$args);
         }
         return is_callable($nohook) ? $nohook($method, $args) : false;
+    }
+
+    /**
+     * 绑定排序并返回操作对象。
+     * @param BaseQuery|Model|string $dbQuery
+     * @param string $field 指定排序字段
+     */
+    public function autoSortQuery($dbQuery, string $field = 'sort'): Query
+    {
+        $query = QueryFactory::build($dbQuery);
+        if ($this->app->request->isPost() && $this->app->request->post('action') === 'sort') {
+            AdminService::isLogin() or $this->class->error('请重新登录！');
+            if (method_exists($query, 'getTableFields') && in_array($field, $query->getTableFields(), true)) {
+                if ($this->app->request->has($pk = $query->getPk() ?: 'id', 'post')) {
+                    $map = [$pk => $this->app->request->post($pk, 0)];
+                    $data = [$field => intval($this->app->request->post($field, 0))];
+                    try {
+                        $query->newQuery()->where($map)->update($data);
+                    } catch (\Throwable) {
+                        $this->class->error('列表排序失败！');
+                    }
+                    $this->class->success('列表排序成功！', '');
+                }
+            }
+            $this->class->error('列表排序失败！');
+        }
+        return $query;
     }
 
     /**
@@ -412,10 +492,57 @@ class QueryHelper extends Helper
     private function normalizeLegacyFieldName(string $field): string
     {
         return match ($field) {
-            'create_at' => 'create_time',
-            'update_at' => 'update_time',
             'deleted_at', 'deleted_time' => 'delete_time',
             default => $field,
         };
+    }
+
+    /**
+     * 根据查询参数补充排序规则。
+     */
+    private function applyOrderParams(Query $query): void
+    {
+        $get = $this->app->request->get();
+        if (isset($get['_field_'], $get['_order_'])) {
+            $query->order("{$get['_field_']} {$get['_order_']}");
+        }
+    }
+
+    /**
+     * 输出 XSS 过滤处理。
+     */
+    private static function xssFilter(array &$items): void
+    {
+        foreach ($items as &$item) {
+            if (is_array($item)) {
+                static::xssFilter($item);
+            } elseif (is_string($item)) {
+                $item = htmlspecialchars($item, ENT_QUOTES);
+            }
+        }
+    }
+
+    /**
+     * 查询对象数量统计。
+     * @param BaseQuery|Query $query
+     * @param bool|int $total
+     * @return bool|int|string
+     * @throws DbException
+     */
+    private static function getCount($query, $total = false)
+    {
+        if ($total === true || is_numeric($total)) {
+            return $total;
+        }
+        [$query, $options] = [clone $query, $query->getOptions()];
+        if (isset($options['order'])) {
+            $query->removeOption('order');
+        }
+        Library::$sapp->db->trigger('think_before_page_count', $query);
+        if (empty($options['union'])) {
+            return $query->count();
+        }
+        $table = [$query->buildSql() => '_union_count_'];
+        return $query->newQuery()->table($table)->count();
     }
 }

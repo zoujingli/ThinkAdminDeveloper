@@ -25,7 +25,7 @@ use plugin\wemall\model\PluginWemallExpressTemplate;
 use plugin\wemall\service\ExpressService;
 use think\admin\Controller;
 use think\admin\Exception;
-use think\admin\extend\CodeExtend;
+use think\admin\extend\codec\CodeToolkit;
 use think\admin\helper\QueryHelper;
 use think\db\exception\DataNotFoundException;
 use think\db\exception\DbException;
@@ -122,7 +122,7 @@ class Template extends Controller
     protected function _form_filter(array &$data)
     {
         if (empty($data['code'])) {
-            $data['code'] = CodeExtend::uniqidDate(12, 'T');
+            $data['code'] = CodeToolkit::uniqidDate(12, 'T');
         }
         if ($this->request->isGet()) {
             $this->citys = ExpressService::region(2, 1);

@@ -31,9 +31,8 @@ abstract class Service
 {
     /**
      * 应用实例.
-     * @var App
      */
-    protected $app;
+    protected App $app;
 
     /**
      * Constructor.
@@ -48,9 +47,8 @@ abstract class Service
      * 静态实例对象
      * @param array $var 实例参数
      * @param bool $new 创建新实例
-     * @return mixed|static
      */
-    public static function instance(array $var = [], bool $new = false)
+    public static function instance(array $var = [], bool $new = false): static
     {
         return Container::getInstance()->make(static::class, $var, $new);
     }

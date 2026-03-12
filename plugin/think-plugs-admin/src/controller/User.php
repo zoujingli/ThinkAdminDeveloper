@@ -18,14 +18,14 @@ declare(strict_types=1);
  * +----------------------------------------------------------------------
  */
 
-namespace app\admin\controller;
+namespace plugin\admin\controller;
 
 use think\admin\Controller;
 use think\admin\helper\QueryHelper;
 use think\admin\model\SystemAuth;
 use think\admin\model\SystemBase;
 use think\admin\model\SystemUser;
-use think\admin\service\AdminService;
+use think\admin\auth\AdminService;
 use think\db\exception\DataNotFoundException;
 use think\db\exception\DbException;
 use think\db\exception\ModelNotFoundException;
@@ -52,7 +52,7 @@ class User extends Controller
             $this->bases = SystemBase::items('身份权限');
         }, function (QueryHelper $query) {
             // 加载对应数据列表
-            $query->where(['is_deleted' => 0, 'status' => intval($this->type === 'index')]);
+            $query->where(['status' => intval($this->type === 'index')]);
 
             // 关联用户身份资料
             /* @var \think\model\Relation|\think\db\Query $query */
@@ -61,7 +61,7 @@ class User extends Controller
             }]);
 
             // 数据列表搜索过滤
-            $query->equal('status,usertype')->dateBetween('login_at,create_at');
+            $query->equal('status,usertype')->dateBetween('login_at,create_time');
             $query->like('username|nickname#username,contact_phone#phone,contact_mail#mail');
         });
     }
@@ -156,8 +156,7 @@ class User extends Controller
             $data['authorize'] = arr2str($data['authorize'] ?? []);
             if (empty($data['id'])) {
                 // 检查账号是否重复
-                $map = ['username' => $data['username'], 'is_deleted' => 0];
-                if (SystemUser::mk()->where($map)->count() > 0) {
+                if (SystemUser::mk()->where(['username' => $data['username']])->count() > 0) {
                     $this->error('账号已经存在，请使用其它账号！');
                 }
                 // 新添加的用户密码与账号相同
@@ -168,8 +167,10 @@ class User extends Controller
         } else {
             // 权限绑定处理
             $data['authorize'] = str2arr($data['authorize'] ?? '');
-            $this->auths = SystemAuth::items();
-            $this->bases = SystemBase::items('身份权限');
+            $this->auths = SystemAuth::itemsWithPlugins();
+            $this->authGroups = $this->buildAuthGroups($this->auths);
+            $this->bases = SystemBase::itemsWithPlugins('身份权限');
+            $this->baseGroups = $this->buildBaseGroups($this->bases);
             $this->super = AdminService::getSuperName();
         }
     }
@@ -182,5 +183,79 @@ class User extends Controller
         if (in_array('10000', str2arr(input('id', '')))) {
             $this->error('系统超级账号禁止删除！');
         }
+    }
+
+    /**
+     * 构建权限分组数据.
+     */
+    private function buildAuthGroups(array $auths): array
+    {
+        $groups = [];
+        foreach ($auths as $auth) {
+            $code = strval($auth['plugin_group'] ?? 'common');
+            if (!isset($groups[$code])) {
+                $groups[$code] = [
+                    'code' => $code,
+                    'name' => strval($auth['plugin_title'] ?? $code),
+                    'items' => [],
+                ];
+            }
+            $groups[$code]['items'][] = $auth;
+        }
+
+        $specials = [];
+        foreach (['common', 'mixed'] as $code) {
+            if (isset($groups[$code])) {
+                $specials[$code] = $groups[$code];
+                unset($groups[$code]);
+            }
+        }
+
+        uasort($groups, static function (array $a, array $b): int {
+            return strcmp(strval($a['name'] ?? ''), strval($b['name'] ?? ''));
+        });
+
+        foreach ($specials as $code => $group) {
+            $groups[$code] = $group;
+        }
+
+        return $groups;
+    }
+
+    /**
+     * 构建身份分组数据.
+     */
+    private function buildBaseGroups(array $bases): array
+    {
+        $groups = [];
+        foreach ($bases as $base) {
+            $code = strval($base['plugin_group'] ?? 'common');
+            if (!isset($groups[$code])) {
+                $groups[$code] = [
+                    'code' => $code,
+                    'name' => strval($base['plugin_title'] ?? $code),
+                    'items' => [],
+                ];
+            }
+            $groups[$code]['items'][] = $base;
+        }
+
+        $specials = [];
+        foreach (['common', 'mixed'] as $code) {
+            if (isset($groups[$code])) {
+                $specials[$code] = $groups[$code];
+                unset($groups[$code]);
+            }
+        }
+
+        uasort($groups, static function (array $a, array $b): int {
+            return strcmp(strval($a['name'] ?? ''), strval($b['name'] ?? ''));
+        });
+
+        foreach ($specials as $code => $group) {
+            $groups[$code] = $group;
+        }
+
+        return $groups;
     }
 }

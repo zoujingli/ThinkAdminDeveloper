@@ -24,7 +24,8 @@ use plugin\center\Service;
 use plugin\center\service\Plugin;
 use think\admin\Controller;
 use think\admin\Exception;
-use think\admin\service\AdminService;
+use think\admin\auth\AdminService;
+use think\admin\runtime\PluginService;
 use think\db\exception\DataNotFoundException;
 use think\db\exception\DbException;
 use think\db\exception\ModelNotFoundException;
@@ -78,38 +79,26 @@ class Index extends Controller
         if (empty($code = decode($encode))) {
             $this->fetchError('应用插件不能为空！');
         }
-        sysvar('CurrentPluginCode', $code);
+        PluginService::activate($code);
         $this->plugin = \think\admin\Plugin::get($code);
         if (empty($this->plugin)) {
             $this->fetchError('插件未安装！');
         }
 
         // 读取插件菜单
-        $menus = $this->plugin['service']::menu();
+        $menus = PluginService::menus($this->plugin, true, true);
         if (empty($menus)) {
             $this->fetchError('插件未配置菜单！');
         }
-
         foreach ($menus as $k1 => &$one) {
             $one['id'] = $k1 + 1;
-            $one['url'] = $one['url'] ?? (empty($one['node']) ? '#' : plguri($one['node']));
-            $one['title'] = lang($one['title'] ?? $one['name']);
             if (!empty($one['subs'])) {
                 foreach ($one['subs'] as $k2 => &$two) {
-                    if (isset($two['node']) && !auth($two['node'])) {
-                        unset($one['subs'][$k2]);
-                        continue;
-                    }
                     $two['id'] = intval($k2) + 1;
                     $two['pid'] = $one['id'];
-                    $two['url'] = empty($two['node']) ? '#' : plguri($two['node']);
-                    $two['title'] = lang($two['title'] ?? $two['name']);
                 }
                 $one['sub'] = $one['subs'];
                 unset($one['subs']);
-            }
-            if ($one['url'] === '#' && empty($one['sub']) || (isset($one['node']) && !auth($one['node']))) {
-                unset($menus[$k1]);
             }
         }
 
@@ -156,7 +145,8 @@ class Index extends Controller
      */
     private function openPlugin(string $code, string $name = '打开指定插件'): Response
     {
-        $href = sysuri(sprintf('layout/%s', encode(sysvar('CurrentPluginCode', $code))), [], false);
+        $current = PluginService::current();
+        $href = '#' . sysuri(sprintf('layout/%s', encode(strval($current['code'] ?? $code))), [], false);
         return json(['code' => 1, 'info' => $name, 'data' => $href, 'wait' => 'false']);
     }
 

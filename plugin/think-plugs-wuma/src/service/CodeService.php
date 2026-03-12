@@ -24,7 +24,7 @@ use plugin\wuma\model\PluginWumaCodeRule;
 use plugin\wuma\model\PluginWumaCodeRuleRange;
 use plugin\wuma\model\PluginWumaWarehouseRelationData;
 use think\admin\Exception;
-use think\admin\extend\CodeExtend;
+use think\admin\extend\codec\CodeToolkit;
 use think\db\exception\DataNotFoundException;
 use think\db\exception\DbException;
 use think\db\exception\ModelNotFoundException;
@@ -359,7 +359,7 @@ class CodeService
     public static function add(array $rule = []): array
     {
         // 查询物码起始位置
-        $batch = CodeExtend::uniqidDate(16, 'B');
+        $batch = CodeToolkit::uniqidDate(16, 'B');
         $snsAfter = PluginWumaCodeRule::mk()->max('sns_after') + 1;
         // 转换物码所需规则
         $data = [

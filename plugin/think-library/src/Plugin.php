@@ -20,9 +20,9 @@ declare(strict_types=1);
 
 namespace think\admin;
 
-use think\admin\service\AppService;
-use think\admin\service\ModuleService;
-use think\admin\service\NodeService;
+use think\admin\module\ModuleService;
+use think\admin\node\NodeService;
+use think\admin\runtime\AppService;
 use think\App;
 use think\Service;
 
@@ -30,62 +30,108 @@ use think\Service;
  * 插件注册服务
  *
  * @class Plugin
- *
- * @method string getAppCode() static 获取插件编号
- * @method string getAppName() static 获取插件名称
- * @method string getAppPath() static 获取插件路径
- * @method string getAppSpace() static 获取插件空间名
- * @method string getAppPackage() static 获取插件安装包
  */
 abstract class Plugin extends Service
 {
     /**
-     * 必填，插件包名.
-     * @var string
+     * 插件类型.
      */
-    protected $package = '';
+    protected string $appType = '';
+
+    /**
+     * 必填，插件包名.
+     */
+    protected string $package = '';
 
     /**
      * 必填，插件编码
-     * @var string
      */
-    protected $appCode = '';
+    protected string $appCode = '';
 
     /**
      * 必填，插件名称.
-     * @var string
      */
-    protected $appName = '';
+    protected string $appName = '';
 
     /**
      * 可选，插件目录.
-     * @var string
      */
-    protected $appPath = '';
+    protected string $appPath = '';
 
     /**
      * 可选，插件别名.
-     * @var string
      */
-    protected $appAlias = '';
+    protected string $appAlias = '';
+
+    /**
+     * 可选，主访问前缀.
+     */
+    protected string $appPrefix = '';
+
+    /**
+     * 可选，访问前缀集合.
+     */
+    protected array $appPrefixes = [];
 
     /**
      * 可选，命名空间.
-     * @var string
      */
-    protected $appSpace = '';
+    protected string $appSpace = '';
 
     /**
      * 可选，注册服务
-     * @var string
      */
-    protected $appService = '';
+    protected string $appService = '';
+
+    /**
+     * 可选，文档地址.
+     */
+    protected string $appDocument = '';
+
+    /**
+     * 可选，插件说明.
+     */
+    protected string $appDescription = '';
+
+    /**
+     * 可选，支持平台.
+     */
+    protected array $appPlatforms = [];
+
+    /**
+     * 可选，协议列表.
+     */
+    protected array $appLicense = [];
+
+    /**
+     * 可选，版本号.
+     */
+    protected string $appVersion = '';
+
+    /**
+     * 可选，主页地址.
+     */
+    protected string $appHomepage = '';
+
+    /**
+     * 可选，菜单根节点配置.
+     */
+    protected array $appMenuRoot = [];
+
+    /**
+     * 可选，菜单存在检测条件.
+     */
+    protected array $appMenuExists = [];
+
+    /**
+     * Composer 配置.
+     */
+    protected array $composer = [];
 
     /**
      * 插件配置.
-     * @var array
      */
-    private static $addons = [];
+    private static array $addons = [];
 
     /**
      * 自动注册插件.
@@ -96,6 +142,8 @@ abstract class Plugin extends Service
 
         // 获取基础服务类
         $ref = new \ReflectionClass(static::class);
+        $this->composer = $this->resolveComposerManifest($ref);
+        $this->hydrateComposerManifest($this->composer);
 
         // 应用服务注册类
         if (empty($this->appService)) {
@@ -134,75 +182,221 @@ abstract class Plugin extends Service
         }
 
         if (is_dir($this->appPath)) {
+            $prefixes = $this->normalizePrefixes();
             // 写入插件参数信息
             self::$addons[$this->appCode] = [
                 'name' => $this->appName,
+                'type' => $this->appType ?: 'plugin',
                 'path' => realpath($this->appPath) . DIRECTORY_SEPARATOR,
                 'alias' => $this->appAlias,
+                'prefix' => $prefixes[0] ?? '',
+                'prefixes' => $prefixes,
                 'space' => $this->appSpace ?: NodeService::space($this->appCode),
                 'package' => $this->package,
                 'service' => $this->appService,
+                'document' => $this->appDocument,
+                'description' => $this->appDescription,
+                'platforms' => $this->normalizeArray($this->appPlatforms),
+                'license' => $this->normalizeArray($this->appLicense),
+                'version' => $this->appVersion,
+                'homepage' => $this->appHomepage,
             ];
-            // 插件别名动态设置
-            if (!empty($this->appAlias) && $this->appCode !== $this->appAlias) {
-                Library::$sapp->config->set([
-                    'app_map' => array_merge(Library::$sapp->config->get('app.app_map', []), [
-                        $this->appAlias => $this->appCode,
-                    ]),
-                ], 'app');
-            }
             AppService::clear();
         }
-    }
-
-    /**
-     * 获取对象内部属性.
-     */
-    public function __get(string $name)
-    {
-        return $this->{$name} ?? '';
-    }
-
-    /**
-     * 静态调用方法兼容.
-     * @return null|array|string
-     * @throws Exception
-     */
-    public static function __callStatic(string $method, array $arguments)
-    {
-        switch (strtolower($method)) {
-            case 'all':
-                return self::get(...$arguments);
-            case 'getappcode':
-                return app(static::class)->appCode;
-            case 'getappname':
-                return app(static::class)->appName;
-            case 'getapppath':
-                return app(static::class)->appPath;
-            case 'getappspace':
-                return app(static::class)->appSpace;
-            case 'getapppackage':
-                return app(static::class)->package;
-            default:
-                $class = basename(str_replace('\\', '/', static::class));
-                throw new Exception("method not exists: {$class}::{$method}()");
-        }
-    }
-
-    /**
-     * 魔术方法调用兼容处理.
-     * @return null|array
-     * @throws Exception
-     */
-    public function __call(string $method, array $arguments)
-    {
-        return self::__callStatic($method, $arguments);
     }
 
     /**
      * 注册应用启动.
      */
     public function boot(): void {}
+
+    /**
+     * 获取插件编号。
+     */
+    public static function getAppCode(): string
+    {
+        return static::plugin()->appCode;
+    }
+
+    /**
+     * 获取插件名称。
+     */
+    public static function getAppName(): string
+    {
+        return static::plugin()->appName;
+    }
+
+    /**
+     * 获取插件路径。
+     */
+    public static function getAppPath(): string
+    {
+        return static::plugin()->appPath;
+    }
+
+    /**
+     * 获取插件命名空间。
+     */
+    public static function getAppSpace(): string
+    {
+        return static::plugin()->appSpace;
+    }
+
+    /**
+     * 获取插件安装包名。
+     */
+    public static function getAppPackage(): string
+    {
+        return static::plugin()->package;
+    }
+
+    /**
+     * 获取插件主访问前缀。
+     */
+    public static function getAppPrefix(): string
+    {
+        return static::plugin()->appPrefix;
+    }
+
+    /**
+     * 获取插件全部访问前缀。
+     * @return string[]
+     */
+    public static function getAppPrefixes(): array
+    {
+        return static::plugin()->appPrefixes;
+    }
+
+    /**
+     * 获取插件菜单根节点配置。
+     */
+    public static function getMenuRoot(): array
+    {
+        return static::plugin()->appMenuRoot;
+    }
+
+    /**
+     * 获取插件菜单存在检测条件。
+     */
+    public static function getMenuExists(): array
+    {
+        return static::plugin()->appMenuExists;
+    }
+
+    /**
+     * 获取当前插件服务实例。
+     */
+    private static function plugin(): static
+    {
+        return app(static::class);
+    }
+
+    /**
+     * 获取标准化前缀列表。
+     * @return string[]
+     */
+    private function normalizePrefixes(): array
+    {
+        $items = [];
+        foreach ([$this->appPrefix, $this->appPrefixes, $this->appAlias, $this->appCode] as $value) {
+            foreach ((array)$value as $prefix) {
+                $prefix = trim((string)$prefix, " \t\n\r\0\x0B\\/");
+                if ($prefix === '') {
+                    continue;
+                }
+                if (strpos($prefix, '/')) {
+                    $prefix = strstr($prefix, '/', true) ?: $prefix;
+                }
+                if (strpos($prefix, '.')) {
+                    $prefix = strstr($prefix, '.', true) ?: $prefix;
+                }
+                if ($prefix !== '' && !in_array($prefix, $items, true)) {
+                    $items[] = $prefix;
+                }
+            }
+        }
+
+        $this->appPrefix = $items[0] ?? '';
+        $this->appPrefixes = $items;
+        return $items;
+    }
+
+    /**
+     * 解析 Composer 配置.
+     */
+    private function resolveComposerManifest(\ReflectionClass $ref): array
+    {
+        if (!($path = $ref->getFileName())) {
+            return [];
+        }
+
+        for ($level = 1; $level <= 3; ++$level) {
+            $file = dirname($path, $level) . DIRECTORY_SEPARATOR . 'composer.json';
+            if (is_file($file)) {
+                return json_decode(file_get_contents($file), true) ?: [];
+            }
+        }
+
+        return [];
+    }
+
+    /**
+     * 同步 Composer 元数据.
+     */
+    private function hydrateComposerManifest(array $manifest): void
+    {
+        $config = (array)($manifest['extra']['config'] ?? []);
+        $service = (array)($manifest['extra']['xadmin']['service'] ?? []);
+        $menu = (array)($manifest['extra']['xadmin']['menu'] ?? []);
+
+        $this->package = strval($manifest['name'] ?? $this->package);
+        $this->appCode = array_key_exists('code', $service) ? strval($service['code']) : $this->appCode;
+        $this->appName = array_key_exists('name', $service) ? strval($service['name']) : ($this->appName ?: strval($config['name'] ?? ''));
+        $this->appAlias = array_key_exists('alias', $service) ? strval($service['alias']) : $this->appAlias;
+        $this->appPrefix = array_key_exists('prefix', $service) ? strval($service['prefix']) : $this->appPrefix;
+        if (array_key_exists('prefixes', $service)) {
+            $this->appPrefixes = (array)$service['prefixes'];
+        }
+        $this->appSpace = array_key_exists('space', $service) ? strval($service['space']) : $this->appSpace;
+        $this->appType = array_key_exists('type', $service) ? strval($service['type']) : ($this->appType ?: strval($config['type'] ?? 'plugin'));
+        $this->appDocument = array_key_exists('document', $service) ? strval($service['document']) : ($this->appDocument ?: strval($config['document'] ?? ''));
+        $this->appDescription = array_key_exists('description', $service) ? strval($service['description']) : ($this->appDescription ?: strval($config['description'] ?? ($manifest['description'] ?? '')));
+        if (array_key_exists('platforms', $service)) {
+            $this->appPlatforms = (array)$service['platforms'];
+        } elseif (empty($this->appPlatforms)) {
+            $this->appPlatforms = (array)($config['platforms'] ?? []);
+        }
+        if (array_key_exists('license', $service)) {
+            $this->appLicense = (array)$service['license'];
+        } elseif (empty($this->appLicense)) {
+            $this->appLicense = (array)($config['license'] ?? ($manifest['license'] ?? []));
+        }
+        $this->appVersion = array_key_exists('version', $service) ? strval($service['version']) : ($this->appVersion ?: strval($config['version'] ?? ($manifest['version'] ?? '')));
+        $this->appHomepage = array_key_exists('homepage', $service) ? strval($service['homepage']) : ($this->appHomepage ?: strval($config['homepage'] ?? ($manifest['homepage'] ?? '')));
+        if (array_key_exists('root', $menu)) {
+            $this->appMenuRoot = (array)$menu['root'];
+        }
+        if (array_key_exists('exists', $menu)) {
+            $this->appMenuExists = (array)$menu['exists'];
+        }
+    }
+
+    /**
+     * 标准化字符串数组.
+     * @return string[]
+     */
+    private function normalizeArray(array $items): array
+    {
+        $result = [];
+        foreach ($items as $item) {
+            $value = trim(strval($item));
+            if ($value !== '' && !in_array($value, $result, true)) {
+                $result[] = $value;
+            }
+        }
+
+        return $result;
+    }
 
     /**
      * 获取插件及安装信息.

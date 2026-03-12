@@ -29,7 +29,7 @@ use plugin\wemall\model\PluginWemallUserRebate;
 use plugin\wemall\model\PluginWemallUserRelation;
 use plugin\wemall\model\PluginWemallUserTransfer;
 use think\admin\Exception;
-use think\admin\extend\CodeExtend;
+use think\admin\extend\codec\CodeToolkit;
 use think\admin\Library;
 use think\db\exception\DataNotFoundException;
 use think\db\exception\DbException;
@@ -436,7 +436,7 @@ abstract class UserRebate
             'unid' => $unid,
             'type' => self::$config['type'] ?? '',
             'date' => date('Y-m-d'),
-            'code' => CodeExtend::uniqidDate(16, 'R'),
+            'code' => CodeToolkit::uniqidDate(16, 'R'),
             'name' => $name,
             'layer' => $layer,
             'amount' => $amount,

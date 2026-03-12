@@ -21,7 +21,7 @@ declare(strict_types=1);
 namespace think\admin\tests;
 
 use PHPUnit\Framework\TestCase;
-use think\admin\extend\CodeExtend;
+use think\admin\extend\codec\CodeToolkit;
 
 /**
  * @internal
@@ -31,14 +31,14 @@ class CodeTest extends TestCase
 {
     public function testUuidCreate()
     {
-        $uuid = CodeExtend::uuid();
+        $uuid = CodeToolkit::uuid();
         $this->assertNotEmpty(preg_match('|^[a-z0-9]{8}-([a-z0-9]{4}-){3}[a-z0-9]{12}$|i', $uuid));
     }
 
     public function testEncode()
     {
         $value = '235215321351235123dasfdasfasdfas';
-        $encode = CodeExtend::encrypt($value, 'thinkadmin');
-        $this->assertEquals($value, CodeExtend::decrypt($encode, 'thinkadmin'), '验证加密解密');
+        $encode = CodeToolkit::encrypt($value, 'thinkadmin');
+        $this->assertEquals($value, CodeToolkit::decrypt($encode, 'thinkadmin'), '验证加密解密');
     }
 }

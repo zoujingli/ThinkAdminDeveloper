@@ -23,7 +23,7 @@ namespace plugin\wuma\controller\source;
 use plugin\wuma\model\PluginWumaSourceProduce;
 use plugin\wuma\model\PluginWumaSourceTemplate;
 use think\admin\Controller;
-use think\admin\extend\CodeExtend;
+use think\admin\extend\codec\CodeToolkit;
 use think\admin\helper\QueryHelper;
 use think\db\exception\DataNotFoundException;
 use think\db\exception\DbException;
@@ -114,7 +114,7 @@ class Template extends Controller
     protected function _copy_form_filter(array &$data)
     {
         if ($this->request->isPost()) {
-            $data['code'] = CodeExtend::uniqidDate(16, 'T');
+            $data['code'] = CodeToolkit::uniqidDate(16, 'T');
             unset($data['id'], $data['create_time']);
         }
     }
@@ -125,7 +125,7 @@ class Template extends Controller
     protected function _form_filter(array &$data)
     {
         if (empty($data['code'])) {
-            $data['code'] = CodeExtend::uniqidDate(16, 'T');
+            $data['code'] = CodeToolkit::uniqidDate(16, 'T');
         }
     }
 

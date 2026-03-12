@@ -27,7 +27,7 @@ use plugin\wemall\model\PluginWemallUserRebate;
 use plugin\wemall\model\PluginWemallUserRelation;
 use plugin\wemall\model\PluginWemallUserTransfer;
 use think\admin\Exception;
-use think\admin\extend\CodeExtend;
+use think\admin\extend\codec\CodeToolkit;
 use think\admin\Library;
 
 /**
@@ -68,7 +68,7 @@ abstract class UserCreate
                         UserUpgrade::bindAgent($account->getUnid(), intval($parent->getAttr('id')));
                     }
                     // 创建返佣记录及提现记录
-                    $map = ['code' => $data['rebate_total_code'] ?: CodeExtend::uniqidDate(16, 'R'), 'unid' => $account->getUnid()];
+                    $map = ['code' => $data['rebate_total_code'] ?: CodeToolkit::uniqidDate(16, 'R'), 'unid' => $account->getUnid()];
                     ($rebate = PluginWemallUserRebate::mk()->where($map)->findOrEmpty())->save([
                         'unid' => $account->getUnid(),
                         'code' => $map['code'],
@@ -83,7 +83,7 @@ abstract class UserCreate
                         'confirm_time' => date('Y-m-d H:i:s'),
                     ]);
                     // 创建提现记录
-                    $map = ['code' => $user->getAttr('rebate_usable_code') ?: CodeExtend::uniqidDate(16, 'T'), 'unid' => $account->getUnid()];
+                    $map = ['code' => $user->getAttr('rebate_usable_code') ?: CodeToolkit::uniqidDate(16, 'T'), 'unid' => $account->getUnid()];
                     ($transfer = PluginWemallUserTransfer::mk()->where($map)->findOrEmpty())->save([
                         'unid' => $account->getUnid(),
                         'type' => 'platform',

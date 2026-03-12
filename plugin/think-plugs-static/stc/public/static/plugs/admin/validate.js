@@ -1,8 +1,18 @@
 // +----------------------------------------------------------------------
+// | Static Plugin for ThinkAdmin
+// +----------------------------------------------------------------------
+// | 版权所有 2014~2024 ThinkAdmin [ thinkadmin.top ]
+// +----------------------------------------------------------------------
+// | 官方网站: https://thinkadmin.top
+// +----------------------------------------------------------------------
+// | 开源协议 ( https://mit-license.org )
+// | 免责声明 ( https://thinkadmin.top/disclaimer )
+// +----------------------------------------------------------------------
+// | gitee 代码仓库：https://gitee.com/zoujingli/think-plugs-static
+// | github 代码仓库：https://github.com/zoujingli/think-plugs-static
+// +----------------------------------------------------------------------
 
-define(function () {
-
-    return Validate;
+layui.define(function (exports) {
 
     function Validate(form) {
         let that = this;
@@ -70,7 +80,7 @@ define(function () {
         this.insertError = function ($el) {
             return (function ($icon) {
                 return $el.data('vali-tags').css({
-                    top: $el.position().top + 'px', right: (($icon.length > 0 ? $icon.width() + parseFloat($icon.css('right') || 0) : 0) + 10) + 'px',
+                    top: $el.position().top + 'px', right: (($icon ? $icon.width() + parseFloat($icon.css('right') || 0) : 0) + 10) + 'px',
                     paddingTop: $el.css('marginTop'), lineHeight: ($el.get(0).nodeName || '') === 'TEXTAREA' ? '32px' : $el.css('height'),
                 });
             })($el.nextAll('.input-right-icon'), $el.data('vali-tags') || function () {
@@ -111,4 +121,6 @@ define(function () {
             $(this).removeAttr('data-form-loaded').removeClass('layui-disabled');
         });
     }
+
+    exports('taValidate', Validate);
 });

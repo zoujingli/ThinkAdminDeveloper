@@ -28,7 +28,7 @@ use plugin\wemall\service\UserOrder;
 use plugin\wemall\service\UserRefund;
 use think\admin\Controller;
 use think\admin\helper\QueryHelper;
-use think\admin\service\AdminService;
+use think\admin\auth\AdminService;
 use think\db\exception\DataNotFoundException;
 use think\db\exception\DbException;
 use think\db\exception\ModelNotFoundException;

@@ -1,91 +1,330 @@
 // +----------------------------------------------------------------------
+// | Static Plugin for ThinkAdmin
+// +----------------------------------------------------------------------
+// | 版权所有 2014~2024 ThinkAdmin [ thinkadmin.top ]
+// +----------------------------------------------------------------------
+// | 官方网站: https://thinkadmin.top
+// +----------------------------------------------------------------------
+// | 开源协议 ( https://mit-license.org )
+// | 免责声明 ( https://thinkadmin.top/disclaimer )
+// +----------------------------------------------------------------------
+// | gitee 代码仓库：https://gitee.com/zoujingli/think-plugs-static
+// | github 代码仓库：https://github.com/zoujingli/think-plugs-static
+// +----------------------------------------------------------------------
 
 /*! 应用根路径，静态插件库路径，动态插件库路径 */
 let srcs = document.scripts[document.scripts.length - 1].src.split('/');
 window.appRoot = srcs.slice(0, -2).join('/') + '/';
 window.baseRoot = srcs.slice(0, -1).join('/') + '/';
 window.tapiRoot = window.taAdmin || window.appRoot + "admin";
+window.storageRoot = window.taStorage || window.tapiRoot;
 
 /*! 挂载 layui & jquery 对象 */
 layui.config({base: baseRoot + 'plugs/layui_exts/'});
 window.form = layui.form, window.layer = layui.layer;
 window.laytpl = layui.laytpl, window.laydate = layui.laydate;
 window.jQuery = window.$ = window.jQuery || window.$ || layui.$;
-window.jQuery.ajaxSetup({xhrFields: {withCredentials: true}});
 window.jQuery.fn.size || (window.jQuery.fn.size = () => this.length);
-
-/*! 配置 require 参数  */
-require.config({
-    baseUrl: baseRoot, waitSeconds: 60,
-    map: {'*': {css: baseRoot + 'plugs/require/css.js'}},
-    paths: {
-        // ---------- 自定义 ----------
-        'excel': ['plugs/admin/excel'],
-        'queue': ['plugs/admin/queue'],
-        'upload': [tapiRoot + '/api.upload/index?'],
-        'validate': ['plugs/admin/validate'],
-        'pcasunzips': ['plugs/jquery/pcasunzips'],
-        // ---------- 开源库 ----------
-        'vue': ['plugs/vue/vue.min'],
-        'md5': ['plugs/jquery/md5.min'],
-        'json': ['plugs/jquery/json.min'],
-        'xlsx': ['plugs/jquery/xlsx.min'],
-        'jszip': ['plugs/jquery/jszip.min'],
-        'marked': ['plugs/jquery/marked.min'],
-        'base64': ['plugs/jquery/base64.min'],
-        'notify': ['plugs/notify/notify.min'],
-        'angular': ['plugs/angular/angular.min'],
-        'cropper': ['plugs/cropper/cropper.min'],
-        'echarts': ['plugs/echarts/echarts.min'],
-        'weditor': ['plugs/editor/create'],
-        'ckeditor4': ['plugs/ckeditor4/ckeditor'],
-        'ckeditor5': ['plugs/ckeditor5/ckeditor'],
-        'artplayer': ['plugs/jquery/artplayer.min'],
-        'filesaver': ['plugs/jquery/filesaver.min'],
-        'websocket': ['plugs/socket/websocket'],
-        'compressor': ['plugs/jquery/compressor.min'],
-        'sortablejs': ['plugs/sortable/sortable.min'],
-        '_weditor': ['plugs/editor/index'],
-        'vue.sortable': ['plugs/sortable/vue.draggable.min'],
-        'jquery.ztree': ['plugs/ztree/ztree.all.min'],
-        'jquery.masonry': ['plugs/jquery/masonry.min'],
-        'jquery.cropper': ['plugs/cropper/cropper.min'],
-        'jquery.autocompleter': ['plugs/jquery/autocompleter.min'],
-    }, shim: {
-        'jszip': {deps: ['filesaver']},
-        'excel': {deps: [baseRoot + 'plugs/layui_exts/excel.js']},
-        'notify': {deps: ['css!' + baseRoot + 'plugs/notify/theme.css']},
-        'cropper': {deps: ['css!' + baseRoot + 'plugs/cropper/cropper.min.css']},
-        '_weditor': {deps: ['css!' + baseRoot + 'plugs/editor/css/style.css']},
-        'websocket': {deps: [baseRoot + 'plugs/socket/swfobject.js']},
-        'ckeditor5': {deps: ['jquery', 'upload', 'css!' + baseRoot + 'plugs/ckeditor5/ckeditor.css']},
-        'vue.sortable': {deps: ['vue', 'sortablejs']},
-        'jquery.ztree': {deps: ['jquery', 'css!' + baseRoot + 'plugs/ztree/zTreeStyle/zTreeStyle.css']},
-        'jquery.autocompleter': {deps: ['jquery', 'css!' + baseRoot + 'plugs/jquery/autocompleter.css']},
+window.jQuery.auth = window.jQuery.auth || new function () {
+    this.storage = 'ta-admin-access-token';
+    this.bootstrap = function () {
+        return window.taTokenBootstrap || 'access_key';
+    };
+    this.header = function () {
+        return window.taTokenHeader || 'Authorization';
+    };
+    this.scheme = function () {
+        return window.taTokenScheme || 'Bearer';
+    };
+    this.normalize = function (token) {
+        token = $.trim(String(token || ''));
+        if (!token.length) return '';
+        let matched = token.match(/^Bearer\s+(.+)$/i);
+        return $.trim(matched ? matched[1] : token);
+    };
+    this.getStorage = function () {
+        try {
+            return window.localStorage.getItem(this.storage) || '';
+        } catch (e) {
+            return '';
+        }
+    };
+    this.setStorage = function (value) {
+        try {
+            window.localStorage.setItem(this.storage, value);
+        } catch (e) {
+        }
+        return value;
+    };
+    this.delStorage = function () {
+        try {
+            window.localStorage.removeItem(this.storage);
+        } catch (e) {
+        }
+    };
+    this.get = function () {
+        return this.normalize(this.getStorage());
+    };
+    this.getSeed = function () {
+        let token = this.normalize(window.taTokenValue || '');
+        window.taTokenValue = '';
+        return token;
+    };
+    this.set = function (token) {
+        token = this.normalize(token);
+        if (!token.length) return this.clear();
+        return this.setStorage(token);
+    };
+    this.clear = function () {
+        this.delStorage();
+        return '';
+    };
+    this.clearBootstrap = function () {
+        let key = this.bootstrap();
+        if (!key || !window.history || typeof window.history.replaceState !== 'function') return;
+        try {
+            let target = new URL(window.location.href);
+            if (!target.searchParams.has(key)) return;
+            target.searchParams.delete(key);
+            let query = target.searchParams.toString();
+            window.history.replaceState({}, document.title, target.pathname + (query ? '?' + query : '') + target.hash);
+        } catch (e) {
+        }
+    };
+    this.apply = function () {
+        let token = this.getSeed() || this.get();
+        this.clearBootstrap();
+        return token ? this.set(token) : this.clear();
+    };
+    this.value = function () {
+        let token = this.get(), scheme = $.trim(String(this.scheme() || ''));
+        if (!token.length) return '';
+        return scheme ? scheme + ' ' + token : token;
+    };
+    this.accept = function (ret) {
+        if (!ret || typeof ret !== 'object') return this.get();
+        if (Object.prototype.hasOwnProperty.call(ret, 'token')) {
+            return typeof ret.token === 'string' && ret.token.length ? this.set(ret.token) : this.clear();
+        }
+        let url = ret.url || (typeof ret.data === 'string' ? ret.data : '');
+        if (parseInt(ret.code) !== 1 && /\/login(?:\/index)?(?:$|[/?#])/.test(url)) {
+            return this.clear();
+        }
+        return this.get();
+    };
+};
+window.$.auth = window.jQuery.auth;
+window.jQuery.ajaxPrefilter(function (options) {
+    if (options.crossDomain) return;
+    options.headers = options.headers || {};
+    let header = $.auth.header(), token = $.auth.value();
+    if (token && typeof options.headers[header] === 'undefined') {
+        options.headers[header] = token;
     }
 });
 
-/*! 注册 jquery 组件 */
-define('jquery', [], function () {
-    return layui.$;
+/*! 配置标准模块加载 */
+layui.extend({
+    excel: '{/}' + baseRoot + 'plugs/layui_exts/excel',
+    taExcel: '{/}' + baseRoot + 'plugs/admin/excel',
+    taQueue: '{/}' + baseRoot + 'plugs/admin/queue',
+    taValidate: '{/}' + baseRoot + 'plugs/admin/validate',
 });
 
-/*! 注册 ckeditor 组件 */
-define('ckeditor', (function (type) {
-    if (type === 'wangEditor') return ['weditor'];
-    if (/^ckeditor[45]$/.test(type)) return [type];
-    return [Object.fromEntries ? 'ckeditor5' : 'ckeditor4'];
-})(window.taEditor || 'ckeditor4'), function (ckeditor) {
-    return ckeditor;
-});
+window.$.module = window.jQuery.module || new function () {
+    let that = this, scriptCache = {}, styleCache = {}, moduleCache = {};
 
-require(['ckeditor'], function () {
+    this.registry = {
+        jquery: {api: function () { return layui.$; }},
+        md5: {src: baseRoot + 'plugs/jquery/md5.min.js', api: function () { return window.SparkMD5; }},
+        notify: {
+            css: baseRoot + 'plugs/notify/theme.css',
+            src: baseRoot + 'plugs/notify/notify.min.js',
+            api: function () {
+                return window.Notify || (window.Notify = window.GrowlNotification);
+            }
+        },
+        vue: {src: baseRoot + 'plugs/vue/vue.min.js', api: 'Vue'},
+        angular: {src: baseRoot + 'plugs/angular/angular.min.js', api: 'angular'},
+        echarts: {src: baseRoot + 'plugs/echarts/echarts.min.js', api: 'echarts'},
+        artplayer: {src: baseRoot + 'plugs/jquery/artplayer.min.js', api: 'Artplayer'},
+        compressor: {src: baseRoot + 'plugs/jquery/compressor.min.js', api: 'Compressor'},
+        pcasunzips: {src: baseRoot + 'plugs/jquery/pcasunzips.js', api: 'PCAS'},
+        sortablejs: {src: baseRoot + 'plugs/sortable/sortable.min.js', api: 'Sortable'},
+        'vue.sortable': {
+            deps: ['vue', 'sortablejs'],
+            src: baseRoot + 'plugs/sortable/vue.draggable.min.js',
+            api: function () {
+                return window.vuedraggable || window.VueDraggable || window.draggable;
+            }
+        },
+        'jquery.autocompleter': {
+            css: baseRoot + 'plugs/jquery/autocompleter.css',
+            src: baseRoot + 'plugs/jquery/autocompleter.min.js',
+            api: function () { return layui.$; }
+        },
+        'jquery.ztree': {
+            css: baseRoot + 'plugs/ztree/zTreeStyle/zTreeStyle.css',
+            src: baseRoot + 'plugs/ztree/ztree.all.min.js',
+            api: function () { return layui.$.fn.zTree || layui.$; }
+        },
+        'jquery.masonry': {
+            src: baseRoot + 'plugs/jquery/masonry.min.js',
+            api: function () { return window.Masonry || layui.$; }
+        },
+        upload: {
+            deps: ['md5', 'notify'],
+            loader: function () {
+                return that.loadScript(storageRoot + '/api.upload/index?', 'upload').then(function () {
+                    return window.taUploadModule || window.AdminUploadAdapter;
+                });
+            }
+        },
+        weditor: {
+            deps: ['upload'],
+            css: baseRoot + 'plugs/editor/css/style.css',
+            src: [baseRoot + 'plugs/editor/index.js', baseRoot + 'plugs/editor/create.js'],
+            api: function () { return window.createEditor; }
+        },
+        ckeditor4: {
+            src: baseRoot + 'plugs/ckeditor4/ckeditor.js',
+            api: function () { return window.createEditor || window.CKEDITOR; }
+        },
+        ckeditor5: {
+            deps: ['upload'],
+            css: baseRoot + 'plugs/ckeditor5/ckeditor.css',
+            src: baseRoot + 'plugs/ckeditor5/ckeditor.js',
+            api: function () { return window.createEditor || window.CKEDITOR; }
+        },
+        ckeditor: {
+            loader: function () {
+                let type = window.taEditor || 'ckeditor4';
+                if (type === 'wangEditor') type = 'weditor';
+                if (!/^ckeditor[45]$/.test(type) && type !== 'weditor') {
+                    type = Object.fromEntries ? 'ckeditor5' : 'ckeditor4';
+                }
+                return that.use([type]).then(function (mods) {
+                    return mods[0];
+                });
+            }
+        },
+        excel: {layui: 'taExcel'},
+        queue: {layui: 'taQueue'},
+        validate: {layui: 'taValidate'},
+    };
 
-})
+    this.toArray = function (value) {
+        if (!value) return [];
+        return Array.isArray(value) ? value : [value];
+    };
+
+    this.toStyleId = function (url) {
+        return 'ta-style-' + String(url).replace(/[^a-z0-9]+/ig, '-').replace(/^-+|-+$/g, '').toLowerCase();
+    };
+
+    this.loadStyle = function (url) {
+        if (!url) return Promise.resolve(null);
+        if (styleCache[url]) return styleCache[url];
+        styleCache[url] = new Promise(function (resolve) {
+            layui.link(url, function () {
+                resolve(url);
+            }, that.toStyleId(url));
+        });
+        return styleCache[url];
+    };
+
+    this.loadScript = function (url, key) {
+        key = key || url;
+        if (scriptCache[key]) return scriptCache[key];
+        scriptCache[key] = new Promise(function (resolve, reject) {
+            let script = document.createElement('script');
+            script.async = true;
+            script.charset = 'utf-8';
+            script.src = url;
+            script.onerror = function () {
+                reject(new Error('Module script load failed: ' + url));
+            };
+            script.onload = function () {
+                resolve(url);
+            };
+            document.head.appendChild(script);
+        });
+        return scriptCache[key];
+    };
+
+    this.loadSources = function (sources, key) {
+        return this.toArray(sources).reduce(function (promise, src, idx) {
+            return promise.then(function () {
+                return that.loadScript(src, (key || 'module') + '-' + idx);
+            });
+        }, Promise.resolve());
+    };
+
+    this.getExport = function (config, value) {
+        if (typeof config.api === 'function') return config.api(value);
+        if (typeof config.api === 'string') return window[config.api];
+        return value;
+    };
+
+    this.useLayui = function (name) {
+        return new Promise(function (resolve, reject) {
+            try {
+                layui.use(name, function () {
+                    resolve(arguments[0]);
+                });
+            } catch (e) {
+                reject(e);
+            }
+        });
+    };
+
+    this.load = function (name) {
+        if (moduleCache[name]) return moduleCache[name];
+        if (!this.registry[name]) return Promise.reject(new Error('Unsupported module: ' + name));
+        moduleCache[name] = Promise.all(this.toArray(this.registry[name].deps).map(function (dep) {
+            return that.load(dep);
+        }).concat(this.toArray(this.registry[name].css).map(function (css) {
+            return that.loadStyle(css);
+        }))).then(function () {
+            let config = that.registry[name];
+            if (config.layui) {
+                return that.useLayui(config.layui);
+            } else if (typeof config.loader === 'function') {
+                return config.loader();
+            } else if (config.src) {
+                return that.loadSources(config.src, name).then(function () {
+                    return that.getExport(config);
+                });
+            } else {
+                return that.getExport(config);
+            }
+        });
+        return moduleCache[name];
+    };
+
+    this.use = function (names, done) {
+        names = this.toArray(names);
+        return Promise.all(names.map(function (name) {
+            return that.load(name);
+        })).then(function (mods) {
+            typeof done === 'function' && done.apply(window, mods);
+            return mods;
+        });
+    };
+};
+
+window.jQuery.module = window.$.module;
+
+$.module.use(['ckeditor']);
 
 $(function () {
 
     window.$body = $('body');
+    if ($body.find('form[data-login-form]').length) {
+        $.auth.clear();
+    } else {
+        $.auth.apply();
+    }
 
     /*! 基础函数工具 */
     $.base = new function () {
@@ -208,7 +447,7 @@ $(function () {
         /*! Notify 调用入口 */
         // https://www.jq22.com/demo/jquerygrowl-notification202104021049
         this.notify = function (title, message, time, option) {
-            require(['notify'], function (Notify) {
+            $.module.use(['notify'], function (Notify) {
                 Notify.notify(Object.assign({title: title || '', description: message || '', position: 'top-right', closeTimeout: time || 3000, width: '400px'}, option || {}));
             });
         };
@@ -239,6 +478,7 @@ $(function () {
         };
         /*! 自动处理JSON数据 */
         this.auto = function (ret, time) {
+            $.auth.accept(ret);
             let url = ret.url || (typeof ret.data === 'string' ? ret.data : '');
             let msg = ret.msg || (typeof ret.info === 'string' ? ret.info : '');
             if (parseInt(ret.code) === 1 && time === 'false') {
@@ -323,6 +563,7 @@ $(function () {
                         this.success(XMLHttpRequest.responseText);
                     }
                 }, success: function (res) {
+                    $.auth.accept(res);
                     defer.notify('load.success', res) && (time = time || res.wait || undefined);
                     if (typeof callable === 'function' && callable.call($.form, res, time, defer) === false) return false;
                     return typeof res === 'object' ? $.msg.auto(res, time) : $.form.show(res);
@@ -424,13 +665,7 @@ $(function () {
             $.base.onEvent('click', '[data-target-menu-type]', function () {
                 layui.data('AdminMenuType', {key: 'mini', value: layout.toggleClass(mini).hasClass(mini)});
             }).on('click', '[data-submenu-layout]>a', function () {
-                // 关闭已展示的菜单组
-                let $this = $(this).parents('[data-submenu-layout]');
-                if ($this.hasClass('layui-nav-itemed')) {
-                    $this.siblings('[data-submenu-layout].layui-nav-itemed').find('>a').click()
-                }
-                // 缓存当前菜单状态
-                setTimeout("$.menu.sync(1)", 50);
+                setTimeout("$.menu.sync(1)", 100);
             }).on('mouseenter', '[data-target-tips]', function (evt) {
                 if (!layout.hasClass(mini) || !this.dataset.targetTips) return;
                 evt.idx = layer.tips(this.dataset.targetTips, this, {time: 0});
@@ -449,7 +684,7 @@ $(function () {
             $('[data-submenu-layout]').map(function () {
                 let node = this.dataset.submenuLayout;
                 if (mode === 1) layui.data('AdminMenuState', {key: node, value: $(this).hasClass('layui-nav-itemed') ? 2 : 1});
-                if (mode === 2) (layui.data('AdminMenuState')[node] || 0) === 2 && $(this).hasClass('layui-nav-itemed') ? '' : $(this).click();
+                if (mode === 2) (layui.data('AdminMenuState')[node] || 0) === 2 && $(this).addClass('layui-nav-itemed');
             });
         };
         /*! 页面 LOCATION-HASH 跳转 */
@@ -473,7 +708,7 @@ $(function () {
                 } else {
                     $('.layui-layout-admin').addClass('layui-layout-left-hide');
                 }
-                setTimeout("$.menu.sync(1);", 50);
+                setTimeout("$.menu.sync(1);", 100);
             }
         };
     };
@@ -505,7 +740,7 @@ $(function () {
         return this.each(function (idx, elem) {
             if (elem.dataset.inited) return false; else elem.dataset.inited = 'true';
             elem.dataset.multiple = '|one|btn|'.indexOf(elem.dataset.file || 'one') > -1 ? '0' : '1';
-            require(['upload'], function (apply) {
+            $.module.use(['upload'], function (apply) {
                 apply(elem, callable) && setTimeout(function () {
                     typeof initialize === 'function' && initialize.call(elem, elem);
                 }, 100);
@@ -778,7 +1013,7 @@ $(function () {
 
     /*! 显示任务进度 */
     $.loadQueue = function (code, doScript, element) {
-        require(['queue'], function (Queue) {
+        $.module.use(['queue'], function (Queue) {
             return new Queue(code, doScript, element);
         });
     };
@@ -792,7 +1027,7 @@ $(function () {
 
     /*! 创建表单验证 */
     $.vali = function (form, done, init) {
-        require(['validate'], function (Validate) {
+        $.module.use(['validate'], function (Validate) {
             /** @type {import("./plugs/admin/validate")|Validate}*/
             let vali = $(form).data('validate') || new Validate(form);
             typeof init === 'function' && init.call(vali, $(form).formToJson(), vali);
@@ -852,7 +1087,7 @@ $(function () {
         }
         // 单图或多图选择器 ( image|images )
         if (typeof this.dataset.file === 'string' && /^images?$/.test(this.dataset.file)) {
-            return $.form.modal(tapiRoot + '/api.upload/image', this.dataset, '图片选择器')
+            return $.form.modal(storageRoot + '/api.upload/image', this.dataset, '图片选择器')
         }
         // 其他文件上传处理
         this.dataset.inited || $(this).uploadFile(undefined, function () {
@@ -961,7 +1196,7 @@ $(function () {
     /*! 注册 data-video-player 事件行为 */
     $.base.onEvent('click', '[data-video-player]', function () {
         let idx = $.msg.loading(), url = this.dataset.videoPlayer, name = this.dataset.title || '媒体播放器', payer;
-        require(['artplayer'], () => layer.open({
+        $.module.use(['artplayer'], () => layer.open({
             title: name, type: 1, fixed: true, maxmin: false,
             content: '<div class="data-play-video" style="width:800px;height:450px"></div>',
             end: () => payer.destroy(), success: $ele => payer = new Artplayer({
@@ -1000,9 +1235,7 @@ $(function () {
 
     /*! 注册 data-tips-text 事件行为 */
     $.base.onEvent('mouseenter', '[data-tips-text]', function () {
-        // 获取自定义颜色（优先取 data-tips-color，否则用默认色）
-        const color = $(this).attr('data-tips-color') || '#78BA32';
-        let opts = {tips: [$(this).attr('data-tips-type') || 3, color], time: 0};
+        let opts = {tips: [$(this).attr('data-tips-type') || 3, '#78BA32'], time: 0};
         let layidx = layer.tips($(this).attr('data-tips-text') || this.innerText, this, opts);
         $(this).off('mouseleave').on('mouseleave', function () {
             setTimeout("layer.close('" + layidx + "')", 100);

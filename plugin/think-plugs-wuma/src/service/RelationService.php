@@ -27,7 +27,7 @@ use plugin\wuma\model\PluginWumaSourceProduce;
 use plugin\wuma\model\PluginWumaWarehouseOrderDataMins;
 use plugin\wuma\model\PluginWumaWarehouseRelationData;
 use think\admin\Exception;
-use think\admin\extend\CodeExtend;
+use think\admin\extend\codec\CodeToolkit;
 use think\admin\Library;
 use think\admin\Service;
 use think\db\exception\DataNotFoundException;
@@ -260,7 +260,7 @@ class RelationService extends Service
         }
         // 设置模型数据
         if (empty($assign['batch'])) {
-            $assign['batch'] = CodeExtend::uniqidDate(16, 'F');
+            $assign['batch'] = CodeToolkit::uniqidDate(16, 'F');
             $assign['cbatch'] = $coder['batch'];
         }
         // 合并范围数据

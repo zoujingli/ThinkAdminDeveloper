@@ -18,7 +18,7 @@ declare(strict_types=1);
  * +----------------------------------------------------------------------
  */
 use think\admin\Library;
-use think\admin\service\RuntimeService;
+use think\admin\runtime\RuntimeService;
 
 /* ! 演示环境禁止操作路由绑定 */
 if (RuntimeService::check('demo')) {
@@ -29,6 +29,9 @@ if (RuntimeService::check('demo')) {
         return json(['code' => 0, 'info' => lang('演示环境禁止修改系统配置！')]);
     });
     Library::$sapp->route->post('config/storage', static function () {
+        return json(['code' => 0, 'info' => lang('演示环境禁止修改系统配置！')]);
+    });
+    Library::$sapp->route->post('storage/config/storage', static function () {
         return json(['code' => 0, 'info' => lang('演示环境禁止修改系统配置！')]);
     });
     Library::$sapp->route->post('menu', static function () {

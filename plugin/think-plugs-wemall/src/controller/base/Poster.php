@@ -25,7 +25,7 @@ use plugin\wemall\model\PluginWemallConfigLevel;
 use plugin\wemall\model\PluginWemallConfigPoster;
 use plugin\wemall\service\PosterService;
 use think\admin\Controller;
-use think\admin\extend\CodeExtend;
+use think\admin\extend\codec\CodeToolkit;
 use think\admin\helper\QueryHelper;
 use think\db\exception\DataNotFoundException;
 use think\db\exception\DbException;
@@ -125,7 +125,7 @@ class Poster extends Controller
     protected function _form_filter(array &$data)
     {
         if (empty($data['code'])) {
-            $data['code'] = CodeExtend::uniqidNumber(16, 'T');
+            $data['code'] = CodeToolkit::uniqidNumber(16, 'T');
         }
         if ($this->request->isGet()) {
             $this->levels = PluginWemallConfigLevel::items();

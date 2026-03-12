@@ -18,11 +18,11 @@ declare(strict_types=1);
  * +----------------------------------------------------------------------
  */
 
-namespace app\admin\controller\api;
+namespace plugin\admin\controller\api;
 
 use think\admin\Controller;
 use think\admin\Exception;
-use think\admin\service\AdminService;
+use think\admin\auth\AdminService;
 use think\Response;
 
 /**
@@ -79,10 +79,16 @@ class Plugs extends Controller
     public function script(): Response
     {
         $token = $this->request->get('uptoken', '');
-        $domain = boolval(AdminService::withUploadUnid($token));
+        [$unid] = AdminService::withUploadUnid($token);
+        $domain = $unid > 0;
         return response(join("\r\n", [
             sprintf('window.taDebug = %s;', $this->app->isDebug() ? 'true' : 'false'),
             sprintf("window.taAdmin = '%s';", sysuri('admin/index/index', [], false, $domain)),
+            sprintf("window.taStorage = '%s';", sysuri('storage/index/index', [], false, $domain)),
+            sprintf("window.taTokenHeader = '%s';", AdminService::getTokenHeader()),
+            sprintf("window.taTokenScheme = '%s';", AdminService::getTokenScheme()),
+            sprintf("window.taTokenBootstrap = '%s';", AdminService::getBootstrapQuery()),
+            sprintf('window.taTokenExpire = %d;', AdminService::getTokenExpire()),
             sprintf("window.taEditor = '%s';", sysconf('base.editor|raw') ?: 'ckeditor4'),
         ]))->contentType('application/javascript');
     }

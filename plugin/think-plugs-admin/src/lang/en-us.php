@@ -304,7 +304,7 @@ return array_merge($extra, [
     // 表单提示
     '登录账号不能少于4位字符，创建后不能再次修改.' => 'Login account must be at least 4 characters and cannot be modified after creation.',
     '用于区分用户数据的用户名称，请尽量不要重复.' => 'User name used to distinguish user data, please try not to duplicate.',
-    '超级用户拥所有访问权限，不需要配置权限。' => 'Super users have all access permissions and do not need to configure permissions.',
+    '超级用户拥有所有访问权限，不需要配置权限。' => 'Super users have all access permissions and do not need to configure permissions.',
     '可选，请填写用户常用的电子邮箱' => 'Optional, please fill in the user\'s commonly used email address',
     '可选，请填写用户常用的联系手机号' => 'Optional, please fill in the user\'s commonly used mobile phone number',
     '可选，请填写用户常用的联系ＱＱ号' => 'Optional, please fill in the user\'s commonly used QQ number',

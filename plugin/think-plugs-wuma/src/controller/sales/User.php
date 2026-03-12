@@ -23,7 +23,7 @@ namespace plugin\wuma\controller\sales;
 use plugin\wuma\model\PluginWumaSalesUser;
 use plugin\wuma\model\PluginWumaSalesUserLevel;
 use think\admin\Controller;
-use think\admin\extend\CodeExtend;
+use think\admin\extend\codec\CodeToolkit;
 use think\admin\helper\QueryHelper;
 use think\db\exception\DataNotFoundException;
 use think\db\exception\DbException;
@@ -108,7 +108,7 @@ class User extends Controller
     protected function _form_filter(array &$data)
     {
         if (empty($data['code'])) {
-            $data['code'] = CodeExtend::uniqidNumber(16, 'M');
+            $data['code'] = CodeToolkit::uniqidNumber(16, 'M');
         }
         if ($this->request->isGet()) {
             $this->levels = PluginWumaSalesUserLevel::lists();

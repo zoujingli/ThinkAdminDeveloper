@@ -32,19 +32,19 @@ class Service extends Plugin
      * 定义插件名称.
      * @var string
      */
-    protected $appName = '应用中心';
+    protected string $appName = '应用中心';
 
     /**
      * 定义插件入口.
      * @var string
      */
-    protected $appCode = 'plugin-center';
+    protected string $appCode = 'plugin-center';
 
     /**
      * 定义安装包名.
      * @var string
      */
-    protected $package = 'zoujingli/think-plugs-center';
+    protected string $package = 'zoujingli/think-plugs-center';
 
     /**
      * 定义插件菜单.

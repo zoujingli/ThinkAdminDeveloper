@@ -100,7 +100,7 @@
 
 {block name='script'}
 <script>
-    require(['vue'], function (vue) {
+    $.module.use(['vue'], function (vue) {
         new vue({
             el: '#RangeApp',
             data: {

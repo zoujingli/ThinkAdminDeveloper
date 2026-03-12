@@ -20,13 +20,8 @@ declare(strict_types=1);
 
 namespace think\admin;
 
-use think\admin\extend\VirtualModel;
 use think\App;
 use think\Container;
-use think\db\BaseQuery;
-use think\db\Mongo;
-use think\db\Query;
-use think\Model;
 
 /**
  * 控制器助手.
@@ -36,27 +31,23 @@ abstract class Helper
 {
     /**
      * 应用容器.
-     * @var App
      */
-    public $app;
+    public App $app;
 
     /**
      * 控制器实例.
-     * @var Controller
      */
-    public $class;
+    public Controller $class;
 
     /**
      * 当前请求方式.
-     * @var string
      */
-    public $method;
+    public string $method;
 
     /**
      * 自定输出格式.
-     * @var string
      */
-    public $output;
+    public string $output;
 
     /**
      * Helper constructor.
@@ -66,87 +57,18 @@ abstract class Helper
         $this->app = $app;
         $this->class = $class;
         // 计算指定输出格式
-        $output = $app->request->request('output', 'default');
+        $output = strval($app->request->request('output', 'default'));
         $method = $app->request->method() ?: ($app->runningInConsole() ? 'cli' : 'nil');
-        $this->output = strtolower("{$method}.{$output}");
+        $this->method = strtolower($method);
+        $this->output = "{$this->method}." . strtolower($output);
     }
 
     /**
      * 实例对象反射.
      * @param array $args
-     * @return static
      */
-    public static function instance(...$args): Helper
+    public static function instance(...$args): static
     {
         return Container::getInstance()->invokeClass(static::class, $args);
-    }
-
-    /**
-     * 获取数据库查询对象
-     * @param BaseQuery|Model|string $query
-     * @return BaseQuery|Mongo|Query
-     */
-    public static function buildQuery($query)
-    {
-        if (is_string($query)) {
-            if (self::isSubquery($query)) {
-                $query = Library::$sapp->db->table($query);
-            } else {
-                return self::triggerBeforeEvent(static::buildModel($query)->db());
-            }
-        }
-        if ($query instanceof Model) {
-            return self::triggerBeforeEvent($query->db());
-        }
-        if ($query instanceof BaseQuery && !$query->getModel()) {
-            // 如果是子查询，不需要挂载模型对象
-            if (!self::isSubquery($query->getTable())) {
-                $name = $query->getConfig('name') ?: '';
-                if (is_string($name) && strlen($name) > 0) {
-                    $name = config("database.connections.{$name}") ? $name : '';
-                }
-                $query->model(static::buildModel($query->getName(), [], $name));
-            }
-        }
-        return self::triggerBeforeEvent($query);
-    }
-
-    /**
-     * 动态创建模型对象
-     * @param mixed $name 模型名称
-     * @param array $data 初始数据
-     * @param mixed $conn 指定连接
-     */
-    public static function buildModel(string $name, array $data = [], string $conn = ''): Model
-    {
-        if (strpos($name, '\\') !== false) {
-            if (class_exists($name)) {
-                $model = new $name($data);
-                if ($model instanceof Model) {
-                    return $model;
-                }
-            }
-            $name = basename(str_replace('\\', '/', $name));
-        }
-        return VirtualModel::mk($name, $data, $conn);
-    }
-
-    /**
-     * 触发查询对象执行前事件.
-     * @param BaseQuery|mixed|Model $query
-     * @return BaseQuery|mixed|Model
-     */
-    private static function triggerBeforeEvent($query)
-    {
-        Library::$sapp->db->trigger('think_before_event', $query);
-        return $query;
-    }
-
-    /**
-     * 判断是否为子查询.
-     */
-    private static function isSubquery(string $sql): bool
-    {
-        return preg_match('/^\(?\s*select\s+/i', $sql) > 0;
     }
 }

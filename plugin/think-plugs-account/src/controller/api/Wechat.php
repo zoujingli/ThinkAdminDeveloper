@@ -20,7 +20,7 @@ declare(strict_types=1);
 
 namespace plugin\account\controller\api;
 
-use app\wechat\service\WechatService;
+use plugin\wechat\client\service\WechatService;
 use plugin\account\service\Account;
 use think\admin\Controller;
 use think\admin\Exception;
@@ -75,7 +75,7 @@ class Wechat extends Controller
      * @throws InvalidResponseException
      * @throws LocalCacheException
      * @throws Exception
-     * @remark 基于 sessionStorage 标识的登录机制
+     * @remark 基于 OAuth 标识与 Token 的登录机制
      */
     public function oauth(): Response
     {

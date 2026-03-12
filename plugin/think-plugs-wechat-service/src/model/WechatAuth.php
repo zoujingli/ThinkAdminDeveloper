@@ -10,4 +10,8 @@ use think\model\concern\SoftDelete;
 class WechatAuth extends Model
 {
     use SoftDelete;
+
+    protected $deleteTime = 'delete_time';
+
+    protected $defaultSoftDelete = null;
 }

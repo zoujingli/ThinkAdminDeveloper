@@ -21,9 +21,9 @@ declare(strict_types=1);
 namespace plugin\wuma\command;
 
 use think\admin\Command;
-use think\admin\extend\CodeExtend;
+use think\admin\extend\codec\CodeToolkit;
 use think\admin\Library;
-use think\admin\service\ProcessService as Process;
+use think\admin\process\ProcessService as Process;
 use think\Exception;
 
 /**
@@ -88,7 +88,7 @@ class Create extends Command
      */
     private function _exec(string $params): array
     {
-        $auth = CodeExtend::random(20);
+        $auth = CodeToolkit::random(20);
         $this->app->cache->set("create_auth_{$this->batch}", $auth, 360);
         $token = base64_encode(json_encode([
             'auth' => $auth, 'host' => sysconf('site_host'), 'target' => syspath('safefile/code/'),

@@ -23,7 +23,7 @@ namespace plugin\wemall\controller\base;
 use plugin\wemall\model\PluginWemallConfigLevel;
 use plugin\wemall\model\PluginWemallConfigNotify;
 use think\admin\Controller;
-use think\admin\extend\CodeExtend;
+use think\admin\extend\codec\CodeToolkit;
 use think\admin\helper\QueryHelper;
 use think\db\exception\DataNotFoundException;
 use think\db\exception\DbException;
@@ -101,7 +101,7 @@ class Notify extends Controller
     protected function _form_filter(array &$data)
     {
         if (empty($data['code'])) {
-            $data['code'] = CodeExtend::uniqidNumber(16, 'N');
+            $data['code'] = CodeToolkit::uniqidNumber(16, 'N');
         }
         if ($this->request->isGet()) {
             $this->levels = PluginWemallConfigLevel::items();

@@ -19,6 +19,15 @@
                 <textarea placeholder="{:lang('请输入权限描述')}" maxlength="200" class="layui-textarea" name="desc">{$vo.desc|default=""}</textarea>
             </label>
             <div class="layui-form-item">
+                <span class="help-label"><b>{:lang('插件筛选')}</b>Plugin Filter</span>
+                <div class="layui-input-inline">
+                    <select name="plugin_filter" lay-filter="AuthPluginFilter">
+                        <option value="">{:lang('全部插件')}</option>
+                    </select>
+                </div>
+                <div class="layui-form-mid color-desc">{:lang('仅切换当前显示的权限树分组，不会丢失其它插件已勾选的授权节点。')}</div>
+            </div>
+            <div class="layui-form-item">
                 <span class="help-label label-required-prev"><b>{:lang('功能节点')}</b>Auth Nodes</span>
                 <ul id="zTree" class="ztree notselect"></ul>
             </div>
@@ -35,33 +44,73 @@
 
 {block name="script"}
 <script>
-    require(['jquery.ztree'], function () {
+    $.module.use(['jquery.ztree'], function () {
         new function () {
             let that = this;
-            this.data = {}, this.ztree = null, this.setting = {
+            this.data = [];
+            this.ztree = null;
+            this.states = {};
+            this.filter = '{$plugin|default=""}';
+            this.setting = {
                 view: {showLine: false, showIcon: false, dblClickExpand: false},
                 check: {enable: true, nocheck: false, chkboxType: {"Y": "ps", "N": "ps"}}, callback: {
                     beforeClick: function (id, node) {
                         node.children.length < 1 ? that.ztree.checkNode(node, !node.checked, true, true) : that.ztree.expandNode(node);
                         return false;
+                    },
+                    onCheck: function (id, tree, node) {
+                        that.syncState();
                     }
                 }
             };
-            this.renderChildren = function (list, level) {
+            this.renderChildren = function (list, level, plugin) {
                 let childrens = [];
-                for (let i in list) childrens.push({
-                    open: true, node: list[i].node, name: list[i].title || list[i].node,
-                    checked: list[i].checked || false, children: this.renderChildren(list[i]._sub_, level + 1)
-                });
+                for (let i in list) {
+                    let item = list[i], code = item.plugin || plugin || item.node || '';
+                    if (item.node && item.checked) this.states[item.node] = true;
+                    childrens.push({
+                        open: true, plugin: code, node: item.node, name: item.title || item.node,
+                        checked: !!item.checked, children: this.renderChildren(item._sub_ || [], level + 1, code)
+                    });
+                }
                 return childrens;
+            };
+            this.renderOptions = function () {
+                let html = ['<option value="">{:lang("全部插件")}</option>'];
+                for (let i in this.data) {
+                    if (!this.data[i].plugin) continue;
+                    html.push('<option value="' + this.data[i].plugin + '">' + this.data[i].name + ' [ ' + this.data[i].plugin + ' ]</option>');
+                }
+                $('[name=plugin_filter]').html(html.join('')).val(this.filter);
+                layui.form.render('select');
+            };
+            this.syncState = function () {
+                if (!this.ztree) return;
+                let nodes = this.ztree.transformToArray(this.ztree.getNodes());
+                for (let i in nodes) if (nodes[i].node) this.states[nodes[i].node] = !!nodes[i].checked;
+            };
+            this.renderTree = function (list) {
+                let children = [];
+                for (let i in list) {
+                    let item = $.extend(true, {}, list[i]);
+                    item.checked = !!this.states[item.node];
+                    item.children = this.renderTree(item.children || []);
+                    if (this.filter && item.plugin !== this.filter) {
+                        if (item.children.length < 1) continue;
+                    }
+                    children.push(item);
+                }
+                return children;
             };
             this.syncData = function () {
                 $.form.load('{:sysuri()}', {id: '{$vo.id|default=0}', action: 'json'}, 'post', function (ret) {
-                    return (that.data = that.renderChildren(ret.data, 1)), that.showTree(), false;
+                    that.data = that.renderChildren(ret.data, 1, '');
+                    that.renderOptions();
+                    return that.showTree(), false;
                 });
             };
             this.showTree = function () {
-                this.ztree = $.fn.zTree.init($("#zTree"), this.setting, this.data);
+                this.ztree = $.fn.zTree.init($("#zTree"), this.setting, this.renderTree(this.data));
                 while (true) {
                     let nodes = this.ztree.getNodesByFilter(function (node) {
                         return (!node.node && node.children.length < 1);
@@ -74,10 +123,16 @@
             this.syncData();
             // 监听表单提交
             $('#RoleForm').vali(function (form) {
-                let data = that.ztree.getCheckedNodes(true);
+                that.syncState();
                 Object.assign(form, {nodes: [], action: 'save'})
-                for (let i in data) if (data[i].node) form.nodes.push(data[i].node);
+                for (let node in that.states) if (that.states[node]) form.nodes.push(node);
                 $.form.load('{:sysuri()}', form, 'post');
+            });
+
+            layui.form.on('select(AuthPluginFilter)', function (object) {
+                that.syncState();
+                that.filter = object.value;
+                that.showTree();
             });
         };
     });

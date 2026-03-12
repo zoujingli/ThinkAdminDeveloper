@@ -3,14 +3,25 @@
     <div class="layui-card-body">
 
         <div class="layui-form-item">
+            <label class="layui-form-label">{:lang('所属插件')}</label>
+            <div class="layui-input-block">
+                <select lay-filter="MenuFormPluginSwitch">
+                    <option value=''>{:lang('全部插件')}</option>
+                    {foreach $plugins as $item}
+                    <option value='{$item.code}' {if isset($plugin) and $plugin eq $item.code}selected{/if}>{$item.name} [ {$item.code} ]</option>
+                    {/foreach}
+                </select>
+                <p class="help-block"><b>{:lang('筛选')}</b>，{:lang('只用于过滤当前表单的权限节点和上级菜单，不会写入数据库。')}</p>
+            </div>
+        </div>
+
+        <div class="layui-form-item">
             <label class="layui-form-label label-required-next">{:lang('上级菜单')}</label>
             <div class="layui-input-block">
                 <select name='pid' class='layui-select' lay-search>
-                    {foreach $menus as $menu}{eq name='menu.id' value='$vo.pid|default=0'}
-                    <option selected value='{$menu.id}'>{$menu.spl|raw}{$menu.title}</option>
-                    {else}
-                    <option value='{$menu.id}'>{$menu.spl|raw}{$menu.title}</option>
-                    {/eq}{/foreach}
+                    {foreach $menus as $menu}
+                    <option value='{$menu.id}' {if isset($vo.pid) and $menu.id eq $vo.pid}selected{/if}>{$menu.spl|raw}{$menu.title}</option>
+                    {/foreach}
                 </select>
                 <p class="help-block"><b>{:lang('必选')}</b>，{:lang('请选择上级菜单或顶级菜单 ( 目前最多支持三级菜单 )')}</p>
             </div>
@@ -77,7 +88,12 @@
 </form>
 
 <script>
-    require(['jquery.autocompleter'], function () {
+    $.module.use(['jquery.autocompleter'], function () {
+        var query = [];
+        var currentId = '{$vo.id|default=""}';
+        var currentPid = '{$vo.pid|default=0}';
+        var currentUrl = "{:sysuri()}";
+
         $('[name="icon"]').on('change', function () {
             $(this).parent().next().find('i').get(0).className = this.value
         }), $('input[name=url]').autocompleter({
@@ -92,6 +108,19 @@
                 for (var i in subjects) data.push({value: subjects[i].node, label: subjects[i].node, title: subjects[i].title});
                 return data;
             })(JSON.parse('{$auths|raw|json_encode}'), [])
+        });
+
+        layui.form.on('select(MenuFormPluginSwitch)', function (object) {
+            query = [];
+            if (currentId) {
+                query.push('id=' + encodeURIComponent(currentId));
+            } else if (currentPid) {
+                query.push('pid=' + encodeURIComponent(currentPid));
+            }
+            if (object.value) {
+                query.push('plugin=' + encodeURIComponent(object.value));
+            }
+            location.href = currentUrl + (query.length ? '?' + query.join('&') : '');
         });
     });
 </script>

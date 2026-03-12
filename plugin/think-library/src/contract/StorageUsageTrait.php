@@ -68,25 +68,12 @@ trait StorageUsageTrait
     public function __construct(App $app)
     {
         $this->app = $app;
-        $this->link = sysconf('storage.link_type|raw');
-        $this->init();
-    }
-
-    /**
-     * 重构后兼容处理.
-     * @return array|string
-     * @throws Exception
-     */
-    public function __call(string $method, array $arguments)
-    {
-        if (strtolower($method) === 'builduploadtoken') {
-            if (method_exists($this, 'token')) {
-                return $this->token(...$arguments);
-            }
+        if (class_exists(\plugin\storage\StorageConfig::class)) {
+            $this->link = \plugin\storage\StorageConfig::global('link', 'none');
+        } else {
+            $this->link = sysconf('storage.link_type|raw') ?: 'none';
         }
-        // 调用方法异常处理
-        $class = class_basename(static::class);
-        throw new Exception("method not exists: {$class}->{$method}()");
+        $this->init();
     }
 
     /**
@@ -146,5 +133,13 @@ trait StorageUsageTrait
             return strstr($name, '!', true);
         }
         return $name;
+    }
+
+    /**
+     * 兼容无全局语言函数的上下文.
+     */
+    protected static function trans(string $text): string
+    {
+        return function_exists('lang') ? lang($text) : $text;
     }
 }

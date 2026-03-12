@@ -22,7 +22,7 @@ namespace plugin\wuma\controller;
 
 use plugin\wuma\model\PluginWumaWarehouse;
 use think\admin\Controller;
-use think\admin\extend\CodeExtend;
+use think\admin\extend\codec\CodeToolkit;
 use think\admin\helper\QueryHelper;
 use think\db\exception\DataNotFoundException;
 use think\db\exception\DbException;
@@ -87,7 +87,7 @@ class Warehouse extends Controller
     protected function _form_filter(array &$data)
     {
         if (empty($data['code'])) {
-            $data['code'] = CodeExtend::uniqidNumber(16, 'W');
+            $data['code'] = CodeToolkit::uniqidNumber(16, 'W');
         }
         if ($this->request->isPost()) {
             // 检查产品编号是否出现重复

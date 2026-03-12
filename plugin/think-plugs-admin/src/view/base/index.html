@@ -33,13 +33,14 @@
         $('#BaseTable').layTable({
             even: true, height: 'full',
             sort: {field: 'sort desc,id', type: 'asc'},
-            where: {type: '{$type|default=""}'},
+            where: {type: '{$type|default=""}', plugin_group: '{$get.plugin_group|default=""}'},
             cols: [[
                 {checkbox: true, fixed: true},
                 {field: 'sort', title: '{:lang("排序权重")}', width: 100, align: 'center', sort: true, templet: '#SortInputTpl'},
                 // {field: 'type', title: '数据类型', minWidth: 140, align: 'center'},
                 {field: 'code', title: '{:lang("数据编码")}', width: '20%', align: 'left'},
                 {field: 'name', title: '{:lang("数据名称")}', width: '30%', align: 'left'},
+                {field: 'plugin_title', title: '{:lang("所属插件")}', minWidth: 130, align: 'center', templet: '#PluginBaseTableTpl'},
                 {field: 'status', title: '{:lang("数据状态")}', minWidth: 110, align: 'center', templet: '#StatusSwitchTpl'},
                 {field: 'create_at', title: '{:lang("创建时间")}', minWidth: 170, align: 'center', sort: true},
                 {toolbar: '#toolbar', align: 'center', minWidth: 150, title: '{:lang("数据操作")}', fixed: 'right'},
@@ -62,6 +63,19 @@
 <!-- 列表排序权重模板 -->
 <script type="text/html" id="SortInputTpl">
     <input type="number" min="0" data-blur-number="0" data-action-blur="{:sysuri()}" data-value="id#{{d.id}};action#sort;sort#{value}" data-loading="false" value="{{d.sort}}" class="layui-input text-center">
+</script>
+
+<script type="text/html" id="PluginBaseTableTpl">
+    {{# if(d.plugin_group === 'mixed'){ }}
+    <span class="layui-badge layui-bg-orange">{{ d.plugin_title || '跨插件' }}</span>
+    {{# } else if(d.plugin_group === 'common') { }}
+    <span class="layui-badge layui-bg-gray">{{ d.plugin_title || '未绑定' }}</span>
+    {{# } else { }}
+    <span class="layui-badge layui-bg-blue">{{ d.plugin_title || '-' }}</span>
+    {{# } }}
+    {{# if(d.plugin_text && d.plugin_count > 1){ }}
+    <div class="color-desc nowrap">{{ d.plugin_text }}</div>
+    {{# } }}
 </script>
 
 <!-- 数据状态切换模板 -->

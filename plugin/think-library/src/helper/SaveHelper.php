@@ -21,6 +21,7 @@ declare(strict_types=1);
 namespace think\admin\helper;
 
 use think\admin\Helper;
+use think\admin\query\QueryFactory;
 use think\db\BaseQuery;
 use think\db\exception\DbException;
 use think\Model;
@@ -42,7 +43,7 @@ class SaveHelper extends Helper
      */
     public function init($dbQuery, array $edata = [], string $field = '', $where = [])
     {
-        $query = static::buildQuery($dbQuery);
+        $query = QueryFactory::build($dbQuery);
         $field = $field ?: ($query->getPk() ?: 'id');
         $edata = $edata ?: $this->app->request->post();
         $value = $this->app->request->post($field);

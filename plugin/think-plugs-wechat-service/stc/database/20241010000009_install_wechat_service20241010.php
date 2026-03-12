@@ -17,7 +17,7 @@ declare(strict_types=1);
  * | github 代码仓库：https://github.com/zoujingli/ThinkAdmin
  * +----------------------------------------------------------------------
  */
-use think\admin\extend\PhinxExtend;
+use plugin\helper\support\PhinxExtend;
 use think\migration\Migrator;
 
 @set_time_limit(0);
@@ -74,11 +74,11 @@ class InstallWechatService20241010 extends Migrator
             ['appkey', 'string', ['limit' => 32, 'default' => '', 'null' => true, 'comment' => '应用接口KEY']],
             ['appuri', 'string', ['limit' => 255, 'default' => '', 'null' => true, 'comment' => '应用接口URI']],
             ['status', 'integer', ['limit' => 1, 'default' => 1, 'null' => true, 'comment' => '授权状态(0已取消,1已授权)']],
-            ['deleted', 'integer', ['limit' => 1, 'default' => 0, 'null' => true, 'comment' => '删除状态(0未删除,1已删除)']],
+            ['delete_time', 'datetime', ['default' => null, 'null' => true, 'comment' => '删除时间']],
             ['auth_time', 'integer', ['limit' => 20, 'default' => 0, 'null' => true, 'comment' => '授权时间']],
-            ['create_at', 'timestamp', ['default' => 'CURRENT_TIMESTAMP', 'null' => true, 'comment' => '创建时间']],
+            ['create_time', 'timestamp', ['default' => 'CURRENT_TIMESTAMP', 'null' => true, 'comment' => '创建时间']],
         ], [
-            'status', 'deleted', 'authorizer_appid',
+            'status', 'delete_time', 'authorizer_appid',
         ], true);
     }
 }

@@ -18,17 +18,17 @@ declare(strict_types=1);
  * +----------------------------------------------------------------------
  */
 use think\admin\Exception;
-use think\admin\extend\CodeExtend;
-use think\admin\extend\HttpExtend;
-use think\admin\Helper;
+use think\admin\extend\codec\CodeToolkit;
+use think\admin\extend\http\HttpClient;
 use think\admin\helper\QueryHelper;
-use think\admin\helper\TokenHelper;
+use think\admin\auth\TokenHelper;
 use think\admin\helper\ValidateHelper;
 use think\admin\Library;
-use think\admin\service\AdminService;
-use think\admin\service\QueueService;
-use think\admin\service\RuntimeService;
-use think\admin\service\SystemService;
+use think\admin\auth\AdminService;
+use think\admin\model\ModelFactory;
+use think\admin\queue\QueueService;
+use think\admin\runtime\RuntimeService;
+use think\admin\system\SystemService;
 use think\admin\Storage;
 use think\db\BaseQuery;
 use think\db\Query;
@@ -57,7 +57,7 @@ if (!function_exists('m')) {
      */
     function m(string $name, array $data = [], string $conn = ''): Model
     {
-        return Helper::buildModel($name, $data, $conn);
+        return ModelFactory::build($name, $data, $conn);
     }
 }
 
@@ -68,6 +68,18 @@ if (!function_exists('auth')) {
     function auth(?string $node): bool
     {
         return AdminService::check($node);
+    }
+}
+if (!function_exists('admin_user')) {
+    /**
+     * 获取当前后台用户数据.
+     * @param null|string $field 指定字段
+     * @param mixed $default 默认值
+     * @return array|mixed
+     */
+    function admin_user(?string $field = null, $default = null)
+    {
+        return AdminService::getUser($field, $default);
     }
 }
 if (!function_exists('admuri')) {
@@ -109,6 +121,8 @@ if (!function_exists('_query')) {
 if (!function_exists('sysvar')) {
     /**
      * 读写单次请求的内存缓存.
+     * 仅用于轻量临时缓存，不再承载当前插件、当前登录态这类核心上下文，
+     * 这些状态已经统一迁到 RequestContext。
      * @param null|string $name 数据名称
      * @param null|mixed $value 数据内容
      * @return null|array|mixed 返回内容
@@ -168,7 +182,7 @@ if (!function_exists('encode')) {
      */
     function encode(string $content): string
     {
-        [$chars, $length] = ['', strlen($string = CodeExtend::text2utf8($content))];
+        [$chars, $length] = ['', strlen($string = CodeToolkit::text2utf8($content))];
         for ($i = 0; $i < $length; ++$i) {
             $chars .= str_pad(base_convert(strval(ord($string[$i])), 10, 36), 2, '0', 0);
         }
@@ -186,7 +200,7 @@ if (!function_exists('decode')) {
         foreach (str_split($content, 2) as $char) {
             $chars .= chr(intval(base_convert($char, 36, 10)));
         }
-        return CodeExtend::text2utf8($chars);
+        return CodeToolkit::text2utf8($chars);
     }
 }
 
@@ -339,7 +353,7 @@ if (!function_exists('enbase64url')) {
      */
     function enbase64url(string $string): string
     {
-        return CodeExtend::enSafe64($string);
+        return CodeToolkit::enSafe64($string);
     }
 }
 if (!function_exists('debase64url')) {
@@ -348,7 +362,7 @@ if (!function_exists('debase64url')) {
      */
     function debase64url(string $string): string
     {
-        return CodeExtend::deSafe64($string);
+        return CodeToolkit::deSafe64($string);
     }
 }
 
@@ -373,7 +387,7 @@ if (!function_exists('http_get')) {
      */
     function http_get(string $url, $query = [], array $options = [])
     {
-        return HttpExtend::get($url, $query, $options);
+        return HttpClient::get($url, $query, $options);
     }
 }
 if (!function_exists('http_post')) {
@@ -386,7 +400,7 @@ if (!function_exists('http_post')) {
      */
     function http_post(string $url, $data, array $options = [])
     {
-        return HttpExtend::post($url, $data, $options);
+        return HttpClient::post($url, $data, $options);
     }
 }
 if (!function_exists('data_save')) {

@@ -8,7 +8,7 @@
 // | 官方网站: https://thinkadmin.top
 // +----------------------------------------------------------------------
 // | 免责声明 ( https://thinkadmin.top/disclaimer )
-// | 会员免费 ( https://thinkadmin.top/vip-introduce )
+// | 会员特权 ( https://thinkadmin.top/vip-introduce )
 // +----------------------------------------------------------------------
 // | gitee 代码仓库：https://gitee.com/zoujingli/think-plugs-payment
 // | github 代码仓库：https://github.com/zoujingli/think-plugs-payment
@@ -39,7 +39,7 @@ use plugin\payment\model\PluginPaymentRecord;
 use plugin\payment\model\PluginPaymentRefund;
 use plugin\payment\service\Payment;
 use think\admin\Exception;
-use think\admin\extend\CodeExtend;
+use think\admin\extend\codec\CodeToolkit;
 use think\admin\Library;
 use think\App;
 use WeChat\Exceptions\InvalidResponseException;
@@ -165,7 +165,7 @@ trait PaymentUsageTrait
             } elseif ($pType === Payment::INTEGRAL) {
                 $extra['used_integral'] = strval(bcdiv(bcmul(strval($amount), strval($record->getAttr('used_integral')), 6), strval($record->getAttr('payment_amount')), 2));
             }
-            $extra['refund_trade'] = CodeExtend::uniqidNumber(16, 'RT');
+            $extra['refund_trade'] = CodeToolkit::uniqidNumber(16, 'RT');
             $extra['refund_account'] = $pType;
             $extra['refund_scode'] = 'SUCCESS';
             $extra['refund_status'] = 1;
@@ -373,7 +373,7 @@ trait PaymentUsageTrait
     protected function withNotifyUrl(string $order, string $scene = 'order', array $extra = []): string
     {
         $data = ['scen' => $scene, 'order' => $order, 'channel' => $this->cfgCode];
-        $vars = CodeExtend::enSafe64(json_encode($extra + $data, 64 | 256));
+        $vars = CodeToolkit::enSafe64(json_encode($extra + $data, 64 | 256));
         return sysuri('@plugin-payment-notify', [], false, true) . "/{$vars}";
     }
 }

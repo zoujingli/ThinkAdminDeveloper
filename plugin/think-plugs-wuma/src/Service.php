@@ -29,9 +29,9 @@ use think\admin\Plugin;
  */
 class Service extends Plugin
 {
-    protected $appName = '防伪溯源';
+    protected string $appName = '防伪溯源';
 
-    protected $package = 'zoujingli/think-plugs-wuma';
+    protected string $package = 'zoujingli/think-plugs-wuma';
 
     public function register(): void
     {
@@ -44,7 +44,7 @@ class Service extends Plugin
 
     public static function menu(): array
     {
-        $code = app(static::class)->appCode;
+        $code = static::getAppCode();
         return [
             [
                 'name' => '物码管理',

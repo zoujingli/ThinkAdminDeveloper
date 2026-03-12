@@ -57,7 +57,7 @@
 </label>
 
 <script>
-    require(['angular'], function () {
+    $.module.use(['angular'], function () {
         let app = angular.module('TruckForm', []).run(callback);
         let data = document.getElementById('RegionData').value || '[]';
         angular.bootstrap(document.getElementById(app.name), [app.name]);

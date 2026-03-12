@@ -17,7 +17,7 @@ declare(strict_types=1);
  * | github 代码仓库：https://github.com/zoujingli/ThinkAdmin
  * +----------------------------------------------------------------------
  */
-use think\admin\extend\PhinxExtend;
+use plugin\helper\support\PhinxExtend;
 use think\migration\Migrator;
 
 @set_time_limit(0);
@@ -743,7 +743,7 @@ class InstallWemall20241010 extends Migrator
             ['ghash', 'string', ['limit' => 32, 'default' => '', 'null' => true, 'comment' => '商品哈希']],
             ['gcode', 'string', ['limit' => 20, 'default' => '', 'null' => true, 'comment' => '商品编号']],
             ['gspec', 'string', ['limit' => 100, 'default' => '', 'null' => true, 'comment' => '商品规格']],
-            ['gunit', 'string', ['limit' => 100, 'default' => '', 'null' => true, 'comment' => '商品单凭']],
+            ['gunit', 'string', ['limit' => 100, 'default' => '', 'null' => true, 'comment' => '商品单位']],
             ['gname', 'string', ['limit' => 500, 'default' => '', 'null' => true, 'comment' => '商品名称']],
             ['gcover', 'string', ['limit' => 999, 'default' => '', 'null' => true, 'comment' => '商品封面']],
             ['order_no', 'string', ['limit' => 20, 'default' => '', 'null' => true, 'comment' => '订单单号']],
@@ -1133,14 +1133,16 @@ class InstallWemall20241010 extends Migrator
             ['unid', 'biginteger', ['limit' => 20, 'default' => 0, 'null' => true, 'comment' => '用户UNID']],
             ['layer', 'biginteger', ['limit' => 20, 'default' => 0, 'null' => true, 'comment' => '上级层级']],
             ['code', 'string', ['limit' => 20, 'default' => '', 'null' => true, 'comment' => '奖励编号']],
-            ['hash', 'string', ['limit' => 32, 'default' => '', 'null' => true, 'comment' => '维一编号']],
+            ['hash', 'string', ['limit' => 32, 'default' => '', 'null' => true, 'comment' => '唯一编号']],
             ['date', 'string', ['limit' => 20, 'default' => '', 'null' => true, 'comment' => '奖励日期']],
             ['type', 'string', ['limit' => 20, 'default' => '', 'null' => true, 'comment' => '奖励类型']],
             ['name', 'string', ['limit' => 100, 'default' => '', 'null' => true, 'comment' => '奖励名称']],
             ['amount', 'decimal', ['precision' => 20, 'scale' => 2, 'default' => '0.00', 'null' => true, 'comment' => '奖励数量']],
             ['order_no', 'string', ['limit' => 20, 'default' => '', 'null' => true, 'comment' => '订单单号']],
+            ['order_item_id', 'biginteger', ['limit' => 20, 'default' => 0, 'null' => true, 'comment' => '订单商品项ID']],
             ['order_unid', 'biginteger', ['limit' => 20, 'default' => 0, 'null' => true, 'comment' => '订单用户']],
             ['order_amount', 'decimal', ['precision' => 20, 'scale' => 2, 'default' => '0.00', 'null' => true, 'comment' => '订单金额']],
+            ['rebate_rule_id', 'biginteger', ['limit' => 20, 'default' => 0, 'null' => true, 'comment' => '返佣规则ID']],
             ['remark', 'string', ['limit' => 50, 'default' => '', 'null' => true, 'comment' => '奖励描述']],
             ['status', 'integer', ['limit' => 1, 'default' => 1, 'null' => true, 'comment' => '生效状态(0未生效,1已生效)']],
             ['deleted', 'integer', ['limit' => 1, 'default' => 0, 'null' => true, 'comment' => '删除状态(0未删除,1已删除)']],
@@ -1214,7 +1216,12 @@ class InstallWemall20241010 extends Migrator
             ['create_time', 'datetime', ['default' => null, 'null' => true, 'comment' => '创建时间']],
             ['update_time', 'datetime', ['default' => null, 'null' => true, 'comment' => '更新时间']],
         ], [
-            'unid', 'path', 'puid1', 'puid2', 'puid3', 'level_code', 'agent_uuid', 'create_time', 'entry_agent', 'entry_member', 'agent_level_code',
+            'unid',
+            ['columns' => ['path'], 'name' => 'idx_path_prefix'],
+            ['columns' => ['puid1'], 'name' => 'idx_puid1'],
+            ['columns' => ['puid2'], 'name' => 'idx_puid2'],
+            ['columns' => ['puid3'], 'name' => 'idx_puid3'],
+            'level_code', 'agent_uuid', 'create_time', 'entry_agent', 'entry_member', 'agent_level_code',
         ], true);
     }
 

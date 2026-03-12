@@ -25,7 +25,7 @@ use plugin\payment\model\PluginPaymentConfig;
 use plugin\payment\service\Payment;
 use think\admin\Controller;
 use think\admin\Exception;
-use think\admin\extend\CodeExtend;
+use think\admin\extend\codec\CodeToolkit;
 use think\admin\helper\QueryHelper;
 use think\db\exception\DataNotFoundException;
 use think\db\exception\DbException;
@@ -151,7 +151,7 @@ class Config extends Controller
     protected function _form_filter(array &$data)
     {
         if (empty($data['code'])) {
-            $data['code'] = CodeExtend::uniqidNumber(12, 'M');
+            $data['code'] = CodeToolkit::uniqidNumber(12, 'M');
         }
         if ($this->request->isGet()) {
             $data['content'] = $data['content'] ?? [];

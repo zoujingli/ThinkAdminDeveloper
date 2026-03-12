@@ -39,7 +39,7 @@ use think\model\relation\HasOne;
  * @property string $confirm_time 到账时间
  * @property string $create_time 创建时间
  * @property string $date 奖励日期
- * @property string $hash 维一编号
+ * @property string $hash 唯一编号
  * @property string $name 奖励名称
  * @property string $order_no 订单单号
  * @property string $remark 奖励描述

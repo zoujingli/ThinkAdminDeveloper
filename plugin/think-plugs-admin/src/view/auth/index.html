@@ -2,7 +2,7 @@
 
 {block name="button"}
 <!--{if auth("add")}-->
-<button data-open='{:url("add")}' data-table-id="RoleTable" class='layui-btn layui-btn-sm layui-btn-primary'>{:lang('添加权限')}</button>
+<button data-open='{:url("add")}{if !empty($get.plugin_group) and $get.plugin_group neq "mixed" and $get.plugin_group neq "common"}?plugin={$get.plugin_group}{/if}' data-table-id="RoleTable" class='layui-btn layui-btn-sm layui-btn-primary'>{:lang('添加权限')}</button>
 <!--{/if}-->
 
 <!--{if auth("remove")}-->
@@ -28,6 +28,7 @@
                 {checkbox: true, fixed: true},
                 {field: 'sort', title: '{:lang("排序权重")}', align: 'center', width: 100, sort: true, templet: '#SortInputRoleTableTpl'},
                 {field: 'title', title: '{:lang("权限名称")}', align: 'center', minWidth: 140},
+                {field: 'plugin_title', title: '{:lang("所属插件")}', align: 'center', minWidth: 140, templet: '#PluginRoleTableTpl'},
                 {field: 'desc', title: '{:lang("权限描述")}', align: 'center', minWidth: 110, templet: '<div>{{d.desc||"-"}}</div>'},
                 {field: 'status', title: '{:lang("使用状态")}', align: 'center', minWidth: 110, templet: '#StatusSwitchRoleTableTpl'},
                 {field: 'create_at', title: '{:lang("创建时间")}', align: 'center', minWidth: 170, sort: true},
@@ -54,6 +55,20 @@
     <input type="number" min="0" data-blur-number="0" data-action-blur="{:request()->url()}" data-value="id#{{d.id}};action#sort;sort#{value}" data-loading="false" value="{{d.sort}}" class="layui-input text-center">
 </script>
 
+<!-- 插件归属模板 -->
+<script type="text/html" id="PluginRoleTableTpl">
+    {{# if(d.plugin_group === 'mixed'){ }}
+    <span class="layui-badge layui-bg-orange">{{ d.plugin_title || '跨插件' }}</span>
+    {{# } else if(d.plugin_group === 'common') { }}
+    <span class="layui-badge layui-bg-gray">{{ d.plugin_title || '未绑定' }}</span>
+    {{# } else { }}
+    <span class="layui-badge layui-bg-blue">{{ d.plugin_title || '-' }}</span>
+    {{# } }}
+    {{# if(d.plugin_text && d.plugin_count > 1){ }}
+    <div class="color-desc nowrap">{{ d.plugin_text }}</div>
+    {{# } }}
+</script>
+
 <!-- 数据状态切换模板 -->
 <script type="text/html" id="StatusSwitchRoleTableTpl">
     <!--{if auth("state")}-->
@@ -66,7 +81,7 @@
 <!-- 数据操作工具条模板 -->
 <script type="text/html" id="ToolbarRoleTableTpl">
     <!--{if auth('edit')}-->
-    <a class="layui-btn layui-btn-primary layui-btn-sm" data-open='{:url("edit")}?id={{d.id}}'>{:lang("编 辑")}</a>
+    <a class="layui-btn layui-btn-primary layui-btn-sm" data-open='{:url("edit")}?id={{d.id}}{{ d.plugin_group && ["mixed","common"].indexOf(d.plugin_group) < 0 ? "&plugin=" + d.plugin_group : "" }}'>{:lang("编 辑")}</a>
     <!--{/if}-->
 
     <!--{if auth("remove")}-->

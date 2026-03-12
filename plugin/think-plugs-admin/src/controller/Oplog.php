@@ -18,7 +18,7 @@ declare(strict_types=1);
  * +----------------------------------------------------------------------
  */
 
-namespace app\admin\controller;
+namespace plugin\admin\controller;
 
 use think\admin\Controller;
 use think\admin\helper\QueryHelper;
@@ -50,7 +50,7 @@ class Oplog extends Controller
             $this->users = array_unique(array_column($columns, 'username'));
             $this->actions = array_unique(array_column($columns, 'action'));
         }, static function (QueryHelper $query) {
-            $query->dateBetween('create_at')->equal('username,action')->like('content,geoip,node');
+            $query->dateBetween('create_time')->equal('username,action')->like('content,geoip,node');
         });
     }
 

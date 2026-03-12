@@ -25,7 +25,7 @@ use plugin\wemall\model\PluginWemallUserTransfer;
 use plugin\wemall\service\UserRebate;
 use plugin\wemall\service\UserTransfer;
 use think\admin\Exception;
-use think\admin\extend\CodeExtend;
+use think\admin\extend\codec\CodeToolkit;
 use think\db\exception\DataNotFoundException;
 use think\db\exception\DbException;
 use think\db\exception\ModelNotFoundException;
@@ -59,7 +59,7 @@ class Transfer extends Auth
         // 提现数据补充
         $data['unid'] = $this->unid;
         $data['date'] = date('Y-m-d');
-        $data['code'] = CodeExtend::uniqidDate(16, 'T');
+        $data['code'] = CodeToolkit::uniqidDate(16, 'T');
         // 提现状态处理
         if (empty($transfers[$data['type']]['audit'])) {
             $data['status'] = 3;

@@ -5,11 +5,8 @@
             <span class="help-label"><b>{:lang('绑定上级分类')}</b>Category Parent</span>
             <select class='layui-select' name='pid' lay-search>
                 {foreach $cates as $cate}
-                {eq name='cate.id' value='$vo.pid|default=0'}
-                <option selected value='{$cate.id}'>{$cate.spl|raw}{$cate.name}</option>
-                {else}
-                <option value='{$cate.id}'>{$cate.spl|raw}{$cate.name}</option>
-                {/eq}{/foreach}
+                <option value='{$cate.id}' {if isset($vo.pid) and $cate.id eq $vo.pid}selected{/if}>{$cate.spl|raw}{$cate.name}</option>
+                {/foreach}
             </select>
             <span class="help-block"><b>{:lang('必选')}，</b>{:lang('请选择上级分类或顶级分类（目前最多支持')}{$cateLevel|default=0}{:lang('级分类）')}</span>
         </div>

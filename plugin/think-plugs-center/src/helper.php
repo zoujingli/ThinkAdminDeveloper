@@ -27,7 +27,7 @@ if (!function_exists('plguri')) {
      */
     function plguri(string $url = '', array $vars = [], $suffix = true, $domain = false): string
     {
-        $encode = encode(sysvar('CurrentPluginCode'));
+        $encode = encode(\think\admin\runtime\PluginService::currentCode());
         return sysuri("layout/{$encode}", [], false) . '#' . url($url, $vars, $suffix, $domain)->build();
     }
 }

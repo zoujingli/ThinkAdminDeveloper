@@ -26,8 +26,8 @@ use plugin\wuma\model\PluginWumaWarehouseOrderDataMins;
 use plugin\wuma\model\PluginWumaWarehouseOrderDataNums;
 use plugin\wuma\model\PluginWumaWarehouseStock;
 use think\admin\Exception;
-use think\admin\extend\CodeExtend;
-use think\admin\service\AdminService;
+use think\admin\extend\codec\CodeToolkit;
+use think\admin\auth\AdminService;
 use think\db\exception\DataNotFoundException;
 use think\db\exception\DbException;
 use think\db\exception\ModelNotFoundException;
@@ -44,7 +44,7 @@ class WhImportService
     public static function withCode(string $prefix = 'RK', int $length = 16): string
     {
         do {
-            $data = ['code' => CodeExtend::uniqidDate($length, $prefix)];
+            $data = ['code' => CodeToolkit::uniqidDate($length, $prefix)];
         } while (PluginWumaWarehouseOrder::mk()->master()->where($data)->findOrEmpty()->isExists());
         return $data['code'];
     }
@@ -111,7 +111,7 @@ class WhImportService
     public static function virtual(int $count, string $wcode, string $ghash)
     {
         $data = [];
-        $data['code'] = CodeExtend::uniqidDate(16, 'RK');
+        $data['code'] = CodeToolkit::uniqidDate(16, 'RK');
         $data['type'] = 1;
         $data['mode'] = 2;
         $data['status'] = 2;

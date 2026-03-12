@@ -63,8 +63,7 @@ abstract class Storage
     {
         try {
             if (is_null($class)) {
-                $type = ucfirst(strtolower($name ?: sysconf('storage.type|raw')));
-                $class = "think\\admin\\storage\\{$type}Storage";
+                $class = static::manager()->driverClass($name);
             }
             if (class_exists($class)) {
                 return Container::getInstance()->make($class);
@@ -132,11 +131,7 @@ abstract class Storage
      */
     public static function mimes(): array
     {
-        static $mimes = [];
-        if (count($mimes) > 0) {
-            return $mimes;
-        }
-        return $mimes = include __DIR__ . '/storage/bin/mimes.php';
+        return static::manager()->mimes();
     }
 
     /**
@@ -144,14 +139,31 @@ abstract class Storage
      */
     public static function types(): array
     {
-        return [
-            'local' => lang('本地服务器存储'),
-            'alist' => lang('自建Alist存储'),
-            'qiniu' => lang('七牛云对象存储'),
-            'upyun' => lang('又拍云USS存储'),
-            'txcos' => lang('腾讯云COS存储'),
-            'alioss' => lang('阿里云OSS存储'),
-        ];
+        return static::manager()->types();
+    }
+
+    /**
+     * 获取驱动区域列表.
+     */
+    public static function regions(string $name): array
+    {
+        return static::manager()->regions($name);
+    }
+
+    /**
+     * 获取驱动配置模板名.
+     */
+    public static function template(string $name): string
+    {
+        return static::manager()->template($name);
+    }
+
+    /**
+     * 获取前端上传授权参数.
+     */
+    public static function authorize(string $name, string $key, bool $safe = false, ?string $attname = null, string $hash = ''): array
+    {
+        return static::manager()->authorize($name, $key, $safe, $attname, $hash);
     }
 
     /**
@@ -194,5 +206,18 @@ abstract class Storage
             return static::instance()->set($name, base64_decode($img));
         }
         return ['url' => $base64];
+    }
+
+    /**
+     * 获取存储组件管理器.
+     * @throws Exception
+     */
+    private static function manager(): object
+    {
+        $class = 'plugin\\storage\\StorageManager';
+        if (class_exists($class)) {
+            return Container::getInstance()->make($class);
+        }
+        throw new Exception('Storage plugin [zoujingli/think-plugs-storage] is required.');
     }
 }

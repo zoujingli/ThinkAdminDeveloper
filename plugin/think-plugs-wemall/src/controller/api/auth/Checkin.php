@@ -24,7 +24,7 @@ use plugin\payment\service\Balance;
 use plugin\payment\service\Integral;
 use plugin\wemall\controller\api\Auth;
 use plugin\wemall\model\PluginWemallUserCheckin;
-use think\admin\extend\CodeExtend;
+use think\admin\extend\codec\CodeToolkit;
 use think\admin\helper\QueryHelper;
 use think\exception\HttpResponseException;
 
@@ -79,7 +79,7 @@ class Checkin extends Auth
             [$balance, $integral] = [strval($checkin->getAttr('balance')), strval($checkin->getAttr('integral'))];
             if (bccomp($balance, '0.00', 2) > 0 || bccomp($integral, '0.00', 2) > 0) {
                 $this->app->db->transaction(function () use ($balance, $integral) {
-                    $code = CodeExtend::uniqidNumber(16, 'CK');
+                    $code = CodeToolkit::uniqidNumber(16, 'CK');
                     bccomp($balance, '0.00', 2) > 0 && Balance::create($this->unid, $code, '签到奖励余额', $balance, '通过签到活动获得的奖励', true);
                     bccomp($integral, '0.00', 2) > 0 && Integral::create($this->unid, $code, '签到奖励积分', $integral, '通过签到活动获得的奖励', true);
                 });

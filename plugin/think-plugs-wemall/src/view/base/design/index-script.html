@@ -5,8 +5,8 @@
 </label>
 
 <script>
-    // require(['https://cdn.jsdelivr.net/npm/vue@2.7.14/dist/vue.js', 'validate', 'vue.sortable'], function (Vue, Validate, Sortable) {
-    require(['vue', 'validate', 'vue.sortable'], function (Vue, Validate, Sortable) {
+    // $.module.use(['https://cdn.jsdelivr.net/npm/vue@2.7.14/dist/vue.js', 'validate', 'vue.sortable'], function (Vue, Validate, Sortable) {
+    $.module.use(['vue', 'validate', 'vue.sortable'], function (Vue, Validate, Sortable) {
         initVueComponents(Vue).component('vuedraggable', Sortable);
         let EditorData = JSON.parse($('#EditorData').val());
 

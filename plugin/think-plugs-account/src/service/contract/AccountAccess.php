@@ -25,8 +25,8 @@ use plugin\account\model\PluginAccountBind;
 use plugin\account\model\PluginAccountUser;
 use plugin\account\service\Account;
 use think\admin\Exception;
-use think\admin\extend\CodeExtend;
-use think\admin\extend\JwtExtend;
+use think\admin\extend\codec\CodeToolkit;
+use think\admin\extend\auth\JwtToken;
 use think\App;
 use think\db\exception\DbException;
 
@@ -195,7 +195,7 @@ class AccountAccess implements AccountInterface
             }
             $data['user'] = $this->user->hidden(['sort', 'password'], true)->toArray();
             if ($rejwt) {
-                $data['token'] = $this->isjwt ? JwtExtend::token([
+                $data['token'] = $this->isjwt ? JwtToken::token([
                     'type' => $this->auth->getAttr('type'), 'token' => $this->auth->getAttr('token'),
                 ]) : $this->auth->getAttr('token');
             }
@@ -509,6 +509,6 @@ class AccountAccess implements AccountInterface
      */
     private function userCode(): string
     {
-        return CodeExtend::uniqidNumber(12, 'U');
+        return CodeToolkit::uniqidNumber(12, 'U');
     }
 }

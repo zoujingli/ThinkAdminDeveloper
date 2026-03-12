@@ -18,7 +18,7 @@ declare(strict_types=1);
  * +----------------------------------------------------------------------
  */
 
-namespace app\admin\controller;
+namespace plugin\admin\controller;
 
 use think\admin\Controller;
 use think\admin\helper\QueryHelper;
@@ -47,9 +47,14 @@ class Base extends Controller
             $this->title = '数据字典管理';
             $this->types = SystemBase::types();
             $this->type = $this->get['type'] ?? ($this->types[0] ?? '-');
+            $this->pluginGroups = SystemBase::groups($this->type);
         }, static function (QueryHelper $query) {
-            $query->where(['deleted' => 0])->equal('type');
-            $query->like('code,name,status')->dateBetween('create_at');
+            $query->equal('type');
+            $query->like('code,name,status')->dateBetween('create_time');
+            if ($group = trim(strval(input('get.plugin_group', '')))) {
+                $ids = SystemBase::idsByPluginGroup($group, strval(input('get.type', '')));
+                empty($ids) ? $query->whereRaw('1 = 0') : $query->whereIn('id', $ids);
+            }
         });
     }
 
@@ -102,15 +107,32 @@ class Base extends Controller
             $this->types = SystemBase::types();
             $this->types[] = '--- ' . lang('新增类型') . ' ---';
             $this->type = $this->get['type'] ?? ($this->types[0] ?? '-');
+            $meta = SystemBase::parseContent(strval($data['content'] ?? ''));
+            $this->plugins = SystemBase::pluginOptions();
+            $codes = (array)($meta['plugin'] ?: $meta['plugins']);
+            $this->pluginCode = count($codes) === 1 ? strval(current($codes)) : '';
+            $this->contentText = strval($meta['text'] ?? ($data['content'] ?? ''));
         } else {
-            $map = [];
-            $map[] = ['deleted', '=', 0];
-            $map[] = ['code', '=', $data['code']];
-            $map[] = ['type', '=', $data['type']];
-            $map[] = ['id', '<>', $data['id'] ?? 0];
-            if (SystemBase::mk()->where($map)->count() > 0) {
+            $data['content'] = SystemBase::packContent(
+                strval($data['content_text'] ?? ''),
+                $data['plugin_code'] ?? ''
+            );
+            unset($data['content_text'], $data['plugin_code']);
+            $exists = SystemBase::mk()
+                ->where(['code' => $data['code'], 'type' => $data['type']])
+                ->where('id', '<>', $data['id'] ?? 0)
+                ->count();
+            if ($exists > 0) {
                 $this->error('数据编码已经存在！');
             }
         }
+    }
+
+    /**
+     * 列表数据处理.
+     */
+    protected function _page_filter(array &$data)
+    {
+        $data = SystemBase::appendPlugins($data);
     }
 }

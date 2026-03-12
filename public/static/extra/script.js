@@ -23,18 +23,8 @@ $(function () {
     //     console.log('Event.reInit', $dom);
     // });
 
-    /*! 追加 require 配置参数
-    /*! 加载的文件不能与主配置重复 */
-    // require.config({
-    //     paths: {
-    //         'vue': ['plugs/vue/vue.min'],
-    //     },
-    //     shim: {
-    //         'vue': ['json']
-    //     },
-    // });
-    // // 基于 Require 加载测试
-    // require(['vue', 'md5'], function (vue, md5) {
+    /*! 追加模块加载示例 */
+    // $.module.use(['vue', 'md5'], function (vue, md5) {
     //     console.log(vue)
     //     console.log(md5.hash('content'))
     // });

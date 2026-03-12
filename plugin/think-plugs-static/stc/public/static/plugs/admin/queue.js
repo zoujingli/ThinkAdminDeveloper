@@ -1,15 +1,25 @@
 // +----------------------------------------------------------------------
+// | Static Plugin for ThinkAdmin
+// +----------------------------------------------------------------------
+// | 版权所有 2014~2024 ThinkAdmin [ thinkadmin.top ]
+// +----------------------------------------------------------------------
+// | 官方网站: https://thinkadmin.top
+// +----------------------------------------------------------------------
+// | 开源协议 ( https://mit-license.org )
+// | 免责声明 ( https://thinkadmin.top/disclaimer )
+// +----------------------------------------------------------------------
+// | gitee 代码仓库：https://gitee.com/zoujingli/think-plugs-static
+// | github 代码仓库：https://github.com/zoujingli/think-plugs-static
+// +----------------------------------------------------------------------
 
-define(function () {
+layui.define(function (exports) {
 
     let template = '<div class="padding-30 padding-bottom-0" data-queue-load="{{d.code}}"><div class="layui-elip notselect nowrap" data-message-title><b class="color-desc">...</b></div><div class="margin-top-15 layui-progress layui-progress-big" lay-showPercent="yes"><div class="layui-progress-bar transition" lay-percent="0.00%"></div></div>' + '<div class="margin-top-15"><code class="layui-textarea layui-bg-black border-0" style="resize:none;overflow:hidden;height:190px"></code></div></div>';
-
-    return Queue;
 
     function Queue(code, doScript, element) {
         let queue = this;
         (this.doAjax = true) && (this.doReload = false) || layer.open({
-            type: 1, title: false, area: ['560px', '318px'], anim: 2, shadeClose: false, end: function () {
+            type: 1, title: false, area: ['560px', '315px'], anim: 2, shadeClose: false, end: function () {
                 queue.doAjax = queue.doReload && doScript && $.layTable.reload(((element || {}).dataset || {}).tableId || true) && false;
             }, content: laytpl(template).render({code: code}), success: function ($elem) {
                 new Progress($elem, code, queue, doScript);
@@ -86,4 +96,6 @@ define(function () {
         // 首页加载进度信息
         this.LoadProgress();
     }
+
+    exports('taQueue', Queue);
 });

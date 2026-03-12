@@ -24,7 +24,7 @@ use plugin\wemall\model\PluginWemallConfigAgent;
 use plugin\wemall\model\PluginWemallConfigRebate;
 use plugin\wemall\service\UserRebate;
 use think\admin\Controller;
-use think\admin\extend\CodeExtend;
+use think\admin\extend\codec\CodeToolkit;
 use think\admin\helper\QueryHelper;
 use think\db\exception\DataNotFoundException;
 use think\db\exception\DbException;
@@ -101,7 +101,7 @@ class Config extends Controller
     protected function _form_filter(array &$data)
     {
         if (empty($data['code'])) {
-            $data['code'] = CodeExtend::uniqidNumber(16, 'R');
+            $data['code'] = CodeToolkit::uniqidNumber(16, 'R');
         }
         if ($this->request->isGet()) {
             $this->prizes = UserRebate::prizes;

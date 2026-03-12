@@ -21,7 +21,7 @@ declare(strict_types=1);
 namespace plugin\wemall\model;
 
 use plugin\account\model\Abs;
-use think\admin\extend\DataExtend;
+use think\admin\extend\data\ArrayTree;
 use think\db\exception\DataNotFoundException;
 use think\db\exception\DbException;
 use think\db\exception\ModelNotFoundException;
@@ -55,7 +55,7 @@ class PluginWemallGoodsCate extends Abs
     public static function pdata(int $max, array &$data, array $parent = []): array
     {
         $items = static::mk()->where(['deleted' => 0])->order('sort desc,id asc')->select()->toArray();
-        $cates = DataExtend::arr2table(empty($parent) ? $items : array_merge([$parent], $items));
+        $cates = ArrayTree::arr2table(empty($parent) ? $items : array_merge([$parent], $items));
         if (isset($data['id'])) {
             foreach ($cates as $cate) {
                 if ($cate['id'] === $data['id']) {
@@ -81,7 +81,7 @@ class PluginWemallGoodsCate extends Abs
     public static function dtree(): array
     {
         $query = static::mk()->where(['status' => 1, 'deleted' => 0])->order('sort desc,id desc');
-        return DataExtend::arr2tree($query->withoutField('sort,status,deleted,create_time')->select()->toArray());
+        return ArrayTree::arr2tree($query->withoutField('sort,status,deleted,create_time')->select()->toArray());
     }
 
     /**
@@ -91,7 +91,7 @@ class PluginWemallGoodsCate extends Abs
     public static function items(bool $simple = false): array
     {
         $query = static::mk()->where(['status' => 1, 'deleted' => 0])->order('sort desc,id asc');
-        $cates = array_column(DataExtend::arr2table($query->column('id,pid,name', 'id')), null, 'id');
+        $cates = array_column(ArrayTree::arr2table($query->column('id,pid,name', 'id')), null, 'id');
         foreach ($cates as $cate) {
             isset($cates[$cate['pid']]) && $cates[$cate['id']]['parent'] = &$cates[$cate['pid']];
         }

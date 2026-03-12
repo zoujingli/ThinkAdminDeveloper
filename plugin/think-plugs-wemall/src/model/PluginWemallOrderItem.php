@@ -58,7 +58,7 @@ use think\model\relation\HasOne;
  * @property string $gname 商品名称
  * @property string $gsku 商品SKU
  * @property string $gspec 商品规格
- * @property string $gunit 商品单凭
+ * @property string $gunit 商品单位
  * @property string $level_name 用户等级名称
  * @property string $order_no 订单单号
  * @property string $update_time 更新时间

@@ -8,7 +8,7 @@
 // | 官方网站: https://thinkadmin.top
 // +----------------------------------------------------------------------
 // | 免责声明 ( https://thinkadmin.top/disclaimer )
-// | 会员免费 ( https://thinkadmin.top/vip-introduce )
+// | 会员特权 ( https://thinkadmin.top/vip-introduce )
 // +----------------------------------------------------------------------
 // | gitee 代码仓库：https://gitee.com/zoujingli/think-plugs-account
 // | github 代码仓库：https://github.com/zoujingli/think-plugs-account
@@ -38,9 +38,9 @@ use plugin\account\model\PluginAccountUser;
 use plugin\payment\model\PluginPaymentRecord;
 use plugin\payment\service\Payment;
 use think\admin\Controller;
-use think\admin\extend\CodeExtend;
+use think\admin\extend\codec\CodeToolkit;
 use think\admin\helper\QueryHelper;
-use think\admin\service\AdminService;
+use think\admin\auth\AdminService;
 use think\db\exception\DataNotFoundException;
 use think\db\exception\DbException;
 use think\db\exception\ModelNotFoundException;
@@ -109,7 +109,7 @@ class Record extends Controller
             $data['audit_time'] = date('Y-m-d H:i:s');
             $data['audit_remark'] = $data['remark'];
             $data['payment_time'] = date('Y-m-d H:i:s');
-            $data['payment_trade'] = CodeExtend::uniqidNumber(18, 'AU');
+            $data['payment_trade'] = CodeToolkit::uniqidNumber(18, 'AU');
             if (empty($data['status'])) {
                 $data['audit_status'] = 0;
                 $data['payment_status'] = 0;

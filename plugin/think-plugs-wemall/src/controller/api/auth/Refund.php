@@ -25,7 +25,7 @@ use plugin\wemall\model\PluginWemallExpressCompany;
 use plugin\wemall\model\PluginWemallOrder;
 use plugin\wemall\model\PluginWemallOrderRefund;
 use plugin\wemall\service\UserRefund;
-use think\admin\extend\CodeExtend;
+use think\admin\extend\codec\CodeToolkit;
 use think\admin\helper\QueryHelper;
 use think\admin\Storage;
 use think\db\Query;
@@ -97,7 +97,7 @@ class Refund extends Auth
             $data['images'] = implode('|', $images);
         }
         $data['unid'] = $this->unid;
-        $data['code'] = CodeExtend::uniqidNumber(16, 'R');
+        $data['code'] = CodeToolkit::uniqidNumber(16, 'R');
         $data['status'] = 2;
         $data['number'] = $order->getAttr('number_goods');
         if (($refund = PluginWemallOrderRefund::mk())->save($data)) {

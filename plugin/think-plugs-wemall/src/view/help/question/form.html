@@ -86,7 +86,7 @@
 </form>
 
 <script>
-    require(['ckeditor'], function () {
+    $.module.use(['ckeditor'], function () {
         $('input[name="cover"]').uploadOneImage();
         window.createEditor('[name=content]', {height: 395});
     });

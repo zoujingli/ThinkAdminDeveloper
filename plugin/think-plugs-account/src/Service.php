@@ -32,13 +32,13 @@ class Service extends Plugin
      * 定义插件名称.
      * @var string
      */
-    protected $appName = '账号管理';
+    protected string $appName = '账号管理';
 
     /**
      * 定义安装包名.
      * @var string
      */
-    protected $package = 'zoujingli/think-plugs-account';
+    protected string $package = 'zoujingli/think-plugs-account';
 
     /**
      * 定义插件菜单.
@@ -46,7 +46,7 @@ class Service extends Plugin
      */
     public static function menu(): array
     {
-        $code = app(static::class)->appCode;
+        $code = static::getAppCode();
         return [
             [
                 'name' => '用户管理',

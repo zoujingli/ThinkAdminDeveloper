@@ -27,7 +27,7 @@ use plugin\wemall\model\PluginWemallOrderSender;
 use plugin\wemall\service\UserOrder;
 use plugin\wemall\service\UserRefund;
 use think\admin\Controller;
-use think\admin\extend\CodeExtend;
+use think\admin\extend\codec\CodeToolkit;
 use think\admin\helper\QueryHelper;
 use think\db\exception\DataNotFoundException;
 use think\db\exception\DbException;
@@ -125,7 +125,7 @@ class Order extends Controller
                 $data['cancel_time'] = date('Y-m-d H:i:s');
             } else {
                 $data['status'] = 4;
-                $data['payment_code'] = CodeExtend::uniqidDate(16, 'T');
+                $data['payment_code'] = CodeToolkit::uniqidDate(16, 'T');
                 $data['payment_time'] = date('Y-m-d H:i:s');
                 $data['payment_status'] = 1;
                 $data['payment_remark'] = $data['remark'] ?: '后台审核支付凭证通过';

@@ -23,7 +23,7 @@ namespace plugin\wechat\service\controller\api;
 use plugin\wechat\service\AuthService;
 use plugin\wechat\service\model\WechatAuth;
 use think\admin\Controller;
-use think\admin\extend\JsonRpcServer;
+use think\admin\extend\rpc\JsonRpcHttpServer;
 use think\Exception;
 use think\exception\HttpResponseException;
 
@@ -66,7 +66,7 @@ class Client extends Controller
     public function jsonrpc()
     {
         try {
-            JsonRpcServer::instance()->handle($this->instance());
+            JsonRpcHttpServer::instance()->handle($this->instance());
         } catch (HttpResponseException $exception) {
             throw $exception;
         } catch (\Exception $exception) {
@@ -96,9 +96,6 @@ class Client extends Controller
             }
             if (empty($auth['status'])) {
                 throw new Exception('该公众号已被禁用，请联系管理员！');
-            }
-            if (!empty($auth['deleted'])) {
-                throw new Exception('该公众号已取消授权，请重新授权！');
             }
             if (abs(time() - $data['time']) > 3600) {
                 throw new Exception('请求时间与服务器时差过大，请同步时间！');

@@ -84,7 +84,7 @@
 
 <script>
 
-    require(['echarts'], function (echarts) {
+    $.module.use(['echarts'], function (echarts) {
         let data1 = JSON.parse($('#jsondata1').html());
         let days = data1.map(function (item) {
             return item['当天日期'];

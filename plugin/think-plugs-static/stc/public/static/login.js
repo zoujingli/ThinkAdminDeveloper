@@ -1,4 +1,16 @@
 // +----------------------------------------------------------------------
+// | Static Plugin for ThinkAdmin
+// +----------------------------------------------------------------------
+// | 版权所有 2014~2024 ThinkAdmin [ thinkadmin.top ]
+// +----------------------------------------------------------------------
+// | 官方网站: https://thinkadmin.top
+// +----------------------------------------------------------------------
+// | 开源协议 ( https://mit-license.org )
+// | 免责声明 ( https://thinkadmin.top/disclaimer )
+// +----------------------------------------------------------------------
+// | gitee 代码仓库：https://gitee.com/zoujingli/think-plugs-static
+// | github 代码仓库：https://github.com/zoujingli/think-plugs-static
+// +----------------------------------------------------------------------
 
 $(function () {
 
@@ -23,7 +35,7 @@ $(function () {
 
     /*! 后台加密登录处理 */
     $body.find('form[data-login-form]').each(function (idx, form) {
-        require(['md5'], function (md5) {
+        $.module.use(['md5'], function (md5) {
             $(form).vali(function (data) {
                 data['password'] = md5.hash(md5.hash(data['password']) + data['uniqid']);
                 $.form.load(location.href, data, "post", function (ret) {

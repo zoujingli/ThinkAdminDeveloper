@@ -22,7 +22,7 @@ namespace plugin\wechat\service\handle;
 
 use plugin\wechat\service\AuthService;
 use plugin\wechat\service\model\WechatAuth;
-use think\admin\extend\HttpExtend;
+use think\admin\extend\http\HttpClient;
 use think\admin\Service;
 use think\db\exception\DataNotFoundException;
 use think\db\exception\DbException;
@@ -61,7 +61,7 @@ class ReceiveHandle extends Service
                 }
                 $params = ['appid' => $appid, 'openid' => $openid, 'params' => json_encode($data)];
                 [$params['receive'], $params['encrypt']] = [serialize($data), intval($wechat->isEncrypt())];
-                if (is_string($result = HttpExtend::post($config['appuri'], $params, ['timeout' => 30]))) {
+                if (is_string($result = HttpClient::post($config['appuri'], $params, ['timeout' => 30]))) {
                     $json = json_decode($result = ltrim($result, '\XEF\XBB\XBF'), true);
                     return is_array($json) ? $wechat->reply($json, true, $wechat->isEncrypt()) : $result;
                 }

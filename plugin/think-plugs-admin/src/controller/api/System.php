@@ -18,12 +18,12 @@ declare(strict_types=1);
  * +----------------------------------------------------------------------
  */
 
-namespace app\admin\controller\api;
+namespace plugin\admin\controller\api;
 
 use think\admin\Controller;
 use think\admin\model\SystemConfig;
-use think\admin\service\AdminService;
-use think\admin\service\RuntimeService;
+use think\admin\auth\AdminService;
+use think\admin\runtime\RuntimeService;
 use think\exception\HttpResponseException;
 
 /**

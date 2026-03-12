@@ -29,7 +29,7 @@ use plugin\wuma\service\RelationService;
 use plugin\wuma\service\WhExportService;
 use think\admin\Controller;
 use think\admin\Exception;
-use think\admin\extend\CodeExtend;
+use think\admin\extend\codec\CodeToolkit;
 use think\admin\helper\QueryHelper;
 use think\db\exception\DataNotFoundException;
 use think\db\exception\DbException;
@@ -136,7 +136,7 @@ class Batch extends Controller
                             $this->error('分区存在重叠！');
                         }
                         $item['lock'] = 2;
-                        $item['code'] = CodeExtend::uniqidDate(16, 'BK');
+                        $item['code'] = CodeToolkit::uniqidDate(16, 'BK');
                         $items[] = [
                             'mins' => join(',', $unis),
                             'code' => $item['code'],
@@ -153,7 +153,7 @@ class Batch extends Controller
                     $this->error('没有需要出货的数据！');
                 }
                 foreach ($items as &$item) {
-                    $item['code'] = CodeExtend::uniqidDate(16, 'BK');
+                    $item['code'] = CodeToolkit::uniqidDate(16, 'BK');
                     WhExportService::batch($item, !empty($input['import']));
                 }
                 PluginWumaSourceAssign::mk()->where(['batch' => $input['batch']])->update([

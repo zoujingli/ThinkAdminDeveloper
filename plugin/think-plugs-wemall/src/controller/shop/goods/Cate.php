@@ -22,7 +22,7 @@ namespace plugin\wemall\controller\shop\goods;
 
 use plugin\wemall\model\PluginWemallGoodsCate;
 use think\admin\Controller;
-use think\admin\extend\DataExtend;
+use think\admin\extend\data\ArrayTree;
 use think\admin\helper\QueryHelper;
 use think\db\exception\DataNotFoundException;
 use think\db\exception\DbException;
@@ -115,7 +115,7 @@ class Cate extends Controller
      */
     protected function _page_filter(array &$data)
     {
-        $data = DataExtend::arr2table($data);
+        $data = ArrayTree::arr2table($data);
     }
 
     /**

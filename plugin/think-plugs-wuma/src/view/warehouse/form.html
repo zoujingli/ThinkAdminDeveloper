@@ -59,7 +59,7 @@
 
 <script>
     $('#WareForm').parent().css('overflow', 'revert');
-    require(['pcasunzips'], function () {
+    $.module.use(['pcasunzips'], function () {
         /*! 省市区数据处理 */
         (function (prov, city, area, call) {
             new PCAS("addr_prov", "addr_city", "addr_area", prov, city, area), call();

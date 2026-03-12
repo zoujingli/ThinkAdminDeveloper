@@ -65,7 +65,7 @@ class Wechat extends Command
                 $config = WechatAuth::mk()->where(['authorizer_appid' => $item['authorizer_appid']])->find();
                 if (isset($item['refresh_token'], $item['auth_time'])) {
                     $info = array_merge(AuthService::buildAuthData($wechat->getAuthorizerInfo($item['authorizer_appid'])), [
-                        'authorizer_appid' => $item['authorizer_appid'], 'authorizer_refresh_token' => $item['refresh_token'], 'auth_time' => $item['auth_time'], 'deleted' => 0,
+                        'authorizer_appid' => $item['authorizer_appid'], 'authorizer_refresh_token' => $item['refresh_token'], 'auth_time' => $item['auth_time'], 'delete_time' => null,
                     ]);
                     if (empty($config) || empty($config['appkey'])) {
                         $info['appkey'] = md5(uniqid('', true) . rand(1000, 9999));

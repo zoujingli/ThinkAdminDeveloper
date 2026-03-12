@@ -36,7 +36,7 @@
 </form>
 
 <script>
-    require(['pcasunzips'], function () {
+    $.module.use(['pcasunzips'], function () {
         (function (prov, city, area, call) {
             new PCAS('region_prov', 'region_city', 'region_area', prov, city, area);
             $('#AddressConfigForm').parents('.layui-layer-content').css({overflow: 'unset'});

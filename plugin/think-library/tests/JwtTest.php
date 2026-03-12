@@ -21,7 +21,7 @@ declare(strict_types=1);
 namespace think\admin\tests;
 
 use PHPUnit\Framework\TestCase;
-use think\admin\extend\JwtExtend;
+use think\admin\extend\auth\JwtToken;
 
 /**
  * @internal
@@ -33,8 +33,8 @@ class JwtTest extends TestCase
     {
         $jwtkey = 'thinkadmin';
         $testdata = ['user' => 'admin' . mt_rand(0, 1000), 'iss' => 'thinkadmin.top', 'exp' => time() + 30];
-        $token = JwtExtend::token($testdata, $jwtkey);
-        $result = JwtExtend::verify($token, $jwtkey);
+        $token = JwtToken::token($testdata, $jwtkey);
+        $result = JwtToken::verify($token, $jwtkey);
         $this->assertEquals($testdata['user'], $result['user']);
     }
 }

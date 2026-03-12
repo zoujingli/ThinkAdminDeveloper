@@ -132,7 +132,7 @@
 
 <script>
     $(function () {
-        require(['vue', 'ckeditor'], (Vue) => {
+        $.module.use(['vue', 'ckeditor'], (Vue) => {
             window.createEditor('[name=content]')
             let app = new Vue({
                 el: '#FormCoupon',

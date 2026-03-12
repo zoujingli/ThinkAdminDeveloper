@@ -126,7 +126,7 @@
 
 <script>
     // 加载插件并显示界面
-    require(['vue'], function (vue) {
+    $.module.use(['vue'], function (vue) {
         new vue({
             el: '#PosterForm', data: {
                 id: parseInt("{$vo.id|default=0}"),

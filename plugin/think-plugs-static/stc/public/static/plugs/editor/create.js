@@ -1,5 +1,5 @@
-define(['_weditor', 'upload'], function (editor) {
-    window.wangEditor = editor;
+(function () {
+    let editor = window.wangEditor;
     window.createEditor = function (ele, option) {
         if ($(ele).data('editorLayout')) return;
         const $layout = $('<div style="border:1px solid #ccc;z-index:1001;"><div style="border-bottom:1px solid #ccc;"></div><div style="height:400px;"></div></div>');
@@ -63,4 +63,4 @@ define(['_weditor', 'upload'], function (editor) {
 
         return _editor;
     }
-})
+})();

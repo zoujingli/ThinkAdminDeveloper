@@ -31,7 +31,7 @@
 </form>
 
 <script>
-    require(['ckeditor'], function () {
+    $.module.use(['ckeditor'], function () {
         window.createEditor('[name=content]', {height: 540});
     });
 </script>

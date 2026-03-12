@@ -8,7 +8,7 @@
 // | 官方网站: https://thinkadmin.top
 // +----------------------------------------------------------------------
 // | 免责声明 ( https://thinkadmin.top/disclaimer )
-// | 会员免费 ( https://thinkadmin.top/vip-introduce )
+// | 会员特权 ( https://thinkadmin.top/vip-introduce )
 // +----------------------------------------------------------------------
 // | gitee 代码仓库：https://gitee.com/zoujingli/think-plugs-payment
 // | github 代码仓库：https://github.com/zoujingli/think-plugs-payment
@@ -40,7 +40,7 @@ use plugin\payment\service\contract\PaymentResponse;
 use plugin\payment\service\contract\PaymentUsageTrait;
 use plugin\payment\service\Payment;
 use think\admin\Exception;
-use think\admin\extend\HttpExtend;
+use think\admin\extend\http\HttpClient;
 use think\Response;
 
 /**
@@ -158,7 +158,7 @@ class JoinPayment implements PaymentInterface
     {
         $main = 'https://www.joinpay.com/trade';
         $data['hmac'] = $this->_doSign($data);
-        return json_decode(HttpExtend::post("{$main}/{$uri}", $data), true);
+        return json_decode(HttpClient::post("{$main}/{$uri}", $data), true);
     }
 
     /**

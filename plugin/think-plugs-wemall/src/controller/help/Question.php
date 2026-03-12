@@ -25,7 +25,7 @@ use plugin\wemall\model\PluginWemallHelpQuestion;
 use plugin\wemall\model\PluginWemallHelpQuestionX;
 use think\admin\Controller;
 use think\admin\helper\QueryHelper;
-use think\admin\service\AdminService;
+use think\admin\auth\AdminService;
 use think\db\exception\DataNotFoundException;
 use think\db\exception\DbException;
 use think\db\exception\ModelNotFoundException;

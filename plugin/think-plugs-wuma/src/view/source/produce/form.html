@@ -75,7 +75,7 @@
     <textarea class="layui-textarea">{$products|default=''|json_encode}</textarea>
 </label>
 <script>
-    require(['pcasunzips'], function () {
+    $.module.use(['pcasunzips'], function () {
 
         $('#RuleForm').parent().css({overflow: 'revert'});
         /*! 省市区数据处理 */

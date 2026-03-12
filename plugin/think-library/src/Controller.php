@@ -20,16 +20,16 @@ declare(strict_types=1);
 
 namespace think\admin;
 
-use think\admin\extend\JwtExtend;
+use think\admin\extend\auth\JwtToken;
 use think\admin\helper\DeleteHelper;
 use think\admin\helper\FormHelper;
-use think\admin\helper\PageHelper;
 use think\admin\helper\QueryHelper;
 use think\admin\helper\SaveHelper;
-use think\admin\helper\TokenHelper;
+use think\admin\node\NodeService;
+use think\admin\auth\TokenHelper;
 use think\admin\helper\ValidateHelper;
-use think\admin\service\NodeService;
-use think\admin\service\QueueService;
+use think\admin\auth\AdminService;
+use think\admin\queue\QueueService;
 use think\App;
 use think\db\BaseQuery;
 use think\db\exception\DataNotFoundException;
@@ -47,39 +47,33 @@ class Controller extends \stdClass
 {
     /**
      * 应用容器.
-     * @var App
      */
-    public $app;
+    public App $app;
 
     /**
      * 请求GET参数.
-     * @var array
      */
-    public $get = [];
+    public array $get = [];
 
     /**
      * 当前功能节点.
-     * @var string
      */
-    public $node;
+    public string $node = '';
 
     /**
      * 请求参数对象
-     * @var Request
      */
-    public $request;
+    public Request $request;
 
     /**
      * 表单CSRF验证状态
-     * @var bool
      */
-    public $csrf_state = false;
+    public bool $csrf_state = false;
 
     /**
      * 表单CSRF验证消息.
-     * @var string
      */
-    public $csrf_message;
+    public string $csrf_message = '';
 
     /**
      * Constructor.
@@ -119,8 +113,10 @@ class Controller extends \stdClass
             $data = new \stdClass();
         }
         $result = ['code' => $code, 'info' => is_string($info) ? lang($info) : $info, 'data' => $data];
-        if (JwtExtend::isRejwt()) {
-            $result['token'] = JwtExtend::token();
+        if (JwtToken::isRejwt()) {
+            $result['token'] = JwtToken::token();
+        } elseif ($token = AdminService::buildToken()) {
+            $result['token'] = $token;
         }
         throw new HttpResponseException(json($result));
     }
@@ -143,17 +139,13 @@ class Controller extends \stdClass
      */
     public function fetch(string $tpl = '', array $vars = [], ?string $node = null): void
     {
-        if (JwtExtend::$sessionId) {
-            JwtExtend::fetch($this, $vars);
+        foreach ($this as $name => $value) {
+            $vars[$name] = $value;
+        }
+        if ($this->csrf_state) {
+            TokenHelper::fetch($tpl, $vars, $node);
         } else {
-            foreach ($this as $name => $value) {
-                $vars[$name] = $value;
-            }
-            if ($this->csrf_state) {
-                TokenHelper::fetch($tpl, $vars, $node);
-            } else {
-                throw new HttpResponseException(view($tpl, $vars));
-            }
+            throw new HttpResponseException(view($tpl, $vars));
         }
     }
 
@@ -163,7 +155,7 @@ class Controller extends \stdClass
      * @param mixed $value 变量的值
      * @return $this
      */
-    public function assign($name, $value = ''): Controller
+    public function assign($name, $value = ''): static
     {
         if (is_string($name)) {
             $this->{$name} = $value;
@@ -227,7 +219,7 @@ class Controller extends \stdClass
      */
     protected function _page($dbQuery, $page = true, bool $display = true, $total = false, int $limit = 0, string $template = ''): array
     {
-        return PageHelper::instance()->init($dbQuery, $page, $display, $total, $limit, $template);
+        return QueryHelper::instance()->init($dbQuery)->page($page, $display, $total, $limit, $template);
     }
 
     /**
@@ -243,7 +235,7 @@ class Controller extends \stdClass
      * @throws DbException
      * @throws ModelNotFoundException
      */
-    protected function _form($dbQuery, string $template = '', string $field = '', $where = [], array $data = [])
+    protected function _form($dbQuery, string $template = '', string $field = '', $where = [], array $data = []): array|bool
     {
         return FormHelper::instance()->init($dbQuery, $template, $field, $where, $data);
     }
@@ -302,7 +294,7 @@ class Controller extends \stdClass
      * @param int $rscript 任务类型(0单例,1多例)
      * @param int $loops 循环等待时间
      */
-    protected function _queue(string $title, string $command, int $later = 0, array $data = [], int $rscript = 0, int $loops = 0)
+    protected function _queue(string $title, string $command, int $later = 0, array $data = [], int $rscript = 0, int $loops = 0): void
     {
         try {
             $queue = QueueService::register($title, $command, $later, $data, $rscript, $loops);

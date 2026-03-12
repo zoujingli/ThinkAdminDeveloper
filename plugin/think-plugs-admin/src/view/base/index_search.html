@@ -30,6 +30,22 @@
     </div>
 
     <div class="layui-form-item layui-inline">
+        <label class="layui-form-label">{:lang('所属插件')}</label>
+        <div class="layui-input-inline">
+            <select class="layui-select" name="plugin_group">
+                <option value=''>-- {:lang('全部')} --</option>
+                {foreach $pluginGroups as $group}
+                {if isset($get.plugin_group) and $get.plugin_group eq $group.code}
+                <option selected value="{$group.code}">{$group.name}</option>
+                {else}
+                <option value="{$group.code}">{$group.name}</option>
+                {/if}
+                {/foreach}
+            </select>
+        </div>
+    </div>
+
+    <div class="layui-form-item layui-inline">
         <label class="layui-form-label">{:lang('创建时间')}</label>
         <div class="layui-input-inline">
             <input data-date-range name="create_at" value="{$get.create_at|default=''}" placeholder="{:lang('请选择创建时间')}" class="layui-input">

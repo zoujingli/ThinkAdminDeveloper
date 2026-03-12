@@ -18,14 +18,15 @@ declare(strict_types=1);
  * +----------------------------------------------------------------------
  */
 
-namespace app\admin\controller;
+namespace plugin\admin\controller;
 
 use think\admin\Controller;
 use think\admin\helper\QueryHelper;
 use think\admin\model\SystemAuth;
 use think\admin\model\SystemNode;
-use think\admin\Plugin;
-use think\admin\service\AdminService;
+use think\admin\auth\AdminService;
+use think\admin\runtime\AppService;
+use think\admin\runtime\PluginService;
 use think\db\exception\DataNotFoundException;
 use think\db\exception\DbException;
 use think\db\exception\ModelNotFoundException;
@@ -48,8 +49,13 @@ class Auth extends Controller
     {
         SystemAuth::mQuery()->layTable(function () {
             $this->title = '系统权限管理';
+            $this->authGroups = SystemAuth::groups();
         }, static function (QueryHelper $query) {
-            $query->like('title,desc')->equal('status,utype')->dateBetween('create_at');
+            $query->like('title,desc')->equal('status,utype')->dateBetween('create_time');
+            if ($group = trim(strval(input('get.plugin_group', '')))) {
+                $ids = SystemAuth::idsByPluginGroup($group);
+                empty($ids) ? $query->whereRaw('1 = 0') : $query->whereIn('id', $ids);
+            }
         });
     }
 
@@ -99,6 +105,7 @@ class Auth extends Controller
     {
         if ($this->request->isGet()) {
             $this->title = empty($data['title']) ? '添加访问授权' : "编辑【{$data['title']}】授权";
+            $this->plugin = trim(strval($this->request->get('plugin', '')));
         } elseif ($this->request->post('action') === 'json') {
             if ($this->app->isDebug()) {
                 AdminService::clear();
@@ -112,10 +119,7 @@ class Auth extends Controller
                 }
                 return $a['node'] === $b['node'] ? 0 : ($a['node'] > $b['node'] ? 1 : -1);
             });
-            [$ps, $cs] = [Plugin::get(), (array)$this->app->config->get('app.app_names', [])];
-            foreach ($ztree as &$n) {
-                $n['title'] = lang($cs[$n['node']] ?? (($ps[$n['node']] ?? [])['name'] ?? $n['title']));
-            }
+            $this->normalizePluginTree($ztree);
             $this->success('获取权限节点成功！', $ztree);
         } elseif (empty($data['nodes'])) {
             $this->error('未配置功能节点！');
@@ -137,5 +141,37 @@ class Auth extends Controller
             sysoplog('系统权限管理', "配置系统权限[{$map['auth']}]授权成功");
             $this->success('权限修改成功！', 'javascript:history.back()');
         }
+    }
+
+    /**
+     * 列表数据处理.
+     */
+    protected function _page_filter(array &$data)
+    {
+        $data = SystemAuth::appendPlugins($data);
+    }
+
+    /**
+     * 标准化插件权限树标题与分组信息.
+     * @param array<int, array<string, mixed>> $nodes
+     */
+    private function normalizePluginTree(array &$nodes, string $plugin = ''): void
+    {
+        foreach ($nodes as &$node) {
+            $current = $plugin;
+            if (strpos(strval($node['node'] ?? ''), '/') === false) {
+                $current = strval($node['node'] ?? '');
+                if ($pluginInfo = PluginService::resolve($current, true)) {
+                    $node['title'] = lang(strval($pluginInfo['name'] ?? $node['title']));
+                } elseif ($app = AppService::get($current)) {
+                    $node['title'] = lang(strval($app['name'] ?? $node['title']));
+                }
+            }
+            $node['plugin'] = $current;
+            if (!empty($node['_sub_'])) {
+                $this->normalizePluginTree($node['_sub_'], $current);
+            }
+        }
+        unset($node);
     }
 }

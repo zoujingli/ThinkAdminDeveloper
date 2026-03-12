@@ -22,7 +22,7 @@ namespace plugin\account\controller;
 
 use plugin\account\model\PluginAccountMsms;
 use plugin\account\service\message\Alisms;
-use plugin\account\service\Message as MessageService;
+use plugin\account\service\Message as AccountMessage;
 use think\admin\Controller;
 use think\admin\Exception;
 use think\admin\helper\QueryHelper;
@@ -54,7 +54,7 @@ class Message extends Controller
     {
         PluginAccountMsms::mQuery()->layTable(function () {
             $this->title = '手机短信管理';
-            $this->scenes = MessageService::$scenes;
+            $this->scenes = AccountMessage::$scenes;
         }, static function (QueryHelper $query) {
             $query->equal('status')->like('smsid,scene,phone')->dateBetween('create_time');
         });
@@ -69,7 +69,7 @@ class Message extends Controller
     {
         if ($this->request->isGet()) {
             $this->vo = sysdata($this->smskey);
-            $this->scenes = MessageService::$scenes;
+            $this->scenes = AccountMessage::$scenes;
             $this->regions = Alisms::regions();
             $this->fetch();
         } else {

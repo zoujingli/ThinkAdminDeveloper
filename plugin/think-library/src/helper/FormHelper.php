@@ -22,7 +22,8 @@ namespace think\admin\helper;
 
 use think\admin\Exception;
 use think\admin\Helper;
-use think\admin\service\SystemService;
+use think\admin\query\QueryFactory;
+use think\admin\system\SystemService;
 use think\db\BaseQuery;
 use think\db\exception\DataNotFoundException;
 use think\db\exception\DbException;
@@ -50,7 +51,7 @@ class FormHelper extends Helper
      */
     public function init($dbQuery, string $template = '', string $field = '', $where = [], array $edata = [])
     {
-        $query = static::buildQuery($dbQuery);
+        $query = QueryFactory::build($dbQuery);
         $field = $field ?: ($query->getPk() ?: 'id');
         $value = $edata[$field] ?? input($field);
         if ($this->app->request->isGet()) {

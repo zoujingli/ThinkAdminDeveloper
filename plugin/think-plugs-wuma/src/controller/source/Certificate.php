@@ -23,7 +23,7 @@ namespace plugin\wuma\controller\source;
 use plugin\wuma\model\PluginWumaSourceCertificate;
 use plugin\wuma\service\CertService;
 use think\admin\Controller;
-use think\admin\extend\CodeExtend;
+use think\admin\extend\codec\CodeToolkit;
 use think\admin\helper\QueryHelper;
 use think\db\exception\DataNotFoundException;
 use think\db\exception\DbException;
@@ -87,7 +87,7 @@ class Certificate extends Controller
         ]);
         $default = [
             // name: numb:comp:prod:date:hash:
-            'numb' => CodeExtend::uniqidNumber(16, 'CT'),
+            'numb' => CodeToolkit::uniqidNumber(16, 'CT'),
             'comp' => $this->user['company_name'] ?? '',
             'hash' => strtolower(md5(uniqid())),
             'date' => format_datetime(time()),
@@ -131,7 +131,7 @@ class Certificate extends Controller
     protected function _form_filter(array &$data)
     {
         if (empty($data['code'])) {
-            $data['code'] = CodeExtend::uniqidNumber(16, 'CT');
+            $data['code'] = CodeToolkit::uniqidNumber(16, 'CT');
         }
         if ($this->request->isPost()) {
             // 检查产品编号

@@ -18,13 +18,13 @@ declare(strict_types=1);
  * +----------------------------------------------------------------------
  */
 
-namespace app\admin\controller;
+namespace plugin\admin\controller;
 
 use think\admin\Controller;
 use think\admin\Exception;
 use think\admin\model\SystemUser;
-use think\admin\service\AdminService;
-use think\admin\service\MenuService;
+use think\admin\auth\AdminService;
+use think\admin\menu\MenuService;
 use think\db\exception\DataNotFoundException;
 use think\db\exception\DbException;
 use think\db\exception\ModelNotFoundException;
@@ -57,6 +57,8 @@ class Index extends Controller
             $this->title = '系统管理后台';
             $this->super = AdminService::isSuper();
             $this->theme = AdminService::getUserTheme();
+            $this->tokenValueJson = json_encode(AdminService::buildToken(), JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
+            $this->tokenBootstrapJson = json_encode(AdminService::getBootstrapQuery(), JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
             $this->fetch();
         }
     }

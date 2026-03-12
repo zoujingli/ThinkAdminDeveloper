@@ -21,6 +21,7 @@ declare(strict_types=1);
 namespace think\admin;
 
 use think\admin\helper\QueryHelper;
+use think\admin\query\QueryFactory;
 use think\db\BaseQuery;
 use think\db\Mongo;
 use think\db\Query;
@@ -129,17 +130,7 @@ abstract class Model extends \think\Model
      */
     public static function mq(array $data = [])
     {
-        return Helper::buildQuery(static::mk($data)->newQuery());
-    }
-
-    public function getCreateAtAttr($value, array $data): mixed
-    {
-        return $data['create_time'] ?? $value;
-    }
-
-    public function getUpdateAtAttr($value, array $data): mixed
-    {
-        return $data['update_time'] ?? $value;
+        return QueryFactory::build(static::mk($data)->newQuery());
     }
 
     public function getDeletedAtAttr($value, array $data): mixed
@@ -150,11 +141,6 @@ abstract class Model extends \think\Model
     public function getDeletedAttr($value, array $data): int
     {
         return empty($data['delete_time']) ? 0 : 1;
-    }
-
-    public function getIsDeletedAttr($value, array $data): int
-    {
-        return $this->getDeletedAttr($value, $data);
     }
 
     public function normalizeLegacySoftDeleteCall(BaseQuery $query, string $method, array &$args): bool
@@ -177,7 +163,7 @@ abstract class Model extends \think\Model
         }
 
         $append = (array)$this->getOption('append', []);
-        foreach (['deleted', 'is_deleted'] as $field) {
+        foreach (['deleted'] as $field) {
             if (!in_array($field, $append, true)) {
                 $append[] = $field;
             }
@@ -233,7 +219,7 @@ abstract class Model extends \think\Model
             return empty($filters);
         }
 
-        if (!is_string($first) || !in_array($first, ['deleted', 'is_deleted'], true)) {
+        if (!is_string($first) || $first !== 'deleted') {
             return false;
         }
 
@@ -256,7 +242,7 @@ abstract class Model extends \think\Model
 
         if (array_is_list($filters)) {
             foreach ($filters as $item) {
-                if (is_array($item) && isset($item[0]) && in_array($item[0], ['deleted', 'is_deleted'], true)) {
+                if (is_array($item) && isset($item[0]) && $item[0] === 'deleted') {
                     $matched = true;
                     $value = $item[2] ?? ($item[1] ?? null);
                     if ($this->isDeletedTruthy($value)) {
@@ -274,7 +260,7 @@ abstract class Model extends \think\Model
             }
         } else {
             foreach ($filters as $key => $value) {
-                if (in_array($key, ['deleted', 'is_deleted'], true)) {
+                if ($key === 'deleted') {
                     $matched = true;
                     if ($this->isDeletedTruthy($value)) {
                         $mode = 'onlyTrashed';

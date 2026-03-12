@@ -17,7 +17,7 @@ declare(strict_types=1);
  * | github 代码仓库：https://github.com/zoujingli/ThinkAdmin
  * +----------------------------------------------------------------------
  */
-use think\admin\extend\PhinxExtend;
+use plugin\helper\support\PhinxExtend;
 use think\migration\Migrator;
 
 @set_time_limit(0);
@@ -93,6 +93,8 @@ class InstallPayment20241010 extends Migrator
         PhinxExtend::upgrade($table, [
             ['unid', 'biginteger', ['limit' => 20, 'default' => 0, 'null' => true, 'comment' => '账号编号']],
             ['code', 'string', ['limit' => 20, 'default' => '', 'null' => true, 'comment' => '操作编号']],
+            ['source_type', 'string', ['limit' => 50, 'default' => '', 'null' => true, 'comment' => '资金来源类型']],
+            ['source_id', 'string', ['limit' => 50, 'default' => '', 'null' => true, 'comment' => '资金来源ID']],
             ['name', 'string', ['limit' => 200, 'default' => '', 'null' => true, 'comment' => '操作名称']],
             ['remark', 'string', ['limit' => 999, 'default' => '', 'null' => true, 'comment' => '操作备注']],
             ['amount', 'decimal', ['precision' => 20, 'scale' => 2, 'default' => '0.00', 'null' => true, 'comment' => '操作金额']],
@@ -156,6 +158,8 @@ class InstallPayment20241010 extends Migrator
         PhinxExtend::upgrade($table, [
             ['unid', 'biginteger', ['limit' => 20, 'default' => 0, 'null' => true, 'comment' => '账号编号']],
             ['code', 'string', ['limit' => 20, 'default' => '', 'null' => true, 'comment' => '操作编号']],
+            ['source_type', 'string', ['limit' => 50, 'default' => '', 'null' => true, 'comment' => '积分来源类型']],
+            ['source_id', 'string', ['limit' => 50, 'default' => '', 'null' => true, 'comment' => '积分来源ID']],
             ['name', 'string', ['limit' => 200, 'default' => '', 'null' => true, 'comment' => '操作名称']],
             ['remark', 'string', ['limit' => 999, 'default' => '', 'null' => true, 'comment' => '操作备注']],
             ['amount', 'decimal', ['precision' => 20, 'scale' => 2, 'default' => '0.00', 'null' => true, 'comment' => '操作金额']],

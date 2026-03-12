@@ -20,8 +20,8 @@ declare(strict_types=1);
 
 namespace think\admin;
 
-use think\admin\service\ProcessService;
-use think\admin\service\QueueService;
+use think\admin\process\ProcessService;
+use think\admin\queue\QueueService;
 use think\console\Input;
 use think\console\Output;
 
@@ -33,15 +33,13 @@ abstract class Command extends \think\console\Command
 {
     /**
      * 任务控制服务
-     * @var QueueService
      */
-    protected $queue;
+    protected QueueService $queue;
 
     /**
      * 进程控制服务
-     * @var ProcessService
      */
-    protected $process;
+    protected ProcessService $process;
 
     /**
      * 更新任务进度.
@@ -52,7 +50,7 @@ abstract class Command extends \think\console\Command
      * @return static
      * @throws Exception
      */
-    public function setQueueMessage(int $total, int $count, string $message = '', int $backline = 0): Command
+    public function setQueueMessage(int $total, int $count, string $message = '', int $backline = 0): static
     {
         $this->queue->message($total, $count, $message, $backline);
         return $this;
@@ -63,7 +61,7 @@ abstract class Command extends \think\console\Command
      * @return $this
      * @throws Exception
      */
-    protected function initialize(Input $input, Output $output): Command
+    protected function initialize(Input $input, Output $output): static
     {
         $this->queue = QueueService::instance();
         $this->process = ProcessService::instance();
@@ -78,7 +76,7 @@ abstract class Command extends \think\console\Command
      * @param string $message 消息内容
      * @throws Exception
      */
-    protected function setQueueError(string $message)
+    protected function setQueueError(string $message): void
     {
         if (defined('WorkQueueCode')) {
             $this->queue->error($message);
@@ -93,7 +91,7 @@ abstract class Command extends \think\console\Command
      * @param string $message 消息内容
      * @throws Exception
      */
-    protected function setQueueSuccess(string $message)
+    protected function setQueueSuccess(string $message): void
     {
         if (defined('WorkQueueCode')) {
             $this->queue->success($message);
@@ -111,7 +109,7 @@ abstract class Command extends \think\console\Command
      * @return static
      * @throws Exception
      */
-    protected function setQueueProgress(?string $message = null, ?string $progress = null, int $backline = 0): Command
+    protected function setQueueProgress(?string $message = null, ?string $progress = null, int $backline = 0): static
     {
         if (defined('WorkQueueCode')) {
             $this->queue->progress(2, $message, $progress, $backline);

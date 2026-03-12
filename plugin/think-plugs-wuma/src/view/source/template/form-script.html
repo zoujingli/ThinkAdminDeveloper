@@ -18,7 +18,7 @@
 </label>
 
 <script>
-    require(['vue', 'vue.sortable'], function (Vue, Sortable, app) {
+    $.module.use(['vue', 'vue.sortable'], function (Vue, Sortable, app) {
         Vue.component('vuedraggable', Sortable)
         app = new Vue({
             el: '#TemplateApp',

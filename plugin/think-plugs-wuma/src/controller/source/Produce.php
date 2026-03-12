@@ -26,7 +26,7 @@ use plugin\wuma\model\PluginWumaSourceAssignItem;
 use plugin\wuma\model\PluginWumaSourceProduce;
 use plugin\wuma\model\PluginWumaSourceTemplate;
 use think\admin\Controller;
-use think\admin\extend\CodeExtend;
+use think\admin\extend\codec\CodeToolkit;
 use think\admin\helper\QueryHelper;
 use think\db\exception\DataNotFoundException;
 use think\db\exception\DbException;
@@ -120,7 +120,7 @@ class Produce extends Controller
     protected function _form_filter(array &$data)
     {
         if (empty($data['batch'])) {
-            $data['batch'] = CodeExtend::uniqidDate(16, 'P');
+            $data['batch'] = CodeToolkit::uniqidDate(16, 'P');
         }
         if ($this->request->isPost()) {
             // 检查批次编号是否出现重复

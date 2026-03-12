@@ -20,17 +20,16 @@ declare(strict_types=1);
 
 namespace think\admin;
 
-use think\admin\extend\ToolsExtend;
-use think\admin\service\RuntimeService;
-use think\admin\support\command\Database;
-use think\admin\support\command\Package;
-use think\admin\support\command\Publish;
-use think\admin\support\command\Queue;
-use think\admin\support\command\Replace;
-use think\admin\support\command\Sysmenu;
-use think\admin\support\middleware\JwtSession;
-use think\admin\support\middleware\MultAccess;
-use think\admin\support\middleware\RbacAccess;
+use think\admin\context\RequestContext;
+use think\admin\extend\filesystem\FileTools;
+use think\admin\runtime\RuntimeService;
+use think\admin\command\Database;
+use think\admin\queue\command\Queue;
+use think\admin\command\Replace;
+use think\admin\command\Sysmenu;
+use think\admin\runtime\middleware\MultAccess;
+use think\admin\auth\middleware\JwtTokenAuth;
+use think\admin\auth\middleware\RbacAccess;
 use think\App;
 use think\exception\HttpException;
 use think\exception\HttpResponseException;
@@ -59,9 +58,7 @@ class Library extends Service
         // 注册 ThinkAdmin 指令
         $this->commands([
             Queue::class,
-            Package::class,
             Sysmenu::class,
-            Publish::class,
             Replace::class,
             Database::class,
         ]);
@@ -71,6 +68,9 @@ class Library extends Service
 
         // 请求初始化处理
         $this->app->event->listen('HttpRun', function (Request $request) {
+            // Worker 常驻模式下，请求开始前先清理上次上下文。
+            RequestContext::clear();
+
             // 运行环境配置同步
             RuntimeService::sync();
 
@@ -96,6 +96,7 @@ class Library extends Service
 
         // 请求结束后处理
         $this->app->event->listen('HttpEnd', static function () {
+            RequestContext::clear();
             function_exists('sysvar') && sysvar('', '');
         });
     }
@@ -121,7 +122,7 @@ class Library extends Service
     {
         // 动态加载全局配置
         [$dir, $ext] = [$this->app->getBasePath(), $this->app->getConfigExt()];
-        ToolsExtend::find($dir, 2, function (\SplFileInfo $info) use ($ext) {
+        FileTools::find($dir, 2, function (\SplFileInfo $info) use ($ext) {
             $info->isFile() && $info->getBasename() === "sys{$ext}" && Library::load($info->getPathname());
         });
         if (is_file($file = "{$dir}common{$ext}")) {
@@ -148,12 +149,18 @@ class Library extends Service
                         $hosts = str2arr($hosts);
                     }
                     if (empty($hosts) || in_array(parse_url(strtolower($origin), PHP_URL_HOST), $hosts)) {
-                        $headers = $this->app->config->get('app.cors_headers', 'Api-Name,Api-Type,Api-Token,Jwt-Token,User-Form-Token,User-Token,Token');
+                        $headers = str2arr(strval($this->app->config->get('app.cors_headers', 'Api-Type,Api-Name,Api-Uuid,Api-Token,User-Form-Token')));
+                        $headers = array_values(array_filter(array_unique(array_map('trim', $headers))));
                         $header['Access-Control-Allow-Origin'] = $origin;
                         $header['Access-Control-Allow-Methods'] = $this->app->config->get('app.cors_methods', 'GET,PUT,POST,PATCH,DELETE');
-                        $header['Access-Control-Allow-Headers'] = "Authorization,Content-Type,If-Match,If-Modified-Since,If-None-Match,If-Unmodified-Since,X-Requested-With,{$headers}";
-                        $header['Access-Control-Allow-Credentials'] = 'true';
-                        $header['Access-Control-Expose-Headers'] = $headers;
+                        $allow = array_merge(['Authorization', 'Content-Type', 'If-Match', 'If-Modified-Since', 'If-None-Match', 'If-Unmodified-Since', 'X-Requested-With'], $headers);
+                        $header['Access-Control-Allow-Headers'] = join(',', array_unique($allow));
+                        if ($this->app->config->get('app.cors_credentials', false)) {
+                            $header['Access-Control-Allow-Credentials'] = 'true';
+                        }
+                        if (!empty($headers)) {
+                            $header['Access-Control-Expose-Headers'] = join(',', $headers);
+                        }
                     }
                 }
                 // 跨域预请求状态处理
@@ -163,14 +170,13 @@ class Library extends Service
                 return $next($request)->header($header);
             });
 
-            // 初始化会话和语言包
+            // 初始化 JWT 认证与语言包
+            $this->app->middleware->add(JwtTokenAuth::class);
             $isapi = $this->app->request->header('api-token') !== null;
             $agent = preg_replace('|\s+|', '', $this->app->request->header('user-agent', ''));
             $isrpc = is_numeric(stripos($agent, 'think-admin-jsonrpc')) || is_numeric(stripos($agent, 'PHPYarRPC'));
-            if (empty($isapi) && empty($isrpc) && empty($this->app->request->get('not_init_session'))) {
-                // 非接口模式，注册会话中间键
-                $this->app->middleware->add(JwtSession::class);
-                // 启用会话后，注册语言包中间键
+            if (empty($isapi) && empty($isrpc)) {
+                // 页面请求统一加载语言包
                 $this->app->middleware->add(LoadLangPack::class);
             }
 

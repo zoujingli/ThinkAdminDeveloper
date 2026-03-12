@@ -153,7 +153,7 @@
 </label>
 
 <script>
-    require(['angular'], function () {
+    $.module.use(['angular'], function () {
         var app = angular.module("TruckForm", []).run(callback);
         var _data = document.getElementById('CityData').value || '[]';
         var _rule = {city: [], rule: {firstNumber: 1, firstAmount: "1.00", repeatNumber: 1, repeatAmount: "1.00"}};

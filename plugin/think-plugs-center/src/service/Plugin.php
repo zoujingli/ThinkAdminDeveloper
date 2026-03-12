@@ -20,8 +20,7 @@ declare(strict_types=1);
 
 namespace plugin\center\service;
 
-use think\admin\Plugin as PluginBase;
-use think\admin\service\ModuleService;
+use think\admin\runtime\PluginService;
 
 /**
  * 插件数据服务
@@ -49,7 +48,7 @@ abstract class Plugin
      */
     public static function isInstall(string $code): bool
     {
-        return !empty(PluginBase::get($code));
+        return !empty(PluginService::get($code, true));
     }
 
     /**
@@ -59,50 +58,33 @@ abstract class Plugin
      */
     public static function getLocalPlugs(?string $type = null, bool $check = false): array
     {
-        [$data, $plugins] = [[], ModuleService::getLibrarys()];
-        foreach (PluginBase::get() as $code => $packer) {
-            if (empty($plugins[$packer['package']])) {
-                continue;
-            }
-            // 插件类型过滤
-            $ptype = $plugins[$packer['package']]['type'] ?? '';
+        $data = [];
+        foreach (PluginService::all(true) as $code => $packer) {
+            $install = (array)($packer['install'] ?? []);
+            $ptype = strval($packer['type'] ?? ($install['type'] ?? ''));
             if (is_string($type) && $ptype !== $type) {
                 continue;
             }
             // 插件菜单处理
-            $menus = $packer['service']::menu();
+            $menus = PluginService::menus($packer, $check, false);
             if ($check) {
-                foreach ($menus as $k1 => &$one) {
-                    if (!empty($one['subs'])) {
-                        foreach ($one['subs'] as $k2 => $two) {
-                            if (isset($two['node']) && !auth($two['node'])) {
-                                unset($one['subs'][$k2]);
-                            }
-                        }
-                    }
-                    if ((empty($one['node']) && empty($one['subs'])) || (isset($one['node']) && !auth($one['node']))) {
-                        unset($menus[$k1]);
-                    }
-                }
-                // 如果插件为空，不显示插件
                 if (empty($menus)) {
                     continue;
                 }
             }
             // 组件应用插件
             $encode = encode($code);
-            $plugin = $plugins[$packer['package']];
             $data[$packer['package']] = [
                 'type' => $ptype,
                 'code' => $code,
-                'name' => $plugin['name'] ?? '',
-                'cover' => $plugin['cover'] ?? '',
-                'amount' => $plugin['amount'] ?? '0.00',
-                'remark' => $plugin['remark'] ?? ($plugin['description'] ?? ''),
-                'version' => $plugin['version'],
+                'name' => $packer['name'] ?: ($install['name'] ?? ''),
+                'cover' => $install['cover'] ?? '',
+                'amount' => $install['amount'] ?? '0.00',
+                'remark' => $install['remark'] ?? ($packer['description'] ?: ($install['description'] ?? '')),
+                'version' => $packer['version'] ?: ($install['version'] ?? ''),
                 'package' => $packer['package'],
                 'service' => $packer['service'],
-                'license' => empty($plugin['license']) ? 'unknow' : $plugin['license'][0],
+                'license' => empty($packer['license']) ? 'unknow' : $packer['license'][0],
                 'licenses' => '',
                 'platforms' => $packer['platforms'] ?? [],
                 'plugmenus' => $menus,

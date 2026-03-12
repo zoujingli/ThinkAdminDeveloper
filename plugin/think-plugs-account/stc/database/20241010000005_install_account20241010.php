@@ -17,7 +17,7 @@ declare(strict_types=1);
  * | github 代码仓库：https://github.com/zoujingli/ThinkAdmin
  * +----------------------------------------------------------------------
  */
-use think\admin\extend\PhinxExtend;
+use plugin\helper\support\PhinxExtend;
 use think\migration\Migrator;
 
 @set_time_limit(0);

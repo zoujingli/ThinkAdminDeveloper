@@ -24,9 +24,9 @@ use plugin\account\model\PluginAccountUser;
 use plugin\account\service\Account;
 use plugin\account\service\Message;
 use think\admin\Controller;
-use think\admin\extend\CodeExtend;
-use think\admin\extend\ImageVerify;
-use think\admin\extend\JwtExtend;
+use think\admin\extend\codec\CodeToolkit;
+use think\admin\extend\auth\ImageSliderVerify;
+use think\admin\extend\auth\JwtToken;
 use think\exception\HttpResponseException;
 
 /**
@@ -87,7 +87,7 @@ class Login extends Controller
     {
         try {
             $data = $this->_vali(['code.require' => '授权编号为空！']);
-            $vars = CodeExtend::decrypt($data['code'], JwtExtend::jwtkey());
+            $vars = CodeToolkit::decrypt($data['code'], JwtToken::jwtkey());
             if (is_array($vars) && isset($vars['unid'])) {
                 $user = PluginAccountUser::mk()->findOrEmpty($vars['unid']);
                 if ($user->isEmpty()) {
@@ -124,7 +124,7 @@ class Login extends Controller
             if (Account::field($data['type']) !== 'phone') {
                 $this->error('不支持密码');
             }
-            if (ImageVerify::verify($data['uniqid'], $data['verify'], true) !== 1) {
+            if (ImageSliderVerify::verify($data['uniqid'], $data['verify'], true) !== 1) {
                 $this->error('拼图验证失败');
             }
             $inset = ['phone' => $data['phone'], 'deleted' => 0];
@@ -229,7 +229,7 @@ class Login extends Controller
             'verify.require' => '拼图位置为空',
         ]);
         // 发送手机短信验证码
-        if (ImageVerify::verify($data['uniqid'], $data['verify'], true) === 1) {
+        if (ImageSliderVerify::verify($data['uniqid'], $data['verify'], true) === 1) {
             if (isset(Message::$scenes[$type = strtoupper($data['type'])])) {
                 [$state, $info, $result] = Message::sendVerifyCode($data['phone'], 120, $type);
                 $state ? $this->success($info, $result) : $this->error($info);
@@ -250,7 +250,7 @@ class Login extends Controller
             syspath('public/static/theme/img/login/bg1.jpg'),
             syspath('public/static/theme/img/login/bg2.jpg'),
         ];
-        $image = ImageVerify::render($images[array_rand($images)]);
+        $image = ImageSliderVerify::render($images[array_rand($images)]);
         $this->success('生成拼图成功', [
             'bgimg' => $image['bgimg'],
             'water' => $image['water'],
@@ -268,7 +268,7 @@ class Login extends Controller
             'verify.require' => '拼图数值为空',
         ]);
         // state: [ -1:需要刷新, 0:验证失败, 1:验证成功 ]
-        $state = ImageVerify::verify($data['uniqid'], $data['verify']);
+        $state = ImageSliderVerify::verify($data['uniqid'], $data['verify']);
         $this->success('验证结果', ['state' => $state]);
     }
 }

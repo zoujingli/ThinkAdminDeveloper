@@ -32,7 +32,7 @@ use plugin\wemall\model\PluginWemallGoodsStock;
 use plugin\wemall\service\ConfigService;
 use plugin\wemall\service\GoodsService;
 use think\admin\Controller;
-use think\admin\extend\CodeExtend;
+use think\admin\extend\codec\CodeToolkit;
 use think\admin\helper\QueryHelper;
 use think\db\exception\DataNotFoundException;
 use think\db\exception\DbException;
@@ -131,7 +131,7 @@ class Goods extends Controller
             empty($this->vo) ? $this->error('无效的商品！') : $this->fetch();
         } else {
             try {
-                [$data, $post, $batch] = [[], $this->request->post(), CodeExtend::uniqidDate(12, 'B')];
+                [$data, $post, $batch] = [[], $this->request->post(), CodeToolkit::uniqidDate(12, 'B')];
                 if (isset($post['gcode']) && is_array($post['gcode'])) {
                     foreach (array_keys($post['gcode']) as $key) {
                         if ($post['gstock'][$key] > 0) {
@@ -186,7 +186,7 @@ class Goods extends Controller
     protected function _copy_form_filter(array &$data)
     {
         if ($this->request->isPost()) {
-            $data['code'] = CodeExtend::uniqidNumber(16, 'G');
+            $data['code'] = CodeToolkit::uniqidNumber(16, 'G');
         }
     }
 
@@ -200,7 +200,7 @@ class Goods extends Controller
     protected function _form_filter(array &$data)
     {
         if (empty($data['code'])) {
-            $data['code'] = CodeExtend::uniqidNumber(16, 'G');
+            $data['code'] = CodeToolkit::uniqidNumber(16, 'G');
         }
         if ($this->request->isGet()) {
             $this->marks = PluginWemallGoodsMark::items();

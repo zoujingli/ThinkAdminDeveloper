@@ -1,4 +1,4 @@
-﻿<?php
+<?php
 
 declare(strict_types=1);
 /**
@@ -28,7 +28,7 @@ use think\model\relation\HasOne;
  * 绯荤粺鐢ㄦ埛妯″瀷.
  *
  * @property int $id
- * @property int $is_deleted 鍒犻櫎(1鍒犻櫎,0鏈垹)
+ * @property string|null $delete_time 删除时间
  * @property int $login_num 鐧诲綍娆℃暟
  * @property int $sort 鎺掑簭鏉冮噸
  * @property int $status 鐘舵€?0绂佺敤,1鍚敤)
@@ -36,7 +36,7 @@ use think\model\relation\HasOne;
  * @property string $contact_mail 鑱旂郴閭
  * @property string $contact_phone 鑱旂郴鎵嬫満
  * @property string $contact_qq 鑱旂郴QQ
- * @property string $create_at 鍒涘缓鏃堕棿
+ * @property string $create_time 创建时间
  * @property string $describe 澶囨敞璇存槑
  * @property string $headimg 澶村儚鍦板潃
  * @property string $login_at 鐧诲綍鏃堕棿
@@ -51,6 +51,10 @@ use think\model\relation\HasOne;
 class SystemUser extends Model
 {
     use SoftDelete;
+
+    protected $deleteTime = 'delete_time';
+
+    protected $defaultSoftDelete = null;
 
     protected $updateTime = false;
 
@@ -80,7 +84,6 @@ class SystemUser extends Model
             $users = $query->whereIn('id', array_unique(array_column($data, $field)))->column($fields, 'id');
             foreach ($users as &$user) {
                 $user['deleted'] = empty($user['delete_time']) ? 0 : 1;
-                $user['is_deleted'] = $user['deleted'];
             }
             foreach ($data as &$vo) {
                 $vo[$target] = $users[$vo[$field]] ?? [];
@@ -90,7 +93,6 @@ class SystemUser extends Model
         $users = $query->column($fields, 'id');
         foreach ($users as &$user) {
             $user['deleted'] = empty($user['delete_time']) ? 0 : 1;
-            $user['is_deleted'] = $user['deleted'];
         }
         return $users;
     }
@@ -139,5 +141,5 @@ class SystemUser extends Model
     {
         return format_datetime($value);
     }
-}
 
+}

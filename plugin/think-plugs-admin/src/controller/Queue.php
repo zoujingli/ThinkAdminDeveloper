@@ -18,14 +18,14 @@ declare(strict_types=1);
  * +----------------------------------------------------------------------
  */
 
-namespace app\admin\controller;
+namespace plugin\admin\controller;
 
 use think\admin\Controller;
 use think\admin\helper\QueryHelper;
 use think\admin\model\SystemQueue;
-use think\admin\service\AdminService;
-use think\admin\service\ProcessService;
-use think\admin\service\QueueService;
+use think\admin\auth\AdminService;
+use think\admin\process\ProcessService;
+use think\admin\queue\QueueService;
 use think\db\exception\DataNotFoundException;
 use think\db\exception\DbException;
 use think\db\exception\ModelNotFoundException;
@@ -51,14 +51,14 @@ class Queue extends Controller
             $this->title = '系统任务管理';
             $this->iswin = ProcessService::iswin();
             if ($this->super = AdminService::isSuper()) {
-                $this->command = ProcessService::think('xadmin:queue start');
+                $this->command = ProcessService::think('xadmin:worker start queue -d');
                 if (!$this->iswin && !empty($_SERVER['USER'])) {
                     $this->command = "sudo -u {$_SERVER['USER']} {$this->command}";
                 }
             }
         }, static function (QueryHelper $query) {
             $query->equal('status')->like('code|title#title,command');
-            $query->timeBetween('enter_time,exec_time')->dateBetween('create_at');
+            $query->timeBetween('enter_time,exec_time')->dateBetween('create_time');
         });
     }
 

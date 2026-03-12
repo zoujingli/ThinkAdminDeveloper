@@ -8,7 +8,7 @@
 // | 官方网站: https://thinkadmin.top
 // +----------------------------------------------------------------------
 // | 免责声明 ( https://thinkadmin.top/disclaimer )
-// | 会员免费 ( https://thinkadmin.top/vip-introduce )
+// | 会员特权 ( https://thinkadmin.top/vip-introduce )
 // +----------------------------------------------------------------------
 // | gitee 代码仓库：https://gitee.com/zoujingli/think-plugs-payment
 // | github 代码仓库：https://github.com/zoujingli/think-plugs-payment
@@ -49,7 +49,7 @@ use plugin\payment\service\payment\IntegralPayment;
 use plugin\payment\service\payment\VoucherPayment;
 use plugin\payment\service\payment\WechatPayment;
 use think\admin\Exception;
-use think\admin\extend\CodeExtend;
+use think\admin\extend\codec\CodeToolkit;
 use think\db\Query;
 use think\db\Raw;
 
@@ -503,7 +503,7 @@ abstract class Payment
     public static function withPaymentCode(): string
     {
         do {
-            $data = ['code' => CodeExtend::uniqidNumber(16, 'P')];
+            $data = ['code' => CodeToolkit::uniqidNumber(16, 'P')];
         } while (PluginPaymentRecord::mk()->master()->where($data)->findOrEmpty()->isExists());
         return $data['code'];
     }
@@ -514,7 +514,7 @@ abstract class Payment
     public static function withRefundCode(): string
     {
         do {
-            $data = ['code' => CodeExtend::uniqidNumber(16, 'R')];
+            $data = ['code' => CodeToolkit::uniqidNumber(16, 'R')];
         } while (PluginPaymentRefund::mk()->master()->where($data)->findOrEmpty()->isExists());
         return $data['code'];
     }

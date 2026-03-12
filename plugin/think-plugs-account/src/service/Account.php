@@ -24,7 +24,7 @@ use plugin\account\model\PluginAccountAuth;
 use plugin\account\service\contract\AccountAccess;
 use plugin\account\service\contract\AccountInterface;
 use think\admin\Exception;
-use think\admin\extend\JwtExtend;
+use think\admin\extend\auth\JwtToken;
 
 /**
  * 用户账号调度器.
@@ -75,7 +75,7 @@ abstract class Account
                 }
             }
         } elseif ($isjwt && is_string($token) && strlen($token) > 32) {
-            $data = JwtExtend::verify($token);
+            $data = JwtToken::verify($token);
             [$type, $token] = [$type ?: ($data['type'] ?? ''), $data['token'] ?? $token];
             if (($data['type'] ?? '') !== $type) {
                 throw new Exception('授权不匹配！');
@@ -205,7 +205,7 @@ abstract class Account
             }
             return static::mk($type = $auth->getAttr('type'), $auth->getAttr('token'));
         }
-        $data = JwtExtend::verify($token);
+        $data = JwtToken::verify($token);
         return static::mk($type = $data['type'] ?? '-', $data['token'] ?? '-');
     }
 

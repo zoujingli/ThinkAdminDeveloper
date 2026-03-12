@@ -324,7 +324,7 @@
 
 <script>
     /*! 加载扩展插件 */
-    require(['md5', 'vue', 'ckeditor'], function (md5, Vue) {
+    $.module.use(['md5', 'vue', 'ckeditor'], function (md5, Vue) {
         // 创建富文本
         window.createEditor('[name=content]', {height: 500});
         // 图片上传组件

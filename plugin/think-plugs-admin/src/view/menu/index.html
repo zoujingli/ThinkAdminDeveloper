@@ -2,7 +2,7 @@
 
 {block name="button"}
 <!--{if $type eq 'index' and auth("add")}-->
-<button data-modal='{:url("add")}' data-table-id="MenuTable" class='layui-btn layui-btn-sm layui-btn-primary'>{:lang('添加菜单')}</button>
+<button data-modal='{:url("add")}?plugin={$plugin|default=""}' data-table-id="MenuTable" class='layui-btn layui-btn-sm layui-btn-primary'>{:lang('添加菜单')}</button>
 <!--{/if}-->
 
 <!--{if $type eq 'index' and auth("state")}-->
@@ -16,17 +16,33 @@
 
 {block name="content"}
 <div class="layui-tab layui-tab-card">
+    <div class="layui-card-body notselect padding-bottom-0">
+        <div class="layui-form layui-form-pane">
+            <div class="layui-form-item margin-bottom-0">
+                <label class="layui-form-label">{:lang('所属插件')}</label>
+                <div class="layui-input-inline">
+                    <select lay-filter="MenuPluginSwitch">
+                        <option value=''>{:lang('全部插件')}</option>
+                        {foreach $plugins as $item}
+                        <option value='{$item.code}' {if isset($plugin) and $plugin eq $item.code}selected{/if}>{$item.name} [ {$item.code} ]</option>
+                        {/foreach}
+                    </select>
+                </div>
+                <div class="layui-form-mid color-desc">{:lang('只筛选当前插件的菜单树、系统节点和上级菜单选项')}</div>
+            </div>
+        </div>
+    </div>
     <ul class="layui-tab-title">
         {foreach ['index'=>lang('全部菜单'),'recycle'=>lang('回 收 站')] as $k=>$v}
         {if isset($type) and $type eq $k and isset($pid) and $pid == ''}
-        <li class="layui-this" data-open="{:url('index')}?type={$k}">{$v}</li>
+        <li class="layui-this" data-open="{:url('index')}?type={$k}&plugin={$plugin|default=''}">{$v}</li>
         {else}
-        <li data-open="{:url('index')}?type={$k}">{$v}</li>
+        <li data-open="{:url('index')}?type={$k}&plugin={$plugin|default=''}">{$v}</li>
         {/if}{/foreach}
 
         <!--顶级菜单-->
         <!--{foreach $menupList as $k=>$v}-->
-        <li data-open="{:url('index')}?type=index&pid={$v.id}" {if isset($pid) and $pid eq $v.id}class="layui-this"{/if} >{$v.title}</li>
+        <li data-open="{:url('index')}?type=index&plugin={$plugin|default=''}&pid={$v.id}" {if isset($pid) and $pid eq $v.id}class="layui-this"{/if} >{$v.title}</li>
         <!--{/foreach}-->
     </ul>
     <div class="layui-tab-content">
@@ -39,7 +55,7 @@
         $('#MenuTable').layTable({
             even: true, height: 'full', page: false,
             sort: {field: 'sort desc,id', type: 'asc'},
-            where: {type: '{$type|default="index"}', pid: '{$pid|default=""}'},
+            where: {type: '{$type|default="index"}', pid: '{$pid|default=""}', plugin: '{$plugin|default=""}'},
             filter: function (items) {
                 var type = this.where.type;
                 return items.filter(function (item) {
@@ -70,6 +86,12 @@
                 return false;
             }, false);
         });
+
+        layui.form.on('select(MenuPluginSwitch)', function (object) {
+            var query = ['type={$type|default="index"}'];
+            if (object.value) query.push('plugin=' + encodeURIComponent(object.value));
+            location.href = "{:url('index')}" + '?' + query.join('&');
+        });
     });
 </script>
 
@@ -97,13 +119,13 @@
     <!-- {if isset($type) and $type eq 'index'} -->
     <!-- {if auth('add')} -->
     {{# if(d.spt<2){ }}
-    <a class="layui-btn layui-btn-sm layui-btn-primary" data-title="添加系统菜单" data-modal='{:url("add")}?pid={{d.id}}'>{:lang('添 加')}</a>
+    <a class="layui-btn layui-btn-sm layui-btn-primary" data-title="添加系统菜单" data-modal='{:url("add")}?plugin={$plugin|default=""}&pid={{d.id}}'>{:lang('添 加')}</a>
     {{# }else{ }}
     <a class="layui-btn layui-btn-sm layui-btn-disabled">{:lang('添 加')}</a>
     {{# } }}
     <!-- {/if} -->
     {if auth('edit')}
-    <a class="layui-btn layui-btn-sm" data-event-dbclick data-title="编辑系统菜单" data-modal='{:url("edit")}?id={{d.id}}'>{:lang('编 辑')}</a>
+    <a class="layui-btn layui-btn-sm" data-event-dbclick data-title="编辑系统菜单" data-modal='{:url("edit")}?plugin={$plugin|default=""}&id={{d.id}}'>{:lang('编 辑')}</a>
     {/if}
     <!-- {else} -->
     {if auth('remove')}

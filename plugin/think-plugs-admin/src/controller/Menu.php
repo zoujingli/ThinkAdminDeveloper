@@ -18,14 +18,13 @@ declare(strict_types=1);
  * +----------------------------------------------------------------------
  */
 
-namespace app\admin\controller;
+namespace plugin\admin\controller;
 
 use think\admin\Controller;
-use think\admin\extend\DataExtend;
+use think\admin\extend\data\ArrayTree;
 use think\admin\model\SystemMenu;
-use think\admin\service\AdminService;
-use think\admin\service\MenuService;
-use think\admin\service\NodeService;
+use think\admin\auth\AdminService;
+use think\admin\menu\MenuService;
 use think\db\exception\DataNotFoundException;
 use think\db\exception\DbException;
 use think\db\exception\ModelNotFoundException;
@@ -48,11 +47,13 @@ class Menu extends Controller
     {
         $this->title = '系统菜单管理';
         $this->type = $this->get['type'] ?? 'index';
+        $this->plugin = $this->resolvePlugin();
+        $this->plugins = MenuService::getPlugins($this->app->isDebug());
         // 获取顶级菜单ID
         $this->pid = $this->get['pid'] ?? '';
 
         // 查询顶级菜单集合
-        $this->menupList = SystemMenu::mk()->where(['pid' => 0, 'status' => 1])->order('sort desc,id asc')->column('id,pid,title', 'id');
+        $this->menupList = MenuService::getRoots($this->plugin);
 
         SystemMenu::mQuery()->layTable();
     }
@@ -103,7 +104,7 @@ class Menu extends Controller
      */
     protected function _index_page_filter(array &$data)
     {
-        $data = DataExtend::arr2tree($data);
+        $data = MenuService::filterTree(ArrayTree::arr2tree($data), $this->plugin ?? null);
         // 回收站过滤有效菜单
         if ($this->type === 'recycle') {
             foreach ($data as $k1 => &$p1) {
@@ -127,7 +128,7 @@ class Menu extends Controller
             }
         }
         // 菜单数据树数据变平化
-        $data = DataExtend::arr2table($data);
+        $data = ArrayTree::arr2table($data);
 
         // 过滤非当前顶级菜单的下级菜单,并重新索引数组
         if ($this->type === 'index' && $this->pid) {
@@ -150,31 +151,22 @@ class Menu extends Controller
     {
         if ($this->request->isGet()) {
             $debug = $this->app->isDebug();
+            $this->plugins = MenuService::getPlugins($debug);
+            $this->plugin = $this->resolvePlugin($vo);
             /* 清理权限节点 */
             $debug && AdminService::clear();
             /* 读取系统功能节点 */
-            $this->auths = [];
-            $this->nodes = MenuService::getList($debug);
-            foreach (NodeService::getMethods($debug) as $node => $item) {
-                if ($item['isauth'] && substr_count($node, '/') >= 2) {
-                    $this->auths[] = ['node' => $node, 'title' => $item['title']];
-                }
-            }
+            $this->nodes = MenuService::getList($debug, $this->plugin);
+            $this->auths = MenuService::getAuths($debug, $this->plugin);
             /* 选择自己上级菜单 */
             $vo['pid'] = $vo['pid'] ?? input('pid', '0');
             /* 列出可选上级菜单 */
-            $menus = SystemMenu::mk()->order('sort desc,id asc')->column('id,pid,icon,url,node,title,params', 'id');
-            $this->menus = DataExtend::arr2table(array_merge($menus, [['id' => '0', 'pid' => '-1', 'url' => '#', 'title' => '顶部菜单']]));
+            $this->menus = MenuService::getParents($this->plugin);
             if (isset($vo['id'])) {
                 foreach ($this->menus as $menu) {
                     if ($menu['id'] === $vo['id']) {
                         $vo = $menu;
                     }
-                }
-            }
-            foreach ($this->menus as $key => $menu) {
-                if ($menu['spt'] >= 3 || $menu['url'] !== '#') {
-                    unset($this->menus[$key]);
                 }
             }
             if (isset($vo['spt'], $vo['spc']) && in_array($vo['spt'], [1, 2]) && $vo['spc'] > 0) {
@@ -185,5 +177,31 @@ class Menu extends Controller
                 }
             }
         }
+    }
+
+    /**
+     * 解析当前插件上下文.
+     */
+    private function resolvePlugin(array $vo = []): string
+    {
+        if (!empty($plugin = trim(strval($this->request->get('plugin', ''))))) {
+            return $plugin;
+        }
+
+        if (!empty($vo['node']) || !empty($vo['url'])) {
+            return MenuService::detectPlugin($vo);
+        }
+
+        $id = intval($this->request->get('id', 0));
+        if ($id > 0 && ($menu = SystemMenu::mk()->find($id))) {
+            return MenuService::detectPlugin($menu->toArray());
+        }
+
+        $pid = intval($this->request->get('pid', 0));
+        if ($pid > 0 && ($menu = SystemMenu::mk()->find($pid))) {
+            return MenuService::detectPlugin($menu->toArray());
+        }
+
+        return '';
     }
 }

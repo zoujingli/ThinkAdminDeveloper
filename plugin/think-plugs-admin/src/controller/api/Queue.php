@@ -18,12 +18,12 @@ declare(strict_types=1);
  * +----------------------------------------------------------------------
  */
 
-namespace app\admin\controller\api;
+namespace plugin\admin\controller\api;
 
 use Psr\Log\NullLogger;
 use think\admin\Controller;
 use think\admin\model\SystemQueue;
-use think\admin\service\AdminService;
+use think\admin\auth\AdminService;
 use think\exception\HttpResponseException;
 
 /**
@@ -40,11 +40,11 @@ class Queue extends Controller
     {
         if (AdminService::isSuper()) {
             try {
-                $message = $this->app->console->call('xadmin:queue', ['stop'])->fetch();
-                if (stripos($message, 'sent end signal to process')) {
+                $message = $this->app->console->call('xadmin:worker', ['stop', 'queue'])->fetch();
+                if (stripos($message, 'stop signal sent') !== false) {
                     sysoplog('系统运维管理', '尝试停止任务监听服务');
                     $this->success('停止任务监听服务成功！');
-                } elseif (stripos($message, 'processes to stop')) {
+                } elseif (stripos($message, 'is not running') !== false) {
                     $this->success('没有找到需要停止的服务！');
                 } else {
                     $this->error(nl2br($message));
@@ -68,11 +68,11 @@ class Queue extends Controller
     {
         if (AdminService::isSuper()) {
             try {
-                $message = $this->app->console->call('xadmin:queue', ['start'])->fetch();
-                if (stripos($message, 'daemons started successfully for pid')) {
+                $message = $this->app->console->call('xadmin:worker', ['start', 'queue', '--daemon'])->fetch();
+                if (stripos($message, 'started successfully for pid') !== false) {
                     sysoplog('系统运维管理', '尝试启动任务监听服务');
                     $this->success('任务监听服务启动成功！');
-                } elseif (stripos($message, 'daemons already exist for pid')) {
+                } elseif (stripos($message, 'already running for pid') !== false) {
                     $this->success('任务监听服务已经启动！');
                 } else {
                     $this->error(nl2br($message));
@@ -96,8 +96,8 @@ class Queue extends Controller
     {
         if (AdminService::isSuper()) {
             try {
-                $message = $this->app->console->call('xadmin:queue', ['status'])->fetch();
-                if (preg_match('/process.*?\d+.*?running/', $message)) {
+                $message = $this->app->console->call('xadmin:worker', ['status', 'queue'])->fetch();
+                if (preg_match('/process.*?\d+.*?running/i', $message)) {
                     echo "<span class='color-green pointer' data-tips-text='{$message}'>{$this->app->lang->get('已启动')}</span>";
                 } else {
                     echo "<span class='color-red pointer' data-tips-text='{$message}'>{$this->app->lang->get('未启动')}</span>";

@@ -28,7 +28,7 @@ use plugin\wuma\model\PluginWumaSourceProduce;
 use plugin\wuma\service\CodeService;
 use plugin\wuma\service\RelationService;
 use think\admin\Controller;
-use think\admin\extend\CodeExtend;
+use think\admin\extend\codec\CodeToolkit;
 use think\admin\helper\QueryHelper;
 use think\db\exception\DataNotFoundException;
 use think\db\exception\DbException;
@@ -152,7 +152,7 @@ class Assign extends Controller
     protected function _form_filter(array &$data)
     {
         if (empty($data['batch'])) {
-            $data['batch'] = CodeExtend::uniqidDate(16, 'F');
+            $data['batch'] = CodeToolkit::uniqidDate(16, 'F');
         }
         if ($this->request->isGet()) {
             // 生产批次数据

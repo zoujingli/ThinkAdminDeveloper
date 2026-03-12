@@ -24,7 +24,7 @@ declare(strict_types=1);
 // | 官方网站: https://thinkadmin.top
 // +----------------------------------------------------------------------
 // | 免责声明 ( https://thinkadmin.top/disclaimer )
-// | 会员免费 ( https://thinkadmin.top/vip-introduce )
+// | 会员特权 ( https://thinkadmin.top/vip-introduce )
 // +----------------------------------------------------------------------
 // | gitee 代码仓库：https://gitee.com/zoujingli/think-plugs-wechat-service
 // | github 代码仓库：https://github.com/zoujingli/think-plugs-wechat-service
@@ -62,8 +62,8 @@ class Wechat extends Controller
             $this->title = '公众号授权管理';
         }, function (QueryHelper $query) {
             $query->like('authorizer_appid,user_nickname,user_company');
-            $query->equal('service_type,service_verify')->timeBetween('auth_time#create_at');
-            $query->where(['deleted' => 0, 'status' => intval($this->type === 'index')]);
+            $query->equal('service_type,service_verify')->timeBetween('auth_time#create_time');
+            $query->where(['status' => intval($this->type === 'index')]);
         });
     }
 
@@ -86,8 +86,7 @@ class Wechat extends Controller
     {
         try {
             $appid = $this->request->post('appid');
-            $where = ['authorizer_appid' => $appid, 'deleted' => 0];
-            $author = WechatAuth::mk()->where($where)->findOrEmpty()->toArray();
+            $author = WechatAuth::mk()->where(['authorizer_appid' => $appid])->findOrEmpty()->toArray();
             if (empty($author)) {
                 $this->error('无效的授权公众号，请重新绑定授权！');
             }

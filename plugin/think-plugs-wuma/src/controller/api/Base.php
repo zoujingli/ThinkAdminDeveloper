@@ -33,7 +33,7 @@ declare(strict_types=1);
 namespace plugin\wuma\controller\api;
 
 use think\admin\Controller;
-use think\admin\extend\JwtExtend;
+use think\admin\extend\auth\JwtToken;
 use think\exception\HttpResponseException;
 
 abstract class Base extends Controller
@@ -72,8 +72,8 @@ abstract class Base extends Controller
             $data = new \stdClass();
         }
         $result = ['code' => $code, 'info' => is_string($info) ? lang($info) : $info, 'data' => $data];
-        if (JwtExtend::isRejwt()) {
-            $result['token'] = JwtExtend::token();
+        if (JwtToken::isRejwt()) {
+            $result['token'] = JwtToken::token();
         }
         throw new HttpResponseException(json($result));
     }

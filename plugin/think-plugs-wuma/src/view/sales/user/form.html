@@ -130,7 +130,7 @@
     </div>
 </form>
 <script>
-    require(['pcasunzips'], function () {
+    $.module.use(['pcasunzips'], function () {
         /*! 重置弹层处理 */
         $('#UserForm').parents('.layui-layer-content').css({overflow: 'revert'});
         (function (refresh) {

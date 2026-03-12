@@ -24,7 +24,7 @@ use plugin\wemall\model\PluginWemallConfigCoupon;
 use plugin\wemall\model\PluginWemallUserCoupon;
 use plugin\wemall\model\PluginWemallUserRelation;
 use think\admin\Exception;
-use think\admin\extend\CodeExtend;
+use think\admin\extend\codec\CodeToolkit;
 use think\db\exception\DataNotFoundException;
 use think\db\exception\DbException;
 use think\db\exception\ModelNotFoundException;
@@ -74,7 +74,7 @@ abstract class UserCoupon
             $data['expire_time'] = date('Y-m-d H:i:s', $data['expire']);
         }
         do {
-            $data['code'] = $code = CodeExtend::uniqidNumber(16, 'C');
+            $data['code'] = $code = CodeToolkit::uniqidNumber(16, 'C');
         } while (($model = PluginWemallUserCoupon::mk()->where(['code' => $code])->findOrEmpty())->isExists());
         // 保存及返回模型
         if ($model->save($data) && self::recount($coupon)) {

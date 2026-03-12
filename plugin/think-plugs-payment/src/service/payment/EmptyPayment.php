@@ -8,7 +8,7 @@
 // | 官方网站: https://thinkadmin.top
 // +----------------------------------------------------------------------
 // | 免责声明 ( https://thinkadmin.top/disclaimer )
-// | 会员免费 ( https://thinkadmin.top/vip-introduce )
+// | 会员特权 ( https://thinkadmin.top/vip-introduce )
 // +----------------------------------------------------------------------
 // | gitee 代码仓库：https://gitee.com/zoujingli/think-plugs-payment
 // | github 代码仓库：https://github.com/zoujingli/think-plugs-payment
@@ -40,7 +40,7 @@ use plugin\payment\service\contract\PaymentResponse;
 use plugin\payment\service\contract\PaymentUsageTrait;
 use plugin\payment\service\Payment;
 use think\admin\Exception;
-use think\admin\extend\CodeExtend;
+use think\admin\extend\codec\CodeToolkit;
 use think\Response;
 
 /**
@@ -77,7 +77,7 @@ class EmptyPayment implements PaymentInterface
         try {
             [$payCode] = [Payment::withPaymentCode(), $this->withUserUnid($account)];
             $this->createAction($orderNo, $orderTitle, $orderAmount, $payCode, $payAmount);
-            $data = $this->updateAction($payCode, CodeExtend::uniqidNumber(18, 'EMT'), $payAmount, '无需支付');
+            $data = $this->updateAction($payCode, CodeToolkit::uniqidNumber(18, 'EMT'), $payAmount, '无需支付');
             return $this->res->set(true, '订单无需支付！', $data);
         } catch (Exception $exception) {
             throw $exception;

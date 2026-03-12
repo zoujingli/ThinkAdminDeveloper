@@ -21,8 +21,8 @@ declare(strict_types=1);
 namespace plugin\wemall\service;
 
 use plugin\wemall\model\PluginWemallExpressTemplate;
+use plugin\wemall\integration\OpenApiService;
 use think\admin\Exception;
-use think\admin\service\InterfaceService;
 
 /**
  * 快递查询数据服务
@@ -137,11 +137,11 @@ abstract class ExpressService
     /**
      * 获取楚才开放平台接口实例.
      */
-    private static function getInterface(): InterfaceService
+    private static function getInterface(): OpenApiService
     {
-        $service = InterfaceService::instance();
+        $service = OpenApiService::instance();
         // 测试的账号及密钥随时可能会变更，请联系客服更新
-        $service->getway('https://open.cuci.cc/user/');
+        $service->gateway('https://open.cuci.cc/user/');
         $service->setAuth('6998081316132228', '193fc1d9a2aac78475bc8dbeb9a5feb1');
         return $service;
     }

@@ -24,9 +24,9 @@ use plugin\account\model\PluginAccountUser;
 use plugin\payment\service\Balance;
 use plugin\wemall\model\PluginWemallUserRecharge;
 use think\admin\Controller;
-use think\admin\extend\CodeExtend;
+use think\admin\extend\codec\CodeToolkit;
 use think\admin\helper\QueryHelper;
-use think\admin\service\AdminService;
+use think\admin\auth\AdminService;
 use think\db\exception\DataNotFoundException;
 use think\db\exception\DbException;
 use think\db\exception\ModelNotFoundException;
@@ -106,7 +106,7 @@ class Recharge extends Controller
     protected function _form_filter(array &$data)
     {
         if (empty($data['code'])) {
-            $data['code'] = CodeExtend::uniqidNumber(16, 'B');
+            $data['code'] = CodeToolkit::uniqidNumber(16, 'B');
         }
         if ($this->request->isGet()) {
             $data['unid'] = $data['unid'] ?? input('unid', 0);

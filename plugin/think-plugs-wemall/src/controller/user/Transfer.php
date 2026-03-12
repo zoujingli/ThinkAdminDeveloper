@@ -25,9 +25,9 @@ use plugin\wemall\model\PluginWemallUserTransfer;
 use plugin\wemall\service\UserTransfer;
 use think\admin\Controller;
 use think\admin\Exception;
-use think\admin\extend\CodeExtend;
+use think\admin\extend\codec\CodeToolkit;
 use think\admin\helper\QueryHelper;
-use think\admin\service\AdminService;
+use think\admin\auth\AdminService;
 use think\db\exception\DataNotFoundException;
 use think\db\exception\DbException;
 use think\db\exception\ModelNotFoundException;
@@ -118,7 +118,7 @@ class Transfer extends Controller
                 $data['last_at'] = date('Y-m-d H:i:s');
             } elseif ($data['status'] == 4) {
                 if (empty($find['trade_no'])) {
-                    $data['trade_no'] = CodeExtend::uniqidDate(20);
+                    $data['trade_no'] = CodeToolkit::uniqidDate(20);
                 }
                 $data['trade_time'] = date('Y-m-d H:i:s');
                 $data['change_time'] = date('Y-m-d H:i:s');

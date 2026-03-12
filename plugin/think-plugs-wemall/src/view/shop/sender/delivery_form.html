@@ -70,7 +70,7 @@
 </form>
 
 <script>
-    require(['pcasunzips'], function () {
+    $.module.use(['pcasunzips'], function () {
         (function (prov, city, area, call) {
             new PCAS('form_prov', 'form_city', 'form_area', prov, city, area);
             $('#AddressConfigForm').parents('.layui-layer-content').css({overflow: 'unset'});

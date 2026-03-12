@@ -150,7 +150,7 @@
 </label>
 
 <script>
-    require(['vue'], function (vue) {
+    $.module.use(['vue'], function (vue) {
         window.VueApp = new vue({
             el: '#VueApp',
             data: {item: {}, items: []},

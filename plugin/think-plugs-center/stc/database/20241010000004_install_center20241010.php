@@ -28,7 +28,8 @@ declare(strict_types=1);
 // | gitee 代码仓库：https://gitee.com/zoujingli/think-plugs-center
 // +----------------------------------------------------------------------
 
-use think\admin\extend\PhinxExtend;
+use plugin\center\Service;
+use plugin\helper\support\PhinxExtend;
 use think\migration\Migrator;
 
 class InstallCenter20241010 extends Migrator
@@ -50,14 +51,6 @@ class InstallCenter20241010 extends Migrator
 
     private function insertMenu()
     {
-        PhinxExtend::write2menu([
-            [
-                'name' => '插件入口',
-                'sort' => '999',
-                'node' => 'plugin-center/index/index',
-            ],
-        ], [
-            'url|node' => 'plugin-center/index/index',
-        ]);
+        PhinxExtend::writePluginMenu(Service::class, [], [], $this);
     }
 }
