@@ -14,7 +14,7 @@
   "require": {
     "php": "^8.0",
     "ext-json": "*",
-    "zoujingli/think-install": "^1.0|@dev",
+    "zoujingli/think-plugs-helper": "^8.0",
     "zoujingli/think-library": "^8.0"
   },
   "autoload": {
@@ -31,9 +31,28 @@
         "plugin\\center\\Service"
       ]
     },
-    "plugin": {
-      "copy": {
-        "stc/database": "database/migrations"
+    "xadmin": {
+      "service": {
+        "code": "plugin-center",
+        "prefix": "plugin-center",
+        "type": "service",
+        "name": "应用中心"
+      },
+      "menu": {
+        "root": {
+          "name": "插件入口",
+          "sort": 999,
+          "node": "plugin-center/index/index"
+        },
+        "exists": {
+          "url|node": "plugin-center/index/index"
+        }
+      },
+      "migrate": {
+        "file": "20241010000004_install_center20241010.php",
+        "class": "InstallCenter20241010",
+        "name": "CenterPlugin",
+        "export_empty": true
       }
     },
     "config": {
@@ -44,9 +63,6 @@
   },
   "minimum-stability": "dev",
   "config": {
-    "sort-packages": true,
-    "allow-plugins": {
-      "zoujingli/think-install": true
-    }
+    "sort-packages": true
   }
 }

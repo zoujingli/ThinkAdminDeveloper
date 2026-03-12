@@ -2,6 +2,7 @@
   "type": "think-admin-plugin",
   "name": "zoujingli/think-plugs-wemall",
   "version": "8.0.x-dev",
+  "license": "proprietary",
   "homepage": "https://thinkadmin.top",
   "description": "WeMall Plugin for ThinkAdmin",
   "authors": [
@@ -14,7 +15,9 @@
     "php": "^8.0",
     "ext-json": "*",
     "zoujingli/think-plugs-account": "^8.0",
-    "zoujingli/think-plugs-payment": "^8.0"
+    "zoujingli/think-plugs-helper": "^8.0",
+    "zoujingli/think-plugs-payment": "^8.0",
+    "zoujingli/think-plugs-storage": "^8.0"
   },
   "autoload": {
     "files": [
@@ -30,6 +33,19 @@
         "plugin\\wemall\\Service"
       ]
     },
+    "xadmin": {
+      "service": {
+        "code": "wemall",
+        "prefix": "wemall",
+        "type": "module",
+        "name": "分销商城"
+      },
+      "migrate": {
+        "file": "20241010000007_install_wemall20241010.php",
+        "class": "InstallWemall20241010",
+        "name": "WemallPlugin"
+      }
+    },
     "config": {
       "type": "module",
       "name": "分销商城管理",
@@ -38,17 +54,10 @@
       "license": [
         "VIP"
       ]
-    },
-    "plugin": {
-      "copy": {
-        "stc/database": "database/migrations"
-      }
     }
   },
   "minimum-stability": "dev",
   "config": {
-    "allow-plugins": {
-      "zoujingli/think-install": true
-    }
+    "sort-packages": true
   }
 }

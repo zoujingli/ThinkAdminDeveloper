@@ -2,6 +2,7 @@
   "type": "think-admin-plugin",
   "name": "zoujingli/think-plugs-wuma",
   "version": "8.0.x-dev",
+  "license": "proprietary",
   "homepage": "https://thinkadmin.top",
   "description": "Wuma Plugin for ThinkAdmin",
   "authors": [
@@ -16,6 +17,8 @@
     "ext-json": "*",
     "ext-bcmath": "*",
     "zoujingli/think-plugs-admin": "^8.0",
+    "zoujingli/think-plugs-helper": "^8.0",
+    "zoujingli/think-plugs-storage": "^8.0",
     "zoujingli/think-plugs-wemall": "^8.0"
   },
   "require-dev": {
@@ -32,6 +35,19 @@
         "plugin\\wuma\\Service"
       ]
     },
+    "xadmin": {
+      "service": {
+        "code": "wuma",
+        "prefix": "wuma",
+        "type": "module",
+        "name": "防伪溯源"
+      },
+      "migrate": {
+        "file": "20241010000010_install_wuma20241010.php",
+        "class": "InstallWuma20241010",
+        "name": "WumaPlugin"
+      }
+    },
     "config": {
       "type": "module",
       "name": "物码标签管理",
@@ -40,20 +56,10 @@
       "license": [
         "FEE"
       ]
-    },
-    "plugin": {
-      "copy": {
-        "stc/database": "database/migrations"
-      },
-      "event": {
-        "src/Script.php": "plugin\\wuma\\Script"
-      }
     }
   },
   "minimum-stability": "dev",
   "config": {
-    "allow-plugins": {
-      "zoujingli/think-install": true
-    }
+    "sort-packages": true
   }
 }

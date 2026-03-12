@@ -31,16 +31,17 @@
     "zoujingli/think-plugs-account": "^8.0",
     "zoujingli/think-plugs-admin": "^8.0",
     "zoujingli/think-plugs-center": "^8.0",
+    "zoujingli/think-plugs-helper": "^8.0",
     "zoujingli/think-plugs-payment": "^8.0",
-    "zoujingli/think-plugs-wechat": "^8.0",
+    "zoujingli/think-plugs-storage": "^8.0",
+    "zoujingli/think-plugs-wechat-client": "^8.0",
     "zoujingli/think-plugs-wechat-service": "^8.0",
     "zoujingli/think-plugs-wemall": "^8.0",
     "zoujingli/think-plugs-worker": "^8.0",
     "zoujingli/think-plugs-wuma": "^8.0"
   },
   "require-dev": {
-    "friendsofphp/php-cs-fixer": "^3.0",
-    "zoujingli/think-plugs-helper": "^8.0"
+    "friendsofphp/php-cs-fixer": "^3.0"
   },
   "scripts": {
     "sync": [
@@ -69,7 +70,7 @@
     },
     {
       "type": "path",
-      "url": "plugin/think-plugs-wechat"
+      "url": "plugin/think-plugs-wechat-client"
     },
     {
       "type": "path",
@@ -97,6 +98,10 @@
     },
     {
       "type": "path",
+      "url": "plugin/think-plugs-storage"
+    },
+    {
+      "type": "path",
       "url": "plugin/think-plugs-static"
     },
     {
@@ -107,9 +112,6 @@
   "minimum-stability": "dev",
   "prefer-stable": true,
   "config": {
-    "sort-packages": true,
-    "allow-plugins": {
-      "zoujingli/think-install": true
-    }
+    "sort-packages": true
   }
 }

@@ -1,10 +1,10 @@
 {
   "type": "think-admin-plugin",
-  "name": "zoujingli/think-plugs-wechat",
+  "name": "zoujingli/think-plugs-wechat-client",
   "version": "8.0.x-dev",
   "license": "MIT",
   "homepage": "https://thinkadmin.top",
-  "description": "WeChat Plugin for ThinkAdmin",
+  "description": "WeChat Client Plugin for ThinkAdmin",
   "authors": [
     {
       "name": "Anyon",
@@ -16,41 +16,54 @@
     "ext-json": "*",
     "ext-openssl": "*",
     "ext-mbstring": "*",
-    "zoujingli/qrcode": "^1.0|@dev",
-    "zoujingli/think-install": "^1.0|@dev",
+    "zoujingli/qrcode": "^1.0",
+    "zoujingli/think-plugs-helper": "^8.0",
     "zoujingli/think-library": "^8.0",
-    "zoujingli/wechat-developer": "^1.2|@dev"
+    "zoujingli/think-plugs-storage": "^8.0",
+    "zoujingli/wechat-developer": "^1.2"
   },
   "autoload": {
     "psr-4": {
-      "app\\wechat\\": "src"
+      "plugin\\wechat\\client\\": "src"
     }
   },
   "extra": {
     "config": {
-      "type": "module",
-      "name": "微信平台管理",
-      "document": "https://thinkadmin.top/plugin/think-plugs-wechat.html",
-      "description": "后台微信对接模块，功能全面的微信基础管理。"
-    },
-    "plugin": {
-      "copy": {
-        "src": "!app/wechat",
-        "stc/database": "database/migrations"
-      },
-      "clear": true
+      "type": "plugin",
+      "name": "微信公众平台",
+      "document": "https://thinkadmin.top/plugin/think-plugs-wechat-client.html",
+      "description": "公众号标准平台插件，提供公众号配置、粉丝、素材、菜单与支付管理。"
     },
     "think": {
       "services": [
-        "app\\wechat\\Service"
+        "plugin\\wechat\\client\\Service"
       ]
+    },
+    "xadmin": {
+      "service": {
+        "code": "wechat",
+        "prefix": "wechat",
+        "type": "plugin",
+        "name": "公众号标准平台"
+      },
+      "menu": {
+        "root": {
+          "name": "公众号平台",
+          "sort": 200
+        },
+        "exists": {
+          "url|node": "wechat/fans/index"
+        }
+      },
+      "migrate": {
+        "file": "20241010000003_install_wechat20241010.php",
+        "class": "InstallWechat20241010",
+        "name": "WechatPlugin"
+      }
     }
   },
   "minimum-stability": "dev",
   "config": {
-    "sort-packages": true,
-    "allow-plugins": {
-      "zoujingli/think-install": true
-    }
+    "sort-packages": true
   }
 }

@@ -11,46 +11,34 @@
     }
   ],
   "require": {
-    "php": "^8.0",
-    "zoujingli/think-install": "^1.0||dev-master"
+    "php": "^8.0"
   },
   "extra": {
-    "plugin": {
-      "copy": {
-        "stc/think": "!think",
-        "stc/public/index.php": "!public/index.php",
-        "stc/public/static/plugs": "!public/static/plugs",
-        "stc/public/static/theme": "!public/static/theme",
-        "stc/public/static/admin.js": "!public/static/admin.js",
-        "stc/public/static/login.js": "!public/static/login.js"
-      },
-      "init": {
-        "stc/.env.example": ".env.example",
-        "stc/app/model/.gitkeep": "app/model/.gitkeep",
-        "stc/class/Index.php": "app/index/controller/Index.php",
-        "stc/config/app.php": "config/app.php",
-        "stc/config/cache.php": "config/cache.php",
-        "stc/config/cookie.php": "config/cookie.php",
-        "stc/config/database.php": "config/database.php",
-        "stc/config/lang.php": "config/lang.php",
-        "stc/config/log.php": "config/log.php",
-        "stc/config/phinx.php": "config/phinx.php",
-        "stc/config/route.php": "config/route.php",
-        "stc/config/session.php": "config/session.php",
-        "stc/config/view.php": "config/view.php",
-        "stc/public/router.php": "public/router.php",
-        "stc/route/.gitkeep": "route/.gitkeep",
-        "stc/public/robots.txt": "public/robots.txt",
-        "stc/public/.htaccess": "public/.htaccess",
-        "stc/public/static/extra/style.css": "public/static/extra/style.css",
-        "stc/public/static/extra/script.js": "public/static/extra/script.js"
-      },
-      "clear": true
+    "xadmin": {
+      "publish": {
+        "init": {
+          "stc/.env.example": ".env.example",
+          "stc/app/model/.gitkeep": "app/model/.gitkeep",
+          "stc/class/Index.php": "app/index/controller/Index.php",
+          "stc/route/.gitkeep": "route/.gitkeep",
+          "stc/public/router.php": "public/router.php",
+          "stc/public/robots.txt": "public/robots.txt",
+          "stc/public/.htaccess": "public/.htaccess",
+          "stc/public/static/extra/style.css": "public/static/extra/style.css",
+          "stc/public/static/extra/script.js": "public/static/extra/script.js"
+        },
+        "copy": {
+          "stc/think": "think",
+          "stc/public/index.php": "public/index.php",
+          "stc/public/static/plugs": "public/static/plugs",
+          "stc/public/static/theme": "public/static/theme",
+          "stc/public/static/admin.js": "public/static/admin.js",
+          "stc/public/static/login.js": "public/static/login.js"
+        }
+      }
     }
   },
   "config": {
-    "allow-plugins": {
-      "zoujingli/think-install": true
-    }
+    "sort-packages": true
   }
 }
