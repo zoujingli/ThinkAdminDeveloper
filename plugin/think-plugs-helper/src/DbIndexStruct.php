@@ -20,7 +20,8 @@ declare(strict_types=1);
 
 namespace plugin\helper;
 
-use think\admin\service\SystemService;
+use think\admin\runtime\RuntimeService;
+use think\admin\system\SystemService;
 use think\console\Command;
 use think\facade\Db;
 
@@ -41,7 +42,7 @@ class DbIndexStruct extends Command
      */
     public function isEnabled(): bool
     {
-        return SystemService::isDebug();
+        return RuntimeService::isDebug();
     }
 
     /**

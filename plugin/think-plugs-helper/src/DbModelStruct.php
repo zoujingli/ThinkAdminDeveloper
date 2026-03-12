@@ -22,7 +22,7 @@ namespace plugin\helper;
 
 use Ergebnis\Classy\Constructs;
 use plugin\helper\support\NormalizedModelGenerator;
-use think\admin\extend\ToolsExtend;
+use think\admin\extend\filesystem\FileTools;
 use think\console\Output;
 use think\console\input\Argument;
 use think\console\input\Option;
@@ -95,7 +95,7 @@ class DbModelStruct extends ModelCommand
     {
         $models = [];
         foreach ($this->dirs as $dir) {
-            iterator_to_array(ToolsExtend::findFilesYield($this->app->getRootPath() . $dir, null, function (\SplFileInfo $info) use (&$models) {
+            iterator_to_array(FileTools::findFilesYield($this->app->getRootPath() . $dir, null, function (\SplFileInfo $info) use (&$models) {
                 if ($info->isDir() && $info->getFilename() === 'model') {
                     foreach (Constructs::fromDirectory($info->getRealPath()) as $construct) {
                         $models[] = $construct->name();

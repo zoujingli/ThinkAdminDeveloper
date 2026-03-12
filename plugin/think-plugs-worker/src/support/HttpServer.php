@@ -21,12 +21,11 @@ declare(strict_types=1);
 namespace plugin\worker\support;
 
 use plugin\worker\Server;
-use think\admin\service\RuntimeService;
+use think\admin\runtime\RuntimeService;
 use think\Http;
 use Workerman\Connection\TcpConnection;
 use Workerman\Protocols\Http\Request as WorkerRequest;
 use Workerman\Protocols\Http\Response as WorkerResponse;
-use Workerman\Protocols\Http\Session;
 use Workerman\Timer;
 use Workerman\Worker;
 
@@ -106,15 +105,6 @@ class HttpServer extends Server
 
         $this->monitor = new WorkerMonitor($this->app, $worker, $this->config);
         $this->monitor->start();
-
-        Session::$name = $this->app->config->get('session.name', 'ssid');
-        Session::$domain = $this->app->config->get('cookie.domain', '');
-        Session::$secure = (bool)$this->app->config->get('cookie.secure', false);
-        Session::$httpOnly = (bool)$this->app->config->get('cookie.httponly', true);
-        Session::$sameSite = (string)$this->app->config->get('cookie.samesite', '');
-        Session::$lifetime = (int)$this->app->config->get('session.expire', 7200);
-        Session::$cookiePath = (string)$this->app->config->get('cookie.path', '/');
-        Session::$cookieLifetime = (int)$this->app->config->get('cookie.expire', 0);
     }
 
     /**

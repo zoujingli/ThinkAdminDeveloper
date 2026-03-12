@@ -120,9 +120,7 @@ class NormalizedModelGenerator extends ModelGenerator
     private function normalizeFieldName(string $name): ?string
     {
         return match ($name) {
-            'create_at' => 'create_time',
-            'update_at' => 'update_time',
-            'deleted', 'is_deleted', 'deleted_at', 'deleted_time' => 'delete_time',
+            'deleted', 'deleted_at', 'deleted_time' => 'delete_time',
             'deleted_by' => null,
             default => $name,
         };

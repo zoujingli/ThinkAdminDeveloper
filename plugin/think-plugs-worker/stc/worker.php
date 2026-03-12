@@ -3,66 +3,72 @@
 declare(strict_types=1);
 
 /**
- * ThinkPlugsWorker default configuration.
- *
- * Targets:
- * - ThinkAdmin 8
- * - PHP 8.1+
- * - Workerman 5.1+
+ * ThinkPlugsWorker default configuration template.
  */
 return [
-    // Http server listen host.
-    'host' => '127.0.0.1',
-
-    // Http server listen port.
-    'port' => 2346,
-
-    // Socket context options.
-    'context' => [],
-
-    // Custom server classes instantiated before Workerman::runAll().
-    'classes' => '',
-
-    // Optional message callback for the default http server.
-    // Return true to stop default ThinkAdmin dispatch,
-    // or return Workerman\Protocols\Http\Response directly.
-    'callable' => null,
-
-    // Workerman worker options.
-    'worker' => [
-        'name' => 'ThinkAdmin',
-        'count' => 4,
-
-        // Optional Workerman static options:
-        // 'logFileMaxSize' => 10 * 1024 * 1024,
-        // 'stopTimeout' => 2,
-        // 'eventLoopClass' => \Workerman\Events\Event::class,
+    'defaults' => [
+        'runtime' => [
+            // 'stdout_file' => syspath('safefile/worker/shared.stdout.log'),
+            // 'log_max_size' => 10 * 1024 * 1024,
+            // 'stop_timeout' => 2,
+            // 'event_loop' => \Workerman\Events\Event::class,
+        ],
+        'monitor' => [
+            'files' => [
+                'enabled' => true,
+                'interval' => 3,
+                'paths' => ['app', 'config', 'route', 'plugin'],
+                'extensions' => ['php', 'env', 'ini', 'yaml', 'yml'],
+            ],
+            'memory' => [
+                'enabled' => true,
+                'interval' => 60,
+                'limit' => '1G',
+            ],
+        ],
     ],
-
-    // File change monitor.
-    // Only effective in debug mode. On Windows it logs a restart hint,
-    // on Linux/macOS it triggers a graceful reload.
-    'files' => [
-        'time' => 3,
-        'path' => [],
-        'exts' => ['php', 'env', 'ini', 'yaml', 'yml'],
-    ],
-
-    // Memory usage monitor.
-    // When exceeded, workers are reloaded on POSIX platforms.
-    'memory' => [
-        'time' => 60,
-        'limit' => '1G',
-    ],
-
-    // Custom servers.
-    'customs' => [
+    'services' => [
+        'http' => [
+            'enabled' => true,
+            'label' => 'ThinkAdmin HTTP',
+            'driver' => 'http',
+            'server' => [
+                'host' => '127.0.0.1',
+                'port' => 2346,
+                'context' => [],
+            ],
+            'process' => [
+                'name' => 'ThinkAdminHttp',
+                'count' => 4,
+            ],
+        ],
+        'queue' => [
+            'enabled' => true,
+            'label' => 'ThinkAdmin Queue',
+            'driver' => 'queue',
+            'process' => [
+                'name' => 'ThinkAdminQueue',
+                'count' => 1,
+            ],
+            'queue' => [
+                'scan_interval' => 1,
+                'batch_limit' => 20,
+            ],
+        ],
         'websocket' => [
-            'type' => 'Workerman',
-            'listen' => 'websocket://0.0.0.0:8686',
-            'context' => [],
-            'classes' => '',
-            'worker' => [
+            'enabled' => false,
+            'label' => 'ThinkAdmin WebSocket',
+            'driver' => 'socket',
+            'server' => [
+                'scheme' => 'websocket',
+                'host' => '0.0.0.0',
+                'port' => 8686,
+                'context' => [],
+            ],
+            'socket' => [
+                'type' => 'workerman',
+            ],
+            'process' => [
                 'name' => 'ThinkAdminWebSocket',
                 'count' => 1,
                 'onMessage' => static function ($connection, $data): void {

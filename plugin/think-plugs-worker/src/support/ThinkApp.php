@@ -52,8 +52,6 @@ class ThinkApp extends App
                 ob_end_clean();
             }
 
-            $this->session->clear();
-            $this->session->setId($request->sessionId());
             $this->request->withWorkerRequest($connection, $request);
             $response = $this->cookie->withWorkerResponse();
 

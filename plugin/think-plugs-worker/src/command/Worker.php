@@ -1,31 +1,18 @@
 <?php
 
 declare(strict_types=1);
-/**
- * +----------------------------------------------------------------------
- * | ThinkAdmin Plugin for ThinkAdmin
- * +----------------------------------------------------------------------
- * | 版权所有 2014~2026 ThinkAdmin [ thinkadmin.top ]
- * +----------------------------------------------------------------------
- * | 官方网站: https://thinkadmin.top
- * +----------------------------------------------------------------------
- * | 开源协议 ( https://mit-license.org )
- * | 免责声明 ( https://thinkadmin.top/disclaimer )
- * | 会员特权 ( https://thinkadmin.top/vip-introduce )
- * +----------------------------------------------------------------------
- * | gitee 代码仓库：https://gitee.com/zoujingli/ThinkAdmin
- * | github 代码仓库：https://github.com/zoujingli/ThinkAdmin
- * +----------------------------------------------------------------------
- */
 
 namespace plugin\worker\command;
 
 use GatewayWorker\BusinessWorker;
 use GatewayWorker\Gateway;
 use GatewayWorker\Register;
+use InvalidArgumentException;
 use plugin\worker\support\HttpServer;
+use plugin\worker\support\QueueWorker;
+use plugin\worker\support\WorkerConfig;
+use plugin\worker\support\WorkerState;
 use think\admin\Command;
-use think\admin\service\ProcessService;
 use think\console\Input;
 use think\console\input\Argument;
 use think\console\input\Option;
@@ -33,321 +20,457 @@ use think\console\Output;
 use Workerman\Worker as Workerman;
 
 /**
- * Worker Command.
- * @class Worker
+ * Manage ThinkPlugsWorker runtime services.
  */
 class Worker extends Command
 {
-    protected $config = [];
+    protected WorkerConfig $workers;
 
-    protected $classes = [];
-
-    public function configure()
+    public function configure(): void
     {
         $this->setName('xadmin:worker')
-            ->addArgument('action', Argument::OPTIONAL, 'start|stop|restart|reload|status|connections', 'start')
-            ->addOption('host', 'H', Option::VALUE_OPTIONAL, 'the host of workerman server.')
-            ->addOption('port', 'p', Option::VALUE_OPTIONAL, 'the port of workerman server.')
-            ->addOption('custom', 'c', Option::VALUE_OPTIONAL, 'the custom workerman server.', 'default')
-            ->addOption('daemon', 'd', Option::VALUE_NONE, 'Run the workerman server in daemon mode.')
-            ->setDescription('Workerman Http Server for ThinkAdmin');
+            ->addArgument('action', Argument::OPTIONAL, 'start|serve|stop|restart|reload|status|query', 'start')
+            ->addArgument('target', Argument::OPTIONAL, 'http|queue|all|<service>', 'http')
+            ->addOption('host', 'H', Option::VALUE_OPTIONAL, 'Override the service host.')
+            ->addOption('port', 'p', Option::VALUE_OPTIONAL, 'Override the service port.')
+            ->addOption('daemon', 'd', Option::VALUE_NONE, 'Run the service in background mode.')
+            ->setDescription('Manage ThinkPlugsWorker HTTP and queue runtimes');
     }
 
-    public function execute(Input $input, Output $output)
+    public function execute(Input $input, Output $output): int
     {
-        // 读取配置参数
-        [$custom, $this->config] = $this->withConfig();
-        if (empty($this->config)) {
-            $output->writeln("<error>Configuration Custom {$custom} Undefined.</error> ");
-            return;
+        $this->workers = new WorkerConfig($this->app);
+        $action = strtolower(trim((string)$input->getArgument('action')));
+        $target = strtolower(trim((string)$input->getArgument('target')));
+
+        try {
+            $targets = $this->workers->targets($target);
+        } catch (InvalidArgumentException $exception) {
+            $output->error($exception->getMessage());
+            return 1;
         }
 
-        // 获取基本运行参数
-        $host = $this->withHost();
-        $port = $this->withPort();
-        $action = $input->getArgument('action');
+        if ($targets === []) {
+            $output->error('No enabled worker services are configured.');
+            return 1;
+        }
 
-        // 初始化运行环境参数
+        if (count($targets) > 1 && ($this->input->getOption('host') || $this->input->getOption('port'))) {
+            $output->error('Host or port overrides can only be used with a single service target.');
+            return 1;
+        }
+
+        if (count($targets) > 1 && in_array($action, ['start', 'restart'], true) && !$this->input->getOption('daemon')) {
+            $output->error('Managing multiple services requires --daemon.');
+            return 1;
+        }
+
+        return $this->handleAction($action, $targets);
+    }
+
+    /**
+     * Dispatch command action.
+     *
+     * @param string[] $targets
+     */
+    protected function handleAction(string $action, array $targets): int
+    {
+        return match ($action) {
+            'start' => $this->startTargets($targets),
+            'serve' => $this->serveTargets($targets),
+            'stop' => $this->stopTargets($targets),
+            'status' => $this->statusTargets($targets),
+            'query' => $this->queryTargets($targets),
+            'reload' => $this->reloadTargets($targets),
+            'restart' => $this->restartTargets($targets),
+            default => $this->invalidAction(),
+        };
+    }
+
+    /**
+     * Start services.
+     *
+     * @param string[] $targets
+     */
+    protected function startTargets(array $targets): int
+    {
+        $status = 0;
+        foreach ($targets as $name) {
+            $service = $this->withOverrides($this->workers->service($name));
+            $status = max($status, $this->input->getOption('daemon')
+                ? $this->startDaemon($service)
+                : $this->serveService($service));
+        }
+
+        return $status;
+    }
+
+    /**
+     * Run a service in the current process.
+     *
+     * @param string[] $targets
+     */
+    protected function serveTargets(array $targets): int
+    {
+        if (count($targets) !== 1) {
+            $this->output->error('The serve action only accepts a single service target.');
+            return 1;
+        }
+
+        return $this->serveService($this->withOverrides($this->workers->service($targets[0])));
+    }
+
+    /**
+     * Stop services.
+     *
+     * @param string[] $targets
+     */
+    protected function stopTargets(array $targets): int
+    {
+        $status = 0;
+        foreach ($targets as $name) {
+            $service = $this->workers->service($name);
+            $state = new WorkerState($service);
+            $info = $state->describe();
+            if (!$info['running']) {
+                $this->output->writeln("Worker [{$name}] is not running");
+                continue;
+            }
+
+            if ($state->stop()) {
+                $this->output->writeln("Worker [{$name}] stop signal sent to pid {$info['pid']}");
+            } else {
+                $this->output->writeln("Worker [{$name}] failed to stop");
+                $status = 1;
+            }
+        }
+
+        return $status;
+    }
+
+    /**
+     * Inspect service status.
+     *
+     * @param string[] $targets
+     */
+    protected function statusTargets(array $targets): int
+    {
+        foreach ($targets as $name) {
+            $info = (new WorkerState($this->workers->service($name)))->describe();
+            if ($info['running']) {
+                $this->output->writeln("Worker [{$name}] process {$info['pid']} running");
+            } else {
+                $this->output->writeln("Worker [{$name}] is not running");
+            }
+        }
+
+        return 0;
+    }
+
+    /**
+     * Query service process details.
+     *
+     * @param string[] $targets
+     */
+    protected function queryTargets(array $targets): int
+    {
+        foreach ($targets as $name) {
+            $info = (new WorkerState($this->workers->service($name)))->describe();
+            if (!$info['running']) {
+                $this->output->writeln("># [{$name}] no related worker process found");
+                continue;
+            }
+
+            foreach ($info['processes'] as $process) {
+                $this->output->writeln("># [{$name}] {$process['pid']}\t{$process['cmd']}");
+            }
+        }
+
+        return 0;
+    }
+
+    /**
+     * Reload POSIX services.
+     *
+     * @param string[] $targets
+     */
+    protected function reloadTargets(array $targets): int
+    {
         if ($this->process->iswin()) {
-            if (!$this->winNext($custom, $action, $port)) {
-                return;
-            }
-        } else {
-            if (!$this->unixNext($custom, $action, $port)) {
-                return;
-            }
+            $this->output->error('Reload is only available on Linux or macOS.');
+            return 1;
         }
 
-        // 设置环境运行文件
-        if (empty($this->config['worker']['logFile'])) {
-            $this->config['worker']['logFile'] = syspath("safefile/worker/worker_{$port}.log");
-        }
-        if (empty($this->config['worker']['pidFile'])) {
-            $this->config['worker']['pidFile'] = syspath("safefile/worker/worker_{$port}.pid");
-        }
-        if (empty($this->config['worker']['statusFile'])) {
-            $this->config['worker']['statusFile'] = syspath("safefile/worker/worker_{$port}.status");
-        }
-        is_dir($dir = dirname($this->config['worker']['pidFile'])) or mkdir($dir, 0777, true);
-        is_dir($dir = dirname($this->config['worker']['logFile'])) or mkdir($dir, 0777, true);
-        is_dir($dir = dirname($this->config['worker']['statusFile'])) or mkdir($dir, 0777, true);
+        $status = 0;
+        foreach ($targets as $name) {
+            $state = new WorkerState($this->workers->service($name));
+            $info = $state->describe();
+            if (!$info['running']) {
+                $this->output->writeln("Worker [{$name}] is not running");
+                continue;
+            }
 
-        // 静态属性设置
-        foreach ($this->config['worker'] ?? [] as $name => $value) {
-            if (in_array($name, [
-                'daemonize',
-                'statusFile',
-                'stdoutFile',
-                'pidFile',
-                'logFile',
-                'logFileMaxSize',
-                'stopTimeout',
-                'eventLoopClass',
-                'onMasterReload',
-                'onMasterStop',
-                'onWorkerExit',
-            ], true)) {
-                Workerman::${$name} = $value;
-                unset($this->config['worker'][$name]);
+            if ($state->reload()) {
+                $this->output->writeln("Worker [{$name}] reload signal sent to pid {$info['pid']}");
+            } else {
+                $this->output->writeln("Worker [{$name}] failed to reload");
+                $status = 1;
             }
         }
 
-        // 守护进程模式
-        if ($this->input->hasOption('daemon')) {
-            Workerman::$daemonize = true;
+        return $status;
+    }
+
+    /**
+     * Restart services.
+     *
+     * @param string[] $targets
+     */
+    protected function restartTargets(array $targets): int
+    {
+        $status = $this->stopTargets($targets);
+        foreach ($targets as $name) {
+            $service = $this->withOverrides($this->workers->service($name));
+            $status = max($status, $this->input->getOption('daemon')
+                ? $this->startDaemon($service)
+                : $this->serveService($service));
         }
 
-        // 执行自定义服务
-        if (!empty($this->config['classes'])) {
-            foreach ((array)$this->config['classes'] as $class) {
-                if (class_exists($class)) {
-                    $this->classes[] = new $class();
-                } else {
-                    $this->output->writeln("<error>Worker Server Class Not Exists : {$class}</error>");
+        return $status;
+    }
+
+    /**
+     * Start a detached background process.
+     */
+    protected function startDaemon(array $service): int
+    {
+        $name = $service['name'];
+        $state = new WorkerState($service);
+        $info = $state->describe();
+
+        $command = $this->daemonCommand($name);
+        $this->output->comment(">$ {$this->process->think($command)}");
+
+        if ($info['running']) {
+            $this->output->writeln("># Worker [{$name}] already running for pid {$info['pid']}");
+            return 0;
+        }
+
+        $this->process->thinkExec($command);
+        if ($state->waitStarted()) {
+            $info = $state->describe();
+            $this->output->writeln("># Worker [{$name}] started successfully for pid {$info['pid']}");
+            return 0;
+        }
+
+        $this->output->writeln("># Worker [{$name}] failed to start");
+        return 1;
+    }
+
+    /**
+     * Build service objects and run Workerman.
+     */
+    protected function serveService(array $service): int
+    {
+        $this->prepareRuntime($service);
+        $this->prepareWorkermanArgs();
+
+        $label = $service['label'] ?: strtoupper($service['name']);
+        $this->output->writeln("Starting worker service [{$service['name']}] ({$label})...");
+        if ($this->process->iswin()) {
+            $this->output->writeln('You can exit with <info>`CTRL-C`</info>');
+        }
+
+        foreach ($this->buildServiceWorkers($service) as $worker) {
+            unset($worker);
+        }
+
+        Workerman::runAll();
+        return 0;
+    }
+
+    /**
+     * Prepare static Workerman runtime options.
+     */
+    protected function prepareRuntime(array $service): void
+    {
+        $runtime = (array)$service['runtime'];
+        foreach (['pidFile', 'logFile', 'statusFile', 'stdoutFile'] as $name) {
+            if (!empty($runtime[$name])) {
+                $dir = dirname((string)$runtime[$name]);
+                is_dir($dir) or mkdir($dir, 0777, true);
+            }
+        }
+
+        Workerman::$daemonize = !$this->process->iswin() && (bool)$this->input->getOption('daemon');
+        foreach (['pidFile', 'logFile', 'statusFile', 'stdoutFile', 'logFileMaxSize', 'stopTimeout', 'eventLoopClass', 'onMasterReload', 'onMasterStop', 'onWorkerExit'] as $name) {
+            if (array_key_exists($name, $runtime) && $runtime[$name] !== null && $runtime[$name] !== '') {
+                Workerman::${$name} = $runtime[$name];
+            }
+        }
+    }
+
+    /**
+     * Instantiate runtime workers for a service.
+     *
+     * @return array<int, mixed>
+     */
+    protected function buildServiceWorkers(array $service): array
+    {
+        $workers = [];
+        if ($service['classes'] !== []) {
+            foreach ($service['classes'] as $class) {
+                if (!class_exists($class)) {
+                    throw new InvalidArgumentException("Worker service class [{$class}] is not defined.");
                 }
+                $workers[] = new $class();
             }
-            Workerman::runAll();
-            return;
+            return $workers;
         }
 
-        if ($custom === 'default') {
-            if ($action === 'start') {
-                $output->writeln('Starting Workerman http server...');
-            }
-            $worker = new HttpServer($host, $port, $this->config['context'] ?? [], $this->config['callable'] ?? null, $this->config);
+        if ($service['driver'] === 'http') {
+            $server = (array)$service['server'];
+            $worker = new HttpServer(
+                (string)$server['host'],
+                intval($server['port']),
+                (array)$server['context'],
+                is_callable($server['callable']) ? $server['callable'] : null,
+                $service,
+            );
             $worker->setRoot($this->app->getRootPath());
-        } else {
-            if (strtolower($this->config['type']) !== 'business') {
-                if (empty($this->config['listen'])) {
-                    $listen = "websocket://{$host}:{$port}";
-                } elseif (is_array($attr = parse_url($this->config['listen']))) {
-                    $attr = ['port' => $port, 'host' => $host] + $attr + ['scheme' => 'websocket'];
-                    $listen = "{$attr['scheme']}://{$attr['host']}:{$attr['port']}";
-                } else {
-                    $listen = $this->config['listen'];
-                }
-                if ($action == 'start') {
-                    $output->writeln(sprintf('Starting Workerman %s server...', strstr($listen, ':', true) ?: 'unknow'));
-                }
-            }
-            $worker = $this->makeWorker($this->config['type'] ?? '', $listen ?? '', $this->config['context'] ?? []);
+            $this->applyWorkerOptions($worker, $service);
+            return [$worker];
         }
 
-        // 设置属性参数
-        foreach ($this->config['worker'] ?? [] as $name => $value) {
+        if ($service['driver'] === 'queue') {
+            return [new QueueWorker($service, $this->app->getRootPath())];
+        }
+
+        $worker = $this->makeSocketWorker($service);
+        $this->applyWorkerOptions($worker, $service);
+        return [$worker];
+    }
+
+    /**
+     * Apply worker-level options.
+     */
+    protected function applyWorkerOptions(object $worker, array $service): void
+    {
+        foreach ((array)$service['process'] as $name => $value) {
+            if (in_array($name, ['daemonize', 'statusFile', 'stdoutFile', 'pidFile', 'logFile', 'logFileMaxSize', 'stopTimeout', 'eventLoopClass', 'onMasterReload', 'onMasterStop', 'onWorkerExit'], true)) {
+                continue;
+            }
             $worker->{$name} = $value;
         }
-
-        // 运行环境提示
-        if ($this->process->isWin()) {
-            $output->writeln('You can exit with <info>`CTRL-C`</info>');
-        }
-
-        // 应用并启动服务
-        Workerman::runAll();
     }
 
     /**
-     * 创建 Worker 进程实例.
-     * @return BusinessWorker|Gateway|Register|Workerman
+     * Create a generic socket runtime worker.
      */
-    protected function makeWorker(string $type, string $listen, array $context = [])
+    protected function makeSocketWorker(array $service): BusinessWorker|Gateway|Register|Workerman
     {
-        switch (strtolower($type)) {
-            case 'gateway':
-                if (class_exists('GatewayWorker\Gateway')) {
-                    return new Gateway($listen, $context);
-                }
-                $this->output->error('请执行 composer require workerman/gateway-worker 安装 GatewayWorker 组件');
-                exit(1);
-            case 'register':
-                if (class_exists('GatewayWorker\Register')) {
-                    return new Register($listen, $context);
-                }
-                $this->output->error('请执行 composer require workerman/gateway-worker 安装 GatewayWorker 组件');
-                exit(1);
-            case 'business':
-                if (class_exists('GatewayWorker\BusinessWorker')) {
-                    return new BusinessWorker($listen, $context);
-                }
-                $this->output->error('请执行 composer require workerman/gateway-worker 安装 GatewayWorker 组件');
-                exit(1);
-            default:
-                return new Workerman($listen, $context);
-        }
+        $type = strtolower((string)($service['socket']['type'] ?? 'workerman'));
+        $listen = $this->resolveListen($service);
+        $context = (array)($service['server']['context'] ?? []);
+
+        return match ($type) {
+            'gateway' => class_exists(Gateway::class)
+                ? new Gateway($listen, $context)
+                : throw new InvalidArgumentException('Please install workerman/gateway-worker first.'),
+            'register' => class_exists(Register::class)
+                ? new Register($listen, $context)
+                : throw new InvalidArgumentException('Please install workerman/gateway-worker first.'),
+            'business' => class_exists(BusinessWorker::class)
+                ? new BusinessWorker($listen, $context)
+                : throw new InvalidArgumentException('Please install workerman/gateway-worker first.'),
+            default => new Workerman($listen, $context),
+        };
     }
 
     /**
-     * 初始化 Windows 环境.
+     * Resolve the socket listen address.
      */
-    private function winNext(string $custom, string $action, int $port): bool
+    protected function resolveListen(array $service): string
     {
-        if (!in_array($action, ['start', 'stop', 'status'])) {
-            $this->output->writeln("<error>Invalid argument action:{$action}, Expected start|stop|status for Windows .</error>");
-            return false;
+        $server = (array)($service['server'] ?? []);
+        $listen = trim((string)($server['listen'] ?? ''));
+        if ($listen === '') {
+            $scheme = strtolower((string)($server['scheme'] ?? 'websocket'));
+            $host = trim((string)($server['host'] ?? '')) ?: '0.0.0.0';
+            $port = max(1, intval($server['port'] ?? 80));
+            return "{$scheme}://{$host}:{$port}";
         }
-        $command = "xadmin:worker --custom {$custom} --port {$port}";
-        if ($action === 'start' && $this->input->hasOption('daemon')) {
-            if (count($query = $this->findWindowsWorkers($custom, $port)) > 0) {
-                $this->output->writeln("<info>Worker daemons [{$custom}:{$port}] already exists for Process {$query[0]['pid']} </info>");
-                return false;
-            }
-            $this->process->thinkExec($command, 500);
-            if (count($query = $this->findWindowsWorkers($custom, $port)) > 0) {
-                $this->output->writeln("<info>Worker daemons [{$custom}:{$port}] started successfully for Process {$query[0]['pid']} </info>");
-            } else {
-                $this->output->writeln("<error>Worker daemons [{$custom}:{$port}] failed to start. </error>");
-            }
-            return false;
+
+        if (!is_array($attr = parse_url($listen))) {
+            return $listen;
         }
-        if ($action === 'stop') {
-            foreach ($result = $this->findWindowsWorkers($custom, $port) as $item) {
-                $this->process->close(intval($item['pid']));
-                $this->output->writeln("<info>Send stop signal to Worker daemons [{$custom}:{$port}] Process {$item['pid']} </info>");
-            }
-            if (empty($result)) {
-                $this->output->writeln("<error>The Worker daemons [{$custom}:{$port}] is not running. </error>");
-            }
-            return false;
-        }
-        if ($action === 'status') {
-            foreach ($result = $this->findWindowsWorkers($custom, $port) as $item) {
-                $this->output->writeln("Worker daemons [{$custom}:{$port}] Process {$item['pid']} running");
-            }
-            if (empty($result)) {
-                $this->output->writeln("<error>The Worker daemons [{$custom}:{$port}] is not running. </error>");
-            }
-            return false;
-        }
-        return true;
+
+        $scheme = strtolower((string)($server['scheme'] ?? ($attr['scheme'] ?? 'websocket')));
+        $host = trim((string)($server['host'] ?? ''));
+        $port = intval($server['port'] ?? 0);
+        $host = $host !== '' ? $host : (string)($attr['host'] ?? '0.0.0.0');
+        $port = max(1, $port > 0 ? $port : intval($attr['port'] ?? 80));
+        return "{$scheme}://{$host}:{$port}";
     }
 
     /**
-     * 初始化 Unix 环境.
+     * Apply CLI host/port overrides.
      */
-    private function unixNext(string $custom, string $action, int $port): bool
+    protected function withOverrides(array $service): array
     {
-        if (!in_array($action, ['start', 'stop', 'reload', 'restart', 'status', 'connections'])) {
-            $this->output->writeln("<error>Invalid argument action:{$action}, Expected start|stop|restart|reload|status|connections .</error>");
-            return false;
+        $host = $this->input->getOption('host');
+        $port = $this->input->getOption('port');
+
+        if (is_string($host) && $host !== '') {
+            $service['server']['host'] = $host;
+            $service['host'] = $host;
         }
+        if (is_numeric($port) && intval($port) > 0) {
+            $service['server']['port'] = intval($port);
+            $service['port'] = intval($port);
+        }
+
+        return $service;
+    }
+
+    /**
+     * Build the detached start command.
+     */
+    protected function daemonCommand(string $name): string
+    {
+        $command = "xadmin:worker serve {$name} -d";
+        if (($host = $this->input->getOption('host')) && is_string($host) && $host !== '') {
+            $command .= " --host {$host}";
+        }
+        if (($port = $this->input->getOption('port')) && is_numeric($port) && intval($port) > 0) {
+            $command .= " --port " . intval($port);
+        }
+
+        return $command;
+    }
+
+    /**
+     * Prepare Workerman CLI arguments for in-process startup.
+     */
+    protected function prepareWorkermanArgs(): void
+    {
         global $argv;
-        array_shift($argv) && array_shift($argv);
-        array_unshift($argv, 'xadmin:worker', $action, "--custom {$custom} --port {$port}");
-        return true;
+
+        $argv = [
+            $argv[0] ?? 'think',
+            'start',
+        ];
+        if (!$this->process->iswin() && $this->input->getOption('daemon')) {
+            $argv[] = '-d';
+        }
     }
 
     /**
-     * 获取监听主机.
+     * Handle unsupported action.
      */
-    private function withHost(): string
+    protected function invalidAction(): int
     {
-        if ($this->input->hasOption('host')) {
-            return $this->input->getOption('host');
-        }
-        if (empty($this->config['listen'])) {
-            return empty($this->config['host']) ? '0.0.0.0' : $this->config['host'];
-        }
-        return parse_url($this->config['listen'], PHP_URL_HOST) ?: '0.0.0.0';
-    }
-
-    /**
-     * 获取监听端口.
-     */
-    private function withPort(): int
-    {
-        if ($this->input->hasOption('port')) {
-            return intval($this->input->getOption('port'));
-        }
-        if (empty($this->config['listen'])) {
-            return empty($this->config['port']) ? 80 : intval($this->config['port']);
-        }
-        return intval(parse_url($this->config['listen'], PHP_URL_PORT) ?: 80);
-    }
-
-    /**
-     * 获取配置参数.
-     */
-    private function withConfig(): array
-    {
-        if (($custom = $this->input->getOption('custom')) !== 'default') {
-            $config = $this->app->config->get("worker.customs.{$custom}", []);
-            return [$custom, empty($config) ? false : $config];
-        }
-        return [$custom, $this->app->config->get('worker', [])];
-    }
-
-    private function findWindowsWorkers(string $custom, int $port): array
-    {
-        $command = "xadmin:worker --custom {$custom} --port {$port}";
-        if ($result = $this->process->thinkQuery($command)) {
-            return $result;
-        }
-
-        $workers = [];
-        foreach ($this->queryWindowsListenerPids($port) as $pid) {
-            $cmd = $this->queryWindowsCommandLine($pid);
-            if ($cmd === '' || stripos($cmd, 'xadmin:worker') === false) {
-                continue;
-            }
-
-            $workers[] = ['pid' => (string)$pid, 'cmd' => $cmd];
-        }
-
-        return $workers;
-    }
-
-    private function queryWindowsListenerPids(int $port): array
-    {
-        $pids = [];
-        $lines = ProcessService::exec("netstat -ano -p tcp | findstr LISTENING | findstr :{$port}", true);
-        foreach ($lines as $line) {
-            $line = trim(preg_replace('#\s+#', ' ', trim($line)));
-            if ($line === '') {
-                continue;
-            }
-
-            $parts = explode(' ', $line);
-            $address = $parts[1] ?? '';
-            $pid = $parts[count($parts) - 1] ?? '';
-            if ($pid !== '' && is_numeric($pid) && str_ends_with($address, ':' . $port)) {
-                $pids[] = (int)$pid;
-            }
-        }
-
-        return array_values(array_unique($pids));
-    }
-
-    private function queryWindowsCommandLine(int $pid): string
-    {
-        $lines = ProcessService::exec("wmic process where processid=\"{$pid}\" get CommandLine /value", true);
-        foreach ($lines as $line) {
-            $line = trim($line);
-            if (str_starts_with($line, 'CommandLine=')) {
-                return trim(substr($line, 12));
-            }
-        }
-
-        return '';
+        $this->output->error('Wrong operation, allow start|serve|stop|restart|reload|status|query');
+        return 1;
     }
 }

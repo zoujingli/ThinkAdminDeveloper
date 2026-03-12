@@ -23,7 +23,8 @@ namespace plugin\helper;
 use Doctrine\DBAL\Connection;
 use Doctrine\DBAL\DriverManager;
 use think\admin\Library;
-use think\admin\service\SystemService;
+use think\admin\runtime\RuntimeService;
+use think\admin\system\SystemService;
 use think\console\Command;
 use think\console\input\Option;
 
@@ -56,7 +57,7 @@ class DbBackupStruct extends Command
      */
     public function isEnabled(): bool
     {
-        return SystemService::isDebug();
+        return RuntimeService::isDebug();
     }
 
     /**
@@ -106,8 +107,6 @@ class DbBackupStruct extends Command
                     $query = $query->whereNull('deleted_time');
                 } elseif (in_array('deleted', $fields)) {
                     $query = $query->where('deleted', '0');
-                } elseif (in_array('is_deleted', $fields)) {
-                    $query = $query->where('is_deleted', '0');
                 }
                 $query->chunk(10000, function ($rows) use ($gz, $table, &$total) {
                     foreach ($rows as $row) {

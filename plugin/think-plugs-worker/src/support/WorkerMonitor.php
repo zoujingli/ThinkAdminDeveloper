@@ -25,11 +25,14 @@ class WorkerMonitor
 
     protected bool $reloading = false;
 
+    protected array $monitor = [];
+
     public function __construct(
         protected App $app,
         protected Worker $worker,
         protected array $config = [],
     ) {
+        $this->monitor = (array)($this->config['monitor'] ?? $this->config);
     }
 
     public function start(): void
@@ -49,8 +52,12 @@ class WorkerMonitor
 
     protected function bootFileMonitor(): void
     {
-        $time = (int)($this->config['files']['time'] ?? 0);
+        $enabled = !array_key_exists('enabled', $this->monitor['files'] ?? []) || !empty($this->monitor['files']['enabled']);
+        $time = (int)($this->monitor['files']['interval'] ?? $this->monitor['files']['time'] ?? 0);
         if ($time < 1 || !$this->app->isDebug() || $this->worker->id !== 0) {
+            return;
+        }
+        if (!$enabled) {
             return;
         }
 
@@ -72,9 +79,13 @@ class WorkerMonitor
 
     protected function bootMemoryMonitor(): void
     {
-        $time = (int)($this->config['memory']['time'] ?? 0);
-        $limit = $this->parseBytes($this->config['memory']['limit'] ?? null);
+        $enabled = !array_key_exists('enabled', $this->monitor['memory'] ?? []) || !empty($this->monitor['memory']['enabled']);
+        $time = (int)($this->monitor['memory']['interval'] ?? $this->monitor['memory']['time'] ?? 0);
+        $limit = $this->parseBytes($this->monitor['memory']['limit'] ?? null);
         if ($time < 1 || $limit < 1) {
+            return;
+        }
+        if (!$enabled) {
             return;
         }
 
@@ -154,7 +165,7 @@ class WorkerMonitor
 
     protected function watchPaths(): array
     {
-        $paths = (array)($this->config['files']['path'] ?? []);
+        $paths = (array)($this->monitor['files']['paths'] ?? $this->monitor['files']['path'] ?? []);
         if ($paths === []) {
             $paths = ['app', 'config', 'route', 'plugin'];
         }
@@ -176,7 +187,7 @@ class WorkerMonitor
 
     protected function matchesExtension(string $path): bool
     {
-        $exts = (array)($this->config['files']['exts'] ?? ['*']);
+        $exts = (array)($this->monitor['files']['extensions'] ?? $this->monitor['files']['exts'] ?? ['*']);
         if ($exts === [] || in_array('*', $exts, true)) {
             return true;
         }

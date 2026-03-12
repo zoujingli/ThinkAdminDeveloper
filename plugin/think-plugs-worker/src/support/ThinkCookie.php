@@ -54,6 +54,9 @@ class ThinkCookie extends Cookie
      */
     protected function saveCookie(string $name, string $value, int $expire, string $path, string $domain, bool $secure, bool $httponly, string $samesite): void
     {
+        if (empty($this->config['setcookie'])) {
+            return;
+        }
         $this->response->cookie($name, $value, $expire ?: null, $path, $domain, $secure, $httponly, $samesite);
     }
 }

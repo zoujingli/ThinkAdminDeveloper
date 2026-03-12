@@ -34,7 +34,7 @@ final class MigrationExporter
 
         foreach (PluginRegistry::selected($plugins) as $plugin => $config) {
             $matched = array_values(array_filter($available, static fn(string $table) => PluginRegistry::matchPlugin($table) === $plugin));
-            if (empty($matched) && !array_key_exists('tables', $config)) {
+            if (empty($matched) && empty($config['export_empty'])) {
                 continue;
             }
 
@@ -79,7 +79,7 @@ PHP;
 
 declare(strict_types=1);
 
-use think\admin\extend\PhinxExtend;
+use plugin\helper\support\PhinxExtend;
 use think\migration\Migrator;
 
 @set_time_limit(0);
@@ -107,7 +107,7 @@ PHP;
     {
         $columns = [];
         $columnMap = [];
-        $legacyDelete = ['deleted', 'is_deleted', 'deleted_at', 'deleted_by', 'deleted_time'];
+        $legacyDelete = ['deleted', 'deleted_at', 'deleted_by', 'deleted_time'];
 
         foreach ($table->getColumns() as $column) {
             $name = $column->getName();
@@ -119,11 +119,7 @@ PHP;
                 continue;
             }
 
-            $target = match ($name) {
-                'create_at' => 'create_time',
-                'update_at' => 'update_time',
-                default => $name,
-            };
+            $target = $name;
 
             $columnMap[$name] = $target;
             $columns[$target] = $this->exportColumn($target, $column);
@@ -141,7 +137,7 @@ PHP;
 
     private function hasLegacyDeleteColumn(Table $table): bool
     {
-        foreach (['deleted', 'is_deleted', 'deleted_at', 'deleted_time'] as $field) {
+        foreach (['deleted', 'deleted_at', 'deleted_time'] as $field) {
             if ($table->hasColumn($field)) {
                 return true;
             }
@@ -232,7 +228,7 @@ PHP;
             foreach ($index->getColumns() as $column) {
                 if (isset($columnMap[$column])) {
                     $columns[] = $columnMap[$column];
-                } elseif (in_array($column, ['deleted', 'is_deleted', 'deleted_at', 'deleted_time'], true) && $withDeleteTime) {
+                } elseif (in_array($column, ['deleted', 'deleted_at', 'deleted_time'], true) && $withDeleteTime) {
                     $columns[] = 'delete_time';
                 }
             }

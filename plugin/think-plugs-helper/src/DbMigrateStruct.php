@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace plugin\helper;
 
 use plugin\helper\support\MigrationExporter;
-use think\admin\service\SystemService;
+use think\admin\runtime\RuntimeService;
 use think\console\Command;
 use think\console\input\Option;
 
@@ -22,7 +22,7 @@ class DbMigrateStruct extends Command
 
     public function isEnabled(): bool
     {
-        return SystemService::isDebug();
+        return RuntimeService::isDebug();
     }
 
     public function handle(): void

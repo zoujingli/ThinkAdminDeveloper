@@ -24,8 +24,7 @@ use Doctrine\DBAL\Exception;
 use Doctrine\DBAL\Schema\Comparator;
 use Doctrine\DBAL\Schema\Schema;
 use think\admin\model\SystemUser;
-use think\admin\service\RuntimeService;
-use think\admin\service\SystemService;
+use think\admin\runtime\RuntimeService;
 use think\console\input\Option;
 
 /**
@@ -59,7 +58,7 @@ class DbRestoreStruct extends DbBackupStruct
      */
     public function isEnabled(): bool
     {
-        return SystemService::isDebug();
+        return RuntimeService::isDebug();
     }
 
     /**

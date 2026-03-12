@@ -4,7 +4,7 @@
   "version": "8.0.x-dev",
   "license": "Apache-2.0",
   "homepage": "https://thinkadmin.top",
-  "description": "Workerman 5 HttpServer for ThinkAdmin",
+  "description": "Standard HTTP and queue runtime for ThinkAdmin",
   "authors": [
     {
       "name": "Anyon",
@@ -14,7 +14,6 @@
   "require": {
     "php": "^8.1",
     "workerman/workerman": "^5.1.9",
-    "zoujingli/think-install": "^1.0|@dev",
     "zoujingli/think-library": "^8.0"
   },
   "autoload": {
@@ -28,27 +27,29 @@
         "plugin\\worker\\Service"
       ]
     },
+    "xadmin": {
+      "service": {
+        "code": "worker",
+        "type": "service",
+        "name": "运行时服务"
+      },
+      "publish": {
+        "init": {
+          "stc/worker.php": "config/worker.php"
+        }
+      }
+    },
     "config": {
       "type": "service",
-      "name": "基于 Workerman 5 的通信服务",
+      "name": "标准 HTTP 与队列运行时服务",
       "document": "https://thinkadmin.top/plugin/think-plugs-worker.html",
       "license": [
         "Apache-2.0"
       ]
-    },
-    "plugin": {
-      "init": {
-        "stc/worker.php": "config/worker.php"
-      },
-      "event": {
-        "src/Script.php": "plugin\\worker\\Script"
-      }
     }
   },
   "minimum-stability": "dev",
   "config": {
-    "allow-plugins": {
-      "zoujingli/think-install": true
-    }
+    "sort-packages": true
   }
 }

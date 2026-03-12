@@ -20,11 +20,16 @@ declare(strict_types=1);
 
 namespace plugin\helper;
 
+use plugin\helper\command\Package;
+use plugin\helper\command\Publish;
+
 class Service extends \think\Service
 {
     public function boot()
     {
         $this->commands([
+            Publish::class,
+            Package::class,
             DbMigrateStruct::class,
             DbModelStruct::class,
             DbIndexStruct::class,

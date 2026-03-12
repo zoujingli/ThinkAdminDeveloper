@@ -33,13 +33,13 @@ class Service extends Plugin
      * 定义插件名称.
      * @var string
      */
-    protected $appName = '网络服务';
+    protected string $appName = '运行时服务';
 
     /**
      * 定义安装包名.
      * @var string
      */
-    protected $package = 'zoujingli/think-plugs-worker';
+    protected string $package = 'zoujingli/think-plugs-worker';
 
     public function register()
     {
