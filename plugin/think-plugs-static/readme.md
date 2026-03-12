@@ -1,62 +1,119 @@
 # ThinkPlugsStatic for ThinkAdmin
 
-[![Latest Stable Version](https://poser.pugx.org/zoujingli/think-plugs-static/v/stable)](https://packagist.org/packages/zoujingli/think-plugs-static)
-[![Latest Unstable Version](https://poser.pugx.org/zoujingli/think-plugs-static/v/unstable)](https://packagist.org/packages/zoujingli/think-plugs-static)
-[![Total Downloads](https://poser.pugx.org/zoujingli/think-plugs-static/downloads)](https://packagist.org/packages/zoujingli/think-plugs-static)
-[![Monthly Downloads](https://poser.pugx.org/zoujingli/think-plugs-static/d/monthly)](https://packagist.org/packages/zoujingli/think-plugs-static)
-[![Daily Downloads](https://poser.pugx.org/zoujingli/think-plugs-static/d/daily)](https://packagist.org/packages/zoujingli/think-plugs-static)
-[![PHP Version](https://thinkadmin.top/static/icon/php-7.1.svg)](https://thinkadmin.top)
-[![License](https://thinkadmin.top/static/icon/license-mit.svg)](https://mit-license.org)
+**ThinkPlugsStatic** 是 ThinkAdmin 8 / ThinkPHP 8.1 的静态资源与项目骨架组件，负责发布后台前端资源、默认入口文件、基础配置模板和项目初始化骨架。
 
-**ThinkAdmin** 后台提供了功能强大的 **UI** 框架，并附带部分系统初始化文件，遵循 MIT 协议，不仅开源，而且完全免费并可用于商业项目。
+## 版本基线
 
-请注意，安装此插件将会占用并替换 `public/static` 目录下的部分文件（但自定义脚本和样式保存在 `public/static/extra` 目录内的文件将不会被替换）。因此，如果您曾对 `public/static` 目录进行了自定义修改，我们建议您在安装此插件之前备份相关文件，以避免重要内容丢失。
+- ThinkAdmin `8.x`
+- ThinkPHP `8.1+`
+- PHP `8.1+`
 
-当您使用 `Composer` 卸载此插件时，请留意它并不会自动删除或还原 `public/static` 目录中的文件，也不会自动移除系统初始化文件。为了确保系统的整洁和一致性，这些操作需要您手动完成。
+## 详细描述
 
-我们建议您在安装或更新插件前，仔细阅读相关文档，确保了解可能的影响，并采取相应的预防措施。
+- `ThinkPlugsStatic` 是发布型组件，负责项目骨架、前端静态资源、入口文件和默认配置模板。
+- 它不提供业务路由和后台页面，主要通过 `xadmin:publish` 把需要的文件发布到项目根目录。
+- 当前后台前端只保留 `LayUI + admin.js + extra/script.js` 这一套加载机制，`RequireJS` 已完全移除。
+- 组件定位是“前端资源与骨架源”，不参与数据库、权限和业务逻辑。
 
-### 业务功能特性
+## 架构说明
 
-**核心静态资源管理：**
-- **UI 框架集成**: 集成 LayUI 2.8 前端框架，提供丰富的 UI 组件和交互体验
-- **静态资源管理**: 统一管理 CSS、JavaScript、图片等静态资源文件
-- **CDN 加速支持**: 支持 CDN 加速和资源版本控制，提升页面加载速度
-- **自定义扩展**: 保留 `public/static/extra` 目录用于自定义脚本和样式，避免被覆盖
-- **自动更新**: 同步保持 LayUI 框架的最新版本，确保安全性和功能完整性
+- 骨架层：`stc/` 目录承载 `think`、`public/index.php`、配置模板和初始化文件。
+- 资源层：`stc/public/static/*` 提供后台静态资源、JS 模块和样式资源。
+- 发布层：由 `Helper` 的 `xadmin:publish` 读取 `extra.xadmin.publish` 清单完成同步。
+- 运行关系：发布后资源由项目根目录直接使用，组件本身不参与请求处理。
 
-**技术特性：**
-- **MIT 开源协议**: 遵循 MIT 开源协议，免费可商用
-- **模块化设计**: 静态资源按功能模块组织，便于维护和扩展
-- **性能优化**: 针对前端资源进行压缩和优化，提升页面加载性能
-- **向后兼容**: 保持与现有 ThinkAdmin 版本的兼容性，确保平滑升级
-- **安全防护**: 定期更新依赖库，修复已知安全漏洞
+## 组件边界
 
-`layui 2.8` 于 2023/04/24 正式发布，此插件会同步保持更新。
+- 发布 `public/static` 前端资源
+- 发布 `public/index.php`、`public/router.php` 等入口文件
+- 发布基础配置模板与单应用骨架
+- 后台前端统一使用 `LayUI + $.module.use(...)`
+- 不再使用 `RequireJS`
 
-### 安装插件
+## 安装组件
 
-```shell
-#### 注意，此插件仅支持在 ThinkAdmin v6.1 中使用
+```bash
 composer require zoujingli/think-plugs-static
+
+# 首次初始化骨架与静态资源
+php think xadmin:publish
 ```
 
-### 卸载插件
+## 卸载组件
 
-```shell
-### 卸载后通过 composer update 不会再更新
-### 插件本卸载不会删除 public/static 目录的代码
+```bash
 composer remove zoujingli/think-plugs-static
 ```
 
-### 加入我们
+卸载不会自动删除已发布到项目目录的文件。
 
-我们的代码仓库已移至 **Github**，而 **Gitee** 则仅作为国内镜像仓库，方便广大开发者获取和使用。若想提交 **PR** 或 **ISSUE** 请在 [ThinkAdminDeveloper](https://github.com/zoujingli/ThinkAdminDeveloper) 仓库进行操作，如果在其他仓库操作或提交问题将无法处理！。
+## 发布机制
 
-### 版权说明
+`ThinkPlugsStatic` 通过组件发布清单声明初始化文件和可覆盖资源：
 
-**ThinkPlugsStatic** 遵循 **MIT** 开源协议发布，并免费提供使用。
+- `init`：默认只补缺失文件
+- `copy`：仅在 `--force` 时覆盖可更新资源
 
-本项目包含的第三方源码和二进制文件的版权信息将另行标注，请在对应文件查看。
+标准命令：
 
-版权所有 Copyright © 2014-2025 by ThinkAdmin (https://thinkadmin.top) All rights reserved。
+```bash
+# 初始化缺失文件
+php think xadmin:publish
+
+# 覆盖更新静态资源和骨架
+php think xadmin:publish --force
+```
+
+## 发布内容
+
+主要发布内容包括：
+
+- `.env.example`
+- `config/app.php`
+- `config/cache.php`
+- `config/cookie.php`
+- `config/database.php`
+- `config/lang.php`
+- `config/log.php`
+- `config/phinx.php`
+- `config/route.php`
+- `config/view.php`
+- `app/index/controller/Index.php`
+- `route/.gitkeep`
+- `public/index.php`
+- `public/router.php`
+- `public/robots.txt`
+- `public/.htaccess`
+- `public/static/plugs`
+- `public/static/theme`
+- `public/static/admin.js`
+- `public/static/login.js`
+- `public/static/extra/style.css`
+- `public/static/extra/script.js`
+
+说明：
+
+- 后台认证已改为 Token/JWT，不再依赖 Session 保存登录态
+- 语言切换默认仅支持 URL 参数与请求头，不再写语言 Cookie
+- `public/static/extra` 作为自定义扩展目录，默认不会被强制覆盖
+
+## 前端约定
+
+- 后台只保留 `LayUI` 模块加载机制
+- 统一入口脚本为 `public/static/admin.js` 和 `public/static/login.js`
+- 自定义脚本建议放到 `public/static/extra`
+
+## 路由与数据
+
+- 本组件不提供独立业务路由
+- 本组件不创建独立数据表
+
+## 平台说明
+
+- Windows 兼容
+- Linux 兼容
+- 纯文件发布，无平台专有进程依赖
+
+## 许可证
+
+`ThinkPlugsStatic` 基于 `MIT` 发布。

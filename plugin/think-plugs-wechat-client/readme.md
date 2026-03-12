@@ -1,98 +1,142 @@
-# ThinkPlugsWechat for ThinkAdmin
+# ThinkPlugsWechatClient for ThinkAdmin
 
-[![Latest Stable Version](https://poser.pugx.org/zoujingli/think-plugs-wechat/v/stable)](https://packagist.org/packages/zoujingli/think-plugs-wechat)
-[![Latest Unstable Version](https://poser.pugx.org/zoujingli/think-plugs-wechat/v/unstable)](https://packagist.org/packages/zoujingli/think-plugs-wechat)
-[![Total Downloads](https://poser.pugx.org/zoujingli/think-plugs-wechat/downloads)](https://packagist.org/packages/zoujingli/think-plugs-wechat)
-[![Monthly Downloads](https://poser.pugx.org/zoujingli/think-plugs-wechat/d/monthly)](https://packagist.org/packages/zoujingli/think-plugs-wechat)
-[![Daily Downloads](https://poser.pugx.org/zoujingli/think-plugs-wechat/d/daily)](https://packagist.org/packages/zoujingli/think-plugs-wechat)
-[![PHP Version](https://thinkadmin.top/static/icon/php-7.1.svg)](https://thinkadmin.top)
-[![License](https://thinkadmin.top/static/icon/license-mit.svg)](https://mit-license.org)
+**ThinkPlugsWechatClient** 是 ThinkAdmin 8 / ThinkPHP 8.1 的公众号标准平台组件，负责公众号配置、粉丝同步、素材图文、菜单、回复规则和微信支付后台能力。
 
-**ThinkPlugsWechat** 是 **ThinkAdmin** 的核心插件，提供全面的微信基础管理功能，基于 MIT 协议开源，免费可商用！
+## 版本基线
 
-请注意，安装此插件将会占用并替换 `app/wechat` 目录（采用先删除再写入的方式）。因此，如果您之前对 `app/wechat` 目录有过自定义修改，我们强烈建议您在安装插件前进行备份，否则这些修改可能会丢失。
+- ThinkAdmin `8.x`
+- ThinkPHP `8.1+`
+- PHP `8.1+`
 
-此外，当您使用 `Composer` 卸载此插件时，请务必记得手动删除 `app/wechat` 目录及相关的数据表，因为这些内容不会被自动清理。
+## 详细描述
 
-如果您希望保留自有的 `app/wechat` 目录，避免被插件更新替换，只需在该目录下创建一个名为 `ignore` 的文件（例如 `app/wechat/ignore`，请注意文件名不应有后缀）。这样，即使在执行插件安装或更新操作时，该目录也将被忽略，不会被更新替换。
+- `ThinkPlugsWechatClient` 是公众号标准平台组件，负责公众号基础配置、粉丝同步、素材图文、菜单、关键字回复、自动回复和公众号支付后台页。
+- 它面向“单个公众号业务接入”，适合系统自己直接管理公众号，而不是开放平台代理模式。
+- 组件同时暴露后台管理页与若干公众号回调入口，但开放平台授权和多公众号托管不属于这个组件。
+- 业务插件可以复用它的公众号能力，例如账号登录、消息回复、支付通知等。
 
-### 加入我们
+## 架构说明
 
-我们的代码仓库已移至 **Github**，而 **Gitee** 则仅作为国内镜像仓库，方便广大开发者获取和使用。若想提交 **PR** 或 **ISSUE** 请在 [ThinkAdminDeveloper](https://github.com/zoujingli/ThinkAdminDeveloper) 仓库进行操作，如果在其他仓库操作或提交问题将无法处理！.
+- 接入层：`src/controller/*` 提供公众号配置、粉丝、菜单、素材、支付等后台页面。
+- 服务层：微信服务、消息处理、支付处理与素材同步逻辑负责串联公众号业务流程。
+- 领域层：粉丝、素材、图文、菜单、支付记录等模型承载公众号侧状态。
+- 集成层：对接微信公众平台接口，并为 `Account`、`Payment`、`Wemall` 提供公众号标准能力。
 
-### 安装插件
+## 组件边界
 
-```shell
-### 安装前建议尝试更新所有组件
-composer update --optimize-autoloader
+- 插件编码：`wechat`
+- 访问前缀：`wechat`
+- 负责公众号标准平台后台、粉丝管理和微信支付记录
+- 负责公众号接口推送、网页授权和 JS SDK 接口
+- 不负责微信开放平台代理和第三方平台授权
+- 长耗时同步任务统一交给 `ThinkPlugsWorker queue`
 
-### 注意，插件仅支持在 ThinkAdmin v6.1 中使用
-composer require zoujingli/think-plugs-wechat --optimize-autoloader
+## 依赖关系
+
+- 必需：`zoujingli/think-library`
+- 必需：`zoujingli/think-plugs-helper`
+- 推荐宿主：`zoujingli/think-plugs-admin`
+- 推荐运行时：`zoujingli/think-plugs-worker`
+
+## 安装组件
+
+```bash
+composer require zoujingli/think-plugs-wechat-client
+
+# 首次发布迁移脚本
+php think xadmin:publish --migrate
 ```
 
-### 卸载插件
+## 卸载组件
 
-```shell
-### 安装前建议尝试更新所有组件
-composer update --optimize-autoloader
-
-### 插件卸载不会删除数据表和 app/wechat 的代码
-### 卸载后通过 composer update 时不会再更新，其他依赖除外
-composer remove zoujingli/think-plugs-wechat
+```bash
+composer remove zoujingli/think-plugs-wechat-client
 ```
 
-### 功能节点
+组件卸载不会自动删除已执行的迁移和微信业务表。
 
-可根据下面的功能节点配置菜单和访问权限，按钮操作级别的节点未展示！
+## 后台入口与 API
 
-* 微信接口配置：`wechat/config/options`
-* 微信支付配置：`wechat/config/payment`
-* 微信粉丝管理：`wechat/fans/index`
-* 微信图文管理：`wechat/news/index`
-* 微信菜单配置：`wechat/menu/index`
-* 回复规则管理：`wechat/keys/index`
-* 关注自动回复：`wechat/auto/index`
-* 微信支付管理：`wechat/payment.record/index`
-* 微信退款管理：`wechat/payment.refund/index`
+后台节点：
 
-### 业务功能特性
+- `wechat/config/options`
+- `wechat/config/payment`
+- `wechat/fans/index`
+- `wechat/news/index`
+- `wechat/menu/index`
+- `wechat/keys/index`
+- `wechat/auto/index`
+- `wechat/payment.record/index`
+- `wechat/payment.refund/index`
 
-**核心微信功能：**
-- **微信接口配置**: 提供完整的微信公众号接口配置管理，支持多公众号管理
-- **微信支付配置**: 集成微信支付功能，支持 JSAPI、Native、APP 等多种支付方式
-- **微信粉丝管理**: 完整的粉丝信息管理，支持标签分组、批量操作等功能
-- **微信图文管理**: 可视化的图文素材编辑和管理，支持多图文组合
-- **微信菜单配置**: 可视化的自定义菜单配置，支持点击、跳转、扫码等菜单类型
-- **回复规则管理**: 灵活的关键词回复规则配置，支持文本、图片、图文等多种回复类型
-- **关注自动回复**: 支持关注时的自动回复配置，提升用户体验
-- **微信支付管理**: 完整的支付记录管理，支持订单查询和状态跟踪
-- **微信退款管理**: 便捷的退款处理功能，支持部分退款和全额退款
+接口节点：
 
-**技术特性：**
-- **MIT 开源协议**: 遵循 MIT 开源协议，免费可商用
-- **模块化设计**: 各微信功能模块独立封装，便于扩展和维护
-- **安全防护**: 内置微信消息签名验证、权限控制等安全机制
-- **高性能优化**: 针对微信接口调用进行专门优化，确保响应速度
-- **向后兼容**: 保持与现有 ThinkAdmin 版本的兼容性，确保平滑升级
+- `wechat/api.push/*`
+- `wechat/api.view/*`
+- `wechat/api.js/*`
+- `wechat/api.login/*`
 
-### 插件数据库
+## 命令说明
 
-本插件涉及数据表有：
+本组件注册了三个命令：
 
-* 微信-回复：`wechat_auto`
-* 微信-粉丝：`wechat_fans`
-* 微信-标签：`wechat_fans_tags`
-* 微信-规则：`wechat_keys`
-* 微信-素材：`wechat_media`
-* 微信-图文：`wechat_news`
-* 微信-文章：`wechat_news_article`
-* 微信-支付：`wechat_payment_record`
-* 微信-退款：`wechat_payment_refund`
+- `php think xadmin:fansall`
+- `php think xadmin:fansmsg`
+- `php think xadmin:fanspay`
 
-### 版权说明
+## 发布与迁移
 
-**ThinkPlugsWechat** 遵循 **MIT** 开源协议发布，并免费提供使用。
+本组件包含单一安装脚本：
 
-本项目包含的第三方源码和二进制文件的版权信息将另行标注，请在对应文件查看。
+- `stc/database/20241010000003_install_wechat20241010.php`
 
-版权所有 Copyright © 2014-2025 by ThinkAdmin (https://thinkadmin.top) All rights reserved。
+迁移内容包括：
+
+- `wechat_auto`
+- `wechat_fans`
+- `wechat_fans_tags`
+- `wechat_keys`
+- `wechat_media`
+- `wechat_news`
+- `wechat_news_article`
+- `wechat_payment_record`
+- `wechat_payment_refund`
+
+## 业务能力
+
+- 公众号参数配置
+- 微信支付参数配置
+- 粉丝同步与标签管理
+- 素材与图文管理
+- 自定义菜单管理
+- 关键词回复与关注自动回复
+- 微信支付行为管理
+- 微信退款管理
+
+## 运行说明
+
+- 粉丝同步、自动回复和支付清理可结合 `ThinkPlugsWorker queue` 执行
+- 支付通知和公众号事件推送通过插件接口直接进入应用
+- 组件源码直接从插件包加载，不再复制到 `app/wechat`
+
+## 插件数据
+
+- 自动回复：`wechat_auto`
+- 粉丝资料：`wechat_fans`
+- 粉丝标签：`wechat_fans_tags`
+- 关键字规则：`wechat_keys`
+- 素材库：`wechat_media`
+- 图文主表：`wechat_news`
+- 图文文章：`wechat_news_article`
+- 支付记录：`wechat_payment_record`
+- 退款记录：`wechat_payment_refund`
+
+## 平台说明
+
+- Windows 兼容
+- Linux 兼容
+- 后台长任务建议配合 `ThinkPlugsWorker`
+
+## 许可证
+
+`ThinkPlugsWechatClient` 基于 `MIT` 发布。

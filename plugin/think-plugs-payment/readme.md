@@ -1,105 +1,138 @@
 # ThinkPlugsPayment for ThinkAdmin
 
-[![Latest Stable Version](https://poser.pugx.org/zoujingli/think-plugs-payment/v/stable)](https://packagist.org/packages/zoujingli/think-plugs-payment)
-[![Latest Unstable Version](https://poser.pugx.org/zoujingli/think-plugs-payment/v/unstable)](https://packagist.org/packages/zoujingli/think-plugs-payment)
-[![Total Downloads](https://poser.pugx.org/zoujingli/think-plugs-payment/downloads)](https://packagist.org/packages/zoujingli/think-plugs-payment)
-[![Monthly Downloads](https://poser.pugx.org/zoujingli/think-plugs-payment/d/monthly)](https://packagist.org/packages/zoujingli/think-plugs-payment)
-[![Daily Downloads](https://poser.pugx.org/zoujingli/think-plugs-payment/d/daily)](https://packagist.org/packages/zoujingli/think-plugs-payment)
-[![PHP Version](https://thinkadmin.top/static/icon/php-7.1.svg)](https://thinkadmin.top)
-[![License](https://thinkadmin.top/static/icon/license-vip.svg)](https://thinkadmin.top/vip-introduce)
+**ThinkPlugsPayment** 是 ThinkAdmin 8 / ThinkPHP 8.1 的支付中心组件，负责支付配置、支付行为、退款处理、余额积分账本和支付事件分发。
 
-**ThinkPlugsPayment** 是 **ThinkAdmin** 的多端支付插件，本插件属于[会员尊享插件](https://thinkadmin.top/vip-introduce)，未经授权不得用于商业用途。
+## 版本基线
 
-支付类型主要涵盖线上支付和抵扣支付两大类。
+- ThinkAdmin `8.x`
+- ThinkPHP `8.1+`
+- PHP `8.1+`
 
-- 抵扣支付包括账户余额支付和账户积分抵扣。
-- 线上支付则涵盖各类微信支付、支付宝支付以及大额凭证支付。
+## 详细描述
 
-默认情况下，账户余额支付和账户积分抵扣均得到支持，但业务系统可根据需求控制是否向用户开放。在支付优先级方面，积分优先于余额，余额则优先于其他支付方式。
-若您希望完全关闭积分抵扣或余额支付功能，只需在支付配置中取消对应的支付方式选项即可。
+- `ThinkPlugsPayment` 是系统支付中台，负责支付配置、支付单、退款、余额积分账本和支付事件分发。
+- 组件把具体支付行为抽象成统一支付记录与事件，不直接等同于商城；商城、充值、会员等业务都可以复用它。
+- 后台侧主要提供配置与记录查询，支付状态变更、退款回调和账本更新由组件内部服务处理。
+- 组件不管理守护进程，也不负责账号登录，只依赖其它组件提供用户和业务上下文。
 
-当前，同一业务订单支持混合支付模式，业务系统需传入订单需支付的总金额及此次支付金额。支付完成情况将根据已完成的支付总额来判断，并触发全局支付事件。您可以在任意初始化文件中监听支付事件，以便实时刷新订单状态。
+## 架构说明
 
-**待办事项**：未来子支付单将支持独立的退款操作。目前，积分抵扣、余额支付、凭证支付以及微信支付退款操作已得到支持。敬请期待更多更新与优化。
+- 接入层：`src/controller/*` 提供支付配置、记录、退款、账本等后台页面与接口。
+- 应用层：支付服务、退款服务、账本处理和事件分发逻辑负责串联支付流程。
+- 领域层：支付记录、退款记录、余额积分等模型承载支付状态机和账本数据。
+- 集成层：对接微信、余额、积分等支付通道，并为 `Wemall` 等业务插件暴露统一支付能力。
 
-### 加入我们
+## 组件边界
 
-我们的代码仓库已移至 **Github**，而 **Gitee** 则仅作为国内镜像仓库，方便广大开发者获取和使用。若想提交 **PR** 或 **ISSUE** 请在 [ThinkAdminDeveloper](https://github.com/zoujingli/ThinkAdminDeveloper) 仓库进行操作，如果在其他仓库操作或提交问题将无法处理！.
+- 插件编码：`payment`
+- 访问前缀：`payment`
+- 负责余额、积分、支付记录、退款记录和支付通道配置
+- 负责对外派发支付审核、支付成功、支付取消、订单确认等事件
+- 不负责商城业务订单本身，业务订单由上层插件维护
 
-### 开放接口
+## 依赖关系
 
-接口文档：https://thinkadmin.apifox.cn
+- 必需：`zoujingli/think-library`
+- 必需：`zoujingli/think-plugs-helper`
+- 必需：`zoujingli/think-plugs-account`
+- 必需：`zoujingli/think-plugs-storage`
+- 推荐宿主：`zoujingli/think-plugs-admin`
 
-### 支付事件
+## 安装组件
 
-* `PluginAccountBind` 注册用户绑定事件，回调参数 `function (array $data);`
-* `PluginPaymentAudit` 注册支付审核事件，回调参数 `function (PluginPaymentRecord $payment);`
-* `PluginPaymentRefuse` 注册支付拒审事件，回调参数 `function (PluginPaymentRecord $payment);`
-* `PluginPaymentSuccess` 注册支付完成事件，回调参数 `function (PluginPaymentRecord $payment);`
-* `PluginPaymentCancel` 注册支付取消事件，回调参数 `function (PluginPaymentRecord $payment);`
-* `PluginPaymentConfirm` 注册订单确认事件，回调参数 `function (array $data);`
+```bash
+composer require zoujingli/think-plugs-payment
 
-### 安装插件
-
-```shell
-### 安装前建议尝试更新所有组件
-composer update --optimize-autoloader
-
-### 安装稳定版本 ( 插件仅支持在 ThinkAdmin v6.1 中使用 )
-composer require zoujingli/think-plugs-payment --optimize-autoloader
-
-### 安装测试版本（ 插件仅支持在 ThinkAdmin v6.1 中使用 ）
-composer require zoujingli/think-plugs-payment dev-master --optimize-autoloader
+# 首次发布迁移脚本
+php think xadmin:publish --migrate
 ```
 
-### 卸载插件
+## 卸载组件
 
-```shell
-### 注意，插件卸载不会删除数据表，需要手动删除
+```bash
 composer remove zoujingli/think-plugs-payment
 ```
 
-### 业务功能特性
+组件卸载不会自动删除已执行的迁移和支付数据表。
 
-**核心支付功能：**
-- **多端支付支持**: 支持微信服务号、微信小程序、APP、网页等多终端支付场景
-- **混合支付模式**: 支持余额、积分、微信、支付宝等多种支付方式组合使用
-- **凭证支付审核**: 支持上传凭证的线下支付，包含待审核、已审核、已拒绝等状态管理
-- **支付事件驱动**: 通过支付事件（审核、完成、取消、确认）实现业务逻辑解耦
-- **退款管理**: 支持部分退款和全额退款，自动处理余额、积分的退回操作
-- **支付配置管理**: 可视化配置各种支付通道参数，支持动态启用/禁用支付方式
-- **高精度金融计算**: 全面采用 BC Math 高精度数学函数，确保金融计算的准确性，避免浮点数精度丢失问题
+## 后台入口与接口
 
-**账户资金管理：**
-- **余额管理系统**: 完整的余额充值、消费、锁定、解锁、作废等操作
-- **积分管理系统**: 积分获取、消耗、兑换比率配置、积分有效期管理
-- **高精度计算**: 使用 BC Math 高精度数学函数，确保金融计算的准确性
-- **资金流水追踪**: 完整的资金变动记录，支持来源追溯和审计
-- **并发安全控制**: 支持高并发场景下的余额和积分操作，避免超支问题
-- **数据完整性保障**: 通过数据库约束确保业务数据的一致性和有效性
+后台节点：
 
-**技术特性：**
-- **支付接口抽象**: 统一的支付接口标准，便于扩展新的支付方式
-- **数据库约束优化**: 添加金额非负约束、状态枚举约束，确保数据完整性
-- **异常处理机制**: 完善的异常捕获和日志记录，便于问题排查
-- **事务一致性**: 关键业务操作保证数据一致性，避免脏数据产生
-- **向后兼容**: 保持 API 稳定性，确保平滑升级
+- `payment/config/index`
+- `payment/record/index`
+- `payment/refund/index`
+- `payment/balance/index`
+- `payment/integral/index`
 
-### 插件数据
+接口节点：
 
-本插件涉及数据表有：
+- `payment/api.auth.address/*`
+- `payment/api.auth.balance/*`
+- `payment/api.auth.integral/*`
 
-* 插件-支付-地址：`plugin_payment_address`
-* 插件-支付-余额：`plugin_payment_balance`  
-* 插件-支付-积分：`plugin_payment_integral`
-* 插件-支付-配置：`plugin_payment_config`
-* 插件-支付-行为：`plugin_payment_record`
-* 插件-支付-退款：`plugin_payment_refund`
+支付通知路由：
 
-### 版权说明
+- `/plugin-payment-notify/:vars`
 
-**ThinkPlugsPayment** 为 **ThinkAdmin** 会员插件。
+## 命令说明
 
-未获得此插件授权时仅供参考学习不可商用，了解商用授权请阅读 [《会员授权》](https://thinkadmin.top/vip-introduce)。
+本组件没有独立 CLI 命令。
 
-版权所有 Copyright © 2014-2026 by ThinkAdmin (https://thinkadmin.top) All rights reserved。
+## 发布与迁移
+
+本组件包含单一安装脚本：
+
+- `stc/database/20241010000006_install_payment20241010.php`
+
+迁移内容包括：
+
+- `plugin_payment_address`
+- `plugin_payment_balance`
+- `plugin_payment_config`
+- `plugin_payment_integral`
+- `plugin_payment_record`
+- `plugin_payment_refund`
+
+## 支付事件
+
+组件会派发或联动这些标准事件：
+
+- `PluginAccountBind`
+- `PluginPaymentAudit`
+- `PluginPaymentRefuse`
+- `PluginPaymentSuccess`
+- `PluginPaymentCancel`
+- `PluginPaymentConfirm`
+
+上层业务插件可以通过事件监听解耦订单状态刷新和业务记账。
+
+## 业务能力
+
+- 支付配置管理
+- 混合支付能力
+- 余额支付与流水
+- 积分支付与流水
+- 线下凭证支付审核
+- 支付行为追踪
+- 退款记录管理
+- 高精度金额计算
+
+## 插件数据
+
+- 收货地址：`plugin_payment_address`
+- 余额账本：`plugin_payment_balance`
+- 支付配置：`plugin_payment_config`
+- 积分账本：`plugin_payment_integral`
+- 支付记录：`plugin_payment_record`
+- 退款记录：`plugin_payment_refund`
+
+## 平台说明
+
+- Windows 兼容
+- Linux 兼容
+- 不直接管理守护进程
+
+## 许可证
+
+`ThinkPlugsPayment` 基于专有授权分发，未授权不可商用。

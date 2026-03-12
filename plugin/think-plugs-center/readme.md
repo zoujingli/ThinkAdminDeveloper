@@ -1,70 +1,117 @@
 # ThinkPlugsCenter for ThinkAdmin
 
-[![Latest Stable Version](https://poser.pugx.org/zoujingli/think-plugs-center/v/stable)](https://packagist.org/packages/zoujingli/think-plugs-center)
-[![Total Downloads](https://poser.pugx.org/zoujingli/think-plugs-center/downloads)](https://packagist.org/packages/zoujingli/think-plugs-center)
-[![Monthly Downloads](https://poser.pugx.org/zoujingli/think-plugs-center/d/monthly)](https://packagist.org/packages/zoujingli/think-plugs-center)
-[![Daily Downloads](https://poser.pugx.org/zoujingli/think-plugs-center/d/daily)](https://packagist.org/packages/zoujingli/think-plugs-center)
-[![PHP Version](https://thinkadmin.top/static/icon/php-7.1.svg)](https://thinkadmin.top)
-[![License](https://thinkadmin.top/static/icon/license-apache2.svg)](https://www.apache.org/licenses/LICENSE-2.0)
+**ThinkPlugsCenter** 是 ThinkAdmin 8 / ThinkPHP 8.1 的插件应用中心，负责扫描已安装插件、读取插件元数据、展示可进入的模块插件，并提供默认插件跳转能力。
 
-**ThinkAdmin** 插件管理中心是一个高效便捷的工具，专为管理已安装的插件而设计。
+当前插件识别统一基于：
 
-自 `v1.0.28` 版本起，该中心不再加载线上插件信息，从而确保在内网环境下安全稳定运行，无需依赖外网支持。
+- `composer.json > extra.think.services` 的 ThinkPHP 服务注册
+- `composer.json > extra.xadmin.service` 的插件运行时元数据
+- `composer.json > extra.xadmin.menu` 的菜单根节点与安装检测元数据
 
-此外，我们还对插件机制进行了优化，替换了原有的 **ThinkPlugsSimpleCenter** 模式，进一步简化了插件管理流程。
+## 版本基线
 
-无论是企业用户还是个人开发者，都能通过 **ThinkAdmin** 插件管理中心轻松管理插件，提升系统功能和用户体验。
+- ThinkAdmin `8.x`
+- ThinkPHP `8.1+`
+- PHP `8.1+`
 
-### 加入我们
+## 详细描述
 
-我们的代码仓库已移至 **Github**，而 **Gitee** 则仅作为国内镜像仓库，方便广大开发者获取和使用。若想提交 **PR** 或 **ISSUE** 请在 [ThinkAdminDeveloper](https://github.com/zoujingli/ThinkAdminDeveloper) 仓库进行操作，如果在其他仓库操作或提交问题将无法处理！.
+- `ThinkPlugsCenter` 负责插件中心展示，不承载具体业务，只管理“系统里有哪些插件、插件叫什么、入口在哪”这类元信息。
+- 组件读取已安装插件的 `Service` 注册、菜单根信息和 Composer 元数据，统一输出后台插件入口列表。
+- 它更像后台里的应用中心，不负责插件下载市场、安装脚本生成或守护进程管理。
+- 当前默认插件跳转、插件卡片和插件摘要页都通过它组织。
 
-### 安装插件
+## 架构说明
 
-```shell
-### 安装前建议尝试更新所有组件
-composer update --optimize-autoloader
+- 展示层：`src/controller/Index.php` 与视图模板负责渲染插件入口列表和卡片。
+- 元数据层：依赖 `ThinkLibrary runtime/PluginService` 读取插件编码、名称、前缀、菜单根和安装信息。
+- 协同层：与 `Admin` 一起呈现后台入口，但不介入 `Worker`、`Storage`、`Wechat` 等插件自身业务。
+- 数据层：只消费插件元数据和菜单信息，不维护专属业务表。
 
-### 安装稳定版本 ( 插件仅支持在 ThinkAdmin v6.1 中使用 )
-composer require zoujingli/think-plugs-center --optimize-autoloader
+## 组件边界
 
-### 安装测试版本（ 插件仅支持在 ThinkAdmin v6.1 中使用 ）
-composer require zoujingli/think-plugs-center dev-master --optimize-autoloader
+- 负责插件发现结果的后台展示与入口跳转
+- 负责读取插件菜单并渲染插件布局页
+- 不负责插件安装下载市场，不依赖外网插件仓库
+- 不负责运行时路由匹配，路由匹配仍由 `ThinkLibrary runtime` 负责
+
+## 依赖关系
+
+- 必需：`zoujingli/think-library`
+- 必需：`zoujingli/think-plugs-helper`
+- 推荐宿主：`zoujingli/think-plugs-admin`
+
+## 安装组件
+
+```bash
+composer require zoujingli/think-plugs-center
+
+# 发布菜单迁移
+php think xadmin:publish --migrate
 ```
 
-### 卸载插件
+## 卸载组件
 
-```shell
+```bash
 composer remove zoujingli/think-plugs-center
 ```
 
-### 业务功能特性
+组件卸载不会自动删除已执行的菜单迁移。
 
-**核心管理功能：**
-- **插件注册管理**: 自动扫描和注册已安装的插件，提供统一的插件管理入口
-- **插件配置管理**: 支持插件的启用、禁用、配置参数设置等管理功能
-- **菜单自动集成**: 自动将插件菜单集成到系统主菜单中，无需手动配置
-- **权限自动分配**: 自动为插件功能分配相应的权限节点，简化权限管理
-- **内网环境支持**: 自 v1.0.28 版本起，不再依赖外网插件信息，支持内网环境稳定运行
-- **插件机制优化**: 替换了原有的 ThinkPlugsSimpleCenter 模式，简化插件管理流程
+## 后台入口
 
-**技术特性：**
-- **Apache2 开源协议**: 遵循 Apache2 开源协议，免费提供使用
-- **轻量级设计**: 无需独立数据表，减少数据库依赖
-- **自动发现**: 自动发现和加载插件，无需手动注册
-- **向后兼容**: 保持与现有插件的兼容性，确保平滑升级
-- **性能优化**: 针对插件加载和管理进行专门优化，确保系统性能
+插件编码：
 
-### 插件数据
+- `plugin-center`
 
-该插件未使用独立数据表；
+主要节点：
 
-### 版权说明
+- `plugin-center/index/index`
+- `plugin-center/index/layout`
+- `plugin-center/index/setDefault`
 
-**ThinkPlugsCenter** 遵循 **Apache2** 开源协议发布，并提供免费使用。
+说明：
 
-本项目包含的第三方源码和二进制文件之版权信息另行标注。
+- `index` 负责展示插件中心或自动跳转默认插件
+- `layout` 负责渲染指定插件的菜单布局
+- `setDefault` 负责设置默认打开插件
 
-版权所有 Copyright © 2014-2025 by ThinkAdmin (https://thinkadmin.top) All rights reserved。
+## 命令说明
 
-更多细节参阅 [LICENSE.txt](license)
+本组件没有独立 CLI 命令。
+
+## 发布与迁移
+
+本组件包含迁移脚本：
+
+- `stc/database/20241010000004_install_center20241010.php`
+
+迁移内容只负责写入插件中心菜单入口，不创建独立业务表。
+
+## 业务能力
+
+- 已安装插件扫描
+- 模块插件列表展示
+- 默认插件自动跳转
+- 插件菜单布局渲染
+- 统一读取插件 `extra.xadmin.menu + Service::menu()` 生成布局菜单
+- 多插件场景下的统一入口页
+
+## 插件数据
+
+本组件不创建独立业务表。
+
+运行时会使用：
+
+- `system_menu`
+- `system_data`
+
+## 平台说明
+
+- Windows 兼容
+- Linux 兼容
+- 不依赖平台专有守护进程
+
+## 许可证
+
+`ThinkPlugsCenter` 基于 `Apache-2.0` 发布。

@@ -1,71 +1,106 @@
 # ThinkPlugsHelper for ThinkAdmin
 
-[![Latest Stable Version](https://poser.pugx.org/zoujingli/think-plugs-helper/v/stable)](https://packagist.org/packages/zoujingli/think-plugs-helper)
-[![Total Downloads](https://poser.pugx.org/zoujingli/think-plugs-helper/downloads)](https://packagist.org/packages/zoujingli/think-plugs-helper)
-[![Monthly Downloads](https://poser.pugx.org/zoujingli/think-plugs-helper/d/monthly)](https://packagist.org/packages/zoujingli/think-plugs-helper)
-[![Daily Downloads](https://poser.pugx.org/zoujingli/think-plugs-helper/d/daily)](https://packagist.org/packages/zoujingli/think-plugs-helper)
-[![PHP Version](https://thinkadmin.top/static/icon/php-7.1.svg)](https://thinkadmin.top)
-[![License](https://thinkadmin.top/static/icon/license-apache2.svg)](https://www.apache.org/licenses/LICENSE-2.0)
+**ThinkPlugsHelper** 是 ThinkAdmin 8 / ThinkPHP 8.1 的开发辅助组件，负责模型注释生成、数据库脚本导出、插件迁移打包、发布安装和菜单迁移校验。
 
-**ThinkPlugsHelper** 是为便捷 ThinkAdmin 开发而制做的工具包。
+## 版本基线
 
-### 加入我们
+- ThinkAdmin `8.x`
+- ThinkPHP `8.1+`
+- PHP `8.1+`
 
-我们的代码仓库已移至 **Github**，而 **Gitee** 则仅作为国内镜像仓库，方便广大开发者获取和使用。若想提交 **PR** 或 **ISSUE** 请在 [ThinkAdminDeveloper](https://github.com/zoujingli/ThinkAdminDeveloper) 仓库进行操作，如果在其他仓库操作或提交问题将无法处理！.
+## 详细描述
 
-### 安装插件
+- `ThinkPlugsHelper` 是开发辅助组件，负责模型注释生成、迁移脚本导出、插件安装包生成、发布命令和菜单迁移校验。
+- 它主要面向开发期和交付期，不承担线上业务接口，也不提供后台业务中心。
+- 当前数据库脚本导出、安装包模板、`xadmin:publish` 和 `xadmin:package` 都集中在这个组件。
+- 组件定位是“工程化工具箱”，不是业务运行时核心。
 
-```shell
-### 安装前建议尝试更新所有组件
-composer update --optimize-autoloader
+## 架构说明
 
-### 安装稳定版本 ( 插件仅支持在 ThinkAdmin v6.1 中使用 )
-composer require zoujingli/think-plugs-helper --optimize-autoloader --dev
+- 命令层：`src/command/*` 暴露 `publish / package / helper:migrate` 等 CLI 能力。
+- 支撑层：`src/support/*` 负责迁移元数据读取、菜单校验、导出逻辑和插件扫描。
+- 模板层：`src/service/bin/*` 提供安装包模板和脚本骨架。
+- 协同层：依赖 `ThinkLibrary` 获取系统运行时能力，但不持有后台登录、队列、存储等业务实现。
 
-### 安装测试版本（ 插件仅支持在 ThinkAdmin v6.1 中使用 ）
-composer require zoujingli/think-plugs-helper dev-master --optimize-autoloader --dev
+## 组件边界
+
+- 负责开发期和安装期工具链
+- 负责 `xadmin:publish`、`xadmin:package`、`xadmin:helper:*`
+- 负责插件迁移主脚本识别和菜单迁移校验
+- 负责承载少量非核心的辅助型集成实现，例如物流轨迹查询
+- 不负责运行时路由、认证和守护进程
+
+## 依赖关系
+
+- 必需：`zoujingli/think-library`
+- 必需：`topthink/think-migration`
+- 推荐宿主：`zoujingli/think-plugs-admin`
+
+## 安装组件
+
+```bash
+composer require zoujingli/think-plugs-helper
 ```
 
-### 使用注释
+## 卸载组件
 
-执行下面的指令即可实现模型字段注释。
-
-```shell
-php think xadmin:helper:model
-```
-
-### 卸载插件
-
-```shell
+```bash
 composer remove zoujingli/think-plugs-helper
 ```
 
-### 业务功能特性
+## 命令说明
 
-**核心开发工具：**
-- **模型字段注释**: 自动生成数据库模型的字段注释，提升代码可读性和开发效率
-- **开发辅助工具**: 提供便捷的开发命令和工具函数，简化 ThinkAdmin 开发流程
-- **代码生成**: 支持自动生成标准的模型、控制器等代码模板
-- **调试支持**: 提供开发环境下的调试工具和日志记录功能
-- **文档生成**: 支持自动生成 API 文档和代码文档
+常用命令：
 
-**技术特性：**
-- **Apache2 开源协议**: 遵循 Apache2 开源协议，免费提供使用
-- **开发专用**: 作为开发工具包，仅在开发环境使用（--dev 参数）
-- **轻量级设计**: 无需独立数据表，减少生产环境依赖
-- **向后兼容**: 保持与现有 ThinkAdmin 版本的兼容性
-- **易用性**: 简单的命令行接口，快速上手使用
+- `php think xadmin:helper:model`
+- `php think xadmin:helper:migrate`
+- `php think xadmin:publish`
+- `php think xadmin:publish --migrate`
+- `php think xadmin:package`
 
-### 插件数据
+## 发布与迁移
 
-该插件未使用独立数据表；
+本组件负责统一处理：
 
-### 版权说明
+- 配置模板发布
+- 静态资源发布
+- 插件迁移同步
+- 安装包生成
 
-**ThinkPlugsHelper** 遵循 **Apache2** 开源协议发布，并提供免费使用。
+标准元数据来源：
 
-本项目包含的第三方源码和二进制文件之版权信息另行标注。
+- 服务注册：`composer.json > extra.think.services`
+- 插件元数据：`composer.json > extra.xadmin.service`
+- 菜单元数据：`composer.json > extra.xadmin.menu`
+- 迁移元数据：`composer.json > extra.xadmin.migrate`
 
-版权所有 Copyright © 2014-2025 by ThinkAdmin (https://thinkadmin.top) All rights reserved。
+## 菜单校验规则
 
-更多细节参阅 [LICENSE.txt](license)
+- `Service::menu()` 只声明菜单结构
+- 叶子节点必须存在真实控制器节点
+- 叶子节点必须同时声明 `@auth true` 和 `@menu true`
+- `PhinxExtend::writePluginMenu()` 写菜单前会先做一致性校验
+
+## 业务能力
+
+- 模型注释生成
+- 数据库结构导出
+- 单插件最终迁移脚本生成
+- 插件安装包打包
+- 发布模板同步
+- 菜单迁移写入与校验
+- 物流轨迹辅助查询
+
+## 插件数据
+
+本组件不创建独立业务表。
+
+## 平台说明
+
+- Windows 兼容
+- Linux 兼容
+- 不依赖平台专有守护进程
+
+## 许可证
+
+`ThinkPlugsHelper` 基于 `Apache-2.0` 发布。

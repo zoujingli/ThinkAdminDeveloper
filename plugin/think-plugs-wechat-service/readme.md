@@ -1,103 +1,114 @@
 # ThinkPlugsWechatService for ThinkAdmin
 
-[![Latest Stable Version](https://poser.pugx.org/zoujingli/think-plugs-wechat-service/v/stable)](https://packagist.org/packages/zoujingli/think-plugs-wechat-service)
-[![Latest Unstable Version](https://poser.pugx.org/zoujingli/think-plugs-wechat-service/v/unstable)](https://packagist.org/packages/zoujingli/think-plugs-wechat-service)
-[![Total Downloads](https://poser.pugx.org/zoujingli/think-plugs-wechat-service/downloads)](https://packagist.org/packages/zoujingli/think-plugs-wechat-service)
-[![Monthly Downloads](https://poser.pugx.org/zoujingli/think-plugs-wechat-service/d/monthly)](https://packagist.org/packages/zoujingli/think-plugs-wechat-service)
-[![Daily Downloads](https://poser.pugx.org/zoujingli/think-plugs-wechat-service/d/daily)](https://packagist.org/packages/zoujingli/think-plugs-wechat-service)
-[![PHP Version Require](http://poser.pugx.org/zoujingli/think-plugs-wechat-service/require/php)](https://packagist.org/packages/zoujingli/think-plugs-wechat-service)
-[![ThinkAdmin VIP 授权](https://img.shields.io/badge/license-VIP%20授权-blueviolet.svg)](https://thinkadmin.top/vip-introduce)
+**ThinkPlugsWechatService** 是 ThinkAdmin 8 / ThinkPHP 8.1 的公众号开放平台组件，负责第三方平台配置、公众号授权管理和远程 JSON-RPC 服务。
 
-微信开放平台管理插件是一款专为会员尊享的插件，非授权用户不得将其用于商业目的。此插件旨在简化[微信开放平台](https://open.weixin.qq.com)的功能开发流程，让您无需再为服务对接和接口调度而烦恼，所有复杂性都已为您妥善处理。
+## 版本基线
 
-今后，**ThinkAdmin** 将把微信开放平台的基础功能统一集中在此插件中，实现功能的集中管理和深度优化。目前，该插件已全面集成 **公众号** 和 **小程序** 管理等核心接口，为您的微信开发工作提供强大的后盾。无论您是希望高效开发公众号、小程序等应用，还是执行其他微信开放平台的操作，此插件都将是您不可或缺的好帮手。
+- ThinkAdmin `8.x`
+- ThinkPHP `8.1+`
+- PHP `8.1+`
 
-### 加入我们
+## 详细描述
 
-我们的代码仓库已移至 **Github**，而 **Gitee** 则仅作为国内镜像仓库，方便广大开发者获取和使用。若想提交 **PR** 或 **ISSUE** 请在 [ThinkAdminDeveloper](https://github.com/zoujingli/ThinkAdminDeveloper) 仓库进行操作，如果在其他仓库操作或提交问题将无法处理！。
+- `ThinkPlugsWechatService` 是公众号开放平台组件，面向第三方平台或代运营场景，负责公众号授权、开放平台配置和远程服务通信。
+- 它和 `WechatClient` 的区别在于：`WechatClient` 面向单公众号直连，`WechatService` 面向开放平台代理和多公众号授权。
+- 组件内部还承担 JSON-RPC 远程调用入口，用于开放平台与业务系统之间的服务通信。
+- 组件不负责普通后台登录和存储，不直接承担商城等业务域。
 
-### 开放接口
+## 架构说明
 
-此插件支持 [**ThinkPlugsWechat**](https://thinkadmin.top/plugin/think-plugs-wechat.html) 应用插件远程调用，需要增加配置`sysconf('wechat.service_jsonrpc')`远程调用的 **JSON-RPC** 接口地址；
+- 接入层：`src/controller/*` 与 `src/controller/api/*` 提供授权管理、推送接收和远程调用入口。
+- 服务层：`Service` 与相关服务类负责开放平台配置装载、授权状态维护和调用编排。
+- 集成层：通过 JSON-RPC 与远端服务通信，并对接微信开放平台回调与授权接口。
+- 协同层：可与 `WechatClient`、`Account`、`Wemall` 等业务插件联动，但不替代它们的业务模型。
 
-接口地址可以在此插件的节点 `plugin-wechat-service/config/index` 页面查看，注意此插件接口地址需要带有 `TOKEN` 占位字符；
+## 组件边界
 
-**JSON-RPC** 接口地址格式如：`http://admin.local.cuci.cc/plugin-wechat-service/api.client/jsonrpc?token=TOKEN`
+- 插件编码：`plugin-wechat-service`
+- 访问前缀：`plugin-wechat-service`
+- 负责微信开放平台配置、授权账号管理和远程服务入口
+- 负责为 `ThinkPlugsWechatClient` 等业务插件提供远程能力
+- 不承载公众号标准平台的本地后台能力
 
-### 安装插件
+## 依赖关系
 
-```shell
-### 注意，仅支持在 ThinkAdmin v6.1 中使用
+- 必需：`zoujingli/think-library`
+- 必需：`zoujingli/think-plugs-helper`
+- 推荐宿主：`zoujingli/think-plugs-admin`
+
+## 安装组件
+
+```bash
 composer require zoujingli/think-plugs-wechat-service
+
+# 首次发布迁移脚本
+php think xadmin:publish --migrate
 ```
 
-### 卸载插件
+## 卸载组件
 
-```shell
-### 安装前建议尝试更新所有组件
-composer update --optimize-autoloader
-
-### 注意，插件仅支持在 ThinkAdmin v6.1 中使用
-composer remove zoujingli/think-plugs-wechat-service --optimize-autoloader
+```bash
+composer remove zoujingli/think-plugs-wechat-service
 ```
 
-### 调用案例
+组件卸载不会自动删除已执行的迁移和授权数据。
 
-```php
-// 开放平台SDK调用入口
-use plugin\wechat\service\AuthService;
+## 后台入口与远程接口
 
-// 1. 实例公众号 APPID 的 User 接口
-$user = AuthService::WeChatUser(APPID);
+后台节点：
 
-// 2. 获取公众号 APPID 的粉丝列表（ 第一页 100 条 ）
-$userList = $user->getUserList();
-var_dump($userList);
+- `plugin-wechat-service/config/index`
+- `plugin-wechat-service/wechat/index`
 
-// 3. 获取公众号 APPID 的 OPENID 资料
-// 现在调用此接口获取不到粉丝详情资料
-$userInfo = $user->getUserInfo(OPENID);
-var_dump($userInfo);
+接口节点：
 
-// 其他 WeChatDeveloper 的接口实例以此类推
-// 具体接口实例对象可以阅读SDK的源码或对应文档
+- `plugin-wechat-service/api.client/jsonrpc`
+- `plugin-wechat-service/api.push/*`
 
-```
+JSON-RPC 地址示例：
 
-### 功能节点
+- `http://example.com/plugin-wechat-service/api.client/jsonrpc?token=TOKEN`
 
-可根据下面的功能节点配置菜单及访问权限，按钮操作级别的节点未展示！
+## 命令说明
 
-* 开放平台配置：`plugin-wechat-service/config/index`
-* 授权微信管理：`plugin-wechat-service/wechat/index`
+本组件注册命令：
 
-### 业务功能特性
+- `php think xsync:wechat`
 
-**核心微信开放平台功能：**
-- **微信开放平台集成**: 提供完整的微信开放平台管理功能，支持公众号和小程序的统一管理
-- **远程接口调用**: 支持 JSON-RPC 远程调用，可与 ThinkPlugsWechat 插件无缝集成
-- **授权管理**: 完整的微信授权管理，支持多公众号和小程序的授权配置
-- **用户管理**: 提供粉丝列表获取、用户信息查询等完整的用户管理接口
-- **接口调度**: 统一的接口调度机制，简化微信开放平台的复杂性
-- **会员专享**: 作为会员尊享插件，提供深度优化的微信开发体验
+## 发布与迁移
 
-**技术特性：**
-- **VIP 授权**: 会员专享插件，非授权用户不得用于商业目的
-- **模块化设计**: 各微信功能模块独立封装，便于扩展和维护
-- **远程调用支持**: 支持 JSON-RPC 远程调用，实现插件间的无缝集成
-- **安全防护**: 内置 Token 验证和权限控制，确保接口调用安全
-- **向后兼容**: 保持与现有 ThinkAdmin 版本的兼容性，确保平滑升级
+本组件包含单一安装脚本：
 
-### 插件数据
+- `stc/database/20241010000004_install_wechat_service20241010.php`
 
-本插件涉及数据表有：
+迁移内容包括：
 
-* 微信-授权 `wechat_auth`
+- `wechat_auth`
 
-### 版权说明
+## 业务能力
 
-**ThinkPlugsWechatService** 为 **ThinkAdmin** 会员插件。
+- 微信开放平台参数配置
+- 授权公众号管理
+- 远程 JSON-RPC 服务
+- 推送事件接收
+- 标准平台远程能力代理
 
-未获得此插件授权时仅供参考学习不可商用，了解商用授权请阅读 [《会员授权》](https://thinkadmin.top/vip-introduce)。
+## 对接说明
 
-版权所有 Copyright © 2014-2025 by ThinkAdmin (https://thinkadmin.top) All rights reserved。
+- `ThinkPlugsWechatClient` 可通过 `sysconf('wechat.service_jsonrpc')` 对接本组件
+- 建议在远程地址中保留 `TOKEN` 占位并由运行时动态替换
+- 远程接口安全由 Token 与后台权限共同控制
+
+## 插件数据
+
+- 微信授权：`wechat_auth`
+
+## 平台说明
+
+- Windows 兼容
+- Linux 兼容
+- 不依赖平台专有命令
+
+## 许可证
+
+`ThinkPlugsWechatService` 基于专有授权分发，未授权不可商用。

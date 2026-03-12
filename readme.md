@@ -1,120 +1,178 @@
 # ThinkAdminDeveloper for ThinkAdmin
 
-**ThinkAdminDeveloper** 是基于 **ThinkAdmin** 插件机制开发的微商城系统及其他扩展插件。
-该仓库包含 `ThinkAdmin` 的同步组件及插件，如：**多端账号插件**、**插件中心管理**、**多端支付插件**、**多端微商系统**、**一物一码系统** 等，此库仅用于开发并自动分发代码，后期会以插件生态方式发布。
+**ThinkAdminDeveloper** 是基于 ThinkAdmin 8 / ThinkPHP 8.1 的组件化开发仓库，用于维护核心基础库、运行时组件、后台平台插件和业务插件。
 
-**注意：** 此库包含部分 **ThinkAdmin** 会员授权插件，其中 **ThinkPlugsWuma** 为收费授权插件，未获得授权仅可用于本地测试体验使用，不得刻意传播或 **fork** 此仓库保存代码。
+## 版本基线
 
-## 关于项目
+- ThinkAdmin `8.x`
+- ThinkPHP `8.1+`
+- PHP `8.1+`
 
-**ThinkAdmin** 是一款遵循 MIT 协议的开源快速开发框架，基于 **ThinkPHP6**（兼容 **ThinkPHP8**）构建。在使用前，请务必阅读《免责声明》并同意相关条款。
+## 详细描述
 
-我们致力于构建高效的底层框架，简化项目开发流程，提供完整的基础组件和 API 支持，助力快速开发各类 WEB 应用。框架免费提供系统权限管理、存储配置、微信授权等基础功能，成为外包开发团队的得力助手，目前已有超过 5 万个项目基于此框架运行。
+- 这个仓库不是单一应用，而是围绕 ThinkAdmin 8 / ThinkPHP 8.1 组织的一组标准组件，覆盖核心库、运行时、后台平台和业务插件。
+- 目标不是维护旧版多应用项目，而是把系统重构成“插件优先、单应用兜底、服务注册标准化、组件边界清晰”的结构。
+- 当前所有核心能力都已经按组件拆分：`ThinkLibrary` 提供核心层，`Worker` 提供常驻运行时，`Storage` 提供存储中心，`Helper` 提供开发与交付工具，业务插件只承载各自业务域。
+- 因此这个仓库更适合作为组件化开发基线和业务插件宿主，而不是传统的单仓单应用模板。
 
-**ThinkAdmin** v6 是对 v1 至 v5 的重构之作，结合 **ThinkPHP** 6 和 8 的设计思路，彻底改造系统，保留原生生态支持。我们精简了非必需组件，构建了自定义存储层、服务层和高效队列机制，并新增用户友好的指令，提升操作体验。经过严格测试，v6.1 版本展现出卓越的稳定性，系统和微信模块已达到高稳定水平。
+## 架构说明
 
-### 核心组件与插件体系
+- 核心层：`ThinkLibrary` 提供运行时、认证、任务协议、菜单节点、模型查询和基础工具。
+- 运行层：`ThinkPlugsWorker` 用 Workerman 托管 `http` 和 `queue` 两类常驻服务。
+- 平台层：`ThinkPlugsAdmin`、`ThinkPlugsCenter`、`ThinkPlugsStorage`、`ThinkPlugsWechatClient`、`ThinkPlugsWechatService` 提供后台平台和标准能力入口。
+- 业务层：`ThinkPlugsAccount`、`ThinkPlugsPayment`、`ThinkPlugsWemall`、`ThinkPlugsWuma` 负责各自业务域。
+- 交付层：`ThinkPlugsHelper` 和 `ThinkPlugsStatic` 负责发布、迁移、安装包、静态资源和项目骨架。
 
-**ThinkLibrary 核心组件**
-- **标准控制器基类**: 提供完整的 CRUD 操作封装，包括分页、表单、验证、队列等通用功能
-- **基础模型类**: 实现魔术方法和静态助手调用，支持操作日志记录和数据一致性保障
-- **自定义服务基类**: 提供依赖注入和实例化机制，支持服务的统一管理和扩展
-- **全局函数库**: 包含数据处理、系统配置、HTTP 请求、JWT 认证等实用函数
-- **PSR-12 标准**: 严格遵循 PHP-FIG 编码规范，确保代码质量和可维护性
-- **高精度计算支持**: 集成 BC Math 高精度数学函数，确保金融计算的准确性
+## 仓库组成
 
-**ThinkPlugsAccount 多端账号插件**
-- **三层账号模型**: 临时用户(usid) ↔ 绑定手机(bind) ↔ 正式用户(unid) 的完整账号生命周期
-- **多端统一账号**: 支持微信服务号、微信小程序、APP、网页等多终端统一账号体系
-- **JWT无状态认证**: 基于 JWT Token 的无状态认证机制，支持跨域和分布式部署
-- **动态通道注册**: 支持运行时动态注册新的登录通道类型，灵活扩展登录方式
-- **高并发安全**: 支持高并发场景下的账号创建和绑定操作，确保数据一致性
+### 核心组件
 
-**ThinkPlugsPayment 多端支付插件**
-- **多端支付支持**: 支持微信服务号、微信小程序、APP、网页等多终端支付场景
-- **混合支付模式**: 支持余额、积分、微信、支付宝等多种支付方式组合使用
-- **高精度金融计算**: 使用 BC Math 高精度数学函数，确保金融计算的准确性
-- **支付事件驱动**: 通过支付事件（审核、完成、取消、确认）实现业务逻辑解耦
-- **退款管理**: 支持部分退款和全额退款，自动处理余额、积分的退回操作
-- **数据库约束优化**: 添加金额非负约束、状态枚举约束，确保数据完整性
+- **ThinkLibrary**
+  核心基础库，负责运行时、JWT、任务协议、控制器和公共工具。
+- **ThinkPlugsWorker**
+  Workerman 运行时组件，负责 `http` 和 `queue` 常驻服务。
+- **ThinkPlugsHelper**
+  开发辅助组件，负责迁移导出、发布、安装包和注释生成。
+- **ThinkPlugsStorage**
+  存储中心组件，负责驱动注册、上传授权和标准化配置。
+- **ThinkPlugsStatic**
+  静态资源和项目骨架组件。
 
-**ThinkPlugsWemall 微商城插件**
-- **多级分销体系**: 支持三级分销模式，可配置不同等级的代理返佣规则
-- **灵活返佣机制**: 支持下单奖励、首购奖励、复购奖励、升级奖励、平推返佣等多种返佣类型
-- **会员等级管理**: 基于订单金额和数量的自动等级升级，支持自定义等级规则
-- **代理等级管理**: 团队业绩统计，支持多维度的代理等级升级条件
-- **商品管理系统**: 完整的商品分类、规格、库存、价格管理
-- **订单全流程管理**: 从下单、支付、发货到售后的完整订单生命周期管理
-- **高精度计算保障**: 全面采用 BC Math 高精度计算，避免浮点数精度丢失问题
+### 后台与平台插件
 
-**其他插件**
-- **ThinkPlugsCenter**: 插件服务管理中心，提供插件注册、配置和管理功能
-- **ThinkPlugsHelper**: 系统辅助工具，包含数据库备份、索引优化等功能
-- **ThinkPlugsStatic**: 静态资源管理，支持 CDN 加速和资源版本控制
-- **ThinkPlugsWechat**: 微信生态集成，支持公众号、小程序、支付等微信功能
-- **ThinkPlugsWorker**: 异步任务处理，支持延时执行和循环任务
-- **ThinkPlugsWuma**: 一物一码系统，支持商品溯源和防伪验证（收费插件）
+- **ThinkPlugsAdmin**
+  后台管理中心。
+- **ThinkPlugsCenter**
+  插件应用中心。
+- **ThinkPlugsWechatClient**
+  公众号标准平台。
+- **ThinkPlugsWechatService**
+  公众号开放平台。
 
-### 技术特性
+### 业务插件
 
-**高性能架构**
-- **异步任务处理**: 内置高效队列机制，响应延时低于 0.5 秒
-- **缓存优化**: 集成 Redis 缓存，提升系统性能和响应速度
-- **数据库约束**: 添加完整的外键约束、检查约束和索引优化
-- **并发安全控制**: 支持高并发场景下的余额、积分、库存操作
+- **ThinkPlugsAccount**
+  多端账号体系。
+- **ThinkPlugsPayment**
+  支付中心。
+- **ThinkPlugsWemall**
+  分销商城。
+- **ThinkPlugsWuma**
+  一物一码与防伪溯源。
 
-**安全特性**
-- **CSRF 令牌验证**: 内置表单安全验证，防止跨站请求伪造攻击
-- **数据完整性保障**: 通过数据库约束确保业务数据的一致性和有效性
-- **异常处理完善**: 完善的异常捕获和日志记录机制，便于问题排查
-- **权限控制**: 完整的系统权限管理，确保数据安全
+## 当前架构约定
 
-**开发体验**
-- **模块化设计**: 各功能模块独立封装，便于扩展和维护
-- **向后兼容**: 保持 API 稳定性，确保平滑升级
-- **文档完善**: 提供完整的接口文档和技术文档
-- **调试友好**: 内置调试工具和日志记录，便于开发和问题排查
+### 路由与应用
 
-我们持续推出新模块和辅助功能，期待后续更新！使用 **ThinkAdmin** 需要具备一定开发技能，包括 ThinkPHP、jQuery、LayUI 和 RequireJs。后台 UI 基于最新 LayUI 前端框架，支持插件加载和管理。
+- `app` 只保留一个 `single_app`
+- 插件通过 URL 前缀注册访问入口
+- 请求首段命中插件前缀时切换到插件
+- 未命中插件前缀时回退到单应用
+- 动态插件切换默认关闭
 
-请勿修改 app/admin 和 app/wechat 目录，以确保未来功能和安全更新通过 Composer 管理。ThinkLibrary 作为核心组件，封装了常用操作，兼容原有 ThinkPHP 生态，降低编码复杂性。
+### 服务注册
 
-开发者可灵活集成 WechatDeveloper 组件，支持微信公众号、小程序及支付接口，并集成二维码生成工具。系统提供多种存储选项，包括本地、自建 Alist 及主流云服务，支持 CDN 加速，确保高效传输。
+- ThinkPHP 服务注册统一使用 `composer.json > extra.think.services`
+- 插件运行时元数据统一使用 `composer.json > extra.xadmin.service`
+- 菜单元数据统一使用 `composer.json > extra.xadmin.menu`
+- 迁移元数据统一使用 `composer.json > extra.xadmin.migrate`
 
-内置的异步任务处理机制可并行处理多个任务，响应延时低于 0.5 秒，确保在 Windows 和 Linux 平台上的兼容性。遇到问题请随时联系我们的支持团队。感谢您选择 ThinkAdmin，我们将持续改进框架功能，更好服务开发者社区。
+### 认证
 
-### 安装系统
+- 后台统一使用 `Authorization: Bearer <JWT>`
+- API 统一使用 Token 模式识别身份
+- 不再使用 Session/Cookie 承载后台登录态
 
-直接使用 **composer** 安装，可提前配置好数据库参数，安装脚本会自动完成安装！
+### 运行时
 
-```shell
-# 安装依赖组件及插件
+- 统一命令入口：`php think xadmin:worker`
+- `http` 负责托管系统 HTTP 服务
+- `queue` 负责长耗时任务和延时任务调度
+- 队列记录和执行协议留在 `ThinkLibrary`
+
+### 前端
+
+- 后台统一使用 `LayUI + $.module.use(...)`
+- `RequireJS` 已彻底移除
+- 数据导出统一使用前端 JavaScript 模块
+
+### 目录
+
+- `app/admin` 和 `app/wechat` 已退役为兼容占位目录
+- 实际源码只维护在 `plugin/*/src`
+
+## 安装与初始化
+
+```bash
+# 安装依赖
 composer update --optimize-autoloader
 
-# 运行本地测试环境，启用 8088 商品
-php think run --host 127.0.0.1 --port 8088
+# 发布配置、静态资源和迁移脚本
+php think xadmin:publish --migrate
 
-# 打开浏览器访问网站 ( Windows ) 
-start http://127.0.0.1:8088
+# 启动 HTTP 服务
+php think xadmin:worker start http -d
 ```
 
-### 开发文档
+默认访问地址：
 
-* 官方技术文档：[thinkadmin.top](http://thinkadmin.top)
-* 前端接口文档：[ThinkAdminMobile](https://thinkadmin.apifox.cn)
+- `http://127.0.0.1:2346`
 
-### 加入我们
+## 常用命令
 
-我们的代码仓库已移至 **Github**，而 **Gitee** 则仅作为国内镜像仓库，方便广大开发者获取和使用。若想提交 **PR** 或 **ISSUE** 请在 [ThinkAdminDeveloper](https://github.com/zoujingli/ThinkAdminDeveloper) 仓库进行操作，如果在其他仓库操作或提交问题将无法处理！。
+```bash
+# 查看全部命令
+php think list
 
-### 版权说明
+# 启动 HTTP 服务
+php think xadmin:worker start http -d
 
-除免费开源部分外的功能，需要参照下列方式获取授权。
-项目的 `./plugin/` 为插件目录，每个插件都有独立声明授权方式，使用前请认证阅读。
+# 启动队列服务
+php think xadmin:worker start queue -d
 
-* 会员授权： [《会员尊享介绍》](https://thinkadmin.top/vip-introduce)
-* 收费授权：请通过文档中微信二维码联系作者。
+# 查看运行状态
+php think xadmin:worker status all
 
-版权所有 Copyright © 2014-2026 by ThinkAdmin (https://thinkadmin.top) All rights reserved。
+# 生成插件迁移脚本
+php think xadmin:helper:migrate
 
- <img alt="" src="https://thinkadmin.top/static/img/wx.png" width="250">
+# 生成安装包
+php think xadmin:package
+```
+
+## 发布与迁移
+
+`xadmin:publish` 由 `ThinkPlugsHelper` 提供，负责：
+
+- 发布插件 `stc/config`
+- 发布 `ThinkPlugsStatic` 的骨架与静态资源
+- 发布 `ThinkPlugsWorker` 的 `config/worker.php`
+- 同步各插件 `stc/database` 到根目录 `database/migrations`
+- 通过 `database/migrations/.xadmin-published.json` 清理历史失效或冲突迁移
+
+当前约定为：
+
+- 每个插件只保留一份最终安装脚本
+- 根目录 `database/migrations` 视为发布产物
+
+## 平台说明
+
+- Windows 兼容
+- Linux 兼容
+- `Worker reload` 仅适用于 Linux / macOS
+
+## 开发文档
+
+- 官网文档：[thinkadmin.top](https://thinkadmin.top)
+- 接口文档：[ThinkAdminMobile](https://thinkadmin.apifox.cn)
+- 架构说明：[plugin-first-refactor.md](/Users/anyon/Runtime/ThinkAdminDeveloper/docs/architecture/plugin-first-refactor.md)
+
+## 注意事项
+
+- 本仓库包含会员插件，未授权不得商用
+- 插件卸载通常不会自动删除已执行迁移和历史数据
+- 自定义前端脚本建议放在 `public/static/extra`
+
+## 许可证
+
+除会员授权插件外，其余开源部分按各组件自身许可证发布。

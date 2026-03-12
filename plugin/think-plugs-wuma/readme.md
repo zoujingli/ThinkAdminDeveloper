@@ -1,72 +1,138 @@
 # ThinkPlugsWuma for ThinkAdmin
 
-[![Latest Stable Version](https://poser.pugx.org/zoujingli/think-plugs-wuma/v/stable)](https://packagist.org/packages/zoujingli/think-plugs-wuma)
-[![Total Downloads](https://poser.pugx.org/zoujingli/think-plugs-wuma/downloads)](https://packagist.org/packages/zoujingli/think-plugs-wuma)
-[![Monthly Downloads](https://poser.pugx.org/zoujingli/think-plugs-wuma/d/monthly)](https://packagist.org/packages/zoujingli/think-plugs-wuma)
-[![Daily Downloads](https://poser.pugx.org/zoujingli/think-plugs-wuma/d/daily)](https://packagist.org/packages/zoujingli/think-plugs-wuma)
-[![PHP Version](https://thinkadmin.top/static/icon/php-7.1.svg)](https://thinkadmin.top)
-[![License](https://thinkadmin.top/static/icon/license-fee.svg)](https://thinkadmin.top/fee-introduce)
+**ThinkPlugsWuma** 是 ThinkAdmin 8 / ThinkPHP 8.1 的防伪溯源组件，负责一物一码、溯源模板、赋码批次、仓储流转、代理库存和扫码验证。
 
-**注意：** 该插件测试版有数据库结构变化，未生成升级补丁，每次更新需要全新安装！
+## 版本基线
 
-### 业务功能特性
+- ThinkAdmin `8.x`
+- ThinkPHP `8.1+`
+- PHP `8.1+`
 
-**核心一物一码功能：**
-- **商品溯源管理**: 提供完整的商品溯源和防伪验证功能，支持一物一码追踪
-- **物码标签管理**: 完整的物码标签生成、打印、管理和验证功能
-- **防伪验证**: 支持消费者扫码验证商品真伪，提升品牌信任度
-- **数据统计分析**: 提供扫码数据统计和分析，了解消费者行为
-- **批量操作**: 支持物码的批量生成、导入、导出等操作
-- **权限控制**: 完善的权限管理，确保数据安全
-- **高精度计算支持**: 集成 BC Math 高精度数学函数，确保金融计算的准确性
-- **收费授权**: 作为收费授权插件，提供专业的技术支持和功能更新
+## 详细描述
 
-**技术特性：**
-- **收费授权**: 需要联系作者获取授权，未授权不可商用
-- **模块化设计**: 功能模块独立封装，便于维护和扩展
-- **安全防护**: 内置数据加密和权限验证，确保系统安全
-- **向后兼容**: 保持与现有 ThinkAdmin 版本的兼容性，确保平滑升级
-- **专业支持**: 提供专业的技术支持和定期功能更新
-- **数据完整性保障**: 通过数据库约束确保业务数据的一致性和有效性
+- `ThinkPlugsWuma` 是防伪溯源业务组件，负责一物一码、码批次、模板、赋码、仓储流转、代理库存和扫码验证。
+- 它面向“码体系 + 仓储 + 渠道”这类业务闭环，既有后台运营页，也有扫码查询和出入库处理。
+- 组件包含码生成、批量导入导出、仓储关系和来源模板等子能力，不依赖旧多应用结构。
+- 组件不负责统一账号登录、支付或公众号标准能力，而是按需复用其它组件。
 
-物码标签管理系统，此插件为收费授权插件，请联系作者获取授权，未授权不可商用。
+## 架构说明
 
-### 加入我们
+- 模块层：`source / warehouse / sales / api` 等控制器分组分别处理码源、仓储、销售渠道和接口能力。
+- 应用层：`src/service/*` 负责码生成、关系绑定、导入导出、仓储处理和流转校验。
+- 领域层：码记录、批次、仓库、证书、区块链、模板等模型承载溯源业务状态。
+- 协同层：可与 `Account`、`WechatClient` 等组件联动，但自身保持独立的码业务边界。
 
-我们的代码仓库已移至 **Github**，而 **Gitee** 则仅作为国内镜像仓库，方便广大开发者获取和使用。若想提交 **PR** 或 **ISSUE** 请在 [ThinkAdminDeveloper](https://github.com/zoujingli/ThinkAdminDeveloper) 仓库进行操作，如果在其他仓库操作或提交问题将无法处理！.
+## 组件边界
 
-### 安装插件
+- 插件编码：`wuma`
+- 访问前缀：`wuma`
+- 负责物码规则、溯源内容、仓储出入库、代理库存和扫码查询
+- 负责对外提供防伪查询路由
+- 不负责支付中心和账号底层认证逻辑
 
-```shell
-### 安装前建议尝试更新所有组件
-composer update --optimize-autoloader
+## 依赖关系
 
-### 安装稳定版本 ( 插件仅支持在 ThinkAdmin v6.1 中使用 )
-// 暂不可用
-composer require zoujingli/think-plugs-wuma --optimize-autoloader
+- 必需：`zoujingli/think-library`
+- 必需：`zoujingli/think-plugs-helper`
+- 必需：`zoujingli/think-plugs-storage`
+- 推荐宿主：`zoujingli/think-plugs-admin`
+- 可联动：`zoujingli/think-plugs-wemall`
 
-### 安装测试版本（ 插件仅支持在 ThinkAdmin v6.1 中使用 ）
-// 暂不可用
-composer require zoujingli/think-plugs-wuma dev-master --optimize-autoloader
+## 安装组件
+
+```bash
+composer require zoujingli/think-plugs-wuma
+
+# 首次发布迁移脚本
+php think xadmin:publish --migrate
 ```
 
-### 卸载插件
+## 卸载组件
 
-```shell
-// 暂不可用
+```bash
 composer remove zoujingli/think-plugs-wuma
 ```
 
-### 插件数据
+组件卸载不会自动删除溯源业务表和已执行迁移。
 
-本插件涉及数据表有：--
+## 后台入口与 API
 
-### 版权说明
+后台节点按模块划分：
 
-**ThinkPlugsWuma** 为 **ThinkAdmin** 收费授权插件，请联系作者获取授权，未授权不可商用。
+- `wuma/code/index`
+- `wuma/source.*/*`
+- `wuma/warehouse*/*`
+- `wuma/sales.*/*`
+- `wuma/scaner.*/*`
 
-**ThinkPlugsWuma** 为 **ThinkAdmin** 收费插件。
+典型入口：
 
-未获得此插件授权时仅供参考学习不可商用，了解商用授权请阅读 [《付费授权》](https://thinkadmin.top/fee-introduce.html)。
+- `wuma/code/index`
+- `wuma/source.template/index`
+- `wuma/source.produce/index`
+- `wuma/source.assign/index`
+- `wuma/warehouse/index`
+- `wuma/warehouse.stock/index`
+- `wuma/sales.level/index`
+- `wuma/sales.order/index`
 
-版权所有 Copyright © 2014-2026 by ThinkAdmin (https://thinkadmin.top) All rights reserved。
+接口节点：
+
+- `wuma/api.base/*`
+- `wuma/api.coder/*`
+- `wuma/api.auth/*`
+- `wuma/api.login/*`
+
+公开查询路由：
+
+- `<mode>/<code>!<verify><extra?>`
+
+## 命令说明
+
+本组件注册命令：
+
+- `php think xdata:wuma:create`
+
+## 发布与迁移
+
+本组件包含单一安装脚本：
+
+- `stc/database/20241010000008_install_wuma20241010.php`
+
+迁移内容覆盖：
+
+- 物码规则与区间
+- 溯源模板、生产批次、赋码批次
+- 区块链内容与授权证书
+- 查询记录、验证记录、扫码通知
+- 仓库、出入库、库存、标签替换与关联
+- 代理等级、代理用户、库存与调货
+
+## 业务能力
+
+- 一物一码规则管理
+- 防伪验证与溯源展示
+- 生产与赋码批次管理
+- 区块链证书与内容管理
+- 仓库、入库、出库、库存调度
+- 代理库存与调货管理
+- 消费者扫码查询与通知分析
+
+## 插件数据
+
+主要数据表分组：
+
+- 物码规则：`plugin_wuma_code_rule*`
+- 溯源模块：`plugin_wuma_source_*`
+- 仓储模块：`plugin_wuma_warehouse*`
+- 代理销售：`plugin_wuma_sales_*`
+
+## 平台说明
+
+- Windows 兼容
+- Linux 兼容
+- 长耗时批量处理建议结合 `ThinkPlugsWorker queue`
+
+## 许可证
+
+`ThinkPlugsWuma` 基于专有授权分发，未授权不可商用。

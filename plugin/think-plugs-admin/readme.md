@@ -1,98 +1,138 @@
 # ThinkPlugsAdmin for ThinkAdmin
 
-[![Latest Stable Version](https://poser.pugx.org/zoujingli/think-plugs-admin/v/stable)](https://packagist.org/packages/zoujingli/think-plugs-admin)
-[![Latest Unstable Version](https://poser.pugx.org/zoujingli/think-plugs-admin/v/unstable)](https://packagist.org/packages/zoujingli/think-plugs-admin)
-[![Total Downloads](https://poser.pugx.org/zoujingli/think-plugs-admin/downloads)](https://packagist.org/packages/zoujingli/think-plugs-admin)
-[![Monthly Downloads](https://poser.pugx.org/zoujingli/think-plugs-admin/d/monthly)](https://packagist.org/packages/zoujingli/think-plugs-admin)
-[![Daily Downloads](https://poser.pugx.org/zoujingli/think-plugs-admin/d/daily)](https://packagist.org/packages/zoujingli/think-plugs-admin)
-[![PHP Version](https://thinkadmin.top/static/icon/php-7.1.svg)](https://thinkadmin.top)
-[![License](https://thinkadmin.top/static/icon/license-mit.svg)](https://mit-license.org)
+**ThinkPlugsAdmin** 是 ThinkAdmin 8 / ThinkPHP 8.1 的后台管理组件，负责系统配置、菜单权限、后台用户、文件管理、日志、任务状态和后台登录入口。
 
-**ThinkPlugsAdmin** 是 **ThinkAdmin** 的核心插件，提供后台基础管理模块功能，基于 MIT 协议开源，免费可商用！
+## 版本基线
 
-请注意，安装此插件将占用并替换 `app/admin` 目录（采用先删除再写入的方式）。若您曾对 `app/admin` 进行了自定义修改，我们不建议您安装此插件，以避免修改内容丢失。
+- ThinkAdmin `8.x`
+- ThinkPHP `8.1+`
+- PHP `8.1+`
 
-当您使用 `Composer` 卸载此插件时，请留意它并不会自动删除 `app/admin` 目录及对应的数据表，这些操作需要您手动完成。
+## 详细描述
 
-如果您不希望 `app/admin` 目录被插件更新替换，有一个简单的方法可以避免这一情况：在 `app/admin` 目录下创建一个名为 `ignore` 的文件（例如 `app/admin/ignore`，请确保文件名没有后缀）。这样，即使执行了插件的安装或更新操作，该目录也将被忽略，不会被替换更新。
+- `ThinkPlugsAdmin` 是系统后台壳层，负责后台登录、导航布局、菜单权限、角色授权、后台用户、系统配置、文件记录和操作日志。
+- 组件只承载“后台管理能力”，不再负责存储驱动、队列守护和插件运行时，这些能力已经拆给 `Storage`、`Worker`、`Center`。
+- 当前后台认证统一为 `Authorization: Bearer <JWT>`，不再依赖 Session 登录态。
+- 所有业务插件都通过菜单节点接入这个后台壳，但业务实现仍保留在各自插件内部。
 
-### 加入我们
+## 架构说明
 
-我们的代码仓库已移至 **Github**，而 **Gitee** 则仅作为国内镜像仓库，方便广大开发者获取和使用。若想提交 **PR** 或 **ISSUE** 请在 [ThinkAdminDeveloper](https://github.com/zoujingli/ThinkAdminDeveloper) 仓库进行操作，如果在其他仓库操作或提交问题将无法处理！。
+- 接入层：`src/controller/*` 与 `src/view/*` 提供后台页面、接口和统一 LayUI 视图框架。
+- 授权层：依赖 `ThinkLibrary` 的 `auth/menu/node/system` 分域完成菜单树、角色树、用户授权和节点校验。
+- 协同层：队列页调用 `ThinkPlugsWorker`，存储入口跳转 `ThinkPlugsStorage`，插件中心入口对接 `ThinkPlugsCenter`。
+- 数据层：`system_menu`、`system_auth`、`system_user`、`system_file`、`system_oplog` 等后台公共表由本组件维护。
 
-### 插件文档
+## 组件边界
 
-https://thinkadmin.top/plugin/think-plugs-admin.html
+- 插件编码：`admin`
+- 访问前缀：`admin`
+- 负责后台界面、权限体系、日志、文件记录和任务管理页
+- 后台认证统一为 `Authorization: Bearer <JWT>`
+- 队列守护进程由 `ThinkPlugsWorker` 负责
+- 存储驱动、上传授权和存储配置页由 `ThinkPlugsStorage` 负责
 
-### 安装插件
+## 依赖关系
 
-```shell
-### 安装前建议尝试更新所有组件
-composer update --optimize-autoloader
+- 必需：`zoujingli/think-library`
+- 必需：`zoujingli/think-plugs-helper`
+- 推荐运行时：`zoujingli/think-plugs-worker`
+- 推荐存储：`zoujingli/think-plugs-storage`
 
-### 注意，插件仅支持在 ThinkAdmin v6.1 中使用
-composer require zoujingli/think-plugs-admin --optimize-autoloader
+## 安装组件
+
+```bash
+composer require zoujingli/think-plugs-admin
+
+php think xadmin:publish --migrate
 ```
 
-### 卸载插件
+## 卸载组件
 
-```shell
-### 插件卸载不会删除数据表和 app/admin 的代码
-### 卸载后通过 composer update 时不会再更新，其他依赖除外
+```bash
 composer remove zoujingli/think-plugs-admin
 ```
 
-### 功能节点
+组件卸载不会自动删除已执行的迁移和系统业务表。
 
-可根据下面的功能节点配置菜单和访问权限，按钮操作级别的节点未展示！
+## 后台入口
 
-* 系统参数配置：`admin/config/index`
-* 系统任务管理：`admin/queue/index`
-* 系统日志管理：`admin/oplog/index`
-* 数据字典管理：`admin/base/index`
-* 系统文件管理：`admin/file/index`
-* 系统菜单管理：`admin/menu/index`
-* 系统权限管理：`admin/auth/index`
-* 系统用户管理：`admin/user/index`
+标准入口：
 
-### 业务功能特性
+- `admin/login/index`
+- `admin/index/index`
 
-**核心管理功能：**
-- **系统参数配置**: 提供完整的系统配置管理，支持分组、类型、状态等多维度配置
-- **系统任务管理**: 内置异步任务队列，支持延时执行、循环任务和任务监控
-- **系统日志管理**: 完整的操作日志记录，支持按节点、用户、时间等条件查询
-- **数据字典管理**: 统一的数据字典管理，支持动态添加和维护系统基础数据
-- **系统文件管理**: 完整的文件上传、下载、删除管理，支持多种存储方式
-- **系统菜单管理**: 可视化的菜单配置，支持多级菜单和权限控制
-- **系统权限管理**: 基于角色的权限控制，支持细粒度的菜单和操作权限分配
-- **系统用户管理**: 完整的用户管理功能，支持用户创建、编辑、禁用等操作
+主要管理节点：
 
-**技术特性：**
-- **MIT 开源协议**: 遵循 MIT 开源协议，免费可商用
-- **模块化设计**: 各管理模块独立封装，便于扩展和维护
-- **安全防护**: 内置 CSRF 防护、权限验证等安全机制
-- **高性能优化**: 针对管理后台进行专门优化，确保操作流畅性
-- **向后兼容**: 保持 API 稳定性，确保平滑升级
+- `admin/config/index`
+- `admin/queue/index`
+- `admin/oplog/index`
+- `admin/base/index`
+- `admin/file/index`
+- `admin/menu/index`
+- `admin/auth/index`
+- `admin/user/index`
 
-### 插件数据库
+## 命令说明
 
-本插件涉及数据表有：
+本组件不直接管理常驻进程，后台任务相关命令统一使用：
 
-* 系统-权限：`system_auth`
-* 系统-授权：`system_auth_node`
-* 系统-字典：`system_base`
-* 系统-配置：`system_config`
-* 系统-数据：`system_data`
-* 系统-文件：`system_file`
-* 系统-菜单：`system_menu`
-* 系统-日志：`system_oplog`
-* 系统-任务：`system_queue`
-* 系统-用户：`system_user`
+- `php think xadmin:worker start queue -d`
+- `php think xadmin:worker status queue`
+- `php think xadmin:worker stop queue`
 
-### 版权说明
+## 发布与迁移
 
-**ThinkPlugsAdmin** 遵循 **MIT** 开源协议发布，并免费提供使用。
+本组件包含单一安装脚本：
 
-本项目包含的第三方源码和二进制文件的版权信息将另行标注，请在对应文件查看。
+- `stc/database/20241010000001_install_admin20241010.php`
 
-版权所有 Copyright © 2014-2025 by ThinkAdmin (https://thinkadmin.top) All rights reserved。
+迁移内容包括：
+
+- 系统菜单
+- 系统权限
+- 系统用户
+- 系统配置
+- 系统任务
+- 系统日志
+- 系统文件
+- 系统字典
+
+## 业务能力
+
+- 系统参数配置
+- 菜单管理
+- 权限角色管理
+- 后台用户管理
+- 数据字典管理
+- 文件记录管理
+- 队列任务管理
+- 操作日志查询
+
+## 运行说明
+
+- 插件源码直接从插件包加载，不再复制到 `app/admin`
+- 后台角色、菜单、用户、字典都已支持按插件维度分组和筛选
+- `ThinkPlugsAdmin` 只消费 `ThinkPlugsStorage` 和 `ThinkPlugsWorker` 的能力，不再承载这两类底层实现
+
+## 插件数据
+
+- 系统权限：`system_auth`
+- 权限节点：`system_auth_node`
+- 数据字典：`system_base`
+- 系统配置：`system_config`
+- 扩展数据：`system_data`
+- 文件记录：`system_file`
+- 系统菜单：`system_menu`
+- 操作日志：`system_oplog`
+- 队列记录：`system_queue`
+- 后台用户：`system_user`
+
+## 平台说明
+
+- Windows 兼容
+- Linux 兼容
+- 后台守护进程建议配合 `ThinkPlugsWorker`
+
+## 许可证
+
+`ThinkPlugsAdmin` 基于 `MIT` 发布。
