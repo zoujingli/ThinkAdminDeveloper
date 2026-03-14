@@ -47,6 +47,11 @@ class PluginService extends Service
     private const CACHE_BINDINGS = 'think.admin.plugins.bindings';
 
     /**
+     * API 入口缓存键名。
+     */
+    private const CACHE_ENTRY = 'think.admin.plugins.entry';
+
+    /**
      * 清理插件缓存。
      */
     public static function clear(): void
@@ -54,6 +59,7 @@ class PluginService extends Service
         sysvar(self::CACHE_PLUGINS, false);
         sysvar(self::CACHE_ALIASES, false);
         sysvar(self::CACHE_BINDINGS, false);
+        sysvar(self::CACHE_ENTRY, false);
     }
 
     /**
@@ -238,6 +244,20 @@ class PluginService extends Service
     public static function matchPath(string $pathinfo, ?string $switch = null): ?array
     {
         $pathinfo = trim($pathinfo, '\/');
+        $apiPrefix = self::entryPrefix();
+        if ($pathinfo !== '' && $apiPrefix !== '') {
+            $paths = explode('/', $pathinfo, 3);
+            if (strval($paths[0] ?? '') === $apiPrefix) {
+                $prefix = strval($paths[1] ?? '');
+                if ($prefix !== '' && ($plugin = self::resolvePrefix($prefix))) {
+                    $plugin['entry'] = RequestContext::ENTRY_API;
+                    $plugin['matched_prefix'] = $prefix;
+                    $plugin['pathinfo'] = self::normalizeApiPathinfo(strval($paths[2] ?? 'index/index'));
+                    return $plugin;
+                }
+            }
+        }
+
         if ($pathinfo !== '') {
             $paths = explode('/', $pathinfo, 2);
             $prefix = strval($paths[0] ?? '');
@@ -245,6 +265,7 @@ class PluginService extends Service
                 $prefix = strstr($prefix, '.', true) ?: $prefix;
             }
             if ($prefix !== '' && ($plugin = self::resolvePrefix($prefix))) {
+                $plugin['entry'] = RequestContext::ENTRY_WEB;
                 $plugin['matched_prefix'] = $prefix;
                 $plugin['pathinfo'] = $paths[1] ?? '';
                 return $plugin;
@@ -252,6 +273,7 @@ class PluginService extends Service
         }
 
         if ($switch && ($plugin = self::resolve($switch))) {
+            $plugin['entry'] = RequestContext::ENTRY_WEB;
             $plugin['matched_prefix'] = '';
             $plugin['pathinfo'] = $pathinfo;
             return $plugin;
@@ -313,7 +335,7 @@ class PluginService extends Service
         }
 
         if (empty($current)) {
-            $context->clearPlugin();
+            $context->clearPlugin()->setEntryType(RequestContext::ENTRY_WEB);
             return null;
         }
 
@@ -351,6 +373,36 @@ class PluginService extends Service
     public static function currentPrefix(): string
     {
         return RequestContext::instance()->pluginPrefix();
+    }
+
+    /**
+     * 设置当前请求入口类型。
+     */
+    public static function activateEntry(string $entryType = RequestContext::ENTRY_WEB): void
+    {
+        RequestContext::instance()->setEntryType($entryType);
+    }
+
+    /**
+     * 获取当前请求入口类型。
+     */
+    public static function currentEntry(): string
+    {
+        return RequestContext::instance()->entryType();
+    }
+
+    /**
+     * 获取 API 入口前缀。
+     */
+    public static function entryPrefix(): string
+    {
+        if (is_string($entry = sysvar(self::CACHE_ENTRY)) && $entry !== '') {
+            return $entry;
+        }
+        $entry = trim(strval(Library::$sapp->config->get('app.plugin.api_prefix', 'api')), '\/');
+        $entry = $entry !== '' ? $entry : 'api';
+        sysvar(self::CACHE_ENTRY, $entry);
+        return $entry;
     }
 
     /**
@@ -705,5 +757,23 @@ class PluginService extends Service
         }
 
         return sysuri($node);
+    }
+
+    /**
+     * 标准化 API 入口路径。
+     * /api/{plugin}/upload/file -> api.upload/file
+     */
+    private static function normalizeApiPathinfo(string $pathinfo): string
+    {
+        $pathinfo = trim($pathinfo, '\/');
+        if ($pathinfo === '') {
+            return 'api.index/index';
+        }
+        if (strpos($pathinfo, 'api.') === 0) {
+            return $pathinfo;
+        }
+        [$controller, $action] = array_pad(explode('/', $pathinfo, 2), 2, 'index');
+        $controller = trim(strtr($controller, '/', '.'), '.');
+        return 'api.' . $controller . '/' . trim($action, '\/');
     }
 }

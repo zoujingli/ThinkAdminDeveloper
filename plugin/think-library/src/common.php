@@ -24,7 +24,9 @@ use think\admin\helper\QueryHelper;
 use think\admin\helper\ValidateHelper;
 use think\admin\Library;
 use think\admin\model\ModelFactory;
+use think\admin\service\AppService;
 use think\admin\service\CacheSession;
+use think\admin\service\PluginService;
 use think\admin\service\RuntimeService;
 use think\admin\service\RuntimeTools;
 use think\admin\service\Storage;
@@ -137,6 +139,47 @@ if (!function_exists('sysuri')) {
         $new = preg_replace("#/{$tmp}(\\.{$ext})?#", '', $old = parse_url($url, PHP_URL_PATH) ?: '', -1, $count);
         $count > 0 && $suffix && $new && $ext !== '' && $new !== Library::$sapp->request->baseUrl() && $new .= ".{$ext}";
         return str_replace($old, $new ?: '/', $url);
+    }
+}
+if (!function_exists('apiuri')) {
+    /**
+     * 生成标准 API URL 地址。
+     * 新规则统一走 /api/{plugin}/{controller}/{action}，
+     * 内部仍会回落到现有 controller/api/* 控制器实现。
+     * @param string $url 路由地址，支持 plugin/controller/action 或 controller/action
+     * @param array $vars PATH 变量
+     * @param bool|string $suffix 后缀
+     * @param bool|string $domain 域名
+     */
+    function apiuri(string $url = '', array $vars = [], $suffix = true, $domain = false): string
+    {
+        if (preg_match('#^(https?://|\|/|@)#', $url)) {
+            return Library::$sapp->route->buildUrl($url, $vars)->suffix($suffix)->domain($domain)->build();
+        }
+
+        $attrs = $url === '' ? [] : array_values(array_filter(explode('/', trim($url, '/')), 'strlen'));
+        $module = PluginService::currentCode() ?: (Library::$sapp->http->getName() ?: AppService::singleCode());
+        $controller = Library::$sapp->request->controller();
+        $action = Library::$sapp->request->action(true);
+
+        if (count($attrs) >= 3) {
+            $module = array_shift($attrs) ?: $module;
+            $controller = array_shift($attrs) ?: $controller;
+            $action = join('/', $attrs) ?: $action;
+        } elseif (count($attrs) === 2) {
+            [$controller, $action] = $attrs;
+        } elseif (count($attrs) === 1) {
+            $action = $attrs[0];
+        }
+
+        $controller = trim(str_replace('.', '/', $controller), '/');
+        if (stripos($controller, 'api/') === 0) {
+            $controller = substr($controller, 4);
+        }
+
+        $apiPrefix = PluginService::entryPrefix();
+        $target = '/' . trim("{$apiPrefix}/{$module}/{$controller}/{$action}", '/');
+        return Library::$sapp->route->buildUrl($target, $vars)->suffix($suffix)->domain($domain)->build();
     }
 }
 if (!function_exists('tsession')) {

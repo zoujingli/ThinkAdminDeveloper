@@ -22,6 +22,7 @@ namespace think\admin\middleware;
 
 use think\admin\extend\FileTools;
 use think\admin\Library;
+use think\admin\runtime\RequestContext;
 use think\admin\service\AppService;
 use think\admin\service\NodeService;
 use think\admin\service\PluginService;
@@ -85,14 +86,19 @@ class MultAccess
         $switch = PluginService::detectSwitch($this->app->request);
         if ($plugin = PluginService::matchPath($pathinfo, $switch)) {
             [$this->appPath, $this->appSpace] = [$plugin['path'], $plugin['space']];
+            PluginService::activateEntry(strval($plugin['entry'] ?? RequestContext::ENTRY_WEB));
             $prefix = trim(strval($plugin['matched_prefix'] ?? ''), '\/');
             if ($prefix !== '') {
-                $this->app->request->setRoot('/' . $prefix);
+                $root = strval($plugin['entry'] ?? '') === RequestContext::ENTRY_API
+                    ? '/' . trim(PluginService::entryPrefix() . '/' . $prefix, '/')
+                    : '/' . $prefix;
+                $this->app->request->setRoot($root);
                 $this->app->request->setPathinfo(strval($plugin['pathinfo'] ?? ''));
             }
             return $this->setMultiApp($plugin['code'], true, $prefix);
         }
 
+        PluginService::activateEntry(RequestContext::ENTRY_WEB);
         return $this->setMultiApp(AppService::singleCode(), true);
     }
 

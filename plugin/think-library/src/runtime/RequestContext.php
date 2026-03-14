@@ -29,6 +29,16 @@ namespace think\admin\runtime;
 final class RequestContext
 {
     /**
+     * Web 页面入口。
+     */
+    public const ENTRY_WEB = 'web';
+
+    /**
+     * API 接口入口。
+     */
+    public const ENTRY_API = 'api';
+
+    /**
      * 当前请求上下文实例。
      */
     private static ?self $instance = null;
@@ -42,6 +52,11 @@ final class RequestContext
      * 当前插件前缀。
      */
     private string $pluginPrefix = '';
+
+    /**
+     * 当前请求入口类型。
+     */
+    private string $entryType = self::ENTRY_WEB;
 
     /**
      * 当前后台用户。
@@ -129,6 +144,15 @@ final class RequestContext
     }
 
     /**
+     * 设置当前入口类型。
+     */
+    public function setEntryType(string $entryType = self::ENTRY_WEB): self
+    {
+        $this->entryType = in_array($entryType, [self::ENTRY_WEB, self::ENTRY_API], true) ? $entryType : self::ENTRY_WEB;
+        return $this;
+    }
+
+    /**
      * 获取当前插件编码。
      */
     public function pluginCode(): string
@@ -142,6 +166,22 @@ final class RequestContext
     public function pluginPrefix(): string
     {
         return $this->pluginPrefix;
+    }
+
+    /**
+     * 获取当前请求入口类型。
+     */
+    public function entryType(): string
+    {
+        return $this->entryType;
+    }
+
+    /**
+     * 判断是否为 API 入口。
+     */
+    public function isApiEntry(): bool
+    {
+        return $this->entryType === self::ENTRY_API;
     }
 
     /**

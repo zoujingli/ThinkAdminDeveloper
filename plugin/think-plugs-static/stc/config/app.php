@@ -26,6 +26,8 @@ return [
     'plugin' => [
         // 插件编码 => 前缀 或 前缀数组，配置后覆盖插件默认前缀
         'bindings' => [],
+        // 插件 API 统一入口前缀，例如 /api/{plugin}/...
+        'api_prefix' => 'api',
         // 动态插件切换默认关闭，仅在显式开启时作为调试或兼容入口
         'switch' => [
             'enabled' => false,
