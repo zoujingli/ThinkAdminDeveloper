@@ -21,7 +21,12 @@ declare(strict_types=1);
 namespace think\admin\tests;
 
 use PHPUnit\Framework\TestCase;
-use think\admin\model\SystemUser;
+use think\admin\Model;
+
+class VirtualModelTestStub extends Model
+{
+    protected $name = 'SystemUser';
+}
 
 /**
  * @internal
@@ -31,6 +36,6 @@ class ModelTest extends TestCase
 {
     public function testVirtualModel()
     {
-        $this->assertEquals(m('SystemUser')->getTable(), SystemUser::mk()->getTable(), '动态模型测试');
+        $this->assertEquals(m('SystemUser')->getTable(), VirtualModelTestStub::mk()->getTable(), '动态模型测试');
     }
 }

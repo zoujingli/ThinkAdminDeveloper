@@ -21,7 +21,7 @@ declare(strict_types=1);
 namespace think\admin\tests;
 
 use PHPUnit\Framework\TestCase;
-use think\admin\extend\codec\CodeToolkit;
+use think\admin\extend\CodeToolkit;
 
 /**
  * @internal

@@ -21,6 +21,7 @@ declare(strict_types=1);
 namespace think\admin\tests;
 
 use PHPUnit\Framework\TestCase;
+use think\admin\service\Storage;
 
 /**
  * @internal
@@ -28,14 +29,25 @@ use PHPUnit\Framework\TestCase;
  */
 class StorageTest extends TestCase
 {
-    public function testInit()
+    public function testNameBuildsDeterministicPath(): void
     {
-        $this->assertEquals(1, 1);
+        $url = 'https://example.com/static/logo.png';
+        $hash = md5($url);
+
+        $this->assertSame(
+            'image/' . substr($hash, 0, 2) . '/' . substr($hash, 2, 30) . '.png',
+            Storage::name($url, '', 'image')
+        );
     }
-    //    public function testAlist()
-    //    {
-    //        $alist = AlistStorage::instance();
-    //        $alist->set('test.tt', $content = uniqid());
-    //        $this->assertEquals($alist->get('test.tt'), $content);
-    //    }
+
+    public function testNameSupportsCustomExtensionAndHashFunction(): void
+    {
+        $source = 'plain-content';
+        $hash = sha1($source);
+
+        $this->assertSame(
+            'avatar/' . substr($hash, 0, 2) . '/' . substr($hash, 2, 30) . '.jpg',
+            Storage::name($source, 'jpg', 'avatar', 'sha1')
+        );
+    }
 }

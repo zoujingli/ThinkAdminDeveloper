@@ -21,7 +21,7 @@ declare(strict_types=1);
 namespace think\admin\tests;
 
 use PHPUnit\Framework\TestCase;
-use think\admin\extend\auth\JwtToken;
+use think\admin\service\JwtToken;
 
 /**
  * @internal
