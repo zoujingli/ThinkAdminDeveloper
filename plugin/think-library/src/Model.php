@@ -66,6 +66,7 @@ abstract class Model extends \think\Model
     public function __construct(array|object $data = [])
     {
         parent::__construct($data);
+        $this->resolveSoftDeleteOptions();
         $this->bootSoftDeleteAppend();
     }
 
@@ -150,6 +151,9 @@ abstract class Model extends \think\Model
     public function getDeletedAtAttr($value, array $data): mixed
     {
         $field = $this->softDeleteField();
+        if ($field === 'deleted') {
+            return $data['delete_time'] ?? $data['deleted_time'] ?? $value;
+        }
         return $data[$field] ?? $data['delete_time'] ?? $data['deleted_time'] ?? $value;
     }
 
@@ -157,6 +161,13 @@ abstract class Model extends \think\Model
     {
         $field = $this->softDeleteField();
         return empty($data[$field] ?? ($data['delete_time'] ?? $data['deleted_time'] ?? null)) ? 0 : 1;
+    }
+
+    public function setDeletedAttr($value): int|string
+    {
+        return $this->softDeleteField() === 'deleted'
+            ? ($this->isDeletedTruthy($value) ? 1 : 0)
+            : (is_scalar($value) ? strval($value) : '');
     }
 
     public function normalizeLegacySoftDeleteCall(BaseQuery $query, string $method, array &$args): bool
@@ -185,6 +196,49 @@ abstract class Model extends \think\Model
             }
         }
         $this->setOption('append', $append);
+    }
+
+    protected function resolveSoftDeleteOptions(): void
+    {
+        if (!in_array(SoftDelete::class, $this->allTraits(), true)) {
+            return;
+        }
+
+        $field = $this->getOption('deleteTime', 'delete_time');
+        if ($field === false) {
+            return;
+        }
+
+        try {
+            $fields = array_keys((array)$this->getFields());
+        } catch (\Throwable $exception) {
+            return;
+        }
+
+        if (in_array(strval($field), $fields, true)) {
+            return;
+        }
+
+        $options = [];
+        foreach (['delete_time', 'deleted_time', 'deleted_at'] as $name) {
+            if (in_array($name, $fields, true)) {
+                $options['deleteTime'] = $name;
+                break;
+            }
+        }
+
+        if (empty($options) && in_array('deleted', $fields, true)) {
+            $options['deleteTime'] = 'deleted';
+            $options['defaultSoftDelete'] = 0;
+        }
+
+        if (empty($options)) {
+            $options['deleteTime'] = false;
+        }
+
+        foreach ($options as $name => $value) {
+            $this->setOption($name, $value);
+        }
     }
 
     private function handleCompatQueryCall(string $method, array &$args): mixed
