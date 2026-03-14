@@ -27,7 +27,7 @@
 - 插件编码：`account`
 - 访问前缀：`account`
 - 负责终端账号、主账号、短信验证码、登录接口和账号绑定关系
-- 负责输出账号接口使用的 `Api-Token`
+- 负责输出账号接口使用的 JWT 认证令牌
 - 不负责支付、商城、后台守护进程和 Session 登录态
 
 ## 依赖关系
@@ -35,7 +35,7 @@
 - 必需：`zoujingli/think-library`
 - 必需：`zoujingli/think-plugs-helper`
 - 必需：`zoujingli/think-plugs-storage`
-- 推荐宿主：`zoujingli/think-plugs-admin`
+- 推荐宿主：`zoujingli/think-plugs-system`
 
 ## 安装组件
 
@@ -72,9 +72,12 @@ composer remove zoujingli/think-plugs-account
 
 接口认证说明：
 
-- 登录成功后返回 `Api-Token`
-- 后续接口统一通过请求头 `Api-Token: <token>` 认证
+- 登录成功后返回 `account-auth` JWT 令牌
+- 后续接口统一通过请求头 `Authorization: Bearer <token>` 认证
+- 浏览器整页请求可额外读取认证 Cookie
 - 认证链路不再依赖 Session
+- 登录来源可以是手机、公众号、小程序或 App，但认证协议统一为账号 JWT
+- 统一规范以 [../../docs/architecture/auth-token-session.md](../../docs/architecture/auth-token-session.md) 为准
 
 ## 命令说明
 
@@ -105,7 +108,7 @@ composer remove zoujingli/think-plugs-account
 
 1. 终端登录并初始化终端账号。
 2. 通过短信或其它可信方式绑定主账号。
-3. 返回 `Api-Token` 供接口层继续访问。
+3. 返回 JWT 令牌供接口层继续访问。
 
 ## 业务能力
 

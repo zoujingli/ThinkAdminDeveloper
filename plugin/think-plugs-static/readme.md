@@ -12,7 +12,7 @@
 
 - `ThinkPlugsStatic` 是发布型组件，负责项目骨架、前端静态资源、入口文件和默认配置模板。
 - 它不提供业务路由和后台页面，主要通过 `xadmin:publish` 把需要的文件发布到项目根目录。
-- 当前后台前端只保留 `LayUI + admin.js + extra/script.js` 这一套加载机制，`RequireJS` 已完全移除。
+- 当前后台前端只保留 `LayUI + system.js + extra/script.js` 这一套加载机制，`RequireJS` 已完全移除。
 - 组件定位是“前端资源与骨架源”，不参与数据库、权限和业务逻辑。
 
 ## 架构说明
@@ -86,7 +86,7 @@ php think xadmin:publish --force
 - `public/.htaccess`
 - `public/static/plugs`
 - `public/static/theme`
-- `public/static/admin.js`
+- `public/static/system.js`
 - `public/static/login.js`
 - `public/static/extra/style.css`
 - `public/static/extra/script.js`
@@ -94,13 +94,15 @@ php think xadmin:publish --force
 说明：
 
 - 后台认证已改为 Token/JWT，不再依赖 Session 保存登录态
+- 用户临时态统一使用基于 Token SID 的 `CacheSession`
 - 语言切换默认仅支持 URL 参数与请求头，不再写语言 Cookie
 - `public/static/extra` 作为自定义扩展目录，默认不会被强制覆盖
+- 统一认证与会话规范见 [../../docs/architecture/auth-token-session.md](../../docs/architecture/auth-token-session.md)
 
 ## 前端约定
 
 - 后台只保留 `LayUI` 模块加载机制
-- 统一入口脚本为 `public/static/admin.js` 和 `public/static/login.js`
+- 统一入口脚本为 `public/static/system.js` 和 `public/static/login.js`
 - 自定义脚本建议放到 `public/static/extra`
 
 ## 路由与数据

@@ -36,7 +36,7 @@
 - 必需：`zoujingli/think-plugs-helper`
 - 必需：`zoujingli/think-plugs-account`
 - 必需：`zoujingli/think-plugs-storage`
-- 推荐宿主：`zoujingli/think-plugs-admin`
+- 推荐宿主：`zoujingli/think-plugs-system`
 
 ## 安装组件
 

@@ -35,7 +35,7 @@
 
 - 必需：`zoujingli/think-library`
 - 必需：`zoujingli/think-plugs-helper`
-- 推荐宿主：`zoujingli/think-plugs-admin`
+- 推荐宿主：`zoujingli/think-plugs-system`
 - 推荐运行时：`zoujingli/think-plugs-worker`
 
 ## 安装组件
@@ -117,7 +117,7 @@ composer remove zoujingli/think-plugs-wechat-client
 
 - 粉丝同步、自动回复和支付清理可结合 `ThinkPlugsWorker queue` 执行
 - 支付通知和公众号事件推送通过插件接口直接进入应用
-- 组件源码直接从插件包加载，不再复制到 `app/wechat`
+- 组件源码统一维护在 `plugin/think-plugs-wechat-client/src`
 
 ## 插件数据
 

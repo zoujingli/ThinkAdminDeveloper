@@ -12,16 +12,38 @@
 
 - 这个仓库不是单一应用，而是围绕 ThinkAdmin 8 / ThinkPHP 8.1 组织的一组标准组件，覆盖核心库、运行时、后台平台和业务插件。
 - 目标不是维护旧版多应用项目，而是把系统重构成“插件优先、单应用兜底、服务注册标准化、组件边界清晰”的结构。
-- 当前所有核心能力都已经按组件拆分：`ThinkLibrary` 提供核心层，`Worker` 提供常驻运行时，`Storage` 提供存储中心，`Helper` 提供开发与交付工具，业务插件只承载各自业务域。
+- 当前所有核心能力都已经按组件拆分：`ThinkLibrary` 提供核心层，`System` 提供系统后台与 `system_*` 核心能力，`Worker` 提供常驻运行时，`Storage` 提供存储中心，`Helper` 提供开发与交付工具，业务插件只承载各自业务域。
 - 因此这个仓库更适合作为组件化开发基线和业务插件宿主，而不是传统的单仓单应用模板。
 
 ## 架构说明
 
-- 核心层：`ThinkLibrary` 提供运行时、认证、任务协议、菜单节点、模型查询和基础工具。
+- 核心层：`ThinkLibrary` 提供运行时、认证、任务契约、菜单节点、模型查询和基础工具。
+- 系统层：`ThinkPlugsSystem` 提供后台壳层、认证权限、系统用户，以及 `system_*` 共享配置、字典、扩展数据和操作日志。
 - 运行层：`ThinkPlugsWorker` 用 Workerman 托管 `http` 和 `queue` 两类常驻服务。
-- 平台层：`ThinkPlugsAdmin`、`ThinkPlugsCenter`、`ThinkPlugsStorage`、`ThinkPlugsWechatClient`、`ThinkPlugsWechatService` 提供后台平台和标准能力入口。
+- 平台层：`ThinkPlugsCenter`、`ThinkPlugsStorage`、`ThinkPlugsWechatClient`、`ThinkPlugsWechatService` 提供插件平台和标准能力入口。
 - 业务层：`ThinkPlugsAccount`、`ThinkPlugsPayment`、`ThinkPlugsWemall`、`ThinkPlugsWuma` 负责各自业务域。
 - 交付层：`ThinkPlugsHelper` 和 `ThinkPlugsStatic` 负责发布、迁移、安装包、静态资源和项目骨架。
+
+```mermaid
+flowchart TD
+    L["ThinkLibrary"] --> S["System"]
+    L --> W["Worker"]
+    L --> ST["Storage"]
+    L --> H["Helper"]
+    S --> ST
+    S --> W
+    S --> AC["Account"]
+    S --> P["Payment"]
+    S --> WC["WechatClient"]
+    S --> WS["WechatService"]
+    S --> WM["Wemall"]
+    S --> U["Wuma"]
+    S --> C["Center"]
+    AC --> P
+    AC --> WM
+    P --> WM
+    WM --> U
+```
 
 ## 仓库组成
 
@@ -29,6 +51,8 @@
 
 - **ThinkLibrary**
   核心基础库，负责运行时、JWT、任务协议、控制器和公共工具。
+- **ThinkPlugsSystem**
+  系统后台组件，负责登录、权限、菜单、用户和 `system_*` 核心能力。
 - **ThinkPlugsWorker**
   Workerman 运行时组件，负责 `http` 和 `queue` 常驻服务。
 - **ThinkPlugsHelper**
@@ -38,10 +62,7 @@
 - **ThinkPlugsStatic**
   静态资源和项目骨架组件。
 
-### 后台与平台插件
-
-- **ThinkPlugsAdmin**
-  后台管理中心。
+### 平台插件
 - **ThinkPlugsCenter**
   插件应用中心。
 - **ThinkPlugsWechatClient**
@@ -79,16 +100,24 @@
 
 ### 认证
 
-- 后台统一使用 `Authorization: Bearer <JWT>`
-- API 统一使用 Token 模式识别身份
-- 不再使用 Session/Cookie 承载后台登录态
+- 后台与 API 统一优先使用 `Authorization: Bearer <JWT>`
+- 浏览器场景可额外读取认证 Cookie 完成整页请求鉴权
+- 不再使用 Session 承载后台登录态
+- 用户临时态统一使用基于 Token SID 的 `CacheSession`
+- 统一入口为 `tsession()`
+
+统一请求头约定：
+
+- 认证令牌：`Authorization: Bearer <token>`
+- 设备接口附加头：`X-Device-Code`、`X-Device-Type`
+- 不再使用 `Api-Token`、`Api-Type`、`Api-Code` 这类旧请求头
 
 ### 运行时
 
 - 统一命令入口：`php think xadmin:worker`
 - `http` 负责托管系统 HTTP 服务
 - `queue` 负责长耗时任务和延时任务调度
-- 队列记录和执行协议留在 `ThinkLibrary`
+- `ThinkLibrary` 只定义队列契约与调用门面，队列记录由 `ThinkPlugsWorker` 维护
 
 ### 前端
 
@@ -98,7 +127,7 @@
 
 ### 目录
 
-- `app/admin` 和 `app/wechat` 已退役为兼容占位目录
+- `app` 只保留单应用入口
 - 实际源码只维护在 `plugin/*/src`
 
 ## 安装与初始化
@@ -165,7 +194,10 @@ php think xadmin:package
 
 - 官网文档：[thinkadmin.top](https://thinkadmin.top)
 - 接口文档：[ThinkAdminMobile](https://thinkadmin.apifox.cn)
+- 架构总图：[plugin-boundaries.md](/Users/anyon/Runtime/ThinkAdminDeveloper/docs/architecture/plugin-boundaries.md)
 - 架构说明：[plugin-first-refactor.md](/Users/anyon/Runtime/ThinkAdminDeveloper/docs/architecture/plugin-first-refactor.md)
+- 认证与会话：[auth-token-session.md](/Users/anyon/Runtime/ThinkAdminDeveloper/docs/architecture/auth-token-session.md)
+- 稳定性评估：[stability-status.md](/Users/anyon/Runtime/ThinkAdminDeveloper/docs/architecture/stability-status.md)
 
 ## 注意事项
 

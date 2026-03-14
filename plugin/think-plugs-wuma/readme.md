@@ -12,7 +12,7 @@
 
 - `ThinkPlugsWuma` 是防伪溯源业务组件，负责一物一码、码批次、模板、赋码、仓储流转、代理库存和扫码验证。
 - 它面向“码体系 + 仓储 + 渠道”这类业务闭环，既有后台运营页，也有扫码查询和出入库处理。
-- 组件包含码生成、批量导入导出、仓储关系和来源模板等子能力，不依赖旧多应用结构。
+- 组件包含码生成、批量导入导出、仓储关系和来源模板等子能力，源码统一维护在插件目录。
 - 组件不负责统一账号登录、支付或公众号标准能力，而是按需复用其它组件。
 
 ## 架构说明
@@ -35,7 +35,7 @@
 - 必需：`zoujingli/think-library`
 - 必需：`zoujingli/think-plugs-helper`
 - 必需：`zoujingli/think-plugs-storage`
-- 推荐宿主：`zoujingli/think-plugs-admin`
+- 推荐宿主：`zoujingli/think-plugs-system`
 - 可联动：`zoujingli/think-plugs-wemall`
 
 ## 安装组件
@@ -82,6 +82,25 @@ composer remove zoujingli/think-plugs-wuma
 - `wuma/api.coder/*`
 - `wuma/api.auth/*`
 - `wuma/api.login/*`
+
+接口请求头规范：
+
+- 认证统一使用 `Authorization: Bearer <token>`
+- 设备标识统一使用 `X-Device-Code: <code>`
+- 设备类型统一使用 `X-Device-Type: <type>`
+- 不再使用 `Api-Token`、`Api-Code`、`Api-Type`
+- 当前设备 token 为独立设备认证，不属于通用账号 JWT 体系
+- 统一规范见 [../../docs/architecture/auth-token-session.md](../../docs/architecture/auth-token-session.md)
+
+设备接口示例：
+
+```http
+POST /wuma/api.login/login HTTP/1.1
+Authorization: Bearer <token>
+X-Device-Code: PDA-001
+X-Device-Type: warehouse
+Content-Type: application/json
+```
 
 公开查询路由：
 

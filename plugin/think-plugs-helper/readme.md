@@ -17,8 +17,8 @@
 
 ## 架构说明
 
-- 命令层：`src/command/*` 暴露 `publish / package / helper:migrate` 等 CLI 能力。
-- 支撑层：`src/support/*` 负责迁移元数据读取、菜单校验、导出逻辑和插件扫描。
+- 命令层：`src/command/*` 暴露 `publish / package / helper:*` 等 CLI 能力。
+- 服务层：`src/service/*` 负责迁移元数据读取、菜单校验、导出逻辑、模型注释生成和辅助集成。
 - 模板层：`src/service/bin/*` 提供安装包模板和脚本骨架。
 - 协同层：依赖 `ThinkLibrary` 获取系统运行时能力，但不持有后台登录、队列、存储等业务实现。
 
@@ -34,7 +34,7 @@
 
 - 必需：`zoujingli/think-library`
 - 必需：`topthink/think-migration`
-- 推荐宿主：`zoujingli/think-plugs-admin`
+- 推荐宿主：`zoujingli/think-plugs-system`
 
 ## 安装组件
 
@@ -54,6 +54,9 @@ composer remove zoujingli/think-plugs-helper
 
 - `php think xadmin:helper:model`
 - `php think xadmin:helper:migrate`
+- `php think xadmin:database`
+- `php think xadmin:replace`
+- `php think xadmin:sysmenu`
 - `php think xadmin:publish`
 - `php think xadmin:publish --migrate`
 - `php think xadmin:package`

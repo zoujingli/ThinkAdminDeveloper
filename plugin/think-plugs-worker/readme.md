@@ -5,7 +5,7 @@
 - `http`：用 Workerman 托管 ThinkAdmin HTTP 服务
 - `queue`：用 Workerman 托管后台任务调度与长耗时任务派发
 
-当前实现不再沿用旧版 `default + customs` 配置模型，也不再建议通过 `xadmin:queue` 管理守护进程。外部统一入口为 `xadmin:worker`，配置结构统一为 `defaults + services`。
+当前实现不再沿用旧版 `default + customs` 配置模型。运行时统一入口为 `xadmin:worker`，队列运维入口为 `xadmin:queue`，配置结构统一为 `defaults + services`，并且只保留 `http` 与 `queue` 两类标准服务。
 
 ## 版本基线
 
@@ -18,30 +18,34 @@
 
 - `ThinkPlugsWorker` 是标准运行时插件，负责把 ThinkAdmin 以常驻进程方式跑起来，而不是业务插件自己写守护逻辑。
 - 当前只提供两类标准服务：`http` 用于托管 Web 服务，`queue` 用于托管后台任务调度。
-- 组件不再承载队列记录、任务逻辑或后台页面，这些能力分别留在 `ThinkLibrary` 和 `ThinkPlugsAdmin`。
+- 组件同时承载完整的队列实现，包括 `system_queue` 模型、任务协议实现、执行器、运维命令和常驻调度；后台页面由 `ThinkPlugsSystem` 提供。
+- 业务任务基类与运行时实现统一由 Worker 提供。
 - 它的定位是“统一进程管理器”，而不是业务插件。
+- `src` 目录已经统一收口为 `command / model / service`，其余 `ThinkApp / ThinkHttp / ThinkRequest / ThinkCookie / WorkerMonitor / WorkerState / ProcessService` 都归到 `service` 层，不再单独拆 `queue/support` 目录。
 
 ## 架构说明
 
-- 命令层：`xadmin:worker` 负责启动、停止、重载、状态查询和后台守护管理。
-- 运行层：`HttpServer`、`QueueWorker`、`ThinkApp` 把 Workerman 与 ThinkAdmin 运行时接到一起。
-- 配置层：`WorkerConfig`、`WorkerState`、`WorkerMonitor` 负责标准化配置、进程状态与运行监控。
-- 协同层：HTTP 服务回调给 `ThinkLibrary runtime`，队列调度调用 `xadmin:queue dorun` 执行具体任务。
+- 命令层：`xadmin:worker` 负责启动、停止、重载、状态查询、健康检查和后台守护管理。
+- 服务层：`HttpServer`、`QueueServer`、`QueueService`、`QueueExecutor`、`ThinkApp`、`WorkerConfig`、`WorkerState`、`WorkerMonitor`、`ProcessService` 统一放在 `src/service`。
+- 协同层：HTTP 服务回调给 `ThinkLibrary runtime`，队列标准由 `ThinkLibrary` 定义并通过容器绑定到 `plugin\\worker\\service` 实现，`xadmin:queue` 负责队列清理与手动执行。
 
 ## 模块边界
 
 - `ThinkPlugsWorker` 只负责运行时和进程管理
-- `ThinkLibrary` 负责队列记录、任务注册、任务执行逻辑
-- `ThinkPlugsAdmin` 负责后台界面与运行状态管理
+- `ThinkPlugsWorker` 负责队列运行时、任务记录与队列表迁移
+- `ThinkLibrary` 只保留队列与进程的标准契约、门面和调用入口，不再存放具体实现
+- `ThinkPlugsSystem` 负责后台界面与运行状态管理
 - 业务插件只负责注册任务，不直接管理守护进程
+- 标准 `ProcessService` 由 `ThinkLibrary` 暴露门面，具体 shell 与 Worker 控制实现都由 `ThinkPlugsWorker` 提供
+- 全局辅助函数 `sysqueue` 由 `ThinkPlugsWorker` 提供
 
 ## 安装
 
 ```bash
 composer require zoujingli/think-plugs-worker
 
-# 初始化 config/worker.php
-php think xadmin:publish
+# 初始化 config/worker.php 并同步队列迁移
+php think xadmin:publish --migrate
 ```
 
 `ThinkPlugsWorker` 通过组件发布清单注册 `config/worker.php` 初始化模板，不再依赖 Composer 安装阶段自动写入配置。
@@ -54,7 +58,7 @@ composer remove zoujingli/think-plugs-worker
 
 ## 配置
 
-配置文件为 `config/worker.php`。如果项目中还没有该文件，请执行 `php think xadmin:publish` 生成默认模板。
+配置文件为 `config/worker.php`。如果项目中还没有该文件，请执行 `php think xadmin:publish --migrate` 生成默认模板并同步迁移。
 
 ```php
 <?php
@@ -104,29 +108,11 @@ return [
             'driver' => 'queue',
             'process' => [
                 'name' => 'ThinkAdminQueue',
-                'count' => 1,
+                'count' => 2,
             ],
             'queue' => [
                 'scan_interval' => 1,
                 'batch_limit' => 20,
-            ],
-        ],
-        'websocket' => [
-            'enabled' => false,
-            'label' => 'ThinkAdmin WebSocket',
-            'driver' => 'socket',
-            'server' => [
-                'scheme' => 'websocket',
-                'host' => '0.0.0.0',
-                'port' => 8686,
-                'context' => [],
-            ],
-            'socket' => [
-                'type' => 'workerman',
-            ],
-            'process' => [
-                'name' => 'ThinkAdminWebSocket',
-                'count' => 1,
             ],
         ],
     ],
@@ -140,14 +126,14 @@ return [
 - `services.<name>.server`：服务地址、端口、协议、上下文、回调
 - `services.<name>.process`：Workerman worker 进程参数，例如 `name/count`
 - `services.<name>.queue`：队列服务的调度参数，例如 `scan_interval/batch_limit`
-- `services.<name>.socket`：socket 服务类型，例如 `workerman/gateway/register/business`
+- `services.queue.process.count`：队列并发执行数，每个 Worker 进程同一时刻执行一个任务
 
 ### 标准键名
 
 - 运行时建议使用蛇形键名：`stdout_file`、`log_max_size`、`stop_timeout`、`event_loop`
 - 文件监控建议使用：`enabled`、`interval`、`paths`、`extensions`
 - 队列调度建议使用：`scan_interval`、`batch_limit`
-- 旧键仍可读取，例如 `runtime/monitor`、`host/port`、`worker`、`dispatch`，但新文档与新模板只保留标准结构
+- 当前只支持标准结构：`defaults.runtime`、`defaults.monitor`、`services.<name>.server`、`services.<name>.process`、`services.<name>.queue`
 
 ## 命令
 
@@ -168,6 +154,9 @@ php think xadmin:worker status queue
 
 php think xadmin:worker query http
 php think xadmin:worker query queue
+
+php think xadmin:worker check http
+php think xadmin:worker check queue
 ```
 
 ### 批量服务
@@ -177,6 +166,7 @@ php think xadmin:worker start all -d
 php think xadmin:worker stop all
 php think xadmin:worker status all
 php think xadmin:worker query all
+php think xadmin:worker check all
 ```
 
 ### 热重载
@@ -186,7 +176,7 @@ php think xadmin:worker reload http
 php think xadmin:worker reload queue
 ```
 
-`reload` 仅适用于 Linux / macOS，Windows 下不会发送 POSIX 信号。
+`reload` 在 Linux / macOS 下发送 Workerman reload 信号，在 Windows 下会自动退化为受控 `restart`，尽量保持操作语义一致。
 
 ## 平台说明
 
@@ -199,8 +189,9 @@ php think xadmin:worker reload queue
 ### Windows
 
 - `start -d` 通过独立后台进程启动，不依赖 POSIX 信号
-- 支持 `start / stop / status / query`
-- 文件变化监控仅输出重启提示，不自动向 master 发送 reload 信号
+- 支持 `start / stop / status / query / restart`
+- `reload` 会自动退化为 `restart`
+- 文件变化监控会通过独立控制进程触发重启，不再只输出手工重启提示
 - 建议优先用 `services.<name>.server.host/port` 管理监听地址，避免依赖 shell 包装脚本
 
 ## HTTP 服务说明
@@ -210,14 +201,20 @@ php think xadmin:worker reload queue
 - 支持常驻模式预热
 - 适合替代内置 `php think run`
 - 可通过 `server.callable` 注入额外请求拦截逻辑
+- 闭环是：`config/worker.php -> xadmin:worker -> service/HttpServer -> service/ThinkApp/ThinkHttp/ThinkRequest/ThinkCookie -> ThinkAdmin 响应`
 
 ## Queue 服务说明
 
-- `queue` 服务定时扫描 `system_queue`
-- 到期任务会派发为独立 CLI 子进程执行
+- `queue` 服务由多个 Worker 进程直接扫描并认领 `system_queue`
+- 并发度由 `services.queue.process.count` 控制
 - 适合延时任务、循环任务、长耗时任务
-- 任务记录和执行结果仍由 `ThinkLibrary` 维护
-- `queue.scan_interval` 控制轮询周期，`queue.batch_limit` 控制单次扫描量
+- 任务记录、执行结果和 `system_queue` 数据表由 `ThinkPlugsWorker` 维护
+- `queue.scan_interval` 控制轮询周期，`queue.batch_limit` 控制单次认领候选量
+- 闭环是：`QueueService::register/sysqueue -> system_queue -> QueueServer claim -> QueueExecutor run -> progress/message/exec_desc -> System 队列页`
+
+## 插件数据
+
+- 队列记录：`system_queue`
 
 ## 生产建议
 

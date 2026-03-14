@@ -1,6 +1,6 @@
 # ThinkLibrary for ThinkAdmin
 
-**ThinkLibrary** 是 ThinkAdmin 8 / ThinkPHP 8.1 的核心基础库，负责控制器基类、模型基类、运行时路由绑定、插件元数据解析、JWT 认证、任务执行协议、通用工具和公共门面。
+**ThinkLibrary** 是 ThinkAdmin 8 / ThinkPHP 8.1 的核心基础库，负责控制器基类、模型基类、插件元数据解析、通用门面、上下文、路由适配和基础工具。
 
 ## 版本基线
 
@@ -10,27 +10,27 @@
 
 ## 详细描述
 
-- `ThinkLibrary` 是整个仓库的核心基础库，负责定义统一的控制器基类、模型基类、插件基类、命令基类和运行时公共能力。
-- 它承载的是“框架级通用能力”，包括插件优先路由、JWT 认证、任务执行协议、菜单节点扫描、模型与查询标准化、系统配置和通用工具。
-- 当前已经不再保留旧多应用模式的历史兼容结构，也不再承担存储驱动、守护进程、发布导出、物流短信等非核心实现。
+- `ThinkLibrary` 是整个仓库的核心基础库，负责定义统一的控制器基类、模型基类、插件基类、命令基类和框架级公共能力。
+- 它承载的是“框架级通用能力”，包括插件优先路由、上下文门面、模型与查询标准化、存储/会话/JWT/RPC 门面和通用工具。
+- 组件聚焦于框架级通用能力，不再承载存储驱动、守护进程、发布导出、物流短信等非核心实现。
 - 组件目标是作为所有插件共享的核心层，而不是再继续堆放具体业务逻辑。
 
 ## 架构说明
 
-- 基础入口层：`Controller`、`Model`、`Service`、`Plugin`、`Command` 为所有插件提供统一基类和调用约定。
-- 运行时层：`runtime` 负责插件发现、URL 前缀绑定、单应用兜底、URL 生成和运行时同步。
-- 请求上下文层：`context` 负责当前插件、当前后台用户、当前令牌这类请求级状态，不再散落在 `sysvar()` 字符串键中。
-- 认证层：`auth` 负责后台 JWT、图形验证码、令牌校验和认证中间件。
-- 任务层：`queue` 只保留任务记录、任务执行协议和执行命令，常驻调度已交给 `ThinkPlugsWorker`。
-- 支撑层：`menu / node / module / process / system / query / model / view / extend / contract / helper` 负责菜单、节点、模块、进程、系统配置、查询工厂、模型工厂、视图工具和通用工具集合。
+- 基础入口层：`Controller`、`Model`、`Plugin`、`Command` 为所有插件提供统一基类和调用约定。
+- 服务层：`service` 负责插件注册查询、存储门面、会话、JWT、RPC、运行控制和 Worker 门面。
+- 运行时层：`runtime` 只负责请求/系统上下文门面。
+- 路由层：`route` 负责 `Route` / `Url` 适配。
+- 中间件层：`middleware` 负责多应用切换中间件。
+- 支撑层：`model / helper / extend / contract` 负责模型与查询标准化、控制器辅助能力、基础工具和标准契约。
 
 ## 组件边界
 
-- 提供 `think\admin\Controller`、`Model`、`Service`、`Plugin` 等基础类型
+- 提供 `think\admin\Controller`、`Model`、`Plugin`、`Command` 等基础类型
 - 提供插件优先、单应用兜底的运行时路由能力
-- 提供后台 JWT 签发、解析、续签和认证中间件
-- 提供队列记录、任务执行协议和执行层命令
+- 提供基础 JWT、会话、RPC、运行控制、存储等门面能力
 - 提供 `Storage` 门面、契约和公共 Trait
+- 基础库只定义框架级标准与通用实现，具体业务能力由其他插件承载
 - 根层基类已改为显式 getter 与强类型属性，不再依赖魔术属性读取插件元数据
 - 不负责守护进程管理，`http/queue` 常驻运行由 `ThinkPlugsWorker` 负责
 - 不负责具体存储驱动和上传授权，驱动实现由 `ThinkPlugsStorage` 负责
@@ -41,45 +41,28 @@
 
 当前核心实现已经按职责收敛到这些域：
 
+- `service`
+  负责 `AppService / ModuleService / NodeService / PluginService`、`Storage / CacheSession / JwtToken`、`RuntimeService / QueueService / ProcessService`、`JsonRpc* / FaviconBuilder / ImageSliderVerify` 等门面能力。
 - `runtime`
-  负责插件发现、前缀绑定、单应用兜底、URL 生成和运行时同步。
-- `context`
-  负责请求级上下文，例如当前插件、当前后台用户和当前令牌。
-- `auth`
-  负责后台认证、图形验证码、表单令牌和认证中间件。
-- `queue`
-  负责任务运行时、任务命令和任务基类。
-- `command`
-  负责基础命令入口，例如数据库维护、内容替换和菜单重建。
-- `process`
-  负责 PHP / Think / Composer 进程封装与跨平台进程查询。
-- `module`
-  负责模块列表、版本信息和运行时二进制路径解析。
-- `node`
-  负责控制器节点扫描、节点命名规范和当前节点解析。
-- `menu`
-  负责后台菜单树和插件菜单过滤。
+  只保留 `SystemContext / NullSystemContext / RequestContext / RequestTokenService` 这类上下文对象。
+- `route`
+  负责 `Route / Url` 适配。
+- `middleware`
+  负责 `MultAccess` 多应用切换中间件。
 - `model`
-  负责基础模型、系统模型和 `ModelFactory` 等模型标准化能力。
-- `system`
-  负责系统配置、系统数据、系统日志、静态资源路径和 favicon 处理。
-- `view`
-  负责轻量视图构建工具，例如 `FormBuilder`。
-- `query`
-  负责查询对象标准化与查询前事件挂载，例如 `QueryFactory`。
-- `extend/auth|codec|data|filesystem|http|image|model|rpc`
-  负责 JWT、编码、树结构、文件、HTTP、图像、虚拟模型和 RPC 工具。
+  负责基础模型、`ModelFactory` 和 `QueryFactory` 等模型标准化能力。
+- `extend`
+  只保留纯工具，例如 `CodeToolkit`、`ArrayTree`、`FileTools`、`HttpClient`。
 - `contract`
-  负责 `QueueRuntimeInterface`、`QueueHandlerInterface`、`StorageInterface` 等基础契约。
+  负责 `StorageInterface`、队列运行时与处理器等基础契约，是其他组件实现标准的入口。
 - `helper`
-  负责 Token、查询、分页和列表表格输出等控制器辅助类。
+  负责表单构建、查询、分页和列表表格输出等控制器辅助类。
 
 ## 依赖关系
 
 - 必需：`topthink/framework`
 - 必需：`topthink/think-orm`
-- 必需：`symfony/process`
-- 可选上层：`zoujingli/think-plugs-admin`
+- 可选上层：`zoujingli/think-plugs-system`
 - 可选上层：`zoujingli/think-plugs-worker`
 - 可选上层：`zoujingli/think-plugs-storage`
 - 可选上层：`zoujingli/think-plugs-helper`
@@ -142,7 +125,7 @@ return [
     'single_app' => 'index',
     'plugin' => [
         'bindings' => [
-            'admin' => 'admin',
+            'system' => 'system',
             'wechat' => ['wechat', 'mp'],
         ],
         'switch' => [
@@ -157,33 +140,28 @@ return [
 ## 认证机制
 
 - 后台统一使用 `Authorization: Bearer <JWT>`
-- 不再使用 Session/Cookie 承载后台登录态
-- `ThinkLibrary` 负责 JWT 签发、解析、续签和认证中间件
+- 浏览器整页请求可额外读取认证 Cookie，但登录态不再由 Session 承载
+- `ThinkLibrary` 负责基础 JWT 与请求令牌解析门面
+- 令牌会话统一使用 `CacheSession` / `tsession()`，并按 Token SID 隔离
 - 表单防重与一次性令牌基于缓存实现，不再依赖 Session
+- 统一规范以 [../../docs/architecture/auth-token-session.md](../../docs/architecture/auth-token-session.md) 为准
+
+统一请求头规范：
+
+- 认证令牌统一使用 `Authorization: Bearer <token>`
+- 设备类接口可附加 `X-Device-Code`、`X-Device-Type`
+- 不再兼容 `Api-Token`、`Api-Type`、`Api-Code`
 
 ## 队列机制
 
-- `ThinkLibrary` 负责 `system_queue` 记录、任务状态、进度和任务执行协议
-- `xadmin:queue` 只保留执行层动作，不再管理守护进程
-- 守护进程统一通过 `ThinkPlugsWorker queue` 运行
-
-队列相关契约：
-
-- `think\admin\contract\QueueRuntimeInterface`
-- `think\admin\contract\QueueHandlerInterface`
+- `ThinkLibrary` 只保留队列标准定义与调用门面，不承载队列实现
+- 标准契约包括 `QueueRuntimeInterface`、`QueueHandlerInterface`、`QueueManagerInterface`
+- 标准入口为 `think\admin\service\QueueService`
+- 队列记录、任务协议实现、执行器、常驻调度和运维命令统一由 `ThinkPlugsWorker` 提供
 
 ## 命令说明
 
-`ThinkLibrary` 当前提供这些基础命令：
-
-- `php think xadmin:queue`
-  只支持 `clean` 和 `dorun`
-- `php think xadmin:database`
-  数据库修复与辅助处理
-- `php think xadmin:replace`
-  项目内容替换工具
-- `php think xadmin:sysmenu`
-  系统菜单辅助命令
+`ThinkLibrary` 不再注册运维命令；队列清理与手动执行入口由 `ThinkPlugsWorker` 提供。
 
 ## 常用能力
 
@@ -191,7 +169,7 @@ return [
 - QueryHelper 列表查询、分页与 Layui.Table 输出能力
 - QueryFactory / ModelFactory 标准工厂
 - 全局函数与系统配置读取
-- JWT Token 认证
+- JWT / 会话 / 请求令牌门面
 - 存储门面与统一调用入口
 - HTTP / RPC / 文件 / 编码工具
 - 插件元数据读取与菜单解析
@@ -219,11 +197,13 @@ class Demo extends Controller
 工具示例：
 
 ```php
-use think\admin\extend\codec\CodeToolkit;
-use think\admin\extend\data\ArrayTree;
+use think\admin\extend\CodeToolkit;
+use think\admin\extend\ArrayTree;
+use think\admin\service\JwtToken;
 
 $uuid = CodeToolkit::uuid();
 $tree = ArrayTree::arr2tree($data);
+$token = JwtToken::token(['uid' => 1]);
 ```
 
 ## 发布与迁移
@@ -243,16 +223,15 @@ $tree = ArrayTree::arr2tree($data);
 
 ## 命名空间约定
 
-历史兼容包装层已经移除，当前应直接引用真实分域实现：
+当前直接使用以下标准命名空间：
 
-- 认证相关：`auth/*`
-- 队列相关：`queue/*`
-- 基础命令：`command/*`
-- 运行时相关：`runtime/*`
-- 模块相关：`module/*`
-- 节点相关：`node/*`
-- 系统相关：`system/*`
-- 视图构建：`view/*`
+- 基础工具：`extend/*`
+- 门面与协议能力：`service/*`
+- 请求 / 系统上下文：`runtime/*`
+- 路由适配：`route/*`
+- 中间件：`middleware/*`
+- 模型与查询：`model/*`
+- 控制器辅助：`helper/*`
 
 ## 数据依赖
 
@@ -263,7 +242,10 @@ $tree = ArrayTree::arr2tree($data);
 - `system_oplog`
 - `system_queue`
 
-这类系统表通常由 `ThinkPlugsAdmin` 的迁移脚本统一创建。
+这些表已分别由上层插件提供：
+
+- `system_config`、`system_data`、`system_oplog` 由 `ThinkPlugsSystem` 创建
+- `system_queue` 由 `ThinkPlugsWorker` 创建
 
 ## 平台说明
 
