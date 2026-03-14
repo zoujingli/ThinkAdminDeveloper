@@ -197,15 +197,8 @@ class Publish extends Command
             if (isset($normalized[$name])) {
                 continue;
             }
-            if (!preg_match('/^(\d+)_/', $name, $match)) {
-                continue;
-            }
-            $version = $match[1];
-            if (!isset($versions[$version])) {
-                continue;
-            }
             unlink($target);
-            $this->output->info("Remove conflicting migration {$name}");
+            $this->output->info("Remove stale migration {$name}");
         }
 
         $records = [];

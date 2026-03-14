@@ -51,6 +51,8 @@ function runPublishSmoke(string $projectRoot): void
 
     try {
         mkdir($root . '/vendor/composer', 0777, true);
+        mkdir($root . '/database/migrations', 0777, true);
+        file_put_contents($root . '/database/migrations/20241011000001_install_wechat20241011.php', "<?php\n");
         createPluginPackage($root, 'demo', 'vendor/demo-plugin', 'plugin\demo\Service');
         createPluginPackage(
             $root,
@@ -107,6 +109,11 @@ function runPublishSmoke(string $projectRoot): void
         ] as $migration) {
             assertTrue(is_file($root . '/database/migrations/' . $migration), "missing migration {$migration}");
         }
+
+        assertTrue(
+            !is_file($root . '/database/migrations/20241011000001_install_wechat20241011.php'),
+            'stale unique migration should be removed'
+        );
 
         assertSameValue(
             'plugin/system/stc/database/20241010000001_install_system20241010.php',
@@ -264,6 +271,10 @@ function copyTree(string $source, string $target): void
         if ($item->isDir()) {
             is_dir($pathname) || mkdir($pathname, 0777, true);
         } else {
+            if (is_dir($item->getPathname())) {
+                copyTree($item->getPathname(), $pathname);
+                continue;
+            }
             is_dir(dirname($pathname)) || mkdir(dirname($pathname), 0777, true);
             copy($item->getPathname(), $pathname);
         }
@@ -272,6 +283,10 @@ function copyTree(string $source, string $target): void
 
 function copyFile(string $source, string $target): void
 {
+    if (is_dir($source)) {
+        copyTree($source, $target);
+        return;
+    }
     is_dir(dirname($target)) || mkdir(dirname($target), 0777, true);
     copy($source, $target);
 }
