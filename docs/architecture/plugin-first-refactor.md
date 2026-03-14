@@ -1,5 +1,10 @@
 # Plugin-First Refactor
 
+## 相关文档
+
+- [插件标准](./plugin-standard.md)
+- [软删除标准](./soft-delete-standard.md)
+
 ## 目标
 
 项目已经切换到 ThinkPHP 8.1 的插件优先架构，当前运行原则为：

@@ -1,5 +1,10 @@
 # Plugin Boundaries
 
+## 相关文档
+
+- [插件标准](./plugin-standard.md)
+- [插件优先重构](./plugin-first-refactor.md)
+
 ## 当前分层
 
 ```mermaid
