@@ -37,6 +37,9 @@ writeLine('helpers:ok');
 runPublishSmoke($projectRoot);
 writeLine('publish:ok');
 
+runInstallSmoke($projectRoot);
+writeLine('install:ok');
+
 runThinkListSmoke($projectRoot);
 writeLine('think:list:ok');
 
@@ -123,6 +126,62 @@ function runThinkListSmoke(string $projectRoot): void
     assertSameValue(0, $status, "think list failed:\n" . implode("\n", $output));
 }
 
+function runInstallSmoke(string $projectRoot): void
+{
+    $root = sys_get_temp_dir() . '/thinkadmin-install-' . bin2hex(random_bytes(6));
+
+    try {
+        mkdir($root, 0777, true);
+        copyTree($projectRoot . '/app', $root . '/app');
+        copyTree($projectRoot . '/config', $root . '/config');
+        copyTree($projectRoot . '/plugin', $root . '/plugin');
+        copyTree($projectRoot . '/vendor', $root . '/vendor');
+        copyFile($projectRoot . '/think', $root . '/think');
+        copyFile($projectRoot . '/composer.json', $root . '/composer.json');
+
+        foreach (['database', 'public', 'runtime'] as $path) {
+            mkdir($root . '/' . $path, 0777, true);
+        }
+
+        $command = escapeshellarg(PHP_BINARY) . ' ' . escapeshellarg($root . '/think') . ' xadmin:publish --migrate';
+        exec($command . ' 2>&1', $output, $status);
+
+        assertSameValue(0, $status, "install smoke failed:\n" . implode("\n", $output));
+
+        foreach ([
+            'database/migrations/20241010000001_install_system20241010.php',
+            'database/migrations/20241010000002_install_storage20241010.php',
+            'database/migrations/20241010000008_install_worker20241010.php',
+            'public/static/system.js',
+            'config/database.php',
+        ] as $path) {
+            assertTrue(is_file($root . '/' . $path), "missing installed artifact {$path}");
+        }
+
+        $db = new PDO('sqlite:' . $root . '/database/sqlite.db');
+        foreach ([
+            'system_auth',
+            'system_auth_node',
+            'system_menu',
+            'system_user',
+            'system_config',
+            'system_data',
+            'system_base',
+            'system_oplog',
+            'system_file',
+            'system_queue',
+        ] as $table) {
+            $count = $db->query("select count(*) from sqlite_master where type='table' and name='{$table}'")->fetchColumn();
+            assertTrue(!empty($count), "missing installed table {$table}");
+        }
+
+        $configRows = intval($db->query('select count(*) from system_config')->fetchColumn());
+        assertTrue($configRows >= 8, 'system_config seed rows should be initialized');
+    } finally {
+        removeTree($root);
+    }
+}
+
 function assertHelperOwner(string $name, string $expectedFile): void
 {
     assertTrue(function_exists($name), "{$name} should be defined");
@@ -173,6 +232,48 @@ function removeTree(string $path): void
     }
 
     rmdir($path);
+}
+
+function copyTree(string $source, string $target): void
+{
+    if (!is_dir($source)) {
+        return;
+    }
+
+    mkdir($target, 0777, true);
+    $items = new RecursiveIteratorIterator(
+        new RecursiveDirectoryIterator($source, FilesystemIterator::SKIP_DOTS),
+        RecursiveIteratorIterator::SELF_FIRST
+    );
+
+    foreach ($items as $item) {
+        $relative = substr($item->getPathname(), strlen($source) + 1);
+        $pathname = $target . '/' . $relative;
+        if (is_link($item->getPathname())) {
+            $real = realpath($item->getPathname());
+            if ($real === false) {
+                continue;
+            }
+            if (is_dir($real)) {
+                copyTree($real, $pathname);
+            } else {
+                copyFile($real, $pathname);
+            }
+            continue;
+        }
+        if ($item->isDir()) {
+            is_dir($pathname) || mkdir($pathname, 0777, true);
+        } else {
+            is_dir(dirname($pathname)) || mkdir(dirname($pathname), 0777, true);
+            copy($item->getPathname(), $pathname);
+        }
+    }
+}
+
+function copyFile(string $source, string $target): void
+{
+    is_dir(dirname($target)) || mkdir(dirname($target), 0777, true);
+    copy($source, $target);
 }
 
 function assertTrue(bool $condition, string $message): void
