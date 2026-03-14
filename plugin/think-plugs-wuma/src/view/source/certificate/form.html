@@ -5,7 +5,7 @@
     <div class="layui-card-body" id='CertForm'>
         <div class="flex">
             <div style="width:504px;height:713px" class="relative notselect shadow-mini">
-                <img alt="img" style="height:100%" width="100%" id="ImageTarget" src='{$vo.image|default="__FULL__/admin/default.jpg"}' :src="image">
+                <img alt="img" style="height:100%" width="100%" id="ImageTarget" src='{$vo.image|default="__FULL__/static/theme/img/image.png"}' :src="image">
                 <div class="absolute-full"><a class="absolute nowrap" v-for="x in items" v-if="x.state==1" :style="point(x)" @mousedown="move($event,x)">{{ x.value }}</a></div>
             </div>
             <div class="flex-1">

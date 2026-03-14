@@ -1,6 +1,22 @@
 <?php
 
 declare(strict_types=1);
+/**
+ * +----------------------------------------------------------------------
+ * | ThinkAdmin Plugin for ThinkAdmin
+ * +----------------------------------------------------------------------
+ * | 版权所有 2014~2026 ThinkAdmin [ thinkadmin.top ]
+ * +----------------------------------------------------------------------
+ * | 官方网站: https://thinkadmin.top
+ * +----------------------------------------------------------------------
+ * | 开源协议 ( https://mit-license.org )
+ * | 免责声明 ( https://thinkadmin.top/disclaimer )
+ * | 会员特权 ( https://thinkadmin.top/vip-introduce )
+ * +----------------------------------------------------------------------
+ * | gitee 代码仓库：https://gitee.com/zoujingli/ThinkAdmin
+ * | github 代码仓库：https://github.com/zoujingli/ThinkAdmin
+ * +----------------------------------------------------------------------
+ */
 
 namespace think\admin\tests;
 
@@ -35,7 +51,7 @@ class RouteTemplateBoundaryTest extends TestCase
             'admin/api.',
             'plugin/think-plugs-admin/src/view',
             'view_path' . "' => TEST_PROJECT_ROOT . '/plugin/think-plugs-admin/src/view",
-            'view_path' . '" => TEST_PROJECT_ROOT . \'/plugin/think-plugs-admin/src/view',
+            'view_path" => TEST_PROJECT_ROOT . \'/plugin/think-plugs-admin/src/view',
         ];
 
         $violations = [];
@@ -126,6 +142,7 @@ class RouteTemplateBoundaryTest extends TestCase
             'plugs/admin/',
             'window.taAdmin',
             'ta-system-access-token',
+            '__FULL__/admin/',
         ];
 
         $violations = [];

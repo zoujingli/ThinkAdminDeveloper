@@ -75,18 +75,18 @@
                     {name: '分割线', width: 10, type: 'solid', color: 'rgba(0,0,0,0.3)'},
                     {
                         name: '图片', type: 1, data: [
-                            {image: '__FULL__/admin/ups/00.jpg', link: ''},
+                            {image: '__FULL__/static/theme/img/image.png', link: ''},
                         ]
                     },
                     {name: '云监控', title: '监控标题', remark: '', deviceid: '', devicename: '请选择直播设备'},
-                    {name: '二维码', image: '__FULL__/admin/img/qrc.png', content: '扫码关注众号获取更多产品信息'},
-                    {name: '轮播图', items: [{image: '__FULL__/admin/ups/slider.jpg', link: ''}]},
+                    {name: '二维码', image: '__FULL__/static/theme/img/wechat/index.png', content: '扫码关注众号获取更多产品信息'},
+                    {name: '轮播图', items: [{image: '__FULL__/static/theme/img/image.png', link: ''}]},
                     {name: '防伪信息', title: "防伪信息", audio: true, verify: false, count: 1, error: '您好，您所查询的防伪码已经被查询超过 1 次，已失效，谨防假冒！', success: '您所查询的产品为正品，请放心使用！'},
                     {name: '标签序号', title: "标签序号"},
                     {name: '物流信息', title: '物流信息'},
                     {name: '文本', content: '请输入文本内容'},
                     {name: '视频', title: '视频标题', src: ''},
-                    {name: '芯媒体', title: '芯媒体', image: '__FULL__/admin/ups/slider.jpg', verify: false},
+                    {name: '芯媒体', title: '芯媒体', image: '__FULL__/static/theme/img/image.png', verify: false},
                     {name: '产品信息', title: '产品信息'},
                     {name: '代理信息', title: '代理信息'},
                     {name: '区块链溯源', title: '区块链溯源', code: ''},
@@ -106,10 +106,10 @@
                     },
                     {
                         name: '按钮', type: 2, title: '购买地址', data: [
-                            {title: '淘宝', img: '__FULL__/admin/img/taobao.jpg', link: ''},
-                            {title: '天猫', img: "__FULL__/admin/img/tianmao.jpg", link: ''},
-                            {title: '京东', img: "__FULL__/admin/img/jingdong.jpg", link: ''},
-                            {title: '拼多多', img: "__FULL__/admin/img/pinduo.jpg", link: ''}
+                            {title: '淘宝', img: '__FULL__/static/theme/img/image.png', link: ''},
+                            {title: '天猫', img: "__FULL__/static/theme/img/image.png", link: ''},
+                            {title: '京东', img: "__FULL__/static/theme/img/image.png", link: ''},
+                            {title: '拼多多', img: "__FULL__/static/theme/img/image.png", link: ''}
                         ]
                     },
                     {
@@ -157,22 +157,22 @@
                     if (this.item.type === type) return;
                     this.item.type = type;
                     if (type === 1) {
-                        this.item.data[0] = {image: '__FULL__/admin/ups/00.jpg', link: ''};
+                        this.item.data[0] = {image: '__FULL__/static/theme/img/image.png', link: ''};
                     }
                     if (type === 2) {
-                        this.item.data[0] = {image: '__FULL__/admin/ups/01.jpg', link: ''};
-                        this.item.data[1] = {image: '__FULL__/admin/ups/01.jpg', link: ''};
+                        this.item.data[0] = {image: '__FULL__/static/theme/img/image.png', link: ''};
+                        this.item.data[1] = {image: '__FULL__/static/theme/img/image.png', link: ''};
                     }
                     if (type === 3) {
-                        this.item.data[0] = {image: '__FULL__/admin/ups/02.jpg', link: ''};
-                        this.item.data[1] = {image: '__FULL__/admin/ups/01.jpg', link: ''};
-                        this.item.data[2] = {image: '__FULL__/admin/ups/01.jpg', link: ''};
+                        this.item.data[0] = {image: '__FULL__/static/theme/img/image.png', link: ''};
+                        this.item.data[1] = {image: '__FULL__/static/theme/img/image.png', link: ''};
+                        this.item.data[2] = {image: '__FULL__/static/theme/img/image.png', link: ''};
                     }
                     if (type === 4) {
-                        this.item.data[0] = {image: '__FULL__/admin/ups/01.jpg', link: ''};
-                        this.item.data[1] = {image: '__FULL__/admin/ups/01.jpg', link: ''};
-                        this.item.data[2] = {image: '__FULL__/admin/ups/01.jpg', link: ''};
-                        this.item.data[3] = {image: '__FULL__/admin/ups/01.jpg', link: ''};
+                        this.item.data[0] = {image: '__FULL__/static/theme/img/image.png', link: ''};
+                        this.item.data[1] = {image: '__FULL__/static/theme/img/image.png', link: ''};
+                        this.item.data[2] = {image: '__FULL__/static/theme/img/image.png', link: ''};
+                        this.item.data[3] = {image: '__FULL__/static/theme/img/image.png', link: ''};
                     }
                 },
                 addItem: function (name) {
