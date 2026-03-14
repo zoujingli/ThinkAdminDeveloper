@@ -94,11 +94,11 @@ class InstallAccount20241010 extends Migrator
             ['extra', 'text', ['default' => null, 'null' => true, 'comment' => '扩展数据']],
             ['sort', 'biginteger', ['limit' => 20, 'default' => 0, 'null' => true, 'comment' => '排序权重']],
             ['status', 'integer', ['limit' => 1, 'default' => 1, 'null' => true, 'comment' => '账号状态']],
-            ['deleted', 'integer', ['limit' => 1, 'default' => 0, 'null' => true, 'comment' => '删除状态(0未删,1已删)']],
+            ['delete_time', 'datetime', ['default' => null, 'null' => true, 'comment' => '删除时间']],
             ['create_time', 'datetime', ['default' => null, 'null' => true, 'comment' => '注册时间']],
             ['update_time', 'datetime', ['default' => null, 'null' => true, 'comment' => '更新时间']],
         ], [
-            'type', 'unid', 'sort', 'phone', 'appid', 'status', 'openid', 'unionid', 'deleted', 'create_time',
+            'type', 'unid', 'sort', 'phone', 'appid', 'status', 'openid', 'unionid', 'delete_time', 'create_time',
         ], true);
     }
 
@@ -159,11 +159,11 @@ class InstallAccount20241010 extends Migrator
             ['extra', 'text', ['default' => null, 'null' => true, 'comment' => '扩展数据']],
             ['sort', 'biginteger', ['limit' => 20, 'default' => 0, 'null' => true, 'comment' => '排序权重']],
             ['status', 'integer', ['limit' => 1, 'default' => 1, 'null' => true, 'comment' => '用户状态(0拉黑,1正常)']],
-            ['deleted', 'integer', ['limit' => 1, 'default' => 0, 'null' => true, 'comment' => '删除状态(0未删,1已删)']],
+            ['delete_time', 'datetime', ['default' => null, 'null' => true, 'comment' => '删除时间']],
             ['create_time', 'datetime', ['default' => null, 'null' => true, 'comment' => '注册时间']],
             ['update_time', 'datetime', ['default' => null, 'null' => true, 'comment' => '更新时间']],
         ], [
-            'code', 'sort', 'phone', 'email', 'status', 'unionid', 'deleted', 'username', 'nickname', 'region_prov', 'region_city', 'region_area', 'create_time',
+            'code', 'sort', 'phone', 'email', 'status', 'unionid', 'delete_time', 'username', 'nickname', 'region_prov', 'region_city', 'region_area', 'create_time',
         ], true);
     }
 }

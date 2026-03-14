@@ -148,6 +148,12 @@ abstract class Model extends \think\Model
         return QueryFactory::build(static::mk($data)->newQuery());
     }
 
+    public function set(string $name, $value)
+    {
+        [$name, $value] = $this->normalizeLegacySoftDeleteSet($name, $value);
+        return parent::set($name, $value);
+    }
+
     public function getDeletedAtAttr($value, array $data): mixed
     {
         $field = $this->softDeleteField();
@@ -267,7 +273,7 @@ abstract class Model extends \think\Model
             $args[0] = $this->softDeleteField();
         }
 
-        return false;
+        return true;
     }
 
     private function normalizeLegacySoftDeleteWhere(BaseQuery $query, array &$args): bool
@@ -354,6 +360,44 @@ abstract class Model extends \think\Model
     private function isDeletedTruthy(mixed $value): bool
     {
         return in_array($value, [1, '1', true], true);
+    }
+
+    /**
+     * @return array{0:string,1:mixed}
+     */
+    private function normalizeLegacySoftDeleteSet(string $name, mixed $value): array
+    {
+        if (!in_array($name, ['deleted', 'deleted_at', 'deleted_time'], true) || !$this->usesSoftDeleteQuery()) {
+            return [$name, $value];
+        }
+
+        $field = $this->softDeleteField();
+        if ($name === 'deleted') {
+            if ($field === 'deleted') {
+                return [$field, $this->isDeletedTruthy($value) ? 1 : 0];
+            }
+
+            return [$field, $this->normalizeLegacySoftDeleteTime($value)];
+        }
+
+        if ($field === 'deleted') {
+            return [$field, $this->isDeletedTruthy($value) ? 1 : 0];
+        }
+
+        return [$field, $this->normalizeLegacySoftDeleteTime($value)];
+    }
+
+    private function normalizeLegacySoftDeleteTime(mixed $value): ?string
+    {
+        if ($value === null || $value === '' || $value === 0 || $value === '0' || $value === false) {
+            return null;
+        }
+
+        if ($this->isDeletedTruthy($value) || $value === 1 || $value === '1') {
+            return date('Y-m-d H:i:s');
+        }
+
+        return is_scalar($value) ? strval($value) : date('Y-m-d H:i:s');
     }
 
     private function softDeleteField(): string

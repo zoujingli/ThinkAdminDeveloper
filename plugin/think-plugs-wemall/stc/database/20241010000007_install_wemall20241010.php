@@ -132,11 +132,11 @@ class InstallWemall20241010 extends Migrator
             ['total_used', 'biginteger', ['limit' => 20, 'default' => 0, 'null' => true, 'comment' => '使用数量']],
             ['sort', 'biginteger', ['limit' => 20, 'default' => 0, 'null' => true, 'comment' => '排序权重']],
             ['status', 'integer', ['limit' => 1, 'default' => 1, 'null' => true, 'comment' => '卡券状态(0禁用,1使用)']],
-            ['deleted', 'integer', ['limit' => 1, 'default' => 0, 'null' => true, 'comment' => '删除状态(1已删,0未删)']],
+            ['delete_time', 'datetime', ['default' => null, 'null' => true, 'comment' => '删除时间']],
             ['create_time', 'datetime', ['default' => null, 'null' => true, 'comment' => '创建时间']],
             ['update_time', 'datetime', ['default' => null, 'null' => true, 'comment' => '更新时间']],
         ], [
-            'sort', 'type', 'status', 'deleted', 'create_time',
+            'sort', 'type', 'status', 'delete_time', 'create_time',
         ], true);
     }
 
@@ -158,11 +158,11 @@ class InstallWemall20241010 extends Migrator
             ['items', 'text', ['default' => null, 'null' => true, 'comment' => '方案规则']],
             ['sort', 'biginteger', ['limit' => 20, 'default' => 0, 'null' => true, 'comment' => '排序权重']],
             ['status', 'integer', ['limit' => 1, 'default' => 1, 'null' => true, 'comment' => '方案状态(0禁用,1使用)']],
-            ['deleted', 'integer', ['limit' => 1, 'default' => 0, 'null' => true, 'comment' => '删除状态(1已删,0未删)']],
+            ['delete_time', 'datetime', ['default' => null, 'null' => true, 'comment' => '删除时间']],
             ['create_time', 'datetime', ['default' => null, 'null' => true, 'comment' => '创建时间']],
             ['update_time', 'datetime', ['default' => null, 'null' => true, 'comment' => '更新时间']],
         ], [
-            'sort', 'status', 'deleted', 'create_time',
+            'sort', 'status', 'delete_time', 'create_time',
         ], true);
     }
 
@@ -219,11 +219,11 @@ class InstallWemall20241010 extends Migrator
             ['tips', 'integer', ['limit' => 1, 'default' => 0, 'null' => true, 'comment' => 'TIPS显示']],
             ['sort', 'biginteger', ['limit' => 20, 'default' => 0, 'null' => true, 'comment' => '排序权重']],
             ['status', 'integer', ['limit' => 1, 'default' => 1, 'null' => true, 'comment' => '激活状态(0无效,1有效)']],
-            ['deleted', 'integer', ['limit' => 1, 'default' => 0, 'null' => true, 'comment' => '删除状态(1已删,0未删)']],
+            ['delete_time', 'datetime', ['default' => null, 'null' => true, 'comment' => '删除时间']],
             ['create_time', 'datetime', ['default' => null, 'null' => true, 'comment' => '创建时间']],
             ['update_time', 'datetime', ['default' => null, 'null' => true, 'comment' => '更新时间']],
         ], [
-            'code', 'sort', 'name', 'tips', 'status', 'deleted', 'create_time',
+            'code', 'sort', 'name', 'tips', 'status', 'delete_time', 'create_time',
         ], true);
     }
 
@@ -249,11 +249,11 @@ class InstallWemall20241010 extends Migrator
             ['remark', 'string', ['limit' => 500, 'default' => '', 'null' => true, 'comment' => '推广描述']],
             ['sort', 'biginteger', ['limit' => 20, 'default' => 0, 'null' => true, 'comment' => '排序权重']],
             ['status', 'integer', ['limit' => 1, 'default' => 1, 'null' => true, 'comment' => '激活状态(0无效,1有效)']],
-            ['deleted', 'integer', ['limit' => 1, 'default' => 0, 'null' => true, 'comment' => '删除状态(1已删,0未删)']],
+            ['delete_time', 'datetime', ['default' => null, 'null' => true, 'comment' => '删除时间']],
             ['create_time', 'datetime', ['default' => null, 'null' => true, 'comment' => '创建时间']],
             ['update_time', 'datetime', ['default' => null, 'null' => true, 'comment' => '更新时间']],
         ], [
-            'code', 'sort', 'name', 'status', 'deleted', 'create_time',
+            'code', 'sort', 'name', 'status', 'delete_time', 'create_time',
         ], true);
     }
 
@@ -290,11 +290,11 @@ class InstallWemall20241010 extends Migrator
             ['remark', 'string', ['limit' => 200, 'default' => '', 'null' => true, 'comment' => '配置描述']],
             ['sort', 'biginteger', ['limit' => 20, 'default' => 0, 'null' => true, 'comment' => '排序权重']],
             ['status', 'integer', ['limit' => 1, 'default' => 1, 'null' => true, 'comment' => '激活状态(0无效,1有效)']],
-            ['deleted', 'integer', ['limit' => 1, 'default' => 0, 'null' => true, 'comment' => '删除状态(1已删,0未删)']],
+            ['delete_time', 'datetime', ['default' => null, 'null' => true, 'comment' => '删除时间']],
             ['create_time', 'datetime', ['default' => null, 'null' => true, 'comment' => '创建时间']],
             ['update_time', 'datetime', ['default' => null, 'null' => true, 'comment' => '更新时间']],
         ], [
-            'code', 'sort', 'name', 'type', 'stype', 'status', 'deleted', 'p1_level', 'p2_level', 'p3_level', 'p0_level', 'create_time',
+            'code', 'sort', 'name', 'type', 'stype', 'status', 'delete_time', 'p1_level', 'p2_level', 'p3_level', 'p0_level', 'create_time',
         ], true);
     }
 
@@ -316,11 +316,11 @@ class InstallWemall20241010 extends Migrator
             ['remark', 'string', ['limit' => 500, 'default' => '', 'null' => true, 'comment' => '公司描述']],
             ['sort', 'biginteger', ['limit' => 20, 'default' => 0, 'null' => true, 'comment' => '排序权重']],
             ['status', 'integer', ['limit' => 1, 'default' => 1, 'null' => true, 'comment' => '激活状态(0无效,1有效)']],
-            ['deleted', 'integer', ['limit' => 1, 'default' => 0, 'null' => true, 'comment' => '删除状态(1已删,0未删)']],
+            ['delete_time', 'datetime', ['default' => null, 'null' => true, 'comment' => '删除时间']],
             ['create_time', 'datetime', ['default' => null, 'null' => true, 'comment' => '创建时间']],
             ['update_time', 'datetime', ['default' => null, 'null' => true, 'comment' => '更新时间']],
         ], [
-            'code', 'sort', 'name', 'status', 'deleted', 'create_time',
+            'code', 'sort', 'name', 'status', 'delete_time', 'create_time',
         ], true);
     }
 
@@ -344,11 +344,11 @@ class InstallWemall20241010 extends Migrator
             ['company', 'string', ['limit' => 500, 'default' => '', 'null' => true, 'comment' => '快递公司']],
             ['sort', 'biginteger', ['limit' => 20, 'default' => 0, 'null' => true, 'comment' => '排序权重']],
             ['status', 'integer', ['limit' => 1, 'default' => 1, 'null' => true, 'comment' => '激活状态(0无效,1有效)']],
-            ['deleted', 'integer', ['limit' => 1, 'default' => 0, 'null' => true, 'comment' => '删除状态(1已删,0未删)']],
+            ['delete_time', 'datetime', ['default' => null, 'null' => true, 'comment' => '删除时间']],
             ['create_time', 'datetime', ['default' => null, 'null' => true, 'comment' => '创建时间']],
             ['update_time', 'datetime', ['default' => null, 'null' => true, 'comment' => '更新时间']],
         ], [
-            'code', 'sort', 'name', 'status', 'deleted', 'create_time',
+            'code', 'sort', 'name', 'status', 'delete_time', 'create_time',
         ], true);
     }
 
@@ -392,11 +392,11 @@ class InstallWemall20241010 extends Migrator
             ['num_read', 'biginteger', ['limit' => 20, 'default' => 0, 'null' => true, 'comment' => '访问阅读统计']],
             ['sort', 'biginteger', ['limit' => 20, 'default' => 0, 'null' => true, 'comment' => '列表排序权重']],
             ['status', 'integer', ['limit' => 1, 'default' => 1, 'null' => true, 'comment' => '商品状态(1使用,0禁用)']],
-            ['deleted', 'integer', ['limit' => 1, 'default' => 0, 'null' => true, 'comment' => '删除状态(0未删,1已删)']],
+            ['delete_time', 'datetime', ['default' => null, 'null' => true, 'comment' => '删除时间']],
             ['create_time', 'datetime', ['default' => null, 'null' => true, 'comment' => '创建时间']],
             ['update_time', 'datetime', ['default' => null, 'null' => true, 'comment' => '更新时间']],
         ], [
-            'code', 'sort', 'ssid', 'status', 'deleted', 'rebate_type', 'discount_id', 'create_time', 'level_agent', 'level_upgrade',
+            'code', 'sort', 'ssid', 'status', 'delete_time', 'rebate_type', 'discount_id', 'create_time', 'level_agent', 'level_upgrade',
         ], true);
     }
 
@@ -419,11 +419,11 @@ class InstallWemall20241010 extends Migrator
             ['remark', 'string', ['limit' => 999, 'default' => '', 'null' => true, 'comment' => '分类描述']],
             ['sort', 'biginteger', ['limit' => 20, 'default' => 0, 'null' => true, 'comment' => '排序权重']],
             ['status', 'integer', ['limit' => 1, 'default' => 1, 'null' => true, 'comment' => '使用状态']],
-            ['deleted', 'integer', ['limit' => 1, 'default' => 0, 'null' => true, 'comment' => '删除状态']],
+            ['delete_time', 'datetime', ['default' => null, 'null' => true, 'comment' => '删除时间']],
             ['create_time', 'datetime', ['default' => null, 'null' => true, 'comment' => '创建时间']],
             ['update_time', 'datetime', ['default' => null, 'null' => true, 'comment' => '更新时间']],
         ], [
-            'pid', 'sort', 'status', 'deleted',
+            'pid', 'sort', 'status', 'delete_time',
         ], true);
     }
 
@@ -508,11 +508,11 @@ class InstallWemall20241010 extends Migrator
             ['gspec', 'string', ['limit' => 100, 'default' => '', 'null' => true, 'comment' => '商品规格']],
             ['gstock', 'biginteger', ['limit' => 20, 'default' => 0, 'null' => true, 'comment' => '入库数量']],
             ['status', 'integer', ['limit' => 1, 'default' => 1, 'null' => true, 'comment' => '数据状态(1使用,0禁用)']],
-            ['deleted', 'integer', ['limit' => 1, 'default' => 0, 'null' => true, 'comment' => '删除状态(0未删,1已删)']],
+            ['delete_time', 'datetime', ['default' => null, 'null' => true, 'comment' => '删除时间']],
             ['create_time', 'datetime', ['default' => null, 'null' => true, 'comment' => '创建时间']],
             ['update_time', 'datetime', ['default' => null, 'null' => true, 'comment' => '更新时间']],
         ], [
-            'ghash', 'gcode', 'status', 'deleted',
+            'ghash', 'gcode', 'status', 'delete_time',
         ], true);
     }
 
@@ -540,11 +540,11 @@ class InstallWemall20241010 extends Migrator
             ['sync', 'integer', ['limit' => 1, 'default' => 0, 'null' => true, 'comment' => '同步至常见问题状态(1已同步,0未同步)']],
             ['sort', 'biginteger', ['limit' => 20, 'default' => 0, 'null' => true, 'comment' => '排序权重']],
             ['status', 'integer', ['limit' => 1, 'default' => 1, 'null' => true, 'comment' => '展示状态(1使用,0禁用)']],
-            ['deleted', 'integer', ['limit' => 1, 'default' => 0, 'null' => true, 'comment' => '删除状态(0未删,1已删)']],
+            ['delete_time', 'datetime', ['default' => null, 'null' => true, 'comment' => '删除时间']],
             ['create_time', 'datetime', ['default' => null, 'null' => true, 'comment' => '创建时间']],
             ['update_time', 'datetime', ['default' => null, 'null' => true, 'comment' => '更新时间']],
         ], [
-            'sort', 'unid', 'status', 'deleted', 'reply_st',
+            'sort', 'unid', 'status', 'delete_time', 'reply_st',
         ], true);
     }
 
@@ -569,11 +569,11 @@ class InstallWemall20241010 extends Migrator
             ['num_read', 'biginteger', ['limit' => 20, 'default' => 0, 'null' => true, 'comment' => '阅读次数']],
             ['sort', 'biginteger', ['limit' => 20, 'default' => 0, 'null' => true, 'comment' => '排序权重']],
             ['status', 'integer', ['limit' => 1, 'default' => 1, 'null' => true, 'comment' => '展示状态(1使用,0禁用)']],
-            ['deleted', 'integer', ['limit' => 1, 'default' => 0, 'null' => true, 'comment' => '删除状态(0未删,1已删)']],
+            ['delete_time', 'datetime', ['default' => null, 'null' => true, 'comment' => '删除时间']],
             ['create_time', 'datetime', ['default' => null, 'null' => true, 'comment' => '创建时间']],
             ['update_time', 'datetime', ['default' => null, 'null' => true, 'comment' => '更新时间']],
         ], [
-            'sort', 'status', 'deleted',
+            'sort', 'status', 'delete_time',
         ], true);
     }
 
@@ -598,11 +598,11 @@ class InstallWemall20241010 extends Migrator
             ['content', 'text', ['default' => null, 'null' => true, 'comment' => '工单描述']],
             ['sort', 'biginteger', ['limit' => 20, 'default' => 0, 'null' => true, 'comment' => '排序权重']],
             ['status', 'integer', ['limit' => 1, 'default' => 1, 'null' => true, 'comment' => '工单状态(0取消,1新工单,2后台回复,3前台回复,4已完结)']],
-            ['deleted', 'integer', ['limit' => 1, 'default' => 0, 'null' => true, 'comment' => '删除状态(0未删,1已删)']],
+            ['delete_time', 'datetime', ['default' => null, 'null' => true, 'comment' => '删除时间']],
             ['create_time', 'datetime', ['default' => null, 'null' => true, 'comment' => '创建时间']],
             ['update_time', 'datetime', ['default' => null, 'null' => true, 'comment' => '更新时间']],
         ], [
-            'sort', 'name', 'unid', 'phone', 'status', 'deleted',
+            'sort', 'name', 'unid', 'phone', 'status', 'delete_time',
         ], true);
     }
 
@@ -625,7 +625,7 @@ class InstallWemall20241010 extends Migrator
             ['images', 'text', ['default' => null, 'null' => true, 'comment' => '图片内容']],
             ['reply_by', 'biginteger', ['limit' => 20, 'default' => 0, 'null' => true, 'comment' => '后台用户']],
             ['status', 'integer', ['limit' => 1, 'default' => 1, 'null' => true, 'comment' => '记录状态(0无效,1待审核,2已审核)']],
-            ['deleted', 'integer', ['limit' => 1, 'default' => 0, 'null' => true, 'comment' => '删除状态(0未删,1已删)']],
+            ['delete_time', 'datetime', ['default' => null, 'null' => true, 'comment' => '删除时间']],
             ['create_time', 'datetime', ['default' => null, 'null' => true, 'comment' => '创建时间']],
             ['update_time', 'datetime', ['default' => null, 'null' => true, 'comment' => '更新时间']],
         ], [
@@ -683,7 +683,7 @@ class InstallWemall20241010 extends Migrator
             ['cancel_time', 'string', ['limit' => 20, 'default' => '', 'null' => true, 'comment' => '取消时间']],
             ['cancel_status', 'integer', ['limit' => 1, 'default' => 0, 'null' => true, 'comment' => '取消状态']],
             ['cancel_remark', 'string', ['limit' => 200, 'default' => '', 'null' => true, 'comment' => '取消描述']],
-            ['deleted_time', 'string', ['limit' => 20, 'default' => '', 'null' => true, 'comment' => '删除时间']],
+            ['delete_time', 'datetime', ['default' => null, 'null' => true, 'comment' => '删除时间']],
             ['deleted_status', 'integer', ['limit' => 1, 'default' => 0, 'null' => true, 'comment' => '删除状态(0未删,1已删)']],
             ['deleted_remark', 'string', ['limit' => 255, 'default' => '', 'null' => true, 'comment' => '删除描述']],
             ['confirm_time', 'string', ['limit' => 20, 'default' => '', 'null' => true, 'comment' => '签收时间']],
@@ -770,11 +770,11 @@ class InstallWemall20241010 extends Migrator
             ['discount_rate', 'decimal', ['precision' => 20, 'scale' => 6, 'default' => '100.000000', 'null' => true, 'comment' => '销售价格折扣']],
             ['discount_amount', 'decimal', ['precision' => 20, 'scale' => 2, 'default' => '0.00', 'null' => true, 'comment' => '商品优惠金额']],
             ['status', 'integer', ['limit' => 1, 'default' => 1, 'null' => true, 'comment' => '商品状态(1使用,0禁用)']],
-            ['deleted', 'integer', ['limit' => 1, 'default' => 0, 'null' => true, 'comment' => '删除状态(0未删,1已删)']],
+            ['delete_time', 'datetime', ['default' => null, 'null' => true, 'comment' => '删除时间']],
             ['create_time', 'datetime', ['default' => null, 'null' => true, 'comment' => '创建时间']],
             ['update_time', 'datetime', ['default' => null, 'null' => true, 'comment' => '更新时间']],
         ], [
-            'unid', 'gsku', 'ssid', 'gcode', 'gspec', 'ghash', 'status', 'deleted', 'order_no', 'rebate_type', 'discount_id', 'level_agent', 'delivery_code',
+            'unid', 'gsku', 'ssid', 'gcode', 'gspec', 'ghash', 'status', 'delete_time', 'order_no', 'rebate_type', 'discount_id', 'level_agent', 'delivery_code',
         ], true);
     }
 
@@ -859,11 +859,11 @@ class InstallWemall20241010 extends Migrator
             ['company_name', 'string', ['limit' => 100, 'default' => '', 'null' => true, 'comment' => '快递公司名称']],
             ['extra', 'text', ['default' => null, 'null' => true, 'comment' => '原始数据']],
             ['status', 'integer', ['limit' => 1, 'default' => 1, 'null' => true, 'comment' => '发货状态(1待发货,2已发货,3已收货)']],
-            ['deleted', 'integer', ['limit' => 1, 'default' => 0, 'null' => true, 'comment' => '删除状态(0未删,1已删)']],
+            ['delete_time', 'datetime', ['default' => null, 'null' => true, 'comment' => '删除时间']],
             ['create_time', 'datetime', ['default' => null, 'null' => true, 'comment' => '创建时间']],
             ['update_time', 'datetime', ['default' => null, 'null' => true, 'comment' => '更新时间']],
         ], [
-            'unid', 'status', 'deleted', 'order_no', 'create_time',
+            'unid', 'status', 'delete_time', 'order_no', 'create_time',
         ], true);
     }
 
@@ -909,11 +909,11 @@ class InstallWemall20241010 extends Migrator
             ['company_name', 'string', ['limit' => 100, 'default' => '', 'null' => true, 'comment' => '快递公司名称']],
             ['extra', 'text', ['default' => null, 'null' => true, 'comment' => '原始数据']],
             ['status', 'integer', ['limit' => 1, 'default' => 1, 'null' => true, 'comment' => '发货状态(1待发货,2已发货,3已收货)']],
-            ['deleted', 'integer', ['limit' => 1, 'default' => 0, 'null' => true, 'comment' => '删除状态(0未删,1已删)']],
+            ['delete_time', 'datetime', ['default' => null, 'null' => true, 'comment' => '删除时间']],
             ['create_time', 'datetime', ['default' => null, 'null' => true, 'comment' => '创建时间']],
             ['update_time', 'datetime', ['default' => null, 'null' => true, 'comment' => '更新时间']],
         ], [
-            'unid', 'ssid', 'status', 'deleted', 'order_no', 'create_time',
+            'unid', 'ssid', 'status', 'delete_time', 'order_no', 'create_time',
         ], true);
     }
 
@@ -964,11 +964,11 @@ class InstallWemall20241010 extends Migrator
             ['content', 'string', ['limit' => 200, 'default' => '', 'null' => true, 'comment' => '评论内容']],
             ['images', 'text', ['default' => null, 'null' => true, 'comment' => '评论图片']],
             ['status', 'integer', ['limit' => 1, 'default' => 0, 'null' => true, 'comment' => '评论状态(0隐藏,1显示)']],
-            ['deleted', 'integer', ['limit' => 1, 'default' => 0, 'null' => true, 'comment' => '删除状态(0未删,1已删)']],
+            ['delete_time', 'datetime', ['default' => null, 'null' => true, 'comment' => '删除时间']],
             ['create_time', 'datetime', ['default' => null, 'null' => true, 'comment' => '创建时间']],
             ['update_time', 'datetime', ['default' => null, 'null' => true, 'comment' => '更新时间']],
         ], [
-            'unid', 'code', 'ssid', 'ghash', 'gcode', 'status', 'deleted', 'order_no', 'create_time',
+            'unid', 'code', 'ssid', 'ghash', 'gcode', 'status', 'delete_time', 'order_no', 'create_time',
         ], true);
     }
 
@@ -1041,11 +1041,11 @@ class InstallWemall20241010 extends Migrator
             ['balance', 'decimal', ['precision' => 20, 'scale' => 2, 'default' => '0.00', 'null' => true, 'comment' => '赠送余额']],
             ['integral', 'decimal', ['precision' => 20, 'scale' => 2, 'default' => '0.00', 'null' => true, 'comment' => '赠送积分']],
             ['status', 'integer', ['limit' => 1, 'default' => 1, 'null' => true, 'comment' => '生效状态(0未生效,1已生效)']],
-            ['deleted', 'integer', ['limit' => 1, 'default' => 0, 'null' => true, 'comment' => '删除状态(0未删除,1已删除)']],
+            ['delete_time', 'datetime', ['default' => null, 'null' => true, 'comment' => '删除时间']],
             ['create_time', 'datetime', ['default' => null, 'null' => true, 'comment' => '创建时间']],
             ['update_time', 'datetime', ['default' => null, 'null' => true, 'comment' => '更新时间']],
         ], [
-            'unid', 'date', 'status', 'deleted', 'create_time',
+            'unid', 'date', 'status', 'delete_time', 'create_time',
         ], true);
     }
 
@@ -1073,12 +1073,12 @@ class InstallWemall20241010 extends Migrator
             ['status_time', 'datetime', ['default' => null, 'null' => true, 'comment' => '修改时间']],
             ['expire', 'biginteger', ['limit' => 20, 'default' => 0, 'null' => true, 'comment' => '有效时间']],
             ['expire_time', 'datetime', ['default' => null, 'null' => true, 'comment' => '有效日期']],
-            ['deleted', 'integer', ['limit' => 1, 'default' => 0, 'null' => true, 'comment' => '删除状态(0未删除,1已删除)']],
+            ['delete_time', 'datetime', ['default' => null, 'null' => true, 'comment' => '删除时间']],
             ['create_time', 'datetime', ['default' => null, 'null' => true, 'comment' => '创建时间']],
             ['update_time', 'datetime', ['default' => null, 'null' => true, 'comment' => '更新时间']],
             ['confirm_time', 'datetime', ['default' => null, 'null' => true, 'comment' => '到账时间']],
         ], [
-            'code', 'unid', 'coid', 'used', 'status', 'expire', 'deleted', 'create_time', 'confirm_time',
+            'code', 'unid', 'coid', 'used', 'status', 'expire', 'delete_time', 'create_time', 'confirm_time',
         ], true);
     }
 
@@ -1109,11 +1109,11 @@ class InstallWemall20241010 extends Migrator
             ['agent_entry', 'tinyinteger', ['limit' => 1, 'default' => 0, 'null' => true, 'comment' => '代理权限']],
             ['agent_phone', 'string', ['limit' => 50, 'default' => '', 'null' => true, 'comment' => '上级手机']],
             ['status', 'integer', ['limit' => 1, 'default' => 1, 'null' => true, 'comment' => '记录状态(0无效,1有效)']],
-            ['deleted', 'integer', ['limit' => 1, 'default' => 0, 'null' => true, 'comment' => '删除状态(0未删,1已删)']],
+            ['delete_time', 'datetime', ['default' => null, 'null' => true, 'comment' => '删除时间']],
             ['create_time', 'datetime', ['default' => null, 'null' => true, 'comment' => '创建时间']],
             ['update_time', 'datetime', ['default' => null, 'null' => true, 'comment' => '更新时间']],
         ], [
-            'name', 'unid', 'phone', 'status', 'deleted', 'create_time', 'agent_entry', 'agent_phone', 'rebate_total',
+            'name', 'unid', 'phone', 'status', 'delete_time', 'create_time', 'agent_entry', 'agent_phone', 'rebate_total',
         ], true);
     }
 
@@ -1145,12 +1145,12 @@ class InstallWemall20241010 extends Migrator
             ['rebate_rule_id', 'biginteger', ['limit' => 20, 'default' => 0, 'null' => true, 'comment' => '返佣规则ID']],
             ['remark', 'string', ['limit' => 50, 'default' => '', 'null' => true, 'comment' => '奖励描述']],
             ['status', 'integer', ['limit' => 1, 'default' => 1, 'null' => true, 'comment' => '生效状态(0未生效,1已生效)']],
-            ['deleted', 'integer', ['limit' => 1, 'default' => 0, 'null' => true, 'comment' => '删除状态(0未删除,1已删除)']],
+            ['delete_time', 'datetime', ['default' => null, 'null' => true, 'comment' => '删除时间']],
             ['create_time', 'datetime', ['default' => null, 'null' => true, 'comment' => '创建时间']],
             ['update_time', 'datetime', ['default' => null, 'null' => true, 'comment' => '更新时间']],
             ['confirm_time', 'datetime', ['default' => null, 'null' => true, 'comment' => '到账时间']],
         ], [
-            'type', 'date', 'code', 'name', 'unid', 'hash', 'status', 'deleted', 'order_no', 'order_unid', 'create_time', 'confirm_time',
+            'type', 'date', 'code', 'name', 'unid', 'hash', 'status', 'delete_time', 'order_no', 'order_unid', 'create_time', 'confirm_time',
         ], true);
     }
 
@@ -1172,14 +1172,13 @@ class InstallWemall20241010 extends Migrator
             ['name', 'string', ['limit' => 200, 'default' => '', 'null' => true, 'comment' => '操作名称']],
             ['remark', 'string', ['limit' => 999, 'default' => '', 'null' => true, 'comment' => '操作备注']],
             ['amount', 'decimal', ['precision' => 20, 'scale' => 2, 'default' => '0.00', 'null' => true, 'comment' => '操作金额']],
-            ['deleted', 'integer', ['limit' => 1, 'default' => 0, 'null' => true, 'comment' => '删除状态(0未删除,1已删除)']],
+            ['delete_time', 'datetime', ['default' => null, 'null' => true, 'comment' => '删除时间']],
             ['create_by', 'biginteger', ['limit' => 20, 'default' => 0, 'null' => true, 'comment' => '系统用户']],
             ['deleted_by', 'biginteger', ['limit' => 20, 'default' => 0, 'null' => true, 'comment' => '系统用户']],
             ['create_time', 'datetime', ['default' => null, 'null' => true, 'comment' => '创建时间']],
-            ['deleted_time', 'datetime', ['default' => null, 'null' => true, 'comment' => '删除时间']],
             ['update_time', 'datetime', ['default' => null, 'null' => true, 'comment' => '更新时间']],
         ], [
-            'unid', 'code', 'deleted', 'create_time', 'deleted_time',
+            'unid', 'code', 'delete_time', 'create_time',
         ], true);
     }
 

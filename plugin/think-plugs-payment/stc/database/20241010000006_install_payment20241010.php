@@ -70,11 +70,11 @@ class InstallPayment20241010 extends Migrator
             ['region_city', 'string', ['limit' => 100, 'default' => '', 'null' => true, 'comment' => '地址-城市']],
             ['region_area', 'string', ['limit' => 100, 'default' => '', 'null' => true, 'comment' => '地址-区域']],
             ['region_addr', 'string', ['limit' => 500, 'default' => '', 'null' => true, 'comment' => '地址-详情']],
-            ['deleted', 'integer', ['limit' => 1, 'default' => 0, 'null' => true, 'comment' => '删除状态(1已删,0未删)']],
+            ['delete_time', 'datetime', ['default' => null, 'null' => true, 'comment' => '删除时间']],
             ['create_time', 'datetime', ['default' => null, 'null' => true, 'comment' => '创建时间']],
             ['update_time', 'datetime', ['default' => null, 'null' => true, 'comment' => '更新时间']],
         ], [
-            'type', 'unid', 'deleted', 'user_phone', 'create_time',
+            'type', 'unid', 'delete_time', 'user_phone', 'create_time',
         ], true);
     }
 
@@ -102,15 +102,14 @@ class InstallPayment20241010 extends Migrator
             ['amount_next', 'decimal', ['precision' => 20, 'scale' => 2, 'default' => '0.00', 'null' => true, 'comment' => '操作后金额']],
             ['cancel', 'integer', ['limit' => 1, 'default' => 0, 'null' => true, 'comment' => '作废状态(0未作废,1已作废)']],
             ['unlock', 'integer', ['limit' => 1, 'default' => 0, 'null' => true, 'comment' => '解锁状态(0锁定中,1已生效)']],
-            ['deleted', 'integer', ['limit' => 1, 'default' => 0, 'null' => true, 'comment' => '删除状态(0未删除,1已删除)']],
+            ['delete_time', 'datetime', ['default' => null, 'null' => true, 'comment' => '删除时间']],
             ['create_by', 'biginteger', ['limit' => 20, 'default' => 0, 'null' => true, 'comment' => '系统用户']],
             ['cancel_time', 'datetime', ['default' => null, 'null' => true, 'comment' => '作废时间']],
             ['unlock_time', 'datetime', ['default' => null, 'null' => true, 'comment' => '解锁时间']],
             ['create_time', 'datetime', ['default' => null, 'null' => true, 'comment' => '创建时间']],
-            ['deleted_time', 'datetime', ['default' => null, 'null' => true, 'comment' => '删除时间']],
             ['update_time', 'datetime', ['default' => null, 'null' => true, 'comment' => '更新时间']],
         ], [
-            'unid', 'code', 'cancel', 'unlock', 'deleted', 'create_time', 'deleted_time',
+            'unid', 'code', 'cancel', 'unlock', 'delete_time', 'create_time',
         ], true);
     }
 
@@ -135,11 +134,11 @@ class InstallPayment20241010 extends Migrator
             ['content', 'text', ['default' => null, 'null' => true, 'comment' => '支付参数']],
             ['sort', 'biginteger', ['limit' => 20, 'default' => 0, 'null' => true, 'comment' => '排序权重']],
             ['status', 'integer', ['limit' => 1, 'default' => 1, 'null' => true, 'comment' => '支付状态(1使用,0禁用)']],
-            ['deleted', 'integer', ['limit' => 1, 'default' => 0, 'null' => true, 'comment' => '删除状态']],
+            ['delete_time', 'datetime', ['default' => null, 'null' => true, 'comment' => '删除时间']],
             ['create_time', 'datetime', ['default' => null, 'null' => true, 'comment' => '创建时间']],
             ['update_time', 'datetime', ['default' => null, 'null' => true, 'comment' => '更新时间']],
         ], [
-            'type', 'code', 'sort', 'status', 'deleted', 'create_time',
+            'type', 'code', 'sort', 'status', 'delete_time', 'create_time',
         ], true);
     }
 
@@ -167,15 +166,14 @@ class InstallPayment20241010 extends Migrator
             ['amount_next', 'decimal', ['precision' => 20, 'scale' => 2, 'default' => '0.00', 'null' => true, 'comment' => '操作后金额']],
             ['cancel', 'integer', ['limit' => 1, 'default' => 0, 'null' => true, 'comment' => '作废状态(0未作废,1已作废)']],
             ['unlock', 'integer', ['limit' => 1, 'default' => 0, 'null' => true, 'comment' => '解锁状态(0锁定中,1已生效)']],
-            ['deleted', 'integer', ['limit' => 1, 'default' => 0, 'null' => true, 'comment' => '删除状态(0未删除,1已删除)']],
+            ['delete_time', 'datetime', ['default' => null, 'null' => true, 'comment' => '删除时间']],
             ['create_by', 'biginteger', ['limit' => 20, 'default' => 0, 'null' => true, 'comment' => '系统用户']],
             ['cancel_time', 'datetime', ['default' => null, 'null' => true, 'comment' => '作废时间']],
             ['unlock_time', 'datetime', ['default' => null, 'null' => true, 'comment' => '解锁时间']],
             ['create_time', 'datetime', ['default' => null, 'null' => true, 'comment' => '创建时间']],
-            ['deleted_time', 'datetime', ['default' => null, 'null' => true, 'comment' => '删除时间']],
             ['update_time', 'datetime', ['default' => null, 'null' => true, 'comment' => '更新时间']],
         ], [
-            'unid', 'code', 'cancel', 'unlock', 'deleted', 'create_time', 'deleted_time',
+            'unid', 'code', 'cancel', 'unlock', 'delete_time', 'create_time',
         ], true);
     }
 

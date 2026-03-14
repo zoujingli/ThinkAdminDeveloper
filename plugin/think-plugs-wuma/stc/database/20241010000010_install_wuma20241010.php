@@ -99,11 +99,11 @@ class InstallWuma20241010 extends Migrator
             ['template', 'string', ['limit' => 500, 'default' => '', 'null' => true, 'comment' => '导出模板']],
             ['remark', 'string', ['limit' => 500, 'default' => '', 'null' => true, 'comment' => '物码描述']],
             ['status', 'integer', ['limit' => 1, 'default' => 1, 'null' => true, 'comment' => '记录状态(0无效,1有效)']],
-            ['deleted', 'integer', ['limit' => 1, 'default' => 0, 'null' => true, 'comment' => '删除状态(0未删,1已删)']],
+            ['delete_time', 'datetime', ['default' => null, 'null' => true, 'comment' => '删除时间']],
             ['create_time', 'datetime', ['default' => null, 'null' => true, 'comment' => '创建时间']],
             ['update_time', 'datetime', ['default' => null, 'null' => true, 'comment' => '更新时间']],
         ], [
-            'type', 'batch', 'status', 'deleted',
+            'type', 'batch', 'status', 'delete_time',
         ], true);
     }
 
@@ -155,11 +155,11 @@ class InstallWuma20241010 extends Migrator
             ['num_need', 'biginteger', ['limit' => 20, 'default' => 0, 'null' => true, 'comment' => '累计出库数量']],
             ['num_count', 'biginteger', ['limit' => 20, 'default' => 0, 'null' => true, 'comment' => '累计已经出库']],
             ['status', 'integer', ['limit' => 1, 'default' => 1, 'null' => true, 'comment' => '记录状态(0无效,1有效,2完成)']],
-            ['deleted', 'integer', ['limit' => 1, 'default' => 0, 'null' => true, 'comment' => '删除状态(0未删,1已删)']],
+            ['delete_time', 'datetime', ['default' => null, 'null' => true, 'comment' => '删除时间']],
             ['create_time', 'datetime', ['default' => null, 'null' => true, 'comment' => '创建时间']],
             ['update_time', 'datetime', ['default' => null, 'null' => true, 'comment' => '更新时间']],
         ], [
-            'auid', 'xuid', 'code', 'mode', 'ghash', 'status', 'deleted', 'create_time',
+            'auid', 'xuid', 'code', 'mode', 'ghash', 'status', 'delete_time', 'create_time',
         ], true);
     }
 
@@ -209,11 +209,11 @@ class InstallWuma20241010 extends Migrator
             ['stock', 'integer', ['limit' => 1, 'default' => 1, 'null' => true, 'comment' => '库存有效']],
             ['ghash', 'string', ['limit' => 20, 'default' => '', 'null' => true, 'comment' => '商品哈唏']],
             ['status', 'integer', ['limit' => 1, 'default' => 1, 'null' => true, 'comment' => '数据状态(0无效,1有效)']],
-            ['deleted', 'integer', ['limit' => 1, 'default' => 0, 'null' => true, 'comment' => '删除状态(0有效,1已删)']],
+            ['delete_time', 'datetime', ['default' => null, 'null' => true, 'comment' => '删除时间']],
             ['status_time', 'datetime', ['default' => null, 'null' => true, 'comment' => '状态时间']],
             ['create_time', 'datetime', ['default' => null, 'null' => true, 'comment' => '创建时间']],
         ], [
-            'ddid', 'auid', 'code', 'mode', 'stock', 'ghash', 'status', 'deleted',
+            'ddid', 'auid', 'code', 'mode', 'stock', 'ghash', 'status', 'delete_time',
         ], true);
     }
 
@@ -274,11 +274,11 @@ class InstallWuma20241010 extends Migrator
             ['region_address', 'string', ['limit' => 255, 'default' => '', 'null' => true, 'comment' => '详细地址']],
             ['remark', 'string', ['limit' => 500, 'default' => '', 'null' => true, 'comment' => '用户备注描述']],
             ['status', 'integer', ['limit' => 1, 'default' => 1, 'null' => true, 'comment' => '用户状态(1正常,0已黑)']],
-            ['deleted', 'integer', ['limit' => 1, 'default' => 0, 'null' => true, 'comment' => '删除状态(0未删,1已删)']],
+            ['delete_time', 'datetime', ['default' => null, 'null' => true, 'comment' => '删除时间']],
             ['create_time', 'datetime', ['default' => null, 'null' => true, 'comment' => '注册时间']],
             ['update_time', 'datetime', ['default' => null, 'null' => true, 'comment' => '更新时间']],
         ], [
-            'auid', 'code', 'level', 'status', 'deleted', 'super_auid',
+            'auid', 'code', 'level', 'status', 'delete_time', 'super_auid',
         ], true);
     }
 
@@ -349,11 +349,11 @@ class InstallWuma20241010 extends Migrator
             ['outer_items', 'text', ['default' => null, 'null' => true, 'comment' => 'JSON出库']],
             ['coder_items2', 'text', ['default' => null, 'null' => true, 'comment' => 'JSON赋码']],
             ['status', 'integer', ['limit' => 1, 'default' => 1, 'null' => true, 'comment' => '记录状态(0无效,1有效)']],
-            ['deleted', 'integer', ['limit' => 1, 'default' => 0, 'null' => true, 'comment' => '删除状态(0未删,1已删)']],
+            ['delete_time', 'datetime', ['default' => null, 'null' => true, 'comment' => '删除时间']],
             ['create_time', 'datetime', ['default' => null, 'null' => true, 'comment' => '创建时间']],
             ['update_time', 'datetime', ['default' => null, 'null' => true, 'comment' => '更新时间']],
         ], [
-            'type', 'batch', 'cbatch', 'status', 'deleted',
+            'type', 'batch', 'cbatch', 'status', 'delete_time',
         ], true);
     }
 
@@ -405,12 +405,12 @@ class InstallWuma20241010 extends Migrator
             ['remark', 'string', ['limit' => 999, 'default' => '', 'null' => true, 'comment' => '流程备注']],
             ['sort', 'biginteger', ['limit' => 20, 'default' => 0, 'null' => true, 'comment' => '排序权重']],
             ['status', 'integer', ['limit' => 1, 'default' => 1, 'null' => true, 'comment' => '记录状态(0无效1有效)']],
-            ['deleted', 'integer', ['limit' => 1, 'default' => 0, 'null' => true, 'comment' => '删除状态(0未删1已删)']],
+            ['delete_time', 'datetime', ['default' => null, 'null' => true, 'comment' => '删除时间']],
             ['hash_time', 'datetime', ['default' => null, 'null' => true, 'comment' => '上链时间']],
             ['create_time', 'datetime', ['default' => null, 'null' => true, 'comment' => '创建时间']],
             ['update_time', 'datetime', ['default' => null, 'null' => true, 'comment' => '更新时间']],
         ], [
-            'code', 'scid', 'sort', 'status', 'deleted',
+            'code', 'scid', 'sort', 'status', 'delete_time',
         ], true);
     }
 
@@ -434,11 +434,11 @@ class InstallWuma20241010 extends Migrator
             ['content', 'text', ['default' => null, 'null' => true, 'comment' => '定制规则']],
             ['sort', 'biginteger', ['limit' => 20, 'default' => 0, 'null' => true, 'comment' => '排序权重']],
             ['status', 'integer', ['limit' => 1, 'default' => 1, 'null' => true, 'comment' => '记录状态(0无效1有效)']],
-            ['deleted', 'integer', ['limit' => 1, 'default' => 0, 'null' => true, 'comment' => '删除状态(0未删1已删)']],
+            ['delete_time', 'datetime', ['default' => null, 'null' => true, 'comment' => '删除时间']],
             ['create_time', 'datetime', ['default' => null, 'null' => true, 'comment' => '创建时间']],
             ['update_time', 'datetime', ['default' => null, 'null' => true, 'comment' => '更新时间']],
         ], [
-            'code', 'status', 'deleted',
+            'code', 'status', 'delete_time',
         ], true);
     }
 
@@ -464,11 +464,11 @@ class InstallWuma20241010 extends Migrator
             ['remark', 'string', ['limit' => 999, 'default' => '', 'null' => true, 'comment' => '批次备注']],
             ['status', 'integer', ['limit' => 1, 'default' => 1, 'null' => true, 'comment' => '记录状态(0无效1有效)']],
             ['sort', 'biginteger', ['limit' => 20, 'default' => 0, 'null' => true, 'comment' => '排序权重']],
-            ['deleted', 'integer', ['limit' => 1, 'default' => 0, 'null' => true, 'comment' => '删除状态(0未删1已删)']],
+            ['delete_time', 'datetime', ['default' => null, 'null' => true, 'comment' => '删除时间']],
             ['create_time', 'datetime', ['default' => null, 'null' => true, 'comment' => '创建时间']],
             ['update_time', 'datetime', ['default' => null, 'null' => true, 'comment' => '更新时间']],
         ], [
-            'batch', 'status', 'deleted',
+            'batch', 'status', 'delete_time',
         ], true);
     }
 
@@ -587,11 +587,11 @@ class InstallWuma20241010 extends Migrator
             ['content', 'text', ['default' => null, 'null' => true, 'comment' => '模板内容']],
             ['sort', 'biginteger', ['limit' => 20, 'default' => 0, 'null' => true, 'comment' => '排序权重']],
             ['status', 'integer', ['limit' => 1, 'default' => 1, 'null' => true, 'comment' => '记录状态(0无效,1有效)']],
-            ['deleted', 'integer', ['limit' => 1, 'default' => 0, 'null' => true, 'comment' => '删除状态(0未删,1已删)']],
+            ['delete_time', 'datetime', ['default' => null, 'null' => true, 'comment' => '删除时间']],
             ['create_time', 'datetime', ['default' => null, 'null' => true, 'comment' => '创建时间']],
             ['update_time', 'datetime', ['default' => null, 'null' => true, 'comment' => '更新时间']],
         ], [
-            'code', 'status', 'deleted',
+            'code', 'status', 'delete_time',
         ], true);
     }
 
@@ -618,11 +618,11 @@ class InstallWuma20241010 extends Migrator
             ['addr_text', 'string', ['limit' => 255, 'default' => '', 'null' => true, 'comment' => '详细地址']],
             ['sort', 'biginteger', ['limit' => 20, 'default' => 0, 'null' => true, 'comment' => '排序权重']],
             ['status', 'integer', ['limit' => 1, 'default' => 1, 'null' => true, 'comment' => '记录状态(0无效1有效)']],
-            ['deleted', 'integer', ['limit' => 1, 'default' => 0, 'null' => true, 'comment' => '删除状态(0未删1已删)']],
+            ['delete_time', 'datetime', ['default' => null, 'null' => true, 'comment' => '删除时间']],
             ['create_time', 'datetime', ['default' => null, 'null' => true, 'comment' => '创建时间']],
             ['update_time', 'datetime', ['default' => null, 'null' => true, 'comment' => '更新时间']],
         ], [
-            'code', 'name', 'sort', 'status', 'deleted', 'create_time',
+            'code', 'name', 'sort', 'status', 'delete_time', 'create_time',
         ], true);
     }
 
@@ -650,12 +650,11 @@ class InstallWuma20241010 extends Migrator
             ['num_need', 'biginteger', ['limit' => 20, 'default' => 0, 'null' => true, 'comment' => '扫码总数']],
             ['num_used', 'biginteger', ['limit' => 20, 'default' => 0, 'null' => true, 'comment' => '扫码完成']],
             ['status', 'integer', ['limit' => 1, 'default' => 1, 'null' => true, 'comment' => '记录状态(0无效,1有效,2完成)']],
-            ['deleted', 'integer', ['limit' => 1, 'default' => 0, 'null' => true, 'comment' => '删除状态(0未删,1已删)']],
+            ['delete_time', 'datetime', ['default' => null, 'null' => true, 'comment' => '删除时间']],
             ['create_time', 'datetime', ['default' => null, 'null' => true, 'comment' => '创建时间']],
             ['update_time', 'datetime', ['default' => null, 'null' => true, 'comment' => '更新时间']],
-            ['deleted_time', 'datetime', ['default' => null, 'null' => true, 'comment' => '删除时间']],
         ], [
-            'mode', 'auid', 'type', 'code', 'ghash', 'wcode', 'status', 'deleted', 'create_time',
+            'mode', 'auid', 'type', 'code', 'ghash', 'wcode', 'status', 'delete_time', 'create_time',
         ], true);
     }
 
@@ -745,11 +744,11 @@ class InstallWuma20241010 extends Migrator
         PhinxExtend::upgrade($table, [
             ['max', 'biginteger', ['limit' => 20, 'default' => 0, 'null' => true, 'comment' => '大码数值']],
             ['mid', 'biginteger', ['limit' => 20, 'default' => 0, 'null' => true, 'comment' => '中码数值']],
-            ['deleted', 'integer', ['limit' => 1, 'default' => 0, 'null' => true, 'comment' => '删除状态(0未删,1已删)']],
+            ['delete_time', 'datetime', ['default' => null, 'null' => true, 'comment' => '删除时间']],
             ['create_by', 'biginteger', ['limit' => 20, 'default' => 0, 'null' => true, 'comment' => '上传用户']],
             ['create_time', 'datetime', ['default' => null, 'null' => true, 'comment' => '创建时间']],
         ], [
-            'max', 'mid', 'deleted',
+            'max', 'mid', 'delete_time',
         ], true);
     }
 
@@ -774,11 +773,11 @@ class InstallWuma20241010 extends Migrator
             ['encode', 'string', ['limit' => 20, 'default' => '', 'null' => true, 'comment' => '防伪编码']],
             ['lock', 'integer', ['limit' => 1, 'default' => 0, 'null' => true, 'comment' => '锁定状态']],
             ['status', 'integer', ['limit' => 1, 'default' => 1, 'null' => true, 'comment' => '记录状态(0无效,1有效)']],
-            ['deleted', 'integer', ['limit' => 1, 'default' => 0, 'null' => true, 'comment' => '删除状态(0未删,1已删)']],
+            ['delete_time', 'datetime', ['default' => null, 'null' => true, 'comment' => '删除时间']],
             ['create_by', 'biginteger', ['limit' => 20, 'default' => 0, 'null' => true, 'comment' => '上传用户']],
             ['create_time', 'datetime', ['default' => null, 'null' => true, 'comment' => '创建时间']],
         ], [
-            'rid', 'max', 'mid', 'min', 'lock', 'status', 'encode', 'number', 'deleted',
+            'rid', 'max', 'mid', 'min', 'lock', 'status', 'encode', 'number', 'delete_time',
         ], true);
     }
 
@@ -802,11 +801,11 @@ class InstallWuma20241010 extends Migrator
             ['target', 'string', ['limit' => 20, 'default' => '', 'null' => true, 'comment' => '目标物码']],
             ['lock', 'integer', ['limit' => 1, 'default' => 0, 'null' => true, 'comment' => '锁定状态']],
             ['status', 'integer', ['limit' => 1, 'default' => 1, 'null' => true, 'comment' => '记录状态(0无效,1有效)']],
-            ['deleted', 'integer', ['limit' => 1, 'default' => 0, 'null' => true, 'comment' => '删除状态(0未删,1已删)']],
+            ['delete_time', 'datetime', ['default' => null, 'null' => true, 'comment' => '删除时间']],
             ['create_by', 'biginteger', ['limit' => 20, 'default' => 0, 'null' => true, 'comment' => '上传用户']],
             ['create_time', 'datetime', ['default' => null, 'null' => true, 'comment' => '创建时间']],
         ], [
-            'smin', 'tmin', 'lock', 'status', 'target', 'source', 'deleted',
+            'smin', 'tmin', 'lock', 'status', 'target', 'source', 'delete_time',
         ], true);
     }
 
@@ -858,11 +857,11 @@ class InstallWuma20241010 extends Migrator
             ['remark', 'string', ['limit' => 500, 'default' => '', 'null' => true, 'comment' => '物码描述']],
             ['sort', 'biginteger', ['limit' => 20, 'default' => 0, 'null' => true, 'comment' => '排序权重']],
             ['status', 'integer', ['limit' => 1, 'default' => 1, 'null' => true, 'comment' => '记录状态(0无效,1有效)']],
-            ['deleted', 'integer', ['limit' => 1, 'default' => 0, 'null' => true, 'comment' => '删除状态(0未删,1已删)']],
+            ['delete_time', 'datetime', ['default' => null, 'null' => true, 'comment' => '删除时间']],
             ['create_time', 'datetime', ['default' => null, 'null' => true, 'comment' => '创建时间']],
             ['update_time', 'datetime', ['default' => null, 'null' => true, 'comment' => '更新时间']],
         ], [
-            'sort', 'token', 'status', 'deleted', 'username', 'password',
+            'sort', 'token', 'status', 'delete_time', 'username', 'password',
         ], true);
     }
 }
