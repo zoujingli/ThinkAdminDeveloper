@@ -9,6 +9,7 @@
             <file>plugin/think-library/tests/CodeTest.php</file>
             <file>plugin/think-library/tests/JwtTest.php</file>
             <file>plugin/think-library/tests/ArchitectureBoundaryTest.php</file>
+            <file>plugin/think-library/tests/ComposerInstallBoundaryTest.php</file>
             <file>plugin/think-library/tests/RouteTemplateBoundaryTest.php</file>
             <file>plugin/think-library/tests/ComposerDependencyBoundaryTest.php</file>
             <file>plugin/think-library/tests/MigrationOwnershipTest.php</file>
