@@ -20,7 +20,6 @@ declare(strict_types=1);
 
 namespace plugin\storage\service;
 
-use plugin\storage\service\StorageConfig;
 use think\admin\contract\StorageInterface;
 use think\admin\contract\StorageUsageTrait;
 use think\admin\Exception;
@@ -231,13 +230,13 @@ class AliossStorage implements StorageInterface
     protected function init()
     {
         // 读取配置文件
-        $this->point = (string) StorageConfig::driver('alioss', 'region', '');
-        $this->bucket = (string) StorageConfig::driver('alioss', 'bucket', '');
-        $this->accessKey = (string) StorageConfig::driver('alioss', 'access_key', '');
-        $this->secretKey = (string) StorageConfig::driver('alioss', 'secret_key', '');
+        $this->point = (string)StorageConfig::driver('alioss', 'region', '');
+        $this->bucket = (string)StorageConfig::driver('alioss', 'bucket', '');
+        $this->accessKey = (string)StorageConfig::driver('alioss', 'access_key', '');
+        $this->secretKey = (string)StorageConfig::driver('alioss', 'secret_key', '');
         // 计算链接前缀
-        $host = strtolower((string) StorageConfig::driver('alioss', 'domain', ''));
-        $type = strtolower((string) StorageConfig::driver('alioss', 'protocol', 'http'));
+        $host = strtolower((string)StorageConfig::driver('alioss', 'domain', ''));
+        $type = strtolower((string)StorageConfig::driver('alioss', 'protocol', 'http'));
         if ($type === 'auto') {
             $this->domain = "//{$host}";
         } elseif (in_array($type, ['http', 'https'])) {

@@ -1,10 +1,25 @@
 <?php
 
 declare(strict_types=1);
+/**
+ * +----------------------------------------------------------------------
+ * | ThinkAdmin Plugin for ThinkAdmin
+ * +----------------------------------------------------------------------
+ * | 版权所有 2014~2026 ThinkAdmin [ thinkadmin.top ]
+ * +----------------------------------------------------------------------
+ * | 官方网站: https://thinkadmin.top
+ * +----------------------------------------------------------------------
+ * | 开源协议 ( https://mit-license.org )
+ * | 免责声明 ( https://thinkadmin.top/disclaimer )
+ * | 会员特权 ( https://thinkadmin.top/vip-introduce )
+ * +----------------------------------------------------------------------
+ * | gitee 代码仓库：https://gitee.com/zoujingli/ThinkAdmin
+ * | github 代码仓库：https://github.com/zoujingli/ThinkAdmin
+ * +----------------------------------------------------------------------
+ */
 
 namespace plugin\worker\service;
 
-use InvalidArgumentException;
 use think\App;
 
 /**
@@ -15,12 +30,10 @@ class WorkerConfig
     /** @var string[] */
     protected const SUPPORTED_DRIVERS = ['http', 'queue'];
 
-    /** @var array<string, array>|null */
+    /** @var null|array<string, array> */
     protected ?array $resolvedServices = null;
 
-    public function __construct(protected App $app)
-    {
-    }
+    public function __construct(protected App $app) {}
 
     /**
      * Resolve all configured services.
@@ -34,7 +47,7 @@ class WorkerConfig
             return $services;
         }
 
-        return array_filter($services, static fn(array $service): bool => !empty($service['enabled']));
+        return array_filter($services, static fn (array $service): bool => !empty($service['enabled']));
     }
 
     /**
@@ -44,7 +57,7 @@ class WorkerConfig
     {
         $services = $this->services();
         if (!isset($services[$name])) {
-            throw new InvalidArgumentException("Worker service [{$name}] is not defined.");
+            throw new \InvalidArgumentException("Worker service [{$name}] is not defined.");
         }
 
         return $services[$name];
@@ -325,7 +338,7 @@ class WorkerConfig
             'statusFile' => syspath("safefile/worker/{$slug}.status"),
             'logFile' => syspath("safefile/worker/{$slug}.log"),
             'stdoutFile' => syspath("safefile/worker/{$slug}.stdout.log"),
-            default => throw new InvalidArgumentException("Unsupported runtime file type [{$type}]."),
+            default => throw new \InvalidArgumentException("Unsupported runtime file type [{$type}]."),
         };
     }
 }

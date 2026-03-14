@@ -1,15 +1,31 @@
 <?php
 
 declare(strict_types=1);
+/**
+ * +----------------------------------------------------------------------
+ * | ThinkAdmin Plugin for ThinkAdmin
+ * +----------------------------------------------------------------------
+ * | 版权所有 2014~2026 ThinkAdmin [ thinkadmin.top ]
+ * +----------------------------------------------------------------------
+ * | 官方网站: https://thinkadmin.top
+ * +----------------------------------------------------------------------
+ * | 开源协议 ( https://mit-license.org )
+ * | 免责声明 ( https://thinkadmin.top/disclaimer )
+ * | 会员特权 ( https://thinkadmin.top/vip-introduce )
+ * +----------------------------------------------------------------------
+ * | gitee 代码仓库：https://gitee.com/zoujingli/ThinkAdmin
+ * | github 代码仓库：https://github.com/zoujingli/ThinkAdmin
+ * +----------------------------------------------------------------------
+ */
 
 namespace think\admin\tests;
 
 use plugin\system\controller\Menu as MenuController;
 use plugin\system\model\SystemMenu;
-use think\Request;
 use think\admin\runtime\RequestContext;
 use think\admin\tests\Support\SqliteIntegrationTestCase;
 use think\exception\HttpResponseException;
+use think\Request;
 
 /**
  * @internal
@@ -17,53 +33,48 @@ use think\exception\HttpResponseException;
  */
 class MenuControllerTest extends SqliteIntegrationTestCase
 {
-    protected function defineSchema(): void
-    {
-        $this->createSystemMenuTable();
-    }
-
     public function testIndexFlattensTreeAndNormalizesInternalUrls(): void
     {
         $root = $this->createSystemMenuFixture([
-            'title'  => '系统配置',
-            'url'    => '#',
+            'title' => '系统配置',
+            'url' => '#',
             'status' => 1,
         ]);
         $this->createSystemMenuFixture([
-            'pid'    => intval($root->getAttr('id')),
-            'title'  => '数据字典',
-            'url'    => 'system/base/index',
+            'pid' => intval($root->getAttr('id')),
+            'title' => '数据字典',
+            'url' => 'system/base/index',
             'params' => 'tab=dict',
             'status' => 1,
-            'sort'   => 20,
+            'sort' => 20,
         ]);
         $this->createSystemMenuFixture([
-            'pid'    => intval($root->getAttr('id')),
-            'title'  => '外链文档',
-            'url'    => 'https://example.com/docs',
+            'pid' => intval($root->getAttr('id')),
+            'title' => '外链文档',
+            'url' => 'https://example.com/docs',
             'status' => 1,
-            'sort'   => 10,
+            'sort' => 10,
         ]);
         $other = $this->createSystemMenuFixture([
-            'title'  => '其它根菜单',
-            'url'    => '#',
+            'title' => '其它根菜单',
+            'url' => '#',
             'status' => 1,
         ]);
         $this->createSystemMenuFixture([
-            'pid'    => intval($other->getAttr('id')),
-            'title'  => '其它子菜单',
-            'url'    => 'system/auth/index',
+            'pid' => intval($other->getAttr('id')),
+            'title' => '其它子菜单',
+            'url' => 'system/auth/index',
             'status' => 1,
         ]);
 
         $result = $this->callIndexController([
-            'output'  => 'json',
-            'type'    => 'index',
-            'pid'     => intval($root->getAttr('id')),
+            'output' => 'json',
+            'type' => 'index',
+            'pid' => intval($root->getAttr('id')),
             '_field_' => 'id',
             '_order_' => 'asc',
-            'page'    => 1,
-            'limit'   => 20,
+            'page' => 1,
+            'limit' => 20,
         ]);
 
         $this->assertSame(1, intval($result['code'] ?? 0));
@@ -79,35 +90,35 @@ class MenuControllerTest extends SqliteIntegrationTestCase
     public function testRecycleShowsDisabledBranchOnly(): void
     {
         $root = $this->createSystemMenuFixture([
-            'title'  => '回收根菜单',
-            'url'    => '#',
+            'title' => '回收根菜单',
+            'url' => '#',
             'status' => 1,
         ]);
         $this->createSystemMenuFixture([
-            'pid'    => intval($root->getAttr('id')),
-            'title'  => '已删除子菜单',
-            'url'    => 'system/auth/index',
+            'pid' => intval($root->getAttr('id')),
+            'title' => '已删除子菜单',
+            'url' => 'system/auth/index',
             'status' => 0,
         ]);
         $this->createSystemMenuFixture([
-            'pid'    => intval($root->getAttr('id')),
-            'title'  => '有效子菜单',
-            'url'    => 'system/base/index',
+            'pid' => intval($root->getAttr('id')),
+            'title' => '有效子菜单',
+            'url' => 'system/base/index',
             'status' => 1,
         ]);
         $this->createSystemMenuFixture([
-            'title'  => '孤立禁用根菜单',
-            'url'    => '#',
+            'title' => '孤立禁用根菜单',
+            'url' => '#',
             'status' => 0,
         ]);
 
         $result = $this->callIndexController([
-            'output'  => 'json',
-            'type'    => 'recycle',
+            'output' => 'json',
+            'type' => 'recycle',
             '_field_' => 'id',
             '_order_' => 'asc',
-            'page'    => 1,
-            'limit'   => 20,
+            'page' => 1,
+            'limit' => 20,
         ]);
 
         $titles = array_column($result['data']['list'] ?? [], 'title');
@@ -123,18 +134,18 @@ class MenuControllerTest extends SqliteIntegrationTestCase
     {
         $root = $this->createSystemMenuFixture([
             'title' => '上级菜单',
-            'url'   => '#',
+            'url' => '#',
         ]);
 
         $add = $this->callFormController('add', [
-            'pid'    => intval($root->getAttr('id')),
-            'title'  => '新增菜单',
-            'icon'   => 'layui-icon layui-icon-star',
-            'node'   => 'system/base/index',
-            'url'    => 'system/base/index',
+            'pid' => intval($root->getAttr('id')),
+            'title' => '新增菜单',
+            'icon' => 'layui-icon layui-icon-star',
+            'node' => 'system/base/index',
+            'url' => 'system/base/index',
             'params' => 'tab=menu',
             'target' => '_blank',
-            'sort'   => 30,
+            'sort' => 30,
             'status' => 1,
         ]);
 
@@ -146,15 +157,15 @@ class MenuControllerTest extends SqliteIntegrationTestCase
         $this->assertSame('_blank', $created->getData('target'));
 
         $edit = $this->callFormController('edit', [
-            'id'     => intval($created->getAttr('id')),
-            'pid'    => intval($root->getAttr('id')),
-            'title'  => '更新菜单',
-            'icon'   => 'layui-icon layui-icon-template',
-            'node'   => 'system/file/index',
-            'url'    => 'system/file/index',
+            'id' => intval($created->getAttr('id')),
+            'pid' => intval($root->getAttr('id')),
+            'title' => '更新菜单',
+            'icon' => 'layui-icon layui-icon-template',
+            'node' => 'system/file/index',
+            'url' => 'system/file/index',
             'params' => 'type=image',
             'target' => '_self',
-            'sort'   => 40,
+            'sort' => 40,
             'status' => 0,
         ]);
 
@@ -171,13 +182,13 @@ class MenuControllerTest extends SqliteIntegrationTestCase
     public function testStateAndRemoveUpdateMenuLifecycle(): void
     {
         $menu = $this->createSystemMenuFixture([
-            'title'  => '生命周期菜单',
+            'title' => '生命周期菜单',
             'status' => 1,
-            'url'    => 'system/base/index',
+            'url' => 'system/base/index',
         ]);
 
         $state = $this->callActionController('state', [
-            'id'     => intval($menu->getAttr('id')),
+            'id' => intval($menu->getAttr('id')),
             'status' => 0,
         ]);
         $afterState = SystemMenu::mk()->findOrEmpty(intval($menu->getAttr('id')));
@@ -192,6 +203,11 @@ class MenuControllerTest extends SqliteIntegrationTestCase
         $this->assertSame(1, intval($remove['code'] ?? 0));
         $this->assertSame('数据删除成功！', $remove['info'] ?? '');
         $this->assertFalse(SystemMenu::mk()->where(['id' => $menu->getAttr('id')])->findOrEmpty()->isExists());
+    }
+
+    protected function defineSchema(): void
+    {
+        $this->createSystemMenuTable();
     }
 
     private function callIndexController(array $query): array
@@ -245,7 +261,7 @@ class MenuControllerTest extends SqliteIntegrationTestCase
     private function bindAdminUser(): void
     {
         RequestContext::instance()->setAuth([
-            'id'       => 9101,
+            'id' => 9101,
             'username' => 'tester',
         ], '', true);
     }

@@ -1,25 +1,38 @@
 <?php
 
 declare(strict_types=1);
+/**
+ * +----------------------------------------------------------------------
+ * | ThinkAdmin Plugin for ThinkAdmin
+ * +----------------------------------------------------------------------
+ * | 版权所有 2014~2026 ThinkAdmin [ thinkadmin.top ]
+ * +----------------------------------------------------------------------
+ * | 官方网站: https://thinkadmin.top
+ * +----------------------------------------------------------------------
+ * | 开源协议 ( https://mit-license.org )
+ * | 免责声明 ( https://thinkadmin.top/disclaimer )
+ * | 会员特权 ( https://thinkadmin.top/vip-introduce )
+ * +----------------------------------------------------------------------
+ * | gitee 代码仓库：https://gitee.com/zoujingli/ThinkAdmin
+ * | github 代码仓库：https://github.com/zoujingli/ThinkAdmin
+ * +----------------------------------------------------------------------
+ */
 
 namespace think\admin\tests;
 
 use plugin\system\controller\api\Queue as QueueController;
-use plugin\system\service\SystemContext as PluginSystemContext;
 use plugin\system\model\SystemOplog;
-use plugin\worker\model\SystemQueue;
-use think\Container;
-use think\Request;
+use plugin\system\service\SystemContext as PluginSystemContext;
 use think\admin\contract\SystemContextInterface;
 use think\admin\runtime\RequestContext;
 use think\admin\tests\Support\SqliteIntegrationTestCase;
+use think\Container;
 use think\exception\HttpResponseException;
+use think\Request;
 
 final class FakeConsoleCallResult
 {
-    public function __construct(private readonly string $message)
-    {
-    }
+    public function __construct(private readonly string $message) {}
 
     public function fetch(): string
     {
@@ -34,9 +47,7 @@ final class FakeConsole
     /**
      * @param array<string,string> $responses
      */
-    public function __construct(private readonly array $responses = [], private readonly ?\Throwable $exception = null)
-    {
-    }
+    public function __construct(private readonly array $responses = [], private readonly ?\Throwable $exception = null) {}
 
     public function call(string $command, array $parameters = [], ?string $scene = null): FakeConsoleCallResult
     {
@@ -59,19 +70,6 @@ final class FakeConsole
  */
 class ApiQueueControllerTest extends SqliteIntegrationTestCase
 {
-    protected function defineSchema(): void
-    {
-        $this->createSystemQueueTable();
-        $this->createSystemOplogTable();
-    }
-
-    protected function afterSchemaCreated(): void
-    {
-        $context = new PluginSystemContext();
-        Container::getInstance()->instance(SystemContextInterface::class, $context);
-        $this->app->instance(SystemContextInterface::class, $context);
-    }
-
     public function testStartInvokesWorkerCommandAndWritesOplogForSuperAdmin(): void
     {
         $console = $this->bindConsole([
@@ -158,9 +156,9 @@ class ApiQueueControllerTest extends SqliteIntegrationTestCase
     public function testProgressReturnsDecodedQueueMessage(): void
     {
         $queue = $this->createSystemQueueFixture([
-            'code'    => 'QUEUE_PROGRESS_001',
+            'code' => 'QUEUE_PROGRESS_001',
             'message' => json_encode([
-                'status'   => 'working',
+                'status' => 'working',
                 'progress' => 66,
             ], JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES),
         ]);
@@ -171,6 +169,19 @@ class ApiQueueControllerTest extends SqliteIntegrationTestCase
         $this->assertSame('获取任务进度成功！', $result['info'] ?? '');
         $this->assertSame('working', $result['data']['status'] ?? null);
         $this->assertSame(66, $result['data']['progress'] ?? null);
+    }
+
+    protected function defineSchema(): void
+    {
+        $this->createSystemQueueTable();
+        $this->createSystemOplogTable();
+    }
+
+    protected function afterSchemaCreated(): void
+    {
+        $context = new PluginSystemContext();
+        Container::getInstance()->instance(SystemContextInterface::class, $context);
+        $this->app->instance(SystemContextInterface::class, $context);
     }
 
     private function bindConsole(array $responses = [], ?\Throwable $exception = null): FakeConsole
@@ -223,7 +234,7 @@ class ApiQueueControllerTest extends SqliteIntegrationTestCase
     private function bindAdminUser(bool $super): void
     {
         RequestContext::instance()->setAuth([
-            'id'       => $super ? 10000 : 9101,
+            'id' => $super ? 10000 : 9101,
             'username' => $super ? 'admin' : 'tester',
             'password' => md5('changed-password'),
         ], '', true);

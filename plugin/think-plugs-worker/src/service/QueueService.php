@@ -20,6 +20,7 @@ declare(strict_types=1);
 
 namespace plugin\worker\service;
 
+use plugin\worker\model\SystemQueue;
 use think\admin\contract\QueueHandlerInterface;
 use think\admin\contract\QueueManagerInterface;
 use think\admin\contract\QueueRuntimeInterface;
@@ -28,7 +29,6 @@ use think\admin\extend\CodeToolkit;
 use think\admin\service\ProcessService;
 use think\admin\service\Service;
 use think\Model;
-use plugin\worker\model\SystemQueue;
 
 /**
  * 任务基础服务

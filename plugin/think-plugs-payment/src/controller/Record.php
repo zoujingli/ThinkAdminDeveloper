@@ -34,10 +34,10 @@ declare(strict_types=1);
 
 namespace plugin\payment\controller;
 
-use plugin\system\service\SystemAuthService;
 use plugin\account\model\PluginAccountUser;
 use plugin\payment\model\PluginPaymentRecord;
 use plugin\payment\service\Payment;
+use plugin\system\service\SystemAuthService;
 use think\admin\Controller;
 use think\admin\extend\CodeToolkit;
 use think\admin\helper\QueryHelper;

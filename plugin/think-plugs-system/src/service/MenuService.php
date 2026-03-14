@@ -20,15 +20,14 @@ declare(strict_types=1);
 
 namespace plugin\system\service;
 
+use plugin\system\model\SystemMenu;
 use think\admin\extend\ArrayTree;
-use think\admin\service\Service;
 use think\admin\service\NodeService;
 use think\admin\service\PluginService;
+use think\admin\service\Service;
 use think\db\exception\DataNotFoundException;
 use think\db\exception\DbException;
 use think\db\exception\ModelNotFoundException;
-use plugin\system\service\SystemAuthService;
-use plugin\system\model\SystemMenu;
 
 /**
  * 系统菜单管理服务
@@ -90,9 +89,9 @@ class MenuService extends Service
                 continue;
             }
             $items[$code] = [
-                'code'   => $code,
-                'name'   => strval($plugin['name'] ?? $code),
-                'type'   => strval($plugin['type'] ?? 'plugin'),
+                'code' => $code,
+                'name' => strval($plugin['name'] ?? $code),
+                'type' => strval($plugin['type'] ?? 'plugin'),
                 'prefix' => strval($plugin['prefix'] ?? ''),
             ];
         }
@@ -108,8 +107,8 @@ class MenuService extends Service
         $roots = [];
         foreach (static::filterTree(static::loadTree(), $plugin) as $menu) {
             $roots[$menu['id']] = [
-                'id'    => $menu['id'],
-                'pid'   => $menu['pid'],
+                'id' => $menu['id'],
+                'pid' => $menu['pid'],
                 'title' => static::lang(strval($menu['title'] ?? '')),
             ];
         }
@@ -167,7 +166,7 @@ class MenuService extends Service
         if (!empty($menu['url']) && ($code = static::pluginByUrl(strval($menu['url'])))) {
             return $code;
         }
-        foreach ((array) ($menu['sub'] ?? []) as $sub) {
+        foreach ((array)($menu['sub'] ?? []) as $sub) {
             if ($code = static::detectPlugin($sub)) {
                 return $code;
             }

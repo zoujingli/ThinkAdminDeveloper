@@ -20,7 +20,6 @@ declare(strict_types=1);
 
 namespace plugin\wechat\service\service;
 
-use plugin\wechat\service\service\AuthService;
 use plugin\wechat\service\model\WechatAuth;
 use think\admin\extend\HttpClient;
 use think\admin\service\Service;

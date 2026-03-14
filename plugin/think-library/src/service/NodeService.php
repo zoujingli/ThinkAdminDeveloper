@@ -22,7 +22,6 @@ namespace think\admin\service;
 
 use think\admin\extend\FileTools;
 use think\admin\Library;
-use think\admin\service\Service;
 
 /**
  * 应用节点管理服务。

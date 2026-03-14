@@ -35,12 +35,12 @@ class FormBuilderTest extends TestCase
         $builder = $this->newBuilder();
         $builder->addTextInput('appid', '小程序', 'AppId', true, '必填应用标识', '^wx[0-9a-z]{16}$', ['maxlength' => 18]);
         $builder->addField([
-            'type'     => 'textarea',
-            'name'     => 'remark',
-            'title'    => '备注',
+            'type' => 'textarea',
+            'name' => 'remark',
+            'title' => '备注',
             'required' => true,
-            'rules'    => ['max:100' => '备注最多100个字符！'],
-            'attrs'    => ['maxlength' => 100],
+            'rules' => ['max:100' => '备注最多100个字符！'],
+            'attrs' => ['maxlength' => 100],
         ]);
 
         $schema = $builder->toArray();

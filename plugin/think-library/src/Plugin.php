@@ -284,6 +284,35 @@ abstract class Plugin extends Service
     }
 
     /**
+     * 获取插件及安装信息.
+     * @param ?string $code 指定插件编号
+     * @param bool $append 关联安装数据
+     */
+    public static function get(?string $code = null, bool $append = false): ?array
+    {
+        // 读取插件原始信息
+        $data = empty($code) ? self::$addons : (self::$addons[$code] ?? null);
+        if (empty($data) || empty($append)) {
+            return $data;
+        }
+        // 关联插件安装信息
+        $versions = ModuleService::getLibrarys();
+        return empty($code) ? array_map(static function ($item) use ($versions) {
+            $item['install'] = $versions[$item['package']] ?? [];
+            if (empty($item['name'])) {
+                $item['name'] = $item['install']['name'] ?? '';
+            }
+            return $item;
+        }, $data) : $data + ['install' => $versions[$data['package']] ?? []];
+    }
+
+    /**
+     * 定义插件菜单.
+     * @return array 一级或二级菜单
+     */
+    abstract public static function menu(): array;
+
+    /**
      * 获取当前插件服务实例。
      */
     private static function plugin(): static
@@ -397,33 +426,4 @@ abstract class Plugin extends Service
 
         return $result;
     }
-
-    /**
-     * 获取插件及安装信息.
-     * @param ?string $code 指定插件编号
-     * @param bool $append 关联安装数据
-     */
-    public static function get(?string $code = null, bool $append = false): ?array
-    {
-        // 读取插件原始信息
-        $data = empty($code) ? self::$addons : (self::$addons[$code] ?? null);
-        if (empty($data) || empty($append)) {
-            return $data;
-        }
-        // 关联插件安装信息
-        $versions = ModuleService::getLibrarys();
-        return empty($code) ? array_map(static function ($item) use ($versions) {
-            $item['install'] = $versions[$item['package']] ?? [];
-            if (empty($item['name'])) {
-                $item['name'] = $item['install']['name'] ?? '';
-            }
-            return $item;
-        }, $data) : $data + ['install' => $versions[$data['package']] ?? []];
-    }
-
-    /**
-     * 定义插件菜单.
-     * @return array 一级或二级菜单
-     */
-    abstract public static function menu(): array;
 }

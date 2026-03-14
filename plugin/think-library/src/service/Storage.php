@@ -20,9 +20,9 @@ declare(strict_types=1);
 
 namespace think\admin\service;
 
-use think\admin\Exception;
-use think\admin\contract\StorageInterface;
 use plugin\storage\service\LocalStorage;
+use think\admin\contract\StorageInterface;
+use think\admin\Exception;
 use think\Container;
 
 /**
@@ -215,7 +215,7 @@ abstract class Storage
      */
     private static function manager(): object
     {
-        $class = 'plugin\\storage\\service\\StorageManager';
+        $class = 'plugin\storage\service\StorageManager';
         if (class_exists($class)) {
             return Container::getInstance()->make($class);
         }

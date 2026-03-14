@@ -1,17 +1,35 @@
 <?php
 
 declare(strict_types=1);
+/**
+ * +----------------------------------------------------------------------
+ * | ThinkAdmin Plugin for ThinkAdmin
+ * +----------------------------------------------------------------------
+ * | 版权所有 2014~2026 ThinkAdmin [ thinkadmin.top ]
+ * +----------------------------------------------------------------------
+ * | 官方网站: https://thinkadmin.top
+ * +----------------------------------------------------------------------
+ * | 开源协议 ( https://mit-license.org )
+ * | 免责声明 ( https://thinkadmin.top/disclaimer )
+ * | 会员特权 ( https://thinkadmin.top/vip-introduce )
+ * +----------------------------------------------------------------------
+ * | gitee 代码仓库：https://gitee.com/zoujingli/ThinkAdmin
+ * | github 代码仓库：https://github.com/zoujingli/ThinkAdmin
+ * +----------------------------------------------------------------------
+ */
 
 namespace think\admin\tests;
 
 use plugin\system\controller\Queue as QueueController;
 use plugin\worker\model\SystemQueue;
-use think\Request;
+use plugin\worker\service\ProcessService;
+use plugin\worker\service\QueueService;
+use think\admin\runtime\RequestContext;
 use think\admin\service\ProcessService as ProcessRuntime;
 use think\admin\service\QueueService as QueueRuntime;
-use think\admin\runtime\RequestContext;
 use think\admin\tests\Support\SqliteIntegrationTestCase;
 use think\exception\HttpResponseException;
+use think\Request;
 
 /**
  * @internal
@@ -19,71 +37,58 @@ use think\exception\HttpResponseException;
  */
 class QueueControllerTest extends SqliteIntegrationTestCase
 {
-    protected function defineSchema(): void
-    {
-        $this->createSystemQueueTable();
-    }
-
-    protected function afterSchemaCreated(): void
-    {
-        $this->app->bind([
-            ProcessRuntime::BIND_NAME => \plugin\worker\service\ProcessService::class,
-            QueueRuntime::BIND_NAME   => \plugin\worker\service\QueueService::class,
-        ]);
-    }
-
     public function testIndexFiltersQueueRowsAndBuildsStatusSummary(): void
     {
         $this->createSystemQueueFixture([
-            'code'        => 'QHIT000000000001',
-            'title'       => '命中任务',
-            'command'     => 'xadmin:test queue --hit',
-            'status'      => 1,
-            'loops_time'  => 0,
+            'code' => 'QHIT000000000001',
+            'title' => '命中任务',
+            'command' => 'xadmin:test queue --hit',
+            'status' => 1,
+            'loops_time' => 0,
             'create_time' => '2026-03-10 08:00:00',
         ]);
         $this->createSystemQueueFixture([
-            'code'        => 'QLOCK00000000001',
-            'title'       => '执行任务',
-            'command'     => 'xadmin:test queue --run',
-            'status'      => 2,
-            'loops_time'  => 30,
+            'code' => 'QLOCK00000000001',
+            'title' => '执行任务',
+            'command' => 'xadmin:test queue --run',
+            'status' => 2,
+            'loops_time' => 30,
             'create_time' => '2026-03-10 09:00:00',
         ]);
         $this->createSystemQueueFixture([
-            'code'        => 'QDONE00000000001',
-            'title'       => '完成任务',
-            'command'     => 'xadmin:test queue --done',
-            'status'      => 3,
-            'loops_time'  => 0,
+            'code' => 'QDONE00000000001',
+            'title' => '完成任务',
+            'command' => 'xadmin:test queue --done',
+            'status' => 3,
+            'loops_time' => 0,
             'create_time' => '2026-03-10 10:00:00',
         ]);
         $this->createSystemQueueFixture([
-            'code'        => 'QERR000000000001',
-            'title'       => '失败任务',
-            'command'     => 'xadmin:test queue --error',
-            'status'      => 4,
-            'loops_time'  => 0,
+            'code' => 'QERR000000000001',
+            'title' => '失败任务',
+            'command' => 'xadmin:test queue --error',
+            'status' => 4,
+            'loops_time' => 0,
             'create_time' => '2026-03-10 11:00:00',
         ]);
         $this->createSystemQueueFixture([
-            'code'        => 'QOLD000000000001',
-            'title'       => '跨日任务',
-            'command'     => 'xadmin:test queue --old',
-            'status'      => 1,
-            'loops_time'  => 0,
+            'code' => 'QOLD000000000001',
+            'title' => '跨日任务',
+            'command' => 'xadmin:test queue --old',
+            'status' => 1,
+            'loops_time' => 0,
             'create_time' => '2026-03-09 08:00:00',
         ]);
 
         $result = $this->callIndexController([
-            'output'      => 'json',
-            'status'      => 1,
-            'title'       => '命中',
+            'output' => 'json',
+            'status' => 1,
+            'title' => '命中',
             'create_time' => '2026-03-10 - 2026-03-10',
-            '_field_'     => 'id',
-            '_order_'     => 'asc',
-            'page'        => 1,
-            'limit'       => 20,
+            '_field_' => 'id',
+            '_order_' => 'asc',
+            'page' => 1,
+            'limit' => 20,
         ]);
 
         $this->assertSame(1, intval($result['code'] ?? 0));
@@ -99,23 +104,23 @@ class QueueControllerTest extends SqliteIntegrationTestCase
 
     public function testIndexPaginatesQueuesAndFallsBackToDefaultLimit(): void
     {
-        for ($i = 1; $i <= 21; $i++) {
+        for ($i = 1; $i <= 21; ++$i) {
             $this->createSystemQueueFixture([
-                'code'        => sprintf('QPAGE%011d', $i),
-                'title'       => sprintf('分页任务-%02d', $i),
-                'command'     => sprintf('xadmin:test queue --page=%02d', $i),
-                'status'      => 1,
+                'code' => sprintf('QPAGE%011d', $i),
+                'title' => sprintf('分页任务-%02d', $i),
+                'command' => sprintf('xadmin:test queue --page=%02d', $i),
+                'status' => 1,
                 'create_time' => sprintf('2026-03-10 08:%02d:00', $i % 60),
             ]);
         }
 
         $result = $this->callIndexController([
-            'output'  => 'json',
-            'status'  => 1,
+            'output' => 'json',
+            'status' => 1,
             '_field_' => 'id',
             '_order_' => 'asc',
-            'page'    => 2,
-            'limit'   => 999,
+            'page' => 2,
+            'limit' => 999,
         ]);
 
         $this->assertSame(1, intval($result['code'] ?? 0));
@@ -131,13 +136,13 @@ class QueueControllerTest extends SqliteIntegrationTestCase
     public function testRedoResetsFinishedQueueToWaitingState(): void
     {
         $queue = $this->createSystemQueueFixture([
-            'code'       => 'QREDO00000000001',
-            'status'     => 4,
-            'exec_pid'   => 12345,
-            'exec_time'  => time() - 300,
-            'attempts'   => 2,
-            'message'    => '旧执行日志',
-            'exec_desc'  => '旧失败结果',
+            'code' => 'QREDO00000000001',
+            'status' => 4,
+            'exec_pid' => 12345,
+            'exec_time' => time() - 300,
+            'attempts' => 2,
+            'message' => '旧执行日志',
+            'exec_desc' => '旧失败结果',
         ]);
 
         $before = time();
@@ -182,6 +187,19 @@ class QueueControllerTest extends SqliteIntegrationTestCase
         $this->assertSame('数据删除成功！', $result['info'] ?? '');
         $this->assertSame(0, SystemQueue::mk()->whereIn('id', [$first->getAttr('id'), $second->getAttr('id')])->count());
         $this->assertTrue(SystemQueue::mk()->where(['id' => $keep->getAttr('id')])->findOrEmpty()->isExists());
+    }
+
+    protected function defineSchema(): void
+    {
+        $this->createSystemQueueTable();
+    }
+
+    protected function afterSchemaCreated(): void
+    {
+        $this->app->bind([
+            ProcessRuntime::BIND_NAME => ProcessService::class,
+            QueueRuntime::BIND_NAME => QueueService::class,
+        ]);
     }
 
     private function callIndexController(array $query): array
@@ -230,7 +248,7 @@ class QueueControllerTest extends SqliteIntegrationTestCase
     private function bindAdminUser(): void
     {
         RequestContext::instance()->setAuth([
-            'id'       => 9101,
+            'id' => 9101,
             'username' => 'tester',
         ], '', true);
     }

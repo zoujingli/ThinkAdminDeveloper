@@ -32,8 +32,8 @@ declare(strict_types=1);
 
 namespace plugin\wechat\service\controller;
 
-use plugin\wechat\service\service\AuthService;
 use plugin\wechat\service\model\WechatAuth;
+use plugin\wechat\service\service\AuthService;
 use think\admin\Controller;
 use think\admin\helper\QueryHelper;
 use think\db\exception\DataNotFoundException;

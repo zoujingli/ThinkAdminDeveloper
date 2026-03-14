@@ -20,11 +20,11 @@ declare(strict_types=1);
 
 namespace plugin\wemall\command;
 
+use plugin\storage\service\LocalStorage;
 use plugin\wemall\model\PluginWemallUserTransfer;
 use plugin\wemall\service\UserRebate;
 use think\admin\Command;
 use think\admin\Exception;
-use plugin\storage\service\LocalStorage;
 use think\console\Input;
 use think\console\Output;
 use think\db\exception\DbException;

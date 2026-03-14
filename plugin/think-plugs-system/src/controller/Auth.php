@@ -20,9 +20,9 @@ declare(strict_types=1);
 
 namespace plugin\system\controller;
 
-use plugin\system\service\SystemAuthService;
 use plugin\system\model\SystemAuth;
 use plugin\system\model\SystemNode;
+use plugin\system\service\SystemAuthService;
 use think\admin\Controller;
 use think\admin\helper\QueryHelper;
 use think\admin\service\AppService;

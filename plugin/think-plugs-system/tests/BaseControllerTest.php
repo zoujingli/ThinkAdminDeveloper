@@ -1,14 +1,30 @@
 <?php
 
 declare(strict_types=1);
+/**
+ * +----------------------------------------------------------------------
+ * | ThinkAdmin Plugin for ThinkAdmin
+ * +----------------------------------------------------------------------
+ * | 版权所有 2014~2026 ThinkAdmin [ thinkadmin.top ]
+ * +----------------------------------------------------------------------
+ * | 官方网站: https://thinkadmin.top
+ * +----------------------------------------------------------------------
+ * | 开源协议 ( https://mit-license.org )
+ * | 免责声明 ( https://thinkadmin.top/disclaimer )
+ * | 会员特权 ( https://thinkadmin.top/vip-introduce )
+ * +----------------------------------------------------------------------
+ * | gitee 代码仓库：https://gitee.com/zoujingli/ThinkAdmin
+ * | github 代码仓库：https://github.com/zoujingli/ThinkAdmin
+ * +----------------------------------------------------------------------
+ */
 
 namespace think\admin\tests;
 
 use plugin\system\controller\Base as BaseController;
 use plugin\system\model\SystemBase;
-use think\Request;
 use think\admin\tests\Support\SqliteIntegrationTestCase;
 use think\exception\HttpResponseException;
+use think\Request;
 
 /**
  * @internal
@@ -16,52 +32,47 @@ use think\exception\HttpResponseException;
  */
 class BaseControllerTest extends SqliteIntegrationTestCase
 {
-    protected function defineSchema(): void
-    {
-        $this->createSystemBaseTable();
-    }
-
     public function testIndexFiltersByTypePluginGroupAndDateRange(): void
     {
         $this->createSystemBaseFixture([
-            'type'        => 'identity',
-            'code'        => 'base-hit',
-            'name'        => '命中字典',
-            'content'     => SystemBase::packContent('命中内容', 'index'),
+            'type' => 'identity',
+            'code' => 'base-hit',
+            'name' => '命中字典',
+            'content' => SystemBase::packContent('命中内容', 'index'),
             'create_time' => '2026-03-10 08:00:00',
         ]);
         $this->createSystemBaseFixture([
-            'type'        => 'identity',
-            'code'        => 'base-common',
-            'name'        => '公共字典',
-            'content'     => '公共内容',
+            'type' => 'identity',
+            'code' => 'base-common',
+            'name' => '公共字典',
+            'content' => '公共内容',
             'create_time' => '2026-03-10 12:00:00',
         ]);
         $this->createSystemBaseFixture([
-            'type'        => 'identity',
-            'code'        => 'base-other-day',
-            'name'        => '跨日字典',
-            'content'     => SystemBase::packContent('跨日内容', 'index'),
+            'type' => 'identity',
+            'code' => 'base-other-day',
+            'name' => '跨日字典',
+            'content' => SystemBase::packContent('跨日内容', 'index'),
             'create_time' => '2026-03-09 08:00:00',
         ]);
         $this->createSystemBaseFixture([
-            'type'        => 'payment',
-            'code'        => 'base-other-type',
-            'name'        => '其他类型字典',
-            'content'     => SystemBase::packContent('其他类型', 'index'),
+            'type' => 'payment',
+            'code' => 'base-other-type',
+            'name' => '其他类型字典',
+            'content' => SystemBase::packContent('其他类型', 'index'),
             'create_time' => '2026-03-10 09:00:00',
         ]);
 
         $result = $this->callIndexController([
-            'output'       => 'json',
-            'type'         => 'identity',
+            'output' => 'json',
+            'type' => 'identity',
             'plugin_group' => 'index',
-            'code'         => 'base-hit',
-            'create_time'  => '2026-03-10 - 2026-03-10',
-            '_field_'      => 'id',
-            '_order_'      => 'asc',
-            'page'         => 1,
-            'limit'        => 20,
+            'code' => 'base-hit',
+            'create_time' => '2026-03-10 - 2026-03-10',
+            '_field_' => 'id',
+            '_order_' => 'asc',
+            'page' => 1,
+            'limit' => 20,
         ]);
 
         $this->assertSame(1, intval($result['code'] ?? 0));
@@ -77,13 +88,13 @@ class BaseControllerTest extends SqliteIntegrationTestCase
     public function testAddAndEditPackPluginContent(): void
     {
         $add = $this->callFormController('add', [
-            'type'         => 'identity',
-            'code'         => 'base-create',
-            'name'         => '创建字典',
+            'type' => 'identity',
+            'code' => 'base-create',
+            'name' => '创建字典',
             'content_text' => '创建内容',
-            'plugin_code'  => 'index',
-            'sort'         => 20,
-            'status'       => 1,
+            'plugin_code' => 'index',
+            'sort' => 20,
+            'status' => 1,
         ]);
 
         $created = SystemBase::mk()->where(['type' => 'identity', 'code' => 'base-create'])->findOrEmpty();
@@ -94,14 +105,14 @@ class BaseControllerTest extends SqliteIntegrationTestCase
         $this->assertSame(SystemBase::packContent('创建内容', 'index'), $created->getAttr('content'));
 
         $edit = $this->callFormController('edit', [
-            'id'           => intval($created->getAttr('id')),
-            'type'         => 'identity',
-            'code'         => 'base-create',
-            'name'         => '更新字典',
+            'id' => intval($created->getAttr('id')),
+            'type' => 'identity',
+            'code' => 'base-create',
+            'name' => '更新字典',
             'content_text' => '更新内容',
-            'plugin_code'  => '',
-            'sort'         => 30,
-            'status'       => 0,
+            'plugin_code' => '',
+            'sort' => 30,
+            'status' => 0,
         ]);
 
         $updated = SystemBase::mk()->findOrEmpty(intval($created->getAttr('id')));
@@ -117,20 +128,20 @@ class BaseControllerTest extends SqliteIntegrationTestCase
     public function testAddRejectsDuplicateCodeWithinSameType(): void
     {
         $this->createSystemBaseFixture([
-            'type'    => 'identity',
-            'code'    => 'base-duplicate',
-            'name'    => '已有字典',
+            'type' => 'identity',
+            'code' => 'base-duplicate',
+            'name' => '已有字典',
             'content' => '已有内容',
         ]);
 
         $result = $this->callFormController('add', [
-            'type'         => 'identity',
-            'code'         => 'base-duplicate',
-            'name'         => '重复字典',
+            'type' => 'identity',
+            'code' => 'base-duplicate',
+            'name' => '重复字典',
             'content_text' => '重复内容',
-            'plugin_code'  => 'index',
-            'sort'         => 0,
-            'status'       => 1,
+            'plugin_code' => 'index',
+            'sort' => 0,
+            'status' => 1,
         ]);
 
         $this->assertSame(0, intval($result['code'] ?? 1));
@@ -141,15 +152,15 @@ class BaseControllerTest extends SqliteIntegrationTestCase
     public function testStateAndRemoveUpdateDictionaryLifecycle(): void
     {
         $item = $this->createSystemBaseFixture([
-            'type'    => 'identity',
-            'code'    => 'base-state-remove',
-            'name'    => '状态删除字典',
+            'type' => 'identity',
+            'code' => 'base-state-remove',
+            'name' => '状态删除字典',
             'content' => '生命周期内容',
-            'status'  => 1,
+            'status' => 1,
         ]);
 
         $state = $this->callActionController('state', [
-            'id'     => intval($item->getAttr('id')),
+            'id' => intval($item->getAttr('id')),
             'status' => 0,
         ]);
         $afterState = SystemBase::mk()->findOrEmpty(intval($item->getAttr('id')));
@@ -166,6 +177,11 @@ class BaseControllerTest extends SqliteIntegrationTestCase
         $this->assertSame('数据删除成功！', $remove['info'] ?? '');
         $this->assertSame(1, intval($afterRemove->getAttr('deleted')));
         $this->assertNotEmpty($afterRemove->getAttr('delete_time'));
+    }
+
+    protected function defineSchema(): void
+    {
+        $this->createSystemBaseTable();
     }
 
     private function callIndexController(array $query): array

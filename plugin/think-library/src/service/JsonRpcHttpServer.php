@@ -1,6 +1,22 @@
 <?php
 
 declare(strict_types=1);
+/**
+ * +----------------------------------------------------------------------
+ * | ThinkAdmin Plugin for ThinkAdmin
+ * +----------------------------------------------------------------------
+ * | 版权所有 2014~2026 ThinkAdmin [ thinkadmin.top ]
+ * +----------------------------------------------------------------------
+ * | 官方网站: https://thinkadmin.top
+ * +----------------------------------------------------------------------
+ * | 开源协议 ( https://mit-license.org )
+ * | 免责声明 ( https://thinkadmin.top/disclaimer )
+ * | 会员特权 ( https://thinkadmin.top/vip-introduce )
+ * +----------------------------------------------------------------------
+ * | gitee 代码仓库：https://gitee.com/zoujingli/ThinkAdmin
+ * | github 代码仓库：https://github.com/zoujingli/ThinkAdmin
+ * +----------------------------------------------------------------------
+ */
 
 namespace think\admin\service;
 
@@ -55,6 +71,7 @@ class JsonRpcHttpServer
 
     /**
      * 执行 RPC 方法调用。
+     * @param mixed $object
      */
     protected function dispatchRequest($object, array $request): array
     {
@@ -111,6 +128,8 @@ class JsonRpcHttpServer
 
     /**
      * 构建成功响应。
+     * @param mixed $id
+     * @param mixed $result
      */
     private function successResponse($id, $result): array
     {
@@ -121,6 +140,7 @@ class JsonRpcHttpServer
      * 构建错误响应。
      *
      * @param mixed $result
+     * @param mixed $id
      */
     private function errorResponse($id, string $code, string $message, string $meaning, $result = null): array
     {

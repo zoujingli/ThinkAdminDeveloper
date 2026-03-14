@@ -20,7 +20,6 @@ declare(strict_types=1);
 
 namespace plugin\storage\service;
 
-use plugin\storage\service\StorageConfig;
 use think\admin\contract\StorageInterface;
 use think\admin\contract\StorageUsageTrait;
 use think\admin\Exception;
@@ -136,7 +135,7 @@ class QiniuStorage implements StorageInterface
     {
         try {
             $proc = $this->app->request->isSsl() ? 'https' : 'http';
-            $region = (string) StorageConfig::driver('qiniu', 'region', '');
+            $region = (string)StorageConfig::driver('qiniu', 'region', '');
         } catch (\Exception $exception) {
             throw new Exception($exception->getMessage());
         }
@@ -206,12 +205,12 @@ class QiniuStorage implements StorageInterface
     protected function init()
     {
         // 读取配置文件
-        $this->bucket = (string) StorageConfig::driver('qiniu', 'bucket', '');
-        $this->accessKey = (string) StorageConfig::driver('qiniu', 'access_key', '');
-        $this->secretKey = (string) StorageConfig::driver('qiniu', 'secret_key', '');
+        $this->bucket = (string)StorageConfig::driver('qiniu', 'bucket', '');
+        $this->accessKey = (string)StorageConfig::driver('qiniu', 'access_key', '');
+        $this->secretKey = (string)StorageConfig::driver('qiniu', 'secret_key', '');
         // 计算链接前缀
-        $host = strtolower((string) StorageConfig::driver('qiniu', 'domain', ''));
-        $type = strtolower((string) StorageConfig::driver('qiniu', 'protocol', 'http'));
+        $host = strtolower((string)StorageConfig::driver('qiniu', 'domain', ''));
+        $type = strtolower((string)StorageConfig::driver('qiniu', 'protocol', 'http'));
         if ($type === 'auto') {
             $this->domain = "//{$host}";
         } elseif (in_array($type, ['http', 'https'])) {

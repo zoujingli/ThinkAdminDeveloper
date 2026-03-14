@@ -1,6 +1,22 @@
 <?php
 
 declare(strict_types=1);
+/**
+ * +----------------------------------------------------------------------
+ * | ThinkAdmin Plugin for ThinkAdmin
+ * +----------------------------------------------------------------------
+ * | 版权所有 2014~2026 ThinkAdmin [ thinkadmin.top ]
+ * +----------------------------------------------------------------------
+ * | 官方网站: https://thinkadmin.top
+ * +----------------------------------------------------------------------
+ * | 开源协议 ( https://mit-license.org )
+ * | 免责声明 ( https://thinkadmin.top/disclaimer )
+ * | 会员特权 ( https://thinkadmin.top/vip-introduce )
+ * +----------------------------------------------------------------------
+ * | gitee 代码仓库：https://gitee.com/zoujingli/ThinkAdmin
+ * | github 代码仓库：https://github.com/zoujingli/ThinkAdmin
+ * +----------------------------------------------------------------------
+ */
 
 namespace think\admin\tests;
 
@@ -20,11 +36,6 @@ class AccountIntegrationTest extends SqliteIntegrationTestCase
     {
         parent::setUp();
         $this->configureAccountAccess();
-    }
-
-    protected function defineSchema(): void
-    {
-        $this->createAccountTables();
     }
 
     public function testSetCreatesBindAndAuthRecords(): void
@@ -62,7 +73,7 @@ class AccountIntegrationTest extends SqliteIntegrationTestCase
 
         $bound = $account->bind(['phone' => $phone], [
             'username' => 'tester-' . random_int(100, 999),
-            'extra'    => ['scene' => 'integration'],
+            'extra' => ['scene' => 'integration'],
         ]);
 
         $this->assertSame($phone, $bound['phone']);
@@ -129,5 +140,10 @@ class AccountIntegrationTest extends SqliteIntegrationTestCase
 
         $detached = PluginAccountBind::mk()->findOrEmpty($secondary->getUsid());
         $this->assertSame(0, intval($detached->getAttr('unid')));
+    }
+
+    protected function defineSchema(): void
+    {
+        $this->createAccountTables();
     }
 }

@@ -20,7 +20,6 @@ declare(strict_types=1);
 
 namespace plugin\worker\service;
 
-use plugin\worker\service\Server;
 use think\admin\service\RuntimeService;
 use think\Http;
 use Workerman\Connection\TcpConnection;

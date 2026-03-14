@@ -1,19 +1,34 @@
 <?php
 
 declare(strict_types=1);
+/**
+ * +----------------------------------------------------------------------
+ * | ThinkAdmin Plugin for ThinkAdmin
+ * +----------------------------------------------------------------------
+ * | 版权所有 2014~2026 ThinkAdmin [ thinkadmin.top ]
+ * +----------------------------------------------------------------------
+ * | 官方网站: https://thinkadmin.top
+ * +----------------------------------------------------------------------
+ * | 开源协议 ( https://mit-license.org )
+ * | 免责声明 ( https://thinkadmin.top/disclaimer )
+ * | 会员特权 ( https://thinkadmin.top/vip-introduce )
+ * +----------------------------------------------------------------------
+ * | gitee 代码仓库：https://gitee.com/zoujingli/ThinkAdmin
+ * | github 代码仓库：https://github.com/zoujingli/ThinkAdmin
+ * +----------------------------------------------------------------------
+ */
 
 namespace think\admin\tests;
 
-use plugin\system\service\SystemAuthService;
 use plugin\system\controller\api\Upload as UploadController;
+use plugin\system\service\SystemAuthService;
 use plugin\system\service\SystemContext as PluginSystemContext;
-use plugin\storage\model\SystemFile;
-use think\Container;
-use think\Request;
 use think\admin\contract\SystemContextInterface;
 use think\admin\runtime\RequestContext;
 use think\admin\tests\Support\SqliteIntegrationTestCase;
+use think\Container;
 use think\exception\HttpResponseException;
+use think\Request;
 
 /**
  * @internal
@@ -21,30 +36,16 @@ use think\exception\HttpResponseException;
  */
 class UploadControllerTest extends SqliteIntegrationTestCase
 {
-    protected function defineSchema(): void
-    {
-        $this->createSystemConfigTable();
-        $this->createSystemFileTable();
-    }
-
-    protected function afterSchemaCreated(): void
-    {
-        $context = new PluginSystemContext();
-        Container::getInstance()->instance(SystemContextInterface::class, $context);
-        $this->app->instance(SystemContextInterface::class, $context);
-        $this->app->config->set(include TEST_PROJECT_ROOT . '/config/view.php', 'view');
-    }
-
     public function testIndexBuildsUploadScriptUsingTokenRestrictedExtensions(): void
     {
         $this->createSystemConfigFixture([
-            'type'  => 'storage',
-            'name'  => 'allowed_exts',
+            'type' => 'storage',
+            'name' => 'allowed_exts',
             'value' => 'jpg,png,mp4',
         ]);
         $this->createSystemConfigFixture([
-            'type'  => 'storage',
-            'name'  => 'naming',
+            'type' => 'storage',
+            'name' => 'naming',
             'value' => 'date',
         ]);
 
@@ -56,23 +57,23 @@ class UploadControllerTest extends SqliteIntegrationTestCase
         $content = strval($response->getContent());
 
         $this->assertStringContainsString('application/x-javascript', $contentType);
-        $this->assertStringContainsString('"png":"image\\/png"', $content);
-        $this->assertStringContainsString('"mp4":"video\\/mp4"', $content);
-        $this->assertStringNotContainsString('"jpg":"image\\/jpeg"', $content);
-        $this->assertStringNotContainsString('"pdf":"application\\/pdf"', $content);
+        $this->assertStringContainsString('"png":"image\/png"', $content);
+        $this->assertStringContainsString('"mp4":"video\/mp4"', $content);
+        $this->assertStringNotContainsString('"jpg":"image\/jpeg"', $content);
+        $this->assertStringNotContainsString('"pdf":"application\/pdf"', $content);
         $this->assertStringContainsString("let IsDate = 'date'.indexOf('date') > -1;", $content);
     }
 
     public function testDoneMarksOwnedFileAsUploaded(): void
     {
         $file = $this->createSystemFileFixture([
-            'uuid'   => 9101,
+            'uuid' => 9101,
             'status' => 1,
-            'hash'   => 'upload-hash-owned',
+            'hash' => 'upload-hash-owned',
         ]);
 
         $result = $this->callActionController('done', [
-            'id'   => $file->getAttr('id'),
+            'id' => $file->getAttr('id'),
             'hash' => 'upload-hash-owned',
         ], 9101);
 
@@ -86,13 +87,13 @@ class UploadControllerTest extends SqliteIntegrationTestCase
     public function testDoneRejectsFileFromAnotherAdminUser(): void
     {
         $file = $this->createSystemFileFixture([
-            'uuid'   => 9201,
+            'uuid' => 9201,
             'status' => 1,
-            'hash'   => 'upload-hash-foreign',
+            'hash' => 'upload-hash-foreign',
         ]);
 
         $result = $this->callActionController('done', [
-            'id'   => $file->getAttr('id'),
+            'id' => $file->getAttr('id'),
             'hash' => 'upload-hash-foreign',
         ], 9101);
 
@@ -101,6 +102,20 @@ class UploadControllerTest extends SqliteIntegrationTestCase
         $this->assertSame(0, intval($result['code'] ?? 1));
         $this->assertSame('文件不存在！', $result['info'] ?? '');
         $this->assertSame(1, intval($file->getAttr('status')));
+    }
+
+    protected function defineSchema(): void
+    {
+        $this->createSystemConfigTable();
+        $this->createSystemFileTable();
+    }
+
+    protected function afterSchemaCreated(): void
+    {
+        $context = new PluginSystemContext();
+        Container::getInstance()->instance(SystemContextInterface::class, $context);
+        $this->app->instance(SystemContextInterface::class, $context);
+        $this->app->config->set(include TEST_PROJECT_ROOT . '/config/view.php', 'view');
     }
 
     private function callIndexController(array $query = [])
@@ -146,7 +161,7 @@ class UploadControllerTest extends SqliteIntegrationTestCase
     private function bindAdminUser(int $userId): void
     {
         RequestContext::instance()->setAuth([
-            'id'       => $userId,
+            'id' => $userId,
             'username' => "admin-{$userId}",
             'password' => md5('changed-password'),
         ], '', true);

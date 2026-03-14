@@ -20,8 +20,8 @@ declare(strict_types=1);
 
 namespace plugin\account\controller\api;
 
-use plugin\wechat\client\service\WechatService;
 use plugin\account\service\Account;
+use plugin\wechat\client\service\WechatService;
 use think\admin\Controller;
 use think\admin\Exception;
 use think\Response;

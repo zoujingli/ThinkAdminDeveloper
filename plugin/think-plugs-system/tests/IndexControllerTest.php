@@ -1,20 +1,36 @@
 <?php
 
 declare(strict_types=1);
+/**
+ * +----------------------------------------------------------------------
+ * | ThinkAdmin Plugin for ThinkAdmin
+ * +----------------------------------------------------------------------
+ * | 版权所有 2014~2026 ThinkAdmin [ thinkadmin.top ]
+ * +----------------------------------------------------------------------
+ * | 官方网站: https://thinkadmin.top
+ * +----------------------------------------------------------------------
+ * | 开源协议 ( https://mit-license.org )
+ * | 免责声明 ( https://thinkadmin.top/disclaimer )
+ * | 会员特权 ( https://thinkadmin.top/vip-introduce )
+ * +----------------------------------------------------------------------
+ * | gitee 代码仓库：https://gitee.com/zoujingli/ThinkAdmin
+ * | github 代码仓库：https://github.com/zoujingli/ThinkAdmin
+ * +----------------------------------------------------------------------
+ */
 
 namespace think\admin\tests;
 
 use plugin\system\controller\Index as IndexController;
-use plugin\system\service\SystemContext as PluginSystemContext;
-use plugin\system\model\SystemUser;
 use plugin\system\model\SystemData;
 use plugin\system\model\SystemOplog;
-use think\Container;
-use think\Request;
+use plugin\system\model\SystemUser;
+use plugin\system\service\SystemContext as PluginSystemContext;
 use think\admin\contract\SystemContextInterface;
 use think\admin\runtime\RequestContext;
 use think\admin\tests\Support\SqliteIntegrationTestCase;
+use think\Container;
 use think\exception\HttpResponseException;
+use think\Request;
 
 /**
  * @internal
@@ -22,20 +38,6 @@ use think\exception\HttpResponseException;
  */
 class IndexControllerTest extends SqliteIntegrationTestCase
 {
-    protected function defineSchema(): void
-    {
-        $this->createSystemUserTable();
-        $this->createSystemDataTable();
-        $this->createSystemOplogTable();
-    }
-
-    protected function afterSchemaCreated(): void
-    {
-        $context = new PluginSystemContext();
-        Container::getInstance()->instance(SystemContextInterface::class, $context);
-        $this->app->instance(SystemContextInterface::class, $context);
-    }
-
     public function testThemePersistsCurrentUserThemeIntoSystemData(): void
     {
         $this->bindAdminUser(9101, 'tester', md5('changed-password'));
@@ -56,21 +58,21 @@ class IndexControllerTest extends SqliteIntegrationTestCase
     public function testInfoUpdatesOwnProfileButKeepsUsernameAndAuthorize(): void
     {
         $user = $this->createSystemUserFixture([
-            'id'            => 9101,
-            'username'      => 'tester',
-            'password'      => md5('changed-password'),
-            'nickname'      => '原昵称',
-            'authorize'     => ',1,2,',
+            'id' => 9101,
+            'username' => 'tester',
+            'password' => md5('changed-password'),
+            'nickname' => '原昵称',
+            'authorize' => ',1,2,',
             'contact_phone' => '13800130000',
         ]);
 
         $this->bindAdminUser(9101, 'tester', md5('changed-password'));
 
         $result = $this->callActionController('info', [
-            'id'            => 9101,
-            'username'      => 'hacker',
-            'authorize'     => ['9'],
-            'nickname'      => '新昵称',
+            'id' => 9101,
+            'username' => 'hacker',
+            'authorize' => ['9'],
+            'nickname' => '新昵称',
             'contact_phone' => '13800139999',
         ]);
 
@@ -90,7 +92,7 @@ class IndexControllerTest extends SqliteIntegrationTestCase
         $this->bindAdminUser(9101, 'tester', md5('changed-password'));
 
         $result = $this->callActionController('info', [
-            'id'       => 9102,
+            'id' => 9102,
             'nickname' => '越权修改',
         ]);
 
@@ -101,7 +103,7 @@ class IndexControllerTest extends SqliteIntegrationTestCase
     public function testPassUpdatesOwnPasswordAndWritesOplog(): void
     {
         $user = $this->createSystemUserFixture([
-            'id'       => 9101,
+            'id' => 9101,
             'username' => 'tester',
             'password' => md5('old-password'),
         ]);
@@ -109,10 +111,10 @@ class IndexControllerTest extends SqliteIntegrationTestCase
         $this->bindAdminUser(9101, 'tester', md5('old-password'));
 
         $result = $this->callActionController('pass', [
-            'id'          => 9101,
+            'id' => 9101,
             'oldpassword' => 'old-password',
-            'password'    => 'new-password',
-            'repassword'  => 'new-password',
+            'password' => 'new-password',
+            'repassword' => 'new-password',
         ]);
 
         $updated = SystemUser::mk()->findOrEmpty(intval($user->getAttr('id')));
@@ -132,14 +134,28 @@ class IndexControllerTest extends SqliteIntegrationTestCase
         $this->bindAdminUser(9101, 'tester', md5('changed-password'));
 
         $result = $this->callActionController('pass', [
-            'id'          => 9102,
+            'id' => 9102,
             'oldpassword' => 'old-password',
-            'password'    => 'new-password',
-            'repassword'  => 'new-password',
+            'password' => 'new-password',
+            'repassword' => 'new-password',
         ]);
 
         $this->assertSame(0, intval($result['code'] ?? 1));
         $this->assertSame('禁止修改他人密码！', $result['info'] ?? '');
+    }
+
+    protected function defineSchema(): void
+    {
+        $this->createSystemUserTable();
+        $this->createSystemDataTable();
+        $this->createSystemOplogTable();
+    }
+
+    protected function afterSchemaCreated(): void
+    {
+        $context = new PluginSystemContext();
+        Container::getInstance()->instance(SystemContextInterface::class, $context);
+        $this->app->instance(SystemContextInterface::class, $context);
     }
 
     private function callActionController(string $action, array $payload): array
@@ -166,7 +182,7 @@ class IndexControllerTest extends SqliteIntegrationTestCase
     private function bindAdminUser(int $id, string $username, string $password): void
     {
         RequestContext::instance()->setAuth([
-            'id'       => $id,
+            'id' => $id,
             'username' => $username,
             'password' => $password,
         ], '', true);

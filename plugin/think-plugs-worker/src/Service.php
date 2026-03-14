@@ -22,6 +22,8 @@ namespace plugin\worker;
 
 use plugin\worker\command\Queue;
 use plugin\worker\command\Worker;
+use plugin\worker\service\ProcessService;
+use plugin\worker\service\QueueService;
 use think\admin\Library;
 use think\admin\Plugin;
 use think\admin\service\ProcessService as ProcessRuntime;
@@ -35,13 +37,11 @@ class Service extends Plugin
 {
     /**
      * 定义插件名称.
-     * @var string
      */
     protected string $appName = '运行时服务';
 
     /**
      * 定义安装包名.
-     * @var string
      */
     protected string $package = 'zoujingli/think-plugs-worker';
 
@@ -49,13 +49,13 @@ class Service extends Plugin
     {
         Library::load(__DIR__ . '/common.php');
         $this->app->bind([
-            ProcessRuntime::BIND_NAME => \plugin\worker\service\ProcessService::class,
-            QueueRuntime::BIND_NAME   => \plugin\worker\service\QueueService::class,
+            ProcessRuntime::BIND_NAME => ProcessService::class,
+            QueueRuntime::BIND_NAME => QueueService::class,
         ]);
 
         $this->commands([
             'xadmin:worker' => Worker::class,
-            'xadmin:queue'  => Queue::class,
+            'xadmin:queue' => Queue::class,
         ]);
     }
 

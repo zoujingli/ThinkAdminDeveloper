@@ -34,8 +34,6 @@ class QueryFactory
 {
     /**
      * 统一构造查询对象，并补齐模型与前置事件。
-     * @param BaseQuery|Model|string $query
-     * @return BaseQuery|Mongo|Query
      */
     public static function build(BaseQuery|Model|string $query): BaseQuery|Mongo|Query
     {

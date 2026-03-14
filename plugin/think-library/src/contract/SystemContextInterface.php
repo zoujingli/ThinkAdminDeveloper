@@ -59,6 +59,7 @@ interface SystemContextInterface
 
     /**
      * 获取后台用户数据.
+     * @param null|mixed $default
      * @return mixed
      */
     public function getUser(?string $field = null, $default = null);
@@ -97,18 +98,21 @@ interface SystemContextInterface
 
     /**
      * 写入系统参数.
+     * @param mixed $value
      * @return mixed
      */
     public function setConfig(string $name, $value = '');
 
     /**
      * 读取系统数据.
+     * @param mixed $default
      * @return mixed
      */
     public function getData(string $name, $default = []);
 
     /**
      * 写入系统数据.
+     * @param mixed $value
      */
     public function setData(string $name, $value): bool;
 

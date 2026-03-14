@@ -177,6 +177,15 @@ class PageBuilder
     private $contentClass = 'think-box-shadow';
 
     /**
+     * 构造函数.
+     */
+    public function __construct(Controller $class)
+    {
+        $this->class = $class;
+        $this->tableOptions = ['even' => true, 'height' => 'full'];
+    }
+
+    /**
      * 创建列表页生成器.
      */
     public static function mk(): self
@@ -190,15 +199,6 @@ class PageBuilder
     public static function raw(string $script): PageBuilderRaw
     {
         return new PageBuilderRaw($script);
-    }
-
-    /**
-     * 构造函数.
-     */
-    public function __construct(Controller $class)
-    {
-        $this->class = $class;
-        $this->tableOptions = ['even' => true, 'height' => 'full'];
     }
 
     /**
@@ -289,17 +289,17 @@ class PageBuilder
     public function toArray(): array
     {
         return [
-            'title'        => $this->title,
-            'buttons'      => $this->buttonItems,
+            'title' => $this->title,
+            'buttons' => $this->buttonItems,
             'searchFields' => $this->normalizeSchemaValue($this->searchFields),
-            'table'        => [
-                'id'      => $this->tableId,
-                'url'     => $this->tableUrl ?? '',
-                'attrs'   => $this->tableAttrs,
+            'table' => [
+                'id' => $this->tableId,
+                'url' => $this->tableUrl ?? '',
+                'attrs' => $this->tableAttrs,
                 'options' => $this->normalizeSchemaValue($this->buildTableOptions()),
                 'columns' => $this->normalizeSchemaValue($this->columns),
             ],
-            'templates'    => array_keys($this->templates),
+            'templates' => array_keys($this->templates),
         ];
     }
 
@@ -321,17 +321,17 @@ class PageBuilder
     public function addModalButton(string $label, string $url, string $title = '', array $attrs = [], ?string $auth = null): self
     {
         $attrs = array_merge($attrs, [
-            'class'      => trim(($attrs['class'] ?? '') . ' layui-btn layui-btn-sm layui-btn-primary'),
+            'class' => trim(($attrs['class'] ?? '') . ' layui-btn layui-btn-sm layui-btn-primary'),
             'data-modal' => $url,
         ]);
         if ($title !== '') {
             $attrs['data-title'] = $title;
         }
         return $this->addButtonHtml($this->wrapAuth(sprintf('<a %s>%s</a>', $this->attrs($attrs), $label), $auth), [
-            'type'  => 'modal',
+            'type' => 'modal',
             'label' => $label,
-            'url'   => $url,
-            'auth'  => $auth,
+            'url' => $url,
+            'auth' => $auth,
             'attrs' => $attrs,
         ]);
     }
@@ -343,22 +343,22 @@ class PageBuilder
     public function addBatchActionButton(string $label, string $url, string $rule, string $confirm = '', array $attrs = [], ?string $auth = null): self
     {
         $attrs = array_merge($attrs, [
-            'class'         => trim(($attrs['class'] ?? '') . ' layui-btn layui-btn-sm layui-btn-primary'),
+            'class' => trim(($attrs['class'] ?? '') . ' layui-btn layui-btn-sm layui-btn-primary'),
             'data-table-id' => $this->tableId,
-            'data-action'   => $url,
-            'data-rule'     => $rule,
+            'data-action' => $url,
+            'data-rule' => $rule,
         ]);
         if ($confirm !== '') {
             $attrs['data-confirm'] = $confirm;
         }
         return $this->addButtonHtml($this->wrapAuth(sprintf('<a %s>%s</a>', $this->attrs($attrs), $label), $auth), [
-            'type'    => 'batch-action',
-            'label'   => $label,
-            'url'     => $url,
-            'rule'    => $rule,
+            'type' => 'batch-action',
+            'label' => $label,
+            'url' => $url,
+            'rule' => $rule,
             'confirm' => $confirm,
-            'auth'    => $auth,
-            'attrs'   => $attrs,
+            'auth' => $auth,
+            'attrs' => $attrs,
         ]);
     }
 
@@ -369,25 +369,25 @@ class PageBuilder
     public function addSearchField(array $field): self
     {
         $field = array_merge([
-            'type'        => 'input',
-            'name'        => '',
-            'label'       => '',
+            'type' => 'input',
+            'name' => '',
+            'label' => '',
             'placeholder' => '',
-            'attrs'       => [],
-            'options'     => [],
-            'source'      => '',
-            'class'       => '',
-            'wrapClass'   => '',
+            'attrs' => [],
+            'options' => [],
+            'source' => '',
+            'class' => '',
+            'wrapClass' => '',
         ], $field);
-        $field['type'] = strtolower((string) $field['type']);
-        $field['name'] = trim((string) $field['name']);
-        $field['label'] = (string) $field['label'];
-        $field['placeholder'] = (string) $field['placeholder'];
+        $field['type'] = strtolower((string)$field['type']);
+        $field['name'] = trim((string)$field['name']);
+        $field['label'] = (string)$field['label'];
+        $field['placeholder'] = (string)$field['placeholder'];
         $field['attrs'] = is_array($field['attrs']) ? $field['attrs'] : [];
         $field['options'] = is_array($field['options']) ? $field['options'] : [];
-        $field['source'] = trim((string) $field['source']);
-        $field['class'] = trim((string) $field['class']);
-        $field['wrapClass'] = trim((string) $field['wrapClass']);
+        $field['source'] = trim((string)$field['source']);
+        $field['class'] = trim((string)$field['class']);
+        $field['wrapClass'] = trim((string)$field['wrapClass']);
         $this->searchFields[] = $field;
         return $this;
     }
@@ -399,11 +399,11 @@ class PageBuilder
     public function addSearchInput(string $name, string $label, string $placeholder = '', array $attrs = []): self
     {
         return $this->addSearchField([
-            'type'        => 'input',
-            'name'        => $name,
-            'label'       => $label,
+            'type' => 'input',
+            'name' => $name,
+            'label' => $label,
             'placeholder' => $placeholder,
-            'attrs'       => $attrs,
+            'attrs' => $attrs,
         ]);
     }
 
@@ -414,12 +414,12 @@ class PageBuilder
     public function addSearchSelect(string $name, string $label, array $options = [], array $attrs = [], string $source = ''): self
     {
         return $this->addSearchField([
-            'type'    => 'select',
-            'name'    => $name,
-            'label'   => $label,
+            'type' => 'select',
+            'name' => $name,
+            'label' => $label,
             'options' => $options,
-            'attrs'   => $attrs,
-            'source'  => $source,
+            'attrs' => $attrs,
+            'source' => $source,
         ]);
     }
 
@@ -431,11 +431,11 @@ class PageBuilder
     {
         $attrs['data-date-range'] = $attrs['data-date-range'] ?? null;
         return $this->addSearchField([
-            'type'        => 'input',
-            'name'        => $name,
-            'label'       => $label,
+            'type' => 'input',
+            'name' => $name,
+            'label' => $label,
             'placeholder' => $placeholder,
-            'attrs'       => $attrs,
+            'attrs' => $attrs,
         ]);
     }
 
@@ -446,8 +446,8 @@ class PageBuilder
     public function addSearchHidden(string $name, string $value = ''): self
     {
         return $this->addSearchField([
-            'type'  => 'hidden',
-            'name'  => $name,
+            'type' => 'hidden',
+            'name' => $name,
             'attrs' => ['value' => $value],
         ]);
     }
@@ -459,7 +459,7 @@ class PageBuilder
     public function addSearchSubmitButton(string $label = '搜 索', array $attrs = []): self
     {
         return $this->addSearchField([
-            'type'  => 'submit',
+            'type' => 'submit',
             'label' => $label,
             'attrs' => $attrs,
         ]);
@@ -491,11 +491,11 @@ class PageBuilder
     public function addToolbarColumn(string $title = '操作面板', array $options = []): self
     {
         return $this->addColumn(array_merge([
-            'toolbar'  => "#{$this->toolbarId}",
-            'title'    => $title,
-            'align'    => 'center',
+            'toolbar' => "#{$this->toolbarId}",
+            'title' => $title,
+            'align' => 'center',
             'minWidth' => 150,
-            'fixed'    => 'right',
+            'fixed' => 'right',
         ], $options));
     }
 
@@ -516,7 +516,7 @@ class PageBuilder
     public function addRowModalAction(string $label, string $url, string $title = '', array $attrs = [], ?string $auth = null): self
     {
         $attrs = array_merge($attrs, [
-            'class'      => trim(($attrs['class'] ?? '') . ' layui-btn layui-btn-sm'),
+            'class' => trim(($attrs['class'] ?? '') . ' layui-btn layui-btn-sm'),
             'data-modal' => $url,
         ]);
         if ($title !== '') {
@@ -532,9 +532,9 @@ class PageBuilder
     public function addRowActionButton(string $label, string $url, string $value = 'id#{{d.id}}', string $confirm = '', array $attrs = [], ?string $auth = null): self
     {
         $attrs = array_merge($attrs, [
-            'class'      => trim(($attrs['class'] ?? '') . ' layui-btn layui-btn-sm layui-btn-danger'),
+            'class' => trim(($attrs['class'] ?? '') . ' layui-btn layui-btn-sm layui-btn-danger'),
             'data-action' => $url,
-            'data-value'  => $value,
+            'data-value' => $value,
         ]);
         if ($confirm !== '') {
             $attrs['data-confirm'] = $confirm;
@@ -636,7 +636,7 @@ class PageBuilder
         $html .= "\n\t" . '<div class="layui-card-line"></div>';
         $html .= "\n\t" . '<div class="layui-card-body">';
         $html .= "\n\t\t" . '<div class="layui-card-table">';
-        $html .= "\n\t\t\t" . "{notempty name='showErrorMessage'}";
+        $html .= "\n\t\t\t{notempty name='showErrorMessage'}";
         $html .= "\n\t\t\t\t" . '<div class="think-box-notify" type="error"><b>{:lang(\'系统提示：\')}</b><span>{$showErrorMessage|raw}</span></div>';
         $html .= "\n\t\t\t" . '{/notempty}';
         if ($this->contentClass !== '') {
@@ -672,12 +672,12 @@ class PageBuilder
             return '';
         }
         $attrs = array_merge([
-            'action'       => $this->searchAttrs['action'] ?? $this->resolveCurrentUrl(),
+            'action' => $this->searchAttrs['action'] ?? $this->resolveCurrentUrl(),
             'data-table-id' => $this->tableId,
             'autocomplete' => 'off',
-            'class'        => trim(($this->searchAttrs['class'] ?? '') . ' layui-form layui-form-pane form-search'),
-            'method'       => 'get',
-            'onsubmit'     => 'return false',
+            'class' => trim(($this->searchAttrs['class'] ?? '') . ' layui-form layui-form-pane form-search'),
+            'method' => 'get',
+            'onsubmit' => 'return false',
         ], $this->searchAttrs);
         $attrs['class'] = trim(($attrs['class'] ?? '') . ' layui-form layui-form-pane form-search');
         $fields = [];
@@ -708,17 +708,17 @@ class PageBuilder
     private function renderSearchField(array $field): string
     {
         $field = array_merge([
-            'type'        => 'input',
-            'name'        => '',
-            'label'       => '',
+            'type' => 'input',
+            'name' => '',
+            'label' => '',
             'placeholder' => '',
-            'attrs'       => [],
-            'options'     => [],
-            'source'      => '',
-            'class'       => '',
-            'wrapClass'   => '',
+            'attrs' => [],
+            'options' => [],
+            'source' => '',
+            'class' => '',
+            'wrapClass' => '',
         ], $field);
-        $type = strtolower((string) $field['type']);
+        $type = strtolower((string)$field['type']);
         $attrs = is_array($field['attrs']) ? $field['attrs'] : [];
         if ($type === 'hidden') {
             $attrs['type'] = 'hidden';
@@ -769,13 +769,13 @@ class PageBuilder
             $source = addslashes($field['source']);
             $html = "{foreach \${$source} as \$k=>\$v}";
             $html .= "{if isset(\$get.{$name}) and \$get.{$name} eq \$k}<option selected value=\"{\$k}\">{\$v}</option>{else}<option value=\"{\$k}\">{\$v}</option>{/if}";
-            $html .= "{/foreach}";
+            $html .= '{/foreach}';
             return $html;
         }
         $html = '';
         foreach ($field['options'] as $value => $label) {
-            $value = htmlspecialchars((string) $value, ENT_QUOTES, 'UTF-8');
-            $label = htmlspecialchars((string) $label, ENT_QUOTES, 'UTF-8');
+            $value = htmlspecialchars((string)$value, ENT_QUOTES, 'UTF-8');
+            $label = htmlspecialchars((string)$label, ENT_QUOTES, 'UTF-8');
             $html .= sprintf('{if isset($get.%s) and $get.%s eq \'%s\'}<option selected value="%s">%s</option>{else}<option value="%s">%s</option>{/if}', $name, $name, addslashes($value), $value, $label, $value, $label);
         }
         return $html;
@@ -806,7 +806,7 @@ class PageBuilder
             $this->templates[$this->toolbarId] = join("\n", $this->rowActions);
         }
         foreach ($this->templates as $id => $tpl) {
-            $html .= sprintf("\n<script type=\"text/html\" id=\"%s\">\n%s\n</script>", htmlspecialchars((string) $id, ENT_QUOTES, 'UTF-8'), $tpl);
+            $html .= sprintf("\n<script type=\"text/html\" id=\"%s\">\n%s\n</script>", htmlspecialchars((string)$id, ENT_QUOTES, 'UTF-8'), $tpl);
         }
         return $html;
     }
@@ -855,6 +855,7 @@ class PageBuilder
 
     /**
      * JS 值编码.
+     * @param mixed $value
      */
     private function encodeJs($value): string
     {
@@ -870,7 +871,7 @@ class PageBuilder
                 return '[' . join(',', $items) . ']';
             }
             foreach ($value as $key => $item) {
-                $items[] = json_encode((string) $key, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES) . ':' . $this->encodeJs($item);
+                $items[] = json_encode((string)$key, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES) . ':' . $this->encodeJs($item);
             }
             return '{' . join(',', $items) . '}';
         }
@@ -881,13 +882,14 @@ class PageBuilder
             return 'null';
         }
         if (is_int($value) || is_float($value)) {
-            return (string) $value;
+            return (string)$value;
         }
-        return json_encode((string) $value, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
+        return json_encode((string)$value, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
     }
 
     /**
      * Schema 值标准化.
+     * @param mixed $value
      */
     private function normalizeSchemaValue($value)
     {
@@ -930,8 +932,8 @@ class PageBuilder
     {
         $html = '';
         foreach ($attrs as $key => $value) {
-            $name = htmlspecialchars((string) $key, ENT_QUOTES, 'UTF-8');
-            $html .= is_null($value) ? " {$name}" : sprintf(' %s="%s"', $name, htmlspecialchars((string) $value, ENT_QUOTES, 'UTF-8'));
+            $name = htmlspecialchars((string)$key, ENT_QUOTES, 'UTF-8');
+            $html .= is_null($value) ? " {$name}" : sprintf(' %s="%s"', $name, htmlspecialchars((string)$value, ENT_QUOTES, 'UTF-8'));
         }
         return ltrim($html);
     }

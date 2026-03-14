@@ -20,9 +20,9 @@ declare(strict_types=1);
 
 namespace plugin\center\controller;
 
-use plugin\system\service\SystemAuthService;
 use plugin\center\Service;
 use plugin\center\service\Plugin;
+use plugin\system\service\SystemAuthService;
 use think\admin\Controller;
 use think\admin\Exception;
 use think\admin\service\PluginService;

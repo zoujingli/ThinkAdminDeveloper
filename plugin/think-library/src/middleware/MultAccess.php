@@ -22,10 +22,10 @@ namespace think\admin\middleware;
 
 use think\admin\extend\FileTools;
 use think\admin\Library;
-use think\admin\service\RuntimeTools;
 use think\admin\service\AppService;
 use think\admin\service\NodeService;
 use think\admin\service\PluginService;
+use think\admin\service\RuntimeTools;
 use think\App;
 use think\Request;
 use think\Response;

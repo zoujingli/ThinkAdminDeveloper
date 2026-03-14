@@ -23,17 +23,16 @@ namespace plugin\system\service;
 use plugin\system\model\SystemAuth;
 use plugin\system\model\SystemNode;
 use plugin\system\model\SystemUser;
-use plugin\system\service\SystemService;
-use think\admin\service\CacheSession;
-use think\admin\runtime\RequestTokenService;
 use think\admin\Exception;
 use think\admin\extend\ArrayTree;
 use think\admin\extend\CodeToolkit;
-use think\admin\service\JwtToken;
 use think\admin\Library;
 use think\admin\runtime\RequestContext;
-use think\admin\service\Service;
+use think\admin\runtime\RequestTokenService;
+use think\admin\service\CacheSession;
+use think\admin\service\JwtToken;
 use think\admin\service\NodeService;
+use think\admin\service\Service;
 use think\helper\Str;
 use think\Request;
 
@@ -304,7 +303,7 @@ class SystemAuthService extends Service
      */
     public static function buildTokenHeader(?string $token = null): string
     {
-        $token = RequestTokenService::normalizeToken((string) $token);
+        $token = RequestTokenService::normalizeToken((string)$token);
         return $token === '' ? '' : self::TOKEN_SCHEME . ' ' . $token;
     }
 

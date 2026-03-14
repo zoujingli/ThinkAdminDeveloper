@@ -20,8 +20,8 @@ declare(strict_types=1);
 
 namespace plugin\system\controller;
 
-use plugin\system\service\SystemAuthService;
 use plugin\storage\model\SystemFile;
+use plugin\system\service\SystemAuthService;
 use think\admin\Controller;
 use think\admin\helper\QueryHelper;
 use think\admin\service\Storage;

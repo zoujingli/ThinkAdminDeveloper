@@ -1,6 +1,22 @@
 <?php
 
 declare(strict_types=1);
+/**
+ * +----------------------------------------------------------------------
+ * | ThinkAdmin Plugin for ThinkAdmin
+ * +----------------------------------------------------------------------
+ * | 版权所有 2014~2026 ThinkAdmin [ thinkadmin.top ]
+ * +----------------------------------------------------------------------
+ * | 官方网站: https://thinkadmin.top
+ * +----------------------------------------------------------------------
+ * | 开源协议 ( https://mit-license.org )
+ * | 免责声明 ( https://thinkadmin.top/disclaimer )
+ * | 会员特权 ( https://thinkadmin.top/vip-introduce )
+ * +----------------------------------------------------------------------
+ * | gitee 代码仓库：https://gitee.com/zoujingli/ThinkAdmin
+ * | github 代码仓库：https://github.com/zoujingli/ThinkAdmin
+ * +----------------------------------------------------------------------
+ */
 
 namespace plugin\helper\command;
 
@@ -211,7 +227,7 @@ class Publish extends Command
         if (!is_file($file)) {
             return [];
         }
-        $data = json_decode((string) file_get_contents($file), true);
+        $data = json_decode((string)file_get_contents($file), true);
         return is_array($data) ? $data : [];
     }
 
@@ -300,7 +316,7 @@ class Publish extends Command
         [$services, $versions, $known] = [[], [], []];
 
         if (is_file($file = syspath('vendor/composer/installed.json'))) {
-            $packages = json_decode((string) @file_get_contents($file), true);
+            $packages = json_decode((string)@file_get_contents($file), true);
             foreach ($packages['packages'] ?? $packages as $package) {
                 $name = strval($package['name'] ?? '');
                 if ($name === '') {
@@ -346,7 +362,7 @@ class Publish extends Command
         if ($installPath !== '' && ($type === 'think-admin-plugin' || !empty($package['extra']['plugin']))) {
             $this->packages[] = [
                 'path' => $installPath,
-                'publish' => (array) ($package['extra']['xadmin']['publish'] ?? []),
+                'publish' => (array)($package['extra']['xadmin']['publish'] ?? []),
             ];
         }
         if (!empty($package['name'])) {
@@ -354,12 +370,12 @@ class Publish extends Command
         }
 
         if (!empty($package['extra']['think']['services'])) {
-            $services = array_merge($services, (array) $package['extra']['think']['services']);
+            $services = array_merge($services, (array)$package['extra']['think']['services']);
         }
 
         if ($installPath !== '' && !empty($package['extra']['think']['config'])) {
             $configPath = $this->app->getConfigPath();
-            foreach ((array) $package['extra']['think']['config'] as $name => $file) {
+            foreach ((array)$package['extra']['think']['config'] as $name => $file) {
                 if (is_file($target = $configPath . $name . '.php')) {
                     $this->output->info("File {$target} exist!");
                     continue;
@@ -386,7 +402,7 @@ class Publish extends Command
         }
 
         foreach (glob($pluginRoot . DIRECTORY_SEPARATOR . '*' . DIRECTORY_SEPARATOR . 'composer.json') ?: [] as $file) {
-            $manifest = json_decode((string) @file_get_contents($file), true);
+            $manifest = json_decode((string)@file_get_contents($file), true);
             if (!is_array($manifest) || empty($manifest['name'])) {
                 continue;
             }

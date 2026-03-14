@@ -1,6 +1,22 @@
 <?php
 
 declare(strict_types=1);
+/**
+ * +----------------------------------------------------------------------
+ * | ThinkAdmin Plugin for ThinkAdmin
+ * +----------------------------------------------------------------------
+ * | 版权所有 2014~2026 ThinkAdmin [ thinkadmin.top ]
+ * +----------------------------------------------------------------------
+ * | 官方网站: https://thinkadmin.top
+ * +----------------------------------------------------------------------
+ * | 开源协议 ( https://mit-license.org )
+ * | 免责声明 ( https://thinkadmin.top/disclaimer )
+ * | 会员特权 ( https://thinkadmin.top/vip-introduce )
+ * +----------------------------------------------------------------------
+ * | gitee 代码仓库：https://gitee.com/zoujingli/ThinkAdmin
+ * | github 代码仓库：https://github.com/zoujingli/ThinkAdmin
+ * +----------------------------------------------------------------------
+ */
 
 namespace plugin\storage\service;
 
@@ -43,9 +59,9 @@ class StorageConfig
     public static function key(string $scope, string $name, ?string $driver = null): string
     {
         if ($scope === 'global') {
-            return (string) ((static::registry()['global'][$name]['key'] ?? '') ?: "storage.{$name}");
+            return (string)((static::registry()['global'][$name]['key'] ?? '') ?: "storage.{$name}");
         }
-        return (string) ((static::registry()['drivers'][$driver]['config'][$name]['key'] ?? '') ?: "storage.{$driver}.{$name}");
+        return (string)((static::registry()['drivers'][$driver]['config'][$name]['key'] ?? '') ?: "storage.{$driver}.{$name}");
     }
 
     public static function defaults(): array
@@ -72,8 +88,8 @@ class StorageConfig
         if (!static::missing($current)) {
             return;
         }
-        foreach ((array) ($meta['legacy'] ?? []) as $legacy) {
-            $legacyValue = static::read((string) $legacy);
+        foreach ((array)($meta['legacy'] ?? []) as $legacy) {
+            $legacyValue = static::read((string)$legacy);
             if (!static::missing($legacyValue)) {
                 static::write($key, $legacyValue);
                 return;
@@ -93,8 +109,8 @@ class StorageConfig
                 return $value;
             }
         }
-        foreach ((array) ($meta['legacy'] ?? []) as $legacy) {
-            $value = static::read((string) $legacy);
+        foreach ((array)($meta['legacy'] ?? []) as $legacy) {
+            $value = static::read((string)$legacy);
             if (!static::missing($value)) {
                 return $value;
             }

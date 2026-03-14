@@ -22,6 +22,7 @@ namespace plugin\worker\service;
 
 use think\admin\contract\QueueHandlerInterface;
 use think\admin\contract\QueueRuntimeInterface;
+use think\admin\Exception;
 use think\admin\service\ProcessService;
 use think\App;
 
@@ -57,7 +58,7 @@ abstract class Queue implements QueueHandlerInterface
     abstract public function execute(array $data = []);
 
     /**
-     * @throws \think\admin\Exception
+     * @throws Exception
      */
     protected function setQueueError(string $message): void
     {
@@ -65,7 +66,7 @@ abstract class Queue implements QueueHandlerInterface
     }
 
     /**
-     * @throws \think\admin\Exception
+     * @throws Exception
      */
     protected function setQueueSuccess(string $message): void
     {
@@ -73,7 +74,7 @@ abstract class Queue implements QueueHandlerInterface
     }
 
     /**
-     * @throws \think\admin\Exception
+     * @throws Exception
      */
     protected function setQueueMessage(int $total, int $count, string $message = '', int $backline = 0): static
     {
@@ -82,7 +83,7 @@ abstract class Queue implements QueueHandlerInterface
     }
 
     /**
-     * @throws \think\admin\Exception
+     * @throws Exception
      */
     protected function setQueueProgress(?string $message = null, ?string $progress = null, int $backline = 0): static
     {

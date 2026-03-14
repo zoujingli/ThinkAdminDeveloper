@@ -1,6 +1,22 @@
 <?php
 
 declare(strict_types=1);
+/**
+ * +----------------------------------------------------------------------
+ * | ThinkAdmin Plugin for ThinkAdmin
+ * +----------------------------------------------------------------------
+ * | 版权所有 2014~2026 ThinkAdmin [ thinkadmin.top ]
+ * +----------------------------------------------------------------------
+ * | 官方网站: https://thinkadmin.top
+ * +----------------------------------------------------------------------
+ * | 开源协议 ( https://mit-license.org )
+ * | 免责声明 ( https://thinkadmin.top/disclaimer )
+ * | 会员特权 ( https://thinkadmin.top/vip-introduce )
+ * +----------------------------------------------------------------------
+ * | gitee 代码仓库：https://gitee.com/zoujingli/ThinkAdmin
+ * | github 代码仓库：https://github.com/zoujingli/ThinkAdmin
+ * +----------------------------------------------------------------------
+ */
 
 namespace think\admin\extend;
 
@@ -37,7 +53,7 @@ class FileTools
      */
     public static function scan(string $path, ?int $depth = null, string $ext = '', bool $short = true): array
     {
-        return static::find($path, $depth, function (SplFileInfo $info) use ($ext) {
+        return static::find($path, $depth, function (\SplFileInfo $info) use ($ext) {
             return $info->isDir() || $ext === '' || strtolower($info->getExtension()) === strtolower($ext);
         }, $short);
     }
@@ -47,7 +63,7 @@ class FileTools
      */
     public static function find(string $path, ?int $depth = null, ?\Closure $filter = null, bool $short = true): array
     {
-        [$info, $files] = [new SplFileInfo($path), []];
+        [$info, $files] = [new \SplFileInfo($path), []];
         if (!$info->isDir() && !$info->isFile()) {
             return $files;
         }
@@ -71,7 +87,7 @@ class FileTools
         $frdir = static::normalizeDirectory($frdir);
         $todir = static::normalizeDirectory($todir);
         if (empty($files) && is_dir($frdir)) {
-            $files = static::find($frdir, null, static function (SplFileInfo $info) {
+            $files = static::find($frdir, null, static function (\SplFileInfo $info) {
                 return $info->getBasename()[0] !== '.';
             });
         }
@@ -103,7 +119,7 @@ class FileTools
             return unlink($path);
         }
         $dirs = [$path];
-        iterator_to_array(self::findFilesYield($path, null, function (SplFileInfo $file) use (&$dirs) {
+        iterator_to_array(self::findFilesYield($path, null, function (\SplFileInfo $file) use (&$dirs) {
             $file->isDir() ? $dirs[] = $file->getPathname() : unlink($file->getPathname());
         }));
         usort($dirs, static function ($a, $b) {

@@ -1,20 +1,31 @@
 <?php
 
 declare(strict_types=1);
+/**
+ * +----------------------------------------------------------------------
+ * | ThinkAdmin Plugin for ThinkAdmin
+ * +----------------------------------------------------------------------
+ * | 版权所有 2014~2026 ThinkAdmin [ thinkadmin.top ]
+ * +----------------------------------------------------------------------
+ * | 官方网站: https://thinkadmin.top
+ * +----------------------------------------------------------------------
+ * | 开源协议 ( https://mit-license.org )
+ * | 免责声明 ( https://thinkadmin.top/disclaimer )
+ * | 会员特权 ( https://thinkadmin.top/vip-introduce )
+ * +----------------------------------------------------------------------
+ * | gitee 代码仓库：https://gitee.com/zoujingli/ThinkAdmin
+ * | github 代码仓库：https://github.com/zoujingli/ThinkAdmin
+ * +----------------------------------------------------------------------
+ */
 
 namespace plugin\worker\service;
-
-use const SIGKILL;
-use const SIGUSR2;
 
 /**
  * Cross-platform worker process inspector.
  */
 class WorkerState
 {
-    public function __construct(protected array $service)
-    {
-    }
+    public function __construct(protected array $service) {}
 
     /**
      * Describe current runtime state.
@@ -71,7 +82,7 @@ class WorkerState
             return true;
         }
 
-        ProcessService::exec("kill -" . SIGKILL . " {$pid}");
+        ProcessService::exec('kill -' . \SIGKILL . " {$pid}");
         return $this->waitStopped(1);
     }
 
@@ -85,7 +96,7 @@ class WorkerState
             return false;
         }
 
-        ProcessService::exec("kill -" . SIGUSR2 . " {$pid}");
+        ProcessService::exec('kill -' . \SIGUSR2 . " {$pid}");
         return true;
     }
 
@@ -151,7 +162,7 @@ class WorkerState
             }
         }
 
-        foreach (ProcessService::exec("ps -ax -o pid=,ppid=,command=", true) as $line) {
+        foreach (ProcessService::exec('ps -ax -o pid=,ppid=,command=', true) as $line) {
             $item = $this->parseUnixProcess($line, 3);
             if ($item === null) {
                 continue;

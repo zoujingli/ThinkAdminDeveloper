@@ -20,7 +20,6 @@ declare(strict_types=1);
 
 namespace plugin\storage\service;
 
-use plugin\storage\service\StorageConfig;
 use think\admin\contract\StorageInterface;
 use think\admin\contract\StorageUsageTrait;
 use think\admin\Exception;
@@ -212,8 +211,8 @@ class AlistStorage implements StorageInterface
      */
     protected function init()
     {
-        $host = strtolower((string) StorageConfig::driver('alist', 'domain', ''));
-        $type = strtolower((string) StorageConfig::driver('alist', 'protocol', 'http'));
+        $host = strtolower((string)StorageConfig::driver('alist', 'domain', ''));
+        $type = strtolower((string)StorageConfig::driver('alist', 'protocol', 'http'));
         if (!empty($host) && $type === 'auto') {
             $this->domain = "//{$host}";
         } elseif (!empty($host) && in_array($type, ['http', 'https'])) {
@@ -221,9 +220,9 @@ class AlistStorage implements StorageInterface
         } else {
             throw new Exception(static::trans('未配置Alist域名'));
         }
-        $this->username = (string) StorageConfig::driver('alist', 'username', '');
-        $this->password = (string) StorageConfig::driver('alist', 'password', '');
-        $this->savepath = trim((string) StorageConfig::driver('alist', 'path', ''), '\/');
+        $this->username = (string)StorageConfig::driver('alist', 'username', '');
+        $this->password = (string)StorageConfig::driver('alist', 'password', '');
+        $this->savepath = trim((string)StorageConfig::driver('alist', 'path', ''), '\/');
         $this->savepath = $this->savepath ? "{$this->savepath}/" : '';
         $this->cachekey = md5($this->domain . $this->username . $this->password);
     }

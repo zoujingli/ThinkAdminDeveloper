@@ -1,6 +1,22 @@
 <?php
 
 declare(strict_types=1);
+/**
+ * +----------------------------------------------------------------------
+ * | ThinkAdmin Plugin for ThinkAdmin
+ * +----------------------------------------------------------------------
+ * | 版权所有 2014~2026 ThinkAdmin [ thinkadmin.top ]
+ * +----------------------------------------------------------------------
+ * | 官方网站: https://thinkadmin.top
+ * +----------------------------------------------------------------------
+ * | 开源协议 ( https://mit-license.org )
+ * | 免责声明 ( https://thinkadmin.top/disclaimer )
+ * | 会员特权 ( https://thinkadmin.top/vip-introduce )
+ * +----------------------------------------------------------------------
+ * | gitee 代码仓库：https://gitee.com/zoujingli/ThinkAdmin
+ * | github 代码仓库：https://github.com/zoujingli/ThinkAdmin
+ * +----------------------------------------------------------------------
+ */
 
 namespace think\admin\tests;
 
@@ -18,12 +34,6 @@ class IntegralIntegrationTest extends SqliteIntegrationTestCase
     {
         parent::setUp();
         $this->context->setData('plugin.payment.config', ['integral' => 100]);
-    }
-
-    protected function defineSchema(): void
-    {
-        $this->createAccountTables();
-        $this->createPaymentIntegralTable();
     }
 
     public function testRatioAndCreateRefreshIntegralSummary(): void
@@ -69,5 +79,11 @@ class IntegralIntegrationTest extends SqliteIntegrationTestCase
         $this->expectException(Exception::class);
         $this->expectExceptionMessage('扣减积分不足');
         Integral::create(intval($user->getAttr('id')), 'integral-minus', '积分扣减', '-20.00', '超额扣减');
+    }
+
+    protected function defineSchema(): void
+    {
+        $this->createAccountTables();
+        $this->createPaymentIntegralTable();
     }
 }

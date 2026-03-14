@@ -20,8 +20,8 @@ declare(strict_types=1);
 
 namespace plugin\wemall\controller\help;
 
-use plugin\system\service\SystemAuthService;
 use plugin\account\model\PluginAccountUser;
+use plugin\system\service\SystemAuthService;
 use plugin\wemall\model\PluginWemallHelpFeedback;
 use plugin\wemall\model\PluginWemallHelpProblem;
 use think\admin\Controller;

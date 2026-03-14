@@ -77,7 +77,7 @@ class InstallWorker20241010 extends Migrator
     /**
      * 升级更新数据表.
      * @param array<int, array<int|string, mixed>> $fields
-     * @param array<int, string|array<int, string>> $indexs
+     * @param array<int, array<int, string>|string> $indexs
      */
     private function upgrade(Table $table, array $fields, array $indexs = [], bool $force = false): Table
     {

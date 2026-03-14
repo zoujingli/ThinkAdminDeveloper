@@ -20,14 +20,14 @@ declare(strict_types=1);
 
 namespace plugin\system\controller;
 
-use plugin\system\service\SystemAuthService;
-use plugin\system\service\CaptchaService;
 use plugin\system\model\SystemUser;
+use plugin\system\service\CaptchaService;
+use plugin\system\service\SystemAuthService;
 use plugin\system\service\SystemService;
 use think\admin\Controller;
 use think\admin\Exception;
-use think\admin\service\RuntimeService;
 use think\admin\extend\CodeToolkit;
+use think\admin\service\RuntimeService;
 use think\exception\HttpResponseException;
 
 /**

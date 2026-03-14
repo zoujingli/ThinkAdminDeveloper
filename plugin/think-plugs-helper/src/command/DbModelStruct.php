@@ -23,9 +23,9 @@ namespace plugin\helper\command;
 use Ergebnis\Classy\Constructs;
 use plugin\helper\service\NormalizedModelGenerator;
 use think\admin\extend\FileTools;
-use think\console\Output;
 use think\console\input\Argument;
 use think\console\input\Option;
+use think\console\Output;
 use think\ide\console\ModelCommand;
 
 /**

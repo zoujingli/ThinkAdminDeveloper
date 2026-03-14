@@ -22,11 +22,11 @@ namespace plugin\account\service;
 
 use plugin\account\service\contract\AccountAccess;
 use plugin\account\service\contract\AccountInterface;
-use think\admin\service\CacheSession;
-use think\admin\runtime\RequestTokenService;
 use think\admin\Exception;
-use think\admin\service\JwtToken;
 use think\admin\extend\CodeToolkit;
+use think\admin\runtime\RequestTokenService;
+use think\admin\service\CacheSession;
+use think\admin\service\JwtToken;
 use think\Request;
 
 /**
@@ -35,8 +35,6 @@ use think\Request;
  */
 abstract class Account
 {
-    private const TOKEN_TYPE = 'account-auth';
-
     public const WAP = 'wap';
 
     public const WEB = 'web';
@@ -48,6 +46,8 @@ abstract class Account
     public const IOSAPP = 'iosapp';
 
     public const ANDROID = 'android';
+
+    private const TOKEN_TYPE = 'account-auth';
 
     // 已禁用的账号通道
     private static $denys;

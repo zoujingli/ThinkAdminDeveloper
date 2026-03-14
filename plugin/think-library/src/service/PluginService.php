@@ -22,7 +22,6 @@ namespace think\admin\service;
 
 use think\admin\Library;
 use think\admin\Plugin;
-use think\admin\service\Service;
 use think\admin\runtime\RequestContext;
 use think\Request;
 
@@ -160,7 +159,7 @@ class PluginService extends Service
      * 获取插件前缀集合。
      * @param ?string $code 插件编码
      * @param bool $force 强制刷新
-     * @return array<string>|array<string, array<string>>
+     * @return array<string, array<string>>|array<string>
      */
     public static function prefixes(?string $code = null, bool $force = false): array
     {
@@ -300,7 +299,7 @@ class PluginService extends Service
 
     /**
      * 激活当前请求插件。
-     * @param null|string|array $plugin 插件编码或定义
+     * @param null|array|string $plugin 插件编码或定义
      * @param string $prefix 当前请求前缀
      */
     public static function activate($plugin = null, string $prefix = ''): ?array
@@ -356,7 +355,7 @@ class PluginService extends Service
 
     /**
      * 获取插件菜单根节点配置。
-     * @param null|string|array $plugin 插件编码或定义
+     * @param null|array|string $plugin 插件编码或定义
      */
     public static function menuRoot($plugin): array
     {
@@ -370,7 +369,7 @@ class PluginService extends Service
 
     /**
      * 获取插件菜单存在检测条件。
-     * @param null|string|array $plugin 插件编码或定义
+     * @param null|array|string $plugin 插件编码或定义
      */
     public static function menuExists($plugin): array
     {
@@ -384,7 +383,7 @@ class PluginService extends Service
 
     /**
      * 获取插件菜单定义。
-     * @param null|string|array $plugin 插件编码或定义
+     * @param null|array|string $plugin 插件编码或定义
      * @param bool $check 检查权限
      * @param bool $normalize 标准化输出
      */
@@ -401,7 +400,7 @@ class PluginService extends Service
 
     /**
      * 获取插件声明的菜单节点。
-     * @param null|string|array $plugin 插件编码、服务类或定义
+     * @param null|array|string $plugin 插件编码、服务类或定义
      * @return string[]
      */
     public static function menuNodes($plugin): array
@@ -415,7 +414,7 @@ class PluginService extends Service
 
     /**
      * 获取插件菜单节点与权限声明。
-     * @param null|string|array $plugin 插件编码、服务类或定义
+     * @param null|array|string $plugin 插件编码、服务类或定义
      * @return array<int, array<string, mixed>>
      */
     public static function menuBindings($plugin, bool $force = false): array
@@ -438,7 +437,7 @@ class PluginService extends Service
 
     /**
      * 获取插件菜单声明异常项。
-     * @param null|string|array $plugin 插件编码、服务类或定义
+     * @param null|array|string $plugin 插件编码、服务类或定义
      * @return array<int, array<string, mixed>>
      */
     public static function invalidMenus($plugin, bool $force = false): array
@@ -450,7 +449,7 @@ class PluginService extends Service
 
     /**
      * 校验插件菜单声明。
-     * @param null|string|array $plugin 插件编码、服务类或定义
+     * @param null|array|string $plugin 插件编码、服务类或定义
      */
     public static function assertMenus($plugin, bool $force = false): void
     {
@@ -649,7 +648,7 @@ class PluginService extends Service
 
     /**
      * 解析插件定义，支持插件编码、别名、前缀、服务类或定义数组。
-     * @param null|string|array $plugin 插件编码、服务类或定义
+     * @param null|array|string $plugin 插件编码、服务类或定义
      */
     private static function plugin($plugin, bool $append = false, bool $force = false): ?array
     {

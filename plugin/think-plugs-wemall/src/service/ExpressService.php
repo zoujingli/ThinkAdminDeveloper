@@ -21,7 +21,6 @@ declare(strict_types=1);
 namespace plugin\wemall\service;
 
 use plugin\wemall\model\PluginWemallExpressTemplate;
-use plugin\wemall\service\OpenApiService;
 use think\admin\Exception;
 
 /**

@@ -1,6 +1,22 @@
 <?php
 
 declare(strict_types=1);
+/**
+ * +----------------------------------------------------------------------
+ * | ThinkAdmin Plugin for ThinkAdmin
+ * +----------------------------------------------------------------------
+ * | 版权所有 2014~2026 ThinkAdmin [ thinkadmin.top ]
+ * +----------------------------------------------------------------------
+ * | 官方网站: https://thinkadmin.top
+ * +----------------------------------------------------------------------
+ * | 开源协议 ( https://mit-license.org )
+ * | 免责声明 ( https://thinkadmin.top/disclaimer )
+ * | 会员特权 ( https://thinkadmin.top/vip-introduce )
+ * +----------------------------------------------------------------------
+ * | gitee 代码仓库：https://gitee.com/zoujingli/ThinkAdmin
+ * | github 代码仓库：https://github.com/zoujingli/ThinkAdmin
+ * +----------------------------------------------------------------------
+ */
 
 namespace think\admin\tests;
 
@@ -23,17 +39,9 @@ class PaymentRecordControllerTest extends SqliteIntegrationTestCase
     {
         parent::setUp();
         $this->configureAccountAccess([
-            'headimg'    => 'https://example.com/payment-controller.png',
+            'headimg' => 'https://example.com/payment-controller.png',
             'userPrefix' => '支付测试',
         ]);
-    }
-
-    protected function defineSchema(): void
-    {
-        $this->createAccountTables();
-        $this->createPaymentRecordTable();
-        $this->createPaymentRefundTable();
-        $this->createWemallOrderTable();
     }
 
     public function testAuditControllerApprovesVoucherAndPromotesWemallOrder(): void
@@ -41,9 +49,9 @@ class PaymentRecordControllerTest extends SqliteIntegrationTestCase
         $account = $this->createBoundAccountFixture();
         $this->registerWemallService();
         $order = $this->createWemallOrderFixture($account, [
-            'order_no'      => 'PAY-AUDIT-PASS-001',
-            'amount_real'   => '15.00',
-            'amount_total'  => '15.00',
+            'order_no' => 'PAY-AUDIT-PASS-001',
+            'amount_real' => '15.00',
+            'amount_total' => '15.00',
             'delivery_type' => 1,
         ]);
 
@@ -63,7 +71,7 @@ class PaymentRecordControllerTest extends SqliteIntegrationTestCase
         $this->assertSame(1, intval($order->refresh()->getAttr('payment_status')));
 
         $result = $this->callAuditController([
-            'id'     => $record->getAttr('id'),
+            'id' => $record->getAttr('id'),
             'status' => 2,
             'remark' => '',
         ]);
@@ -89,9 +97,9 @@ class PaymentRecordControllerTest extends SqliteIntegrationTestCase
         $account = $this->createBoundAccountFixture();
         $this->registerWemallService();
         $order = $this->createWemallOrderFixture($account, [
-            'order_no'      => 'PAY-AUDIT-REFUSE-001',
-            'amount_real'   => '9.00',
-            'amount_total'  => '9.00',
+            'order_no' => 'PAY-AUDIT-REFUSE-001',
+            'amount_real' => '9.00',
+            'amount_total' => '9.00',
             'delivery_type' => 1,
         ]);
 
@@ -111,7 +119,7 @@ class PaymentRecordControllerTest extends SqliteIntegrationTestCase
         $this->assertSame(1, intval($order->refresh()->getAttr('payment_status')));
 
         $result = $this->callAuditController([
-            'id'     => $record->getAttr('id'),
+            'id' => $record->getAttr('id'),
             'status' => 0,
             'remark' => '凭证信息不足',
         ]);
@@ -136,30 +144,30 @@ class PaymentRecordControllerTest extends SqliteIntegrationTestCase
         $account = $this->createBoundAccountFixture();
         $this->registerWemallService();
         $order = $this->createWemallOrderFixture($account, [
-            'order_no'       => 'PAY-NOTIFY-OK-001',
-            'status'         => 2,
+            'order_no' => 'PAY-NOTIFY-OK-001',
+            'status' => 2,
             'payment_status' => 0,
-            'amount_real'    => '11.00',
-            'amount_total'   => '11.00',
-            'delivery_type'  => 1,
+            'amount_real' => '11.00',
+            'amount_total' => '11.00',
+            'delivery_type' => 1,
         ]);
 
         $record = PluginPaymentRecord::mk();
         $record->save([
-            'unid'           => $account->getUnid(),
-            'usid'           => $account->getUsid(),
-            'code'           => 'PAYNOTIFYOK001',
-            'order_no'       => $order->getAttr('order_no'),
-            'order_name'     => '后台重放成功订单',
-            'order_amount'   => '11.00',
-            'channel_type'   => Payment::EMPTY,
-            'channel_code'   => Payment::EMPTY,
-            'payment_trade'  => 'EMT-NOTIFY-001',
+            'unid' => $account->getUnid(),
+            'usid' => $account->getUsid(),
+            'code' => 'PAYNOTIFYOK001',
+            'order_no' => $order->getAttr('order_no'),
+            'order_name' => '后台重放成功订单',
+            'order_amount' => '11.00',
+            'channel_type' => Payment::EMPTY,
+            'channel_code' => Payment::EMPTY,
+            'payment_trade' => 'EMT-NOTIFY-001',
             'payment_status' => 1,
             'payment_amount' => '11.00',
-            'used_payment'   => '11.00',
-            'audit_status'   => 2,
-            'payment_time'   => date('Y-m-d H:i:s'),
+            'used_payment' => '11.00',
+            'audit_status' => 2,
+            'payment_time' => date('Y-m-d H:i:s'),
             'payment_remark' => '已完成支付待重放',
         ]);
 
@@ -181,18 +189,18 @@ class PaymentRecordControllerTest extends SqliteIntegrationTestCase
     {
         $record = PluginPaymentRecord::mk();
         $record->save([
-            'unid'           => 1,
-            'usid'           => 1,
-            'code'           => 'PAYNOTIFYFAIL001',
-            'order_no'       => 'PAY-NOTIFY-FAIL-001',
-            'order_name'     => '后台重放未支付订单',
-            'order_amount'   => '6.00',
-            'channel_type'   => Payment::VOUCHER,
-            'channel_code'   => Payment::VOUCHER,
+            'unid' => 1,
+            'usid' => 1,
+            'code' => 'PAYNOTIFYFAIL001',
+            'order_no' => 'PAY-NOTIFY-FAIL-001',
+            'order_name' => '后台重放未支付订单',
+            'order_amount' => '6.00',
+            'channel_type' => Payment::VOUCHER,
+            'channel_code' => Payment::VOUCHER,
             'payment_status' => 0,
             'payment_amount' => '0.00',
-            'used_payment'   => '6.00',
-            'audit_status'   => 1,
+            'used_payment' => '6.00',
+            'audit_status' => 1,
         ]);
 
         $response = $this->callRecordController('notify', [
@@ -208,9 +216,9 @@ class PaymentRecordControllerTest extends SqliteIntegrationTestCase
         $account = $this->createBoundAccountFixture();
         $this->registerWemallService();
         $order = $this->createWemallOrderFixture($account, [
-            'order_no'      => 'PAY-CANCEL-001',
-            'amount_real'   => '11.00',
-            'amount_total'  => '11.00',
+            'order_no' => 'PAY-CANCEL-001',
+            'amount_real' => '11.00',
+            'amount_total' => '11.00',
             'delivery_type' => 1,
         ]);
 
@@ -248,6 +256,14 @@ class PaymentRecordControllerTest extends SqliteIntegrationTestCase
         $this->assertSame(1, intval($order->getAttr('payment_status')));
     }
 
+    protected function defineSchema(): void
+    {
+        $this->createAccountTables();
+        $this->createPaymentRecordTable();
+        $this->createPaymentRefundTable();
+        $this->createWemallOrderTable();
+    }
+
     private function registerWemallService(): void
     {
         (new WemallService($this->app))->register();
@@ -261,7 +277,7 @@ class PaymentRecordControllerTest extends SqliteIntegrationTestCase
     private function callRecordController(string $action, array $data, string $method = 'POST'): array
     {
         RequestContext::instance()->setAuth([
-            'id'       => 9001,
+            'id' => 9001,
             'username' => 'admin',
             'password' => 'test-admin-password',
         ], '', true);

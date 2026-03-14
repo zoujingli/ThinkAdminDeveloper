@@ -23,10 +23,10 @@ namespace plugin\system;
 use plugin\system\service\JwtTokenAuth;
 use plugin\system\service\RbacAccess;
 use plugin\system\service\SystemContext as PluginSystemContext;
+use think\admin\contract\SystemContextInterface;
 use think\admin\Library;
 use think\admin\Plugin;
 use think\admin\runtime\RequestTokenService;
-use think\admin\contract\SystemContextInterface;
 use think\middleware\LoadLangPack;
 
 /**
@@ -37,25 +37,21 @@ class Service extends Plugin
 {
     /**
      * 定义插件入口.
-     * @var string
      */
     protected string $appCode = 'system';
 
     /**
      * 定义插件访问前缀.
-     * @var string
      */
     protected string $appPrefix = 'system';
 
     /**
      * 定义插件名称.
-     * @var string
      */
     protected string $appName = '系统管理';
 
     /**
      * 定义安装包名.
-     * @var string
      */
     protected string $package = 'zoujingli/think-plugs-system';
 

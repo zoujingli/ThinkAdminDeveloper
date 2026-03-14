@@ -1,20 +1,32 @@
 <?php
 
 declare(strict_types=1);
+/**
+ * +----------------------------------------------------------------------
+ * | ThinkAdmin Plugin for ThinkAdmin
+ * +----------------------------------------------------------------------
+ * | 版权所有 2014~2026 ThinkAdmin [ thinkadmin.top ]
+ * +----------------------------------------------------------------------
+ * | 官方网站: https://thinkadmin.top
+ * +----------------------------------------------------------------------
+ * | 开源协议 ( https://mit-license.org )
+ * | 免责声明 ( https://thinkadmin.top/disclaimer )
+ * | 会员特权 ( https://thinkadmin.top/vip-introduce )
+ * +----------------------------------------------------------------------
+ * | gitee 代码仓库：https://gitee.com/zoujingli/ThinkAdmin
+ * | github 代码仓库：https://github.com/zoujingli/ThinkAdmin
+ * +----------------------------------------------------------------------
+ */
 
 namespace plugin\worker\service;
 
-use Psr\Log\NullLogger;
 use plugin\worker\model\SystemQueue;
-use plugin\worker\service\QueueExecutor;
-use plugin\worker\service\QueueService;
-use think\App;
+use Psr\Log\NullLogger;
 use think\admin\runtime\RequestContext;
 use think\admin\service\RuntimeService;
+use think\App;
 use Workerman\Timer;
 use Workerman\Worker;
-
-use const DIRECTORY_SEPARATOR;
 
 /**
  * Workerman-based queue server.
@@ -39,7 +51,7 @@ class QueueServer
 
     public function __construct(array $config = [], ?string $root = null)
     {
-        $this->root = $root ? rtrim($root, DIRECTORY_SEPARATOR) . DIRECTORY_SEPARATOR : dirname(__DIR__, 4) . DIRECTORY_SEPARATOR;
+        $this->root = $root ? rtrim($root, \DIRECTORY_SEPARATOR) . \DIRECTORY_SEPARATOR : dirname(__DIR__, 4) . \DIRECTORY_SEPARATOR;
         $this->config = $config;
         $this->worker = new Worker();
         $this->worker->onWorkerStart = [$this, 'onWorkerStart'];

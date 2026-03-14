@@ -20,8 +20,8 @@ declare(strict_types=1);
 
 namespace plugin\wemall\controller\api;
 
-use plugin\system\model\SystemBase;
 use plugin\account\model\PluginAccountUser;
+use plugin\system\model\SystemBase;
 use plugin\wemall\service\ConfigService;
 use think\admin\Controller;
 use think\admin\Exception;

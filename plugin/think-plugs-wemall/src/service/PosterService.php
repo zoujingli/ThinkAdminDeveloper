@@ -20,8 +20,6 @@ declare(strict_types=1);
 
 namespace plugin\wemall\service;
 
-use plugin\wechat\client\service\MediaService;
-use plugin\wechat\client\service\WechatService;
 use Endroid\QrCode\Builder\Builder;
 use Endroid\QrCode\Encoding\Encoding;
 use Endroid\QrCode\ErrorCorrectionLevel\ErrorCorrectionLevelHigh;
@@ -31,6 +29,8 @@ use Endroid\QrCode\Writer\PngWriter;
 use Endroid\QrCode\Writer\Result\ResultInterface;
 use plugin\account\service\Account;
 use plugin\account\service\contract\AccountInterface;
+use plugin\wechat\client\service\MediaService;
+use plugin\wechat\client\service\WechatService;
 use think\admin\Exception;
 use think\admin\Library;
 use think\admin\service\Service;

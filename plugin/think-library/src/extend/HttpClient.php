@@ -1,6 +1,22 @@
 <?php
 
 declare(strict_types=1);
+/**
+ * +----------------------------------------------------------------------
+ * | ThinkAdmin Plugin for ThinkAdmin
+ * +----------------------------------------------------------------------
+ * | 版权所有 2014~2026 ThinkAdmin [ thinkadmin.top ]
+ * +----------------------------------------------------------------------
+ * | 官方网站: https://thinkadmin.top
+ * +----------------------------------------------------------------------
+ * | 开源协议 ( https://mit-license.org )
+ * | 免责声明 ( https://thinkadmin.top/disclaimer )
+ * | 会员特权 ( https://thinkadmin.top/vip-introduce )
+ * +----------------------------------------------------------------------
+ * | gitee 代码仓库：https://gitee.com/zoujingli/ThinkAdmin
+ * | github 代码仓库：https://github.com/zoujingli/ThinkAdmin
+ * +----------------------------------------------------------------------
+ */
 
 namespace think\admin\extend;
 
@@ -12,6 +28,7 @@ class HttpClient
     /**
      * 以 GET 模拟网络请求。
      *
+     * @param mixed $data
      * @return bool|string
      */
     public static function get(string $location, $data = [], array $options = [])
@@ -23,6 +40,7 @@ class HttpClient
     /**
      * 以 POST 模拟网络请求。
      *
+     * @param mixed $data
      * @return bool|string
      */
     public static function post(string $location, $data = [], array $options = [])
@@ -82,6 +100,7 @@ class HttpClient
     /**
      * 公共 cURL 参数。
      * 这些参数在整个项目里应该保持一致，避免不同调用点各自拼一套。
+     * @param mixed $curl
      */
     private static function applyCommonOptions($curl, array $options): void
     {
@@ -97,6 +116,7 @@ class HttpClient
 
     /**
      * 请求级参数设置。
+     * @param mixed $curl
      */
     private static function applyRequestOptions($curl, string $method, array $options): void
     {
@@ -131,6 +151,7 @@ class HttpClient
 
     /**
      * 给 URL 安全追加 query 参数。
+     * @param mixed $query
      */
     private static function appendQuery(string $location, $query): string
     {

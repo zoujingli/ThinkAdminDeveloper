@@ -1,16 +1,32 @@
 <?php
 
 declare(strict_types=1);
+/**
+ * +----------------------------------------------------------------------
+ * | ThinkAdmin Plugin for ThinkAdmin
+ * +----------------------------------------------------------------------
+ * | 版权所有 2014~2026 ThinkAdmin [ thinkadmin.top ]
+ * +----------------------------------------------------------------------
+ * | 官方网站: https://thinkadmin.top
+ * +----------------------------------------------------------------------
+ * | 开源协议 ( https://mit-license.org )
+ * | 免责声明 ( https://thinkadmin.top/disclaimer )
+ * | 会员特权 ( https://thinkadmin.top/vip-introduce )
+ * +----------------------------------------------------------------------
+ * | gitee 代码仓库：https://gitee.com/zoujingli/ThinkAdmin
+ * | github 代码仓库：https://github.com/zoujingli/ThinkAdmin
+ * +----------------------------------------------------------------------
+ */
 
 namespace think\admin\tests;
 
 use plugin\system\controller\Auth as AuthController;
 use plugin\system\model\SystemAuth;
 use plugin\system\model\SystemNode;
-use think\Request;
 use think\admin\runtime\RequestContext;
 use think\admin\tests\Support\SqliteIntegrationTestCase;
 use think\exception\HttpResponseException;
+use think\Request;
 
 /**
  * @internal
@@ -18,47 +34,41 @@ use think\exception\HttpResponseException;
  */
 class AuthControllerTest extends SqliteIntegrationTestCase
 {
-    protected function defineSchema(): void
-    {
-        $this->createSystemAuthTable();
-        $this->createSystemAuthNodeTable();
-    }
-
     public function testIndexFiltersRolesByStatusKeywordAndCommonGroup(): void
     {
         $this->createSystemAuthFixture([
-            'title'       => '命中权限',
-            'utype'       => 'staff',
-            'desc'        => '命中说明',
-            'status'      => 1,
+            'title' => '命中权限',
+            'utype' => 'staff',
+            'desc' => '命中说明',
+            'status' => 1,
             'create_time' => '2026-03-10 08:00:00',
         ]);
         $this->createSystemAuthFixture([
-            'title'       => '跨日权限',
-            'utype'       => 'staff',
-            'desc'        => '跨日说明',
-            'status'      => 1,
+            'title' => '跨日权限',
+            'utype' => 'staff',
+            'desc' => '跨日说明',
+            'status' => 1,
             'create_time' => '2026-03-09 08:00:00',
         ]);
         $this->createSystemAuthFixture([
-            'title'       => '禁用权限',
-            'utype'       => 'staff',
-            'desc'        => '禁用说明',
-            'status'      => 0,
+            'title' => '禁用权限',
+            'utype' => 'staff',
+            'desc' => '禁用说明',
+            'status' => 0,
             'create_time' => '2026-03-10 09:00:00',
         ]);
 
         $result = $this->callIndexController([
-            'output'       => 'json',
-            'status'       => 1,
-            'utype'        => 'staff',
-            'title'        => '命中',
-            'create_time'  => '2026-03-10 - 2026-03-10',
+            'output' => 'json',
+            'status' => 1,
+            'utype' => 'staff',
+            'title' => '命中',
+            'create_time' => '2026-03-10 - 2026-03-10',
             'plugin_group' => 'common',
-            '_field_'      => 'id',
-            '_order_'      => 'asc',
-            'page'         => 1,
-            'limit'        => 20,
+            '_field_' => 'id',
+            '_order_' => 'asc',
+            'page' => 1,
+            'limit' => 20,
         ]);
 
         $this->assertSame(1, intval($result['code'] ?? 0));
@@ -73,12 +83,12 @@ class AuthControllerTest extends SqliteIntegrationTestCase
     {
         $add = $this->callFormController('add', [
             'action' => 'save',
-            'title'  => '新增权限',
-            'utype'  => 'staff',
-            'desc'   => '新增说明',
-            'sort'   => 12,
+            'title' => '新增权限',
+            'utype' => 'staff',
+            'desc' => '新增说明',
+            'sort' => 12,
             'status' => 1,
-            'nodes'  => ['index/test/create', 'index/test/update'],
+            'nodes' => ['index/test/create', 'index/test/update'],
         ]);
 
         $created = SystemAuth::mk()->where(['title' => '新增权限'])->findOrEmpty();
@@ -90,13 +100,13 @@ class AuthControllerTest extends SqliteIntegrationTestCase
 
         $edit = $this->callFormController('edit', [
             'action' => 'save',
-            'id'     => intval($created->getAttr('id')),
-            'title'  => '更新权限',
-            'utype'  => 'manager',
-            'desc'   => '更新说明',
-            'sort'   => 20,
+            'id' => intval($created->getAttr('id')),
+            'title' => '更新权限',
+            'utype' => 'manager',
+            'desc' => '更新说明',
+            'sort' => 20,
             'status' => 0,
-            'nodes'  => ['index/test/final'],
+            'nodes' => ['index/test/final'],
         ]);
 
         $updated = SystemAuth::mk()->findOrEmpty(intval($created->getAttr('id')));
@@ -116,12 +126,12 @@ class AuthControllerTest extends SqliteIntegrationTestCase
     {
         $result = $this->callFormController('add', [
             'action' => 'save',
-            'title'  => '缺少节点权限',
-            'utype'  => 'staff',
-            'desc'   => '空节点',
-            'sort'   => 0,
+            'title' => '缺少节点权限',
+            'utype' => 'staff',
+            'desc' => '空节点',
+            'sort' => 0,
             'status' => 1,
-            'nodes'  => [],
+            'nodes' => [],
         ]);
 
         $this->assertSame(0, intval($result['code'] ?? 1));
@@ -132,7 +142,7 @@ class AuthControllerTest extends SqliteIntegrationTestCase
     public function testStateAndRemoveUpdateRoleLifecycleAndCleanupNodes(): void
     {
         $auth = $this->createSystemAuthFixture([
-            'title'  => '生命周期权限',
+            'title' => '生命周期权限',
             'status' => 1,
         ]);
         $this->createSystemAuthNodeFixture([
@@ -145,7 +155,7 @@ class AuthControllerTest extends SqliteIntegrationTestCase
         ]);
 
         $state = $this->callActionController('state', [
-            'id'     => intval($auth->getAttr('id')),
+            'id' => intval($auth->getAttr('id')),
             'status' => 0,
         ]);
         $afterState = SystemAuth::mk()->findOrEmpty(intval($auth->getAttr('id')));
@@ -161,6 +171,12 @@ class AuthControllerTest extends SqliteIntegrationTestCase
         $this->assertSame('数据删除成功！', $remove['info'] ?? '');
         $this->assertFalse(SystemAuth::mk()->where(['id' => $auth->getAttr('id')])->findOrEmpty()->isExists());
         $this->assertSame(0, SystemNode::mk()->where(['auth' => intval($auth->getAttr('id'))])->count());
+    }
+
+    protected function defineSchema(): void
+    {
+        $this->createSystemAuthTable();
+        $this->createSystemAuthNodeTable();
     }
 
     private function callIndexController(array $query): array
@@ -214,7 +230,7 @@ class AuthControllerTest extends SqliteIntegrationTestCase
     private function bindAdminUser(): void
     {
         RequestContext::instance()->setAuth([
-            'id'       => 9101,
+            'id' => 9101,
             'username' => 'tester',
         ], '', true);
     }

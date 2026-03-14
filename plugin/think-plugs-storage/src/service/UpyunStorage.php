@@ -20,7 +20,6 @@ declare(strict_types=1);
 
 namespace plugin\storage\service;
 
-use plugin\storage\service\StorageConfig;
 use think\admin\contract\StorageInterface;
 use think\admin\contract\StorageUsageTrait;
 use think\admin\Exception;
@@ -197,12 +196,12 @@ class UpyunStorage implements StorageInterface
     protected function init()
     {
         // 读取配置文件
-        $this->bucket = (string) StorageConfig::driver('upyun', 'bucket', '');
-        $this->accessKey = (string) StorageConfig::driver('upyun', 'username', '');
-        $this->secretKey = (string) StorageConfig::driver('upyun', 'password', '');
+        $this->bucket = (string)StorageConfig::driver('upyun', 'bucket', '');
+        $this->accessKey = (string)StorageConfig::driver('upyun', 'username', '');
+        $this->secretKey = (string)StorageConfig::driver('upyun', 'password', '');
         // 计算链接前缀
-        $host = strtolower((string) StorageConfig::driver('upyun', 'domain', ''));
-        $type = strtolower((string) StorageConfig::driver('upyun', 'protocol', 'http'));
+        $host = strtolower((string)StorageConfig::driver('upyun', 'domain', ''));
+        $type = strtolower((string)StorageConfig::driver('upyun', 'protocol', 'http'));
         if ($type === 'auto') {
             $this->domain = "//{$host}";
         } elseif (in_array($type, ['http', 'https'])) {

@@ -1,20 +1,36 @@
 <?php
 
 declare(strict_types=1);
+/**
+ * +----------------------------------------------------------------------
+ * | ThinkAdmin Plugin for ThinkAdmin
+ * +----------------------------------------------------------------------
+ * | 版权所有 2014~2026 ThinkAdmin [ thinkadmin.top ]
+ * +----------------------------------------------------------------------
+ * | 官方网站: https://thinkadmin.top
+ * +----------------------------------------------------------------------
+ * | 开源协议 ( https://mit-license.org )
+ * | 免责声明 ( https://thinkadmin.top/disclaimer )
+ * | 会员特权 ( https://thinkadmin.top/vip-introduce )
+ * +----------------------------------------------------------------------
+ * | gitee 代码仓库：https://gitee.com/zoujingli/ThinkAdmin
+ * | github 代码仓库：https://github.com/zoujingli/ThinkAdmin
+ * +----------------------------------------------------------------------
+ */
 
 namespace think\admin\tests;
 
 use plugin\system\controller\api\System as SystemController;
-use plugin\system\service\SystemContext as PluginSystemContext;
 use plugin\system\model\SystemConfig;
 use plugin\system\model\SystemOplog;
-use think\Container;
-use think\Request;
+use plugin\system\service\SystemContext as PluginSystemContext;
 use think\admin\contract\SystemContextInterface;
 use think\admin\runtime\RequestContext;
 use think\admin\service\RuntimeService;
 use think\admin\tests\Support\SqliteIntegrationTestCase;
+use think\Container;
 use think\exception\HttpResponseException;
+use think\Request;
 
 /**
  * @internal
@@ -25,24 +41,6 @@ class ApiSystemControllerTest extends SqliteIntegrationTestCase
     private string $runtimeEnvFile = '';
 
     private string $originRuntimeEnvFile = '';
-
-    protected function defineSchema(): void
-    {
-        $this->createSystemConfigTable();
-        $this->createSystemOplogTable();
-    }
-
-    protected function afterSchemaCreated(): void
-    {
-        $context = new PluginSystemContext();
-        Container::getInstance()->instance(SystemContextInterface::class, $context);
-        $this->app->instance(SystemContextInterface::class, $context);
-        $this->originRuntimeEnvFile = $this->getRuntimeEnvFile();
-        $this->runtimeEnvFile = $this->sandboxPath . '/runtime/.env';
-        is_dir(dirname($this->runtimeEnvFile)) || mkdir(dirname($this->runtimeEnvFile), 0777, true);
-        $this->setRuntimeEnvFile($this->runtimeEnvFile);
-        sysvar('think.admin.runtime', []);
-    }
 
     protected function tearDown(): void
     {
@@ -84,18 +82,18 @@ class ApiSystemControllerTest extends SqliteIntegrationTestCase
     public function testConfigCompactsRowsWithoutLosingValuesForSuperAdmin(): void
     {
         $this->createSystemConfigFixture([
-            'type'  => 'base',
-            'name'  => 'site_name',
+            'type' => 'base',
+            'name' => 'site_name',
             'value' => '测试站点',
         ]);
         $this->createSystemConfigFixture([
-            'type'  => 'base',
-            'name'  => 'site_theme',
+            'type' => 'base',
+            'name' => 'site_theme',
             'value' => 'green-1',
         ]);
         $this->createSystemConfigFixture([
-            'type'  => 'storage',
-            'name'  => 'driver',
+            'type' => 'storage',
+            'name' => 'driver',
             'value' => 'local',
         ]);
 
@@ -123,8 +121,8 @@ class ApiSystemControllerTest extends SqliteIntegrationTestCase
     public function testConfigRejectsNonSuperAdmin(): void
     {
         $this->createSystemConfigFixture([
-            'type'  => 'base',
-            'name'  => 'site_name',
+            'type' => 'base',
+            'name' => 'site_name',
             'value' => '原始站点',
         ]);
 
@@ -211,6 +209,24 @@ class ApiSystemControllerTest extends SqliteIntegrationTestCase
         $this->assertSame(0, SystemOplog::mk()->count());
     }
 
+    protected function defineSchema(): void
+    {
+        $this->createSystemConfigTable();
+        $this->createSystemOplogTable();
+    }
+
+    protected function afterSchemaCreated(): void
+    {
+        $context = new PluginSystemContext();
+        Container::getInstance()->instance(SystemContextInterface::class, $context);
+        $this->app->instance(SystemContextInterface::class, $context);
+        $this->originRuntimeEnvFile = $this->getRuntimeEnvFile();
+        $this->runtimeEnvFile = $this->sandboxPath . '/runtime/.env';
+        is_dir(dirname($this->runtimeEnvFile)) || mkdir(dirname($this->runtimeEnvFile), 0777, true);
+        $this->setRuntimeEnvFile($this->runtimeEnvFile);
+        sysvar('think.admin.runtime', []);
+    }
+
     private function callActionController(string $action, array $payload = [], bool $super = true): array
     {
         $request = (new Request())
@@ -236,7 +252,7 @@ class ApiSystemControllerTest extends SqliteIntegrationTestCase
     private function bindAdminUser(bool $super): void
     {
         RequestContext::instance()->setAuth([
-            'id'       => $super ? 10000 : 9101,
+            'id' => $super ? 10000 : 9101,
             'username' => $super ? 'admin' : 'tester',
             'password' => md5('changed-password'),
         ], '', true);

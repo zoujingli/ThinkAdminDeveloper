@@ -1,17 +1,28 @@
 <?php
 
 declare(strict_types=1);
+/**
+ * +----------------------------------------------------------------------
+ * | ThinkAdmin Plugin for ThinkAdmin
+ * +----------------------------------------------------------------------
+ * | 版权所有 2014~2026 ThinkAdmin [ thinkadmin.top ]
+ * +----------------------------------------------------------------------
+ * | 官方网站: https://thinkadmin.top
+ * +----------------------------------------------------------------------
+ * | 开源协议 ( https://mit-license.org )
+ * | 免责声明 ( https://thinkadmin.top/disclaimer )
+ * | 会员特权 ( https://thinkadmin.top/vip-introduce )
+ * +----------------------------------------------------------------------
+ * | gitee 代码仓库：https://gitee.com/zoujingli/ThinkAdmin
+ * | github 代码仓库：https://github.com/zoujingli/ThinkAdmin
+ * +----------------------------------------------------------------------
+ */
 
 namespace plugin\worker\service;
 
-use FilesystemIterator;
-use RecursiveDirectoryIterator;
-use RecursiveIteratorIterator;
 use think\App;
 use Workerman\Timer;
 use Workerman\Worker;
-
-use const DIRECTORY_SEPARATOR;
 
 /**
  * Debug file watcher and memory recycler for long-running workers.
@@ -119,7 +130,7 @@ class WorkerMonitor
         }
 
         $process = ProcessService::instance();
-        if (DIRECTORY_SEPARATOR === '\\') {
+        if (\DIRECTORY_SEPARATOR === '\\') {
             $process->workerSpawn('restart', $name, true);
             Worker::log("Windows worker [{$name}] restart requested.");
             return;
@@ -149,7 +160,7 @@ class WorkerMonitor
                 continue;
             }
 
-            $iterator = new RecursiveIteratorIterator(new RecursiveDirectoryIterator($path, FilesystemIterator::SKIP_DOTS));
+            $iterator = new \RecursiveIteratorIterator(new \RecursiveDirectoryIterator($path, \FilesystemIterator::SKIP_DOTS));
             foreach ($iterator as $file) {
                 if (!$file->isFile()) {
                     continue;
@@ -177,7 +188,7 @@ class WorkerMonitor
             $paths = ['app', 'config', 'route', 'plugin'];
         }
 
-        $root = rtrim($this->app->getRootPath(), DIRECTORY_SEPARATOR) . DIRECTORY_SEPARATOR;
+        $root = rtrim($this->app->getRootPath(), \DIRECTORY_SEPARATOR) . \DIRECTORY_SEPARATOR;
         $items = [];
         foreach ($paths as $path) {
             if (!is_string($path) || $path === '') {
@@ -185,8 +196,8 @@ class WorkerMonitor
             }
 
             $items[] = $this->isAbsolutePath($path)
-                ? rtrim($path, DIRECTORY_SEPARATOR)
-                : rtrim($root . ltrim($path, DIRECTORY_SEPARATOR), DIRECTORY_SEPARATOR);
+                ? rtrim($path, \DIRECTORY_SEPARATOR)
+                : rtrim($root . ltrim($path, \DIRECTORY_SEPARATOR), \DIRECTORY_SEPARATOR);
         }
 
         return array_values(array_unique($items));
@@ -205,7 +216,7 @@ class WorkerMonitor
 
     protected function isAbsolutePath(string $path): bool
     {
-        return str_starts_with($path, DIRECTORY_SEPARATOR) || preg_match('#^[A-Za-z]:[\\\\/]#', $path) === 1;
+        return str_starts_with($path, \DIRECTORY_SEPARATOR) || preg_match('#^[A-Za-z]:[\\\/]#', $path) === 1;
     }
 
     protected function parseBytes(mixed $value): int

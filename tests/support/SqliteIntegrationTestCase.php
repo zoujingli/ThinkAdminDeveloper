@@ -1,6 +1,22 @@
 <?php
 
 declare(strict_types=1);
+/**
+ * +----------------------------------------------------------------------
+ * | ThinkAdmin Plugin for ThinkAdmin
+ * +----------------------------------------------------------------------
+ * | 版权所有 2014~2026 ThinkAdmin [ thinkadmin.top ]
+ * +----------------------------------------------------------------------
+ * | 官方网站: https://thinkadmin.top
+ * +----------------------------------------------------------------------
+ * | 开源协议 ( https://mit-license.org )
+ * | 免责声明 ( https://thinkadmin.top/disclaimer )
+ * | 会员特权 ( https://thinkadmin.top/vip-introduce )
+ * +----------------------------------------------------------------------
+ * | gitee 代码仓库：https://gitee.com/zoujingli/ThinkAdmin
+ * | github 代码仓库：https://github.com/zoujingli/ThinkAdmin
+ * +----------------------------------------------------------------------
+ */
 
 namespace think\admin\tests\Support;
 
@@ -12,32 +28,36 @@ use plugin\payment\model\PluginPaymentAddress;
 use plugin\payment\model\PluginPaymentRecord;
 use plugin\payment\service\Payment;
 use plugin\storage\model\SystemFile;
+use plugin\system\model\SystemAuth;
 use plugin\system\model\SystemBase;
+use plugin\system\model\SystemConfig;
+use plugin\system\model\SystemData;
+use plugin\system\model\SystemMenu;
+use plugin\system\model\SystemNode;
 use plugin\system\model\SystemOplog;
 use plugin\system\model\SystemUser;
-use plugin\system\model\SystemAuth;
-use plugin\system\model\SystemNode;
-use plugin\system\model\SystemMenu;
-use plugin\worker\model\SystemQueue;
 use plugin\wemall\model\PluginWemallOrder;
 use plugin\wemall\model\PluginWemallOrderItem;
 use plugin\wemall\model\PluginWemallUserRelation;
-use plugin\system\model\SystemConfig;
-use plugin\system\model\SystemData;
-use think\App;
-use think\Container;
+use plugin\worker\model\SystemQueue;
 use think\admin\contract\SystemContextInterface;
 use think\admin\runtime\NullSystemContext;
 use think\admin\runtime\RequestContext;
 use think\admin\service\RuntimeService;
+use think\App;
+use think\Container;
 use think\db\ConnectionInterface;
 
 abstract class SqliteIntegrationTestCase extends TestCase
 {
     protected App $app;
+
     protected TestSystemContext $context;
+
     protected string $databaseFile;
+
     protected string $sandboxPath;
+
     private ?array $accountTypesSnapshot = null;
 
     protected function setUp(): void
@@ -77,9 +97,7 @@ abstract class SqliteIntegrationTestCase extends TestCase
 
     abstract protected function defineSchema(): void;
 
-    protected function afterSchemaCreated(): void
-    {
-    }
+    protected function afterSchemaCreated(): void {}
 
     protected function connection(): ConnectionInterface
     {
@@ -801,8 +819,8 @@ SQL,
         $this->rememberAccountTypes();
         $this->restoreAccountTypes();
         $this->context->setData('plugin.account.access', array_merge([
-            'expire'     => 3600,
-            'headimg'    => 'https://example.com/default-account.png',
+            'expire' => 3600,
+            'headimg' => 'https://example.com/default-account.png',
             'userPrefix' => '测试账号',
         ], $overrides));
     }
@@ -811,11 +829,11 @@ SQL,
     {
         $user = PluginAccountUser::mk();
         $user->save(array_merge([
-            'code'     => 'U' . random_int(100000, 999999),
-            'phone'    => $this->randomPhone(),
+            'code' => 'U' . random_int(100000, 999999),
+            'phone' => $this->randomPhone(),
             'username' => 'user-' . random_int(100, 999),
             'nickname' => '测试用户',
-            'extra'    => [],
+            'extra' => [],
         ], $overrides));
 
         return $user->refresh();
@@ -874,32 +892,32 @@ SQL,
     {
         $order = PluginWemallOrder::mk();
         $order->save(array_merge([
-            'unid'           => $account->getUnid(),
-            'order_no'       => 'ORDER-' . strtoupper(substr(md5(uniqid('', true)), 0, 10)),
-            'status'         => 2,
-            'delivery_type'  => 1,
+            'unid' => $account->getUnid(),
+            'order_no' => 'ORDER-' . strtoupper(substr(md5(uniqid('', true)), 0, 10)),
+            'status' => 2,
+            'delivery_type' => 1,
             'payment_status' => 0,
-            'refund_status'  => 0,
-            'cancel_status'  => 0,
+            'refund_status' => 0,
+            'cancel_status' => 0,
             'deleted_status' => 0,
-            'puid1'          => 0,
-            'puid2'          => 0,
-            'puid3'          => 0,
-            'amount_goods'   => '10.00',
-            'amount_discount'=> '10.00',
-            'amount_reduct'  => '0.00',
+            'puid1' => 0,
+            'puid2' => 0,
+            'puid3' => 0,
+            'amount_goods' => '10.00',
+            'amount_discount' => '10.00',
+            'amount_reduct' => '0.00',
             'amount_express' => '0.00',
-            'amount_real'    => '10.00',
-            'amount_total'   => '10.00',
+            'amount_real' => '10.00',
+            'amount_total' => '10.00',
             'payment_amount' => '0.00',
             'amount_payment' => '0.00',
             'amount_balance' => '0.00',
-            'amount_integral'=> '0.00',
-            'rebate_amount'  => '0.00',
+            'amount_integral' => '0.00',
+            'rebate_amount' => '0.00',
             'reward_balance' => '0.00',
-            'reward_integral'=> '0.00',
-            'level_agent'    => 0,
-            'level_member'   => 0,
+            'reward_integral' => '0.00',
+            'level_agent' => 0,
+            'level_member' => 0,
         ], $overrides));
 
         return $order->refresh();
@@ -909,14 +927,14 @@ SQL,
     {
         $address = PluginPaymentAddress::mk();
         $address->save(array_merge([
-            'unid'        => $unid,
-            'type'        => 1,
-            'deleted'     => 0,
-            'user_name'   => '测试收货人',
-            'user_phone'  => $this->randomPhone('1380013'),
-            'idcode'      => '110101199001010011',
-            'idimg1'      => '/upload/idcard-front.png',
-            'idimg2'      => '/upload/idcard-back.png',
+            'unid' => $unid,
+            'type' => 1,
+            'deleted' => 0,
+            'user_name' => '测试收货人',
+            'user_phone' => $this->randomPhone('1380013'),
+            'idcode' => '110101199001010011',
+            'idimg1' => '/upload/idcard-front.png',
+            'idimg2' => '/upload/idcard-back.png',
             'region_prov' => '广东省',
             'region_city' => '深圳市',
             'region_area' => '南山区',
@@ -930,20 +948,20 @@ SQL,
     {
         $file = SystemFile::mk();
         $file->save(array_merge([
-            'type'        => 'local',
-            'hash'        => md5(uniqid('file', true)),
-            'tags'        => '',
-            'name'        => 'test-file.png',
-            'xext'        => 'png',
-            'xurl'        => 'https://example.com/upload/test-file.png',
-            'xkey'        => 'upload/test-file.png',
-            'mime'        => 'image/png',
-            'size'        => 1024,
-            'uuid'        => 0,
-            'unid'        => 0,
-            'isfast'      => 0,
-            'issafe'      => 0,
-            'status'      => 2,
+            'type' => 'local',
+            'hash' => md5(uniqid('file', true)),
+            'tags' => '',
+            'name' => 'test-file.png',
+            'xext' => 'png',
+            'xurl' => 'https://example.com/upload/test-file.png',
+            'xkey' => 'upload/test-file.png',
+            'mime' => 'image/png',
+            'size' => 1024,
+            'uuid' => 0,
+            'unid' => 0,
+            'isfast' => 0,
+            'issafe' => 0,
+            'status' => 2,
             'create_time' => date('Y-m-d H:i:s'),
             'update_time' => date('Y-m-d H:i:s'),
         ], $overrides));
@@ -955,14 +973,14 @@ SQL,
     {
         $base = SystemBase::mk();
         $base->save(array_merge([
-            'type'        => 'identity',
-            'code'        => 'base-' . random_int(1000, 9999),
-            'name'        => '测试字典',
-            'content'     => '',
-            'sort'        => 0,
-            'status'      => 1,
+            'type' => 'identity',
+            'code' => 'base-' . random_int(1000, 9999),
+            'name' => '测试字典',
+            'content' => '',
+            'sort' => 0,
+            'status' => 1,
             'delete_time' => null,
-            'deleted_by'  => 0,
+            'deleted_by' => 0,
             'create_time' => date('Y-m-d H:i:s'),
         ], $overrides));
 
@@ -973,24 +991,24 @@ SQL,
     {
         $user = SystemUser::mk();
         $user->save(array_merge([
-            'usertype'      => '',
-            'username'      => 'admin-' . random_int(1000, 9999),
-            'password'      => md5('123456'),
-            'nickname'      => '测试管理员',
-            'headimg'       => '',
-            'authorize'     => '',
-            'contact_qq'    => '',
-            'contact_mail'  => '',
+            'usertype' => '',
+            'username' => 'admin-' . random_int(1000, 9999),
+            'password' => md5('123456'),
+            'nickname' => '测试管理员',
+            'headimg' => '',
+            'authorize' => '',
+            'contact_qq' => '',
+            'contact_mail' => '',
             'contact_phone' => '',
-            'login_ip'      => '127.0.0.1',
-            'login_at'      => '',
-            'login_num'     => 0,
-            'describe'      => '',
-            'sort'          => 0,
-            'status'        => 1,
-            'delete_time'   => null,
-            'create_time'   => date('Y-m-d H:i:s'),
-            'update_time'   => date('Y-m-d H:i:s'),
+            'login_ip' => '127.0.0.1',
+            'login_at' => '',
+            'login_num' => 0,
+            'describe' => '',
+            'sort' => 0,
+            'status' => 1,
+            'delete_time' => null,
+            'create_time' => date('Y-m-d H:i:s'),
+            'update_time' => date('Y-m-d H:i:s'),
         ], $overrides));
 
         return $user->refresh();
@@ -1000,11 +1018,11 @@ SQL,
     {
         $auth = SystemAuth::mk();
         $auth->save(array_merge([
-            'title'       => '测试权限',
-            'utype'       => '',
-            'desc'        => '测试说明',
-            'sort'        => 0,
-            'status'      => 1,
+            'title' => '测试权限',
+            'utype' => '',
+            'desc' => '测试说明',
+            'sort' => 0,
+            'status' => 1,
             'create_time' => date('Y-m-d H:i:s'),
         ], $overrides));
 
@@ -1026,15 +1044,15 @@ SQL,
     {
         $menu = SystemMenu::mk();
         $menu->save(array_merge([
-            'pid'         => 0,
-            'title'       => '测试菜单',
-            'icon'        => 'layui-icon layui-icon-set',
-            'node'        => '',
-            'url'         => '#',
-            'params'      => '',
-            'target'      => '_self',
-            'sort'        => 0,
-            'status'      => 1,
+            'pid' => 0,
+            'title' => '测试菜单',
+            'icon' => 'layui-icon layui-icon-set',
+            'node' => '',
+            'url' => '#',
+            'params' => '',
+            'target' => '_self',
+            'sort' => 0,
+            'status' => 1,
             'create_time' => date('Y-m-d H:i:s'),
         ], $overrides));
 
@@ -1045,8 +1063,8 @@ SQL,
     {
         $config = SystemConfig::mk();
         $config->save(array_merge([
-            'type'  => 'base',
-            'name'  => 'site_name',
+            'type' => 'base',
+            'name' => 'site_name',
             'value' => 'ThinkAdmin',
         ], $overrides));
 
@@ -1057,8 +1075,8 @@ SQL,
     {
         $data = SystemData::mk();
         $data->save(array_merge([
-            'name'        => 'TestDataKey',
-            'value'       => json_encode([['ok' => true]], JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES),
+            'name' => 'TestDataKey',
+            'value' => json_encode([['ok' => true]], JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES),
             'create_time' => date('Y-m-d H:i:s'),
             'update_time' => date('Y-m-d H:i:s'),
         ], $overrides));
@@ -1070,11 +1088,11 @@ SQL,
     {
         $oplog = SystemOplog::mk();
         $oplog->save(array_merge([
-            'node'        => 'system/test/index',
-            'geoip'       => '127.0.0.1',
-            'action'      => '测试行为',
-            'content'     => '测试内容',
-            'username'    => 'tester',
+            'node' => 'system/test/index',
+            'geoip' => '127.0.0.1',
+            'action' => '测试行为',
+            'content' => '测试内容',
+            'username' => 'tester',
             'create_time' => date('Y-m-d H:i:s'),
         ], $overrides));
 
@@ -1085,20 +1103,20 @@ SQL,
     {
         $queue = SystemQueue::mk();
         $queue->save(array_merge([
-            'code'        => 'Q' . strtoupper(substr(md5(uniqid('', true)), 0, 15)),
-            'title'       => '测试任务',
-            'command'     => 'xadmin:test queue',
-            'exec_pid'    => 0,
-            'exec_data'   => '{}',
-            'exec_time'   => time(),
-            'exec_desc'   => '',
-            'enter_time'  => '0.0000',
-            'outer_time'  => '0.0000',
-            'loops_time'  => 0,
-            'attempts'    => 0,
-            'message'     => '',
-            'rscript'     => 0,
-            'status'      => 1,
+            'code' => 'Q' . strtoupper(substr(md5(uniqid('', true)), 0, 15)),
+            'title' => '测试任务',
+            'command' => 'xadmin:test queue',
+            'exec_pid' => 0,
+            'exec_data' => '{}',
+            'exec_time' => time(),
+            'exec_desc' => '',
+            'enter_time' => '0.0000',
+            'outer_time' => '0.0000',
+            'loops_time' => 0,
+            'attempts' => 0,
+            'message' => '',
+            'rscript' => 0,
+            'status' => 1,
             'create_time' => date('Y-m-d H:i:s'),
         ], $overrides));
 
@@ -1109,32 +1127,32 @@ SQL,
     {
         $item = PluginWemallOrderItem::mk();
         $item->save(array_merge([
-            'unid'                 => $account->getUnid(),
-            'status'               => 1,
-            'deleted'              => 0,
-            'order_no'             => $orderNo,
-            'delivery_count'       => 1,
-            'delivery_code'        => 'NONE',
-            'gcode'                => 'GCODE-' . strtoupper(substr(md5(uniqid('', true)), 0, 8)),
-            'ghash'                => 'GHASH-' . strtoupper(substr(md5(uniqid('', true)), 0, 8)),
-            'gname'                => '测试商品',
-            'gcover'               => '/upload/goods.png',
-            'gunit'                => '件',
-            'gspec'                => '默认规格',
-            'gsku'                 => 'SKU-001',
-            'price_market'         => '10.00',
-            'price_selling'        => '10.00',
-            'amount_cost'          => '5.00',
-            'total_price_market'   => '10.00',
-            'total_price_selling'  => '10.00',
-            'total_price_cost'     => '5.00',
-            'discount_rate'        => '100.00',
-            'discount_amount'      => '0.00',
-            'total_allow_balance'  => '0.00',
+            'unid' => $account->getUnid(),
+            'status' => 1,
+            'deleted' => 0,
+            'order_no' => $orderNo,
+            'delivery_count' => 1,
+            'delivery_code' => 'NONE',
+            'gcode' => 'GCODE-' . strtoupper(substr(md5(uniqid('', true)), 0, 8)),
+            'ghash' => 'GHASH-' . strtoupper(substr(md5(uniqid('', true)), 0, 8)),
+            'gname' => '测试商品',
+            'gcover' => '/upload/goods.png',
+            'gunit' => '件',
+            'gspec' => '默认规格',
+            'gsku' => 'SKU-001',
+            'price_market' => '10.00',
+            'price_selling' => '10.00',
+            'amount_cost' => '5.00',
+            'total_price_market' => '10.00',
+            'total_price_selling' => '10.00',
+            'total_price_cost' => '5.00',
+            'discount_rate' => '100.00',
+            'discount_amount' => '0.00',
+            'total_allow_balance' => '0.00',
             'total_allow_integral' => '0.00',
-            'rebate_amount'        => '0.00',
+            'rebate_amount' => '0.00',
             'total_reward_balance' => '0.00',
-            'total_reward_integral'=> '0.00',
+            'total_reward_integral' => '0.00',
         ], $overrides));
 
         return $item->refresh();
@@ -1144,20 +1162,20 @@ SQL,
     {
         $relation = PluginWemallUserRelation::mk();
         $relation->save(array_merge([
-            'unid'             => $unid,
-            'layer'            => 0,
-            'puid1'            => 0,
-            'puid2'            => 0,
-            'puid3'            => 0,
-            'puids'            => 0,
-            'level_code'       => 0,
+            'unid' => $unid,
+            'layer' => 0,
+            'puid1' => 0,
+            'puid2' => 0,
+            'puid3' => 0,
+            'puids' => 0,
+            'level_code' => 0,
             'agent_level_code' => 0,
-            'entry_agent'      => 0,
-            'entry_member'     => 0,
-            'path'             => ',',
-            'level_name'       => '普通用户',
+            'entry_agent' => 0,
+            'entry_member' => 0,
+            'path' => ',',
+            'level_name' => '普通用户',
             'agent_level_name' => '会员用户',
-            'extra'            => [],
+            'extra' => [],
         ], $overrides));
 
         return $relation->refresh();
@@ -1175,7 +1193,7 @@ SQL,
 
         $this->app->config->set([
             'default' => 'file',
-            'stores'  => [
+            'stores' => [
                 'file' => [
                     'type' => 'File',
                     'path' => $this->sandboxPath . '/cache',
@@ -1183,38 +1201,38 @@ SQL,
             ],
         ], 'cache');
         $this->app->config->set([
-            'default'  => 'file',
+            'default' => 'file',
             'channels' => [
                 'file' => [
-                    'type'           => 'File',
-                    'path'           => $this->sandboxPath . '/log',
-                    'single'         => true,
-                    'apart_level'    => [],
-                    'max_files'      => 0,
-                    'json'           => false,
-                    'format'         => '[%s][%s] %s',
+                    'type' => 'File',
+                    'path' => $this->sandboxPath . '/log',
+                    'single' => true,
+                    'apart_level' => [],
+                    'max_files' => 0,
+                    'json' => false,
+                    'format' => '[%s][%s] %s',
                     'realtime_write' => true,
                 ],
             ],
         ], 'log');
         $this->app->config->set(['jwtkey' => 'integration-test-jwt'], 'app');
         $this->app->config->set([
-            'default'         => 'sqlite',
-            'auto_timestamp'  => true,
+            'default' => 'sqlite',
+            'auto_timestamp' => true,
             'datetime_format' => 'Y-m-d H:i:s',
-            'connections'     => [
+            'connections' => [
                 'sqlite' => [
-                    'type'        => 'sqlite',
-                    'database'    => $this->databaseFile,
-                    'charset'     => 'utf8',
+                    'type' => 'sqlite',
+                    'database' => $this->databaseFile,
+                    'charset' => 'utf8',
                     'trigger_sql' => false,
-                    'deploy'      => 0,
-                    'suffix'      => '',
-                    'prefix'      => '',
-                    'hostname'    => '',
-                    'hostport'    => '',
-                    'username'    => '',
-                    'password'    => '',
+                    'deploy' => 0,
+                    'suffix' => '',
+                    'prefix' => '',
+                    'hostname' => '',
+                    'hostport' => '',
+                    'username' => '',
+                    'password' => '',
                 ],
             ],
         ], 'database');

@@ -20,7 +20,6 @@ declare(strict_types=1);
 
 namespace think\admin\helper;
 
-use think\admin\helper\Helper;
 use think\admin\Library;
 use think\admin\model\QueryFactory;
 use think\admin\runtime\SystemContext;
@@ -384,13 +383,12 @@ class QueryHelper extends Helper
                 throw new HttpResponseException(json($result));
             }
             return $result;
-        } else {
-            if (is_callable($befor)) {
-                call_user_func($befor, $this, $this->query);
-            }
-            $this->class->fetch($template);
-            return null;
         }
+        if (is_callable($befor)) {
+            call_user_func($befor, $this, $this->query);
+        }
+        $this->class->fetch($template);
+        return null;
     }
 
     /**

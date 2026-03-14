@@ -1,6 +1,22 @@
 <?php
 
 declare(strict_types=1);
+/**
+ * +----------------------------------------------------------------------
+ * | ThinkAdmin Plugin for ThinkAdmin
+ * +----------------------------------------------------------------------
+ * | 版权所有 2014~2026 ThinkAdmin [ thinkadmin.top ]
+ * +----------------------------------------------------------------------
+ * | 官方网站: https://thinkadmin.top
+ * +----------------------------------------------------------------------
+ * | 开源协议 ( https://mit-license.org )
+ * | 免责声明 ( https://thinkadmin.top/disclaimer )
+ * | 会员特权 ( https://thinkadmin.top/vip-introduce )
+ * +----------------------------------------------------------------------
+ * | gitee 代码仓库：https://gitee.com/zoujingli/ThinkAdmin
+ * | github 代码仓库：https://github.com/zoujingli/ThinkAdmin
+ * +----------------------------------------------------------------------
+ */
 
 namespace plugin\helper\service;
 
@@ -23,7 +39,7 @@ final class PluginRegistry
     {
         $items = [];
         foreach (PluginService::all(true, true) as $code => $plugin) {
-            if (!is_array($config = static::detect($plugin))) {
+            if (!is_array($config = self::detect($plugin))) {
                 continue;
             }
             $items[$code] = $config;
@@ -46,7 +62,7 @@ final class PluginRegistry
      */
     public static function selected(array $plugins = []): array
     {
-        $items = static::all();
+        $items = self::all();
         if (empty($plugins)) {
             return $items;
         }
@@ -58,7 +74,7 @@ final class PluginRegistry
                 continue;
             }
             foreach ($items as $code => $config) {
-                if (static::matchSelectedPlugin($plugin, $code)) {
+                if (self::matchSelectedPlugin($plugin, $code)) {
                     $selected[$code] = $config;
                 }
             }
@@ -69,7 +85,7 @@ final class PluginRegistry
 
     public static function matchPlugin(string $table): ?string
     {
-        foreach (static::all() as $plugin => $config) {
+        foreach (self::all() as $plugin => $config) {
             if (in_array($table, $config['tables'], true)) {
                 return $plugin;
             }
@@ -97,7 +113,7 @@ final class PluginRegistry
             return null;
         }
 
-        $meta = static::resolveMigrateMeta($base);
+        $meta = self::resolveMigrateMeta($base);
         $dir = dirname($base) . DIRECTORY_SEPARATOR . 'stc' . DIRECTORY_SEPARATOR . 'database';
         if (!is_dir($dir)) {
             return null;
@@ -109,17 +125,17 @@ final class PluginRegistry
             return null;
         }
 
-        $primary = static::resolvePrimaryFile($files, $meta);
+        $primary = self::resolvePrimaryFile($files, $meta);
         $root = rtrim(app()->getRootPath(), DIRECTORY_SEPARATOR) . DIRECTORY_SEPARATOR;
         $target = str_starts_with($dir, $root) ? substr($dir, strlen($root)) : $dir;
-        $tables = static::extractTables($files);
+        $tables = self::extractTables($files);
 
         return [
             'title' => strval($plugin['name'] ?? ($plugin['code'] ?? '')),
             'target' => str_replace(DIRECTORY_SEPARATOR, '/', trim($target, DIRECTORY_SEPARATOR)),
             'file' => strval($meta['file'] ?? basename($primary)),
-            'class' => strval($meta['class'] ?? static::extractClass($primary)),
-            'name' => strval($meta['name'] ?? static::extractName($primary)),
+            'class' => strval($meta['class'] ?? self::extractClass($primary)),
+            'name' => strval($meta['name'] ?? self::extractName($primary)),
             'tables' => $tables,
             'export_empty' => !empty($meta['export_empty']),
         ];
@@ -160,11 +176,11 @@ final class PluginRegistry
     private static function extractName(string $file): string
     {
         $content = strval(@file_get_contents($file));
-        if (preg_match("/function\s+getName\s*\(\)\s*:\s*string\s*\{.*?return\s+'([^']+)'/s", $content, $match)) {
+        if (preg_match("/function\\s+getName\\s*\\(\\)\\s*:\\s*string\\s*\\{.*?return\\s+'([^']+)'/s", $content, $match)) {
             return $match[1];
         }
 
-        return static::extractClass($file);
+        return self::extractClass($file);
     }
 
     /**

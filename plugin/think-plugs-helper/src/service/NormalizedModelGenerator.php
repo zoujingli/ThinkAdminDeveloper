@@ -1,10 +1,25 @@
 <?php
 
 declare(strict_types=1);
+/**
+ * +----------------------------------------------------------------------
+ * | ThinkAdmin Plugin for ThinkAdmin
+ * +----------------------------------------------------------------------
+ * | 版权所有 2014~2026 ThinkAdmin [ thinkadmin.top ]
+ * +----------------------------------------------------------------------
+ * | 官方网站: https://thinkadmin.top
+ * +----------------------------------------------------------------------
+ * | 开源协议 ( https://mit-license.org )
+ * | 免责声明 ( https://thinkadmin.top/disclaimer )
+ * | 会员特权 ( https://thinkadmin.top/vip-introduce )
+ * +----------------------------------------------------------------------
+ * | gitee 代码仓库：https://gitee.com/zoujingli/ThinkAdmin
+ * | github 代码仓库：https://github.com/zoujingli/ThinkAdmin
+ * +----------------------------------------------------------------------
+ */
 
 namespace plugin\helper\service;
 
-use Exception;
 use think\db\Query;
 use think\ide\ModelGenerator;
 
@@ -17,7 +32,7 @@ class NormalizedModelGenerator extends ModelGenerator
             if ($query instanceof Query) {
                 $fields = $query->getFields();
             }
-        } catch (Exception $exception) {
+        } catch (\Exception $exception) {
             $this->output->warning($exception->getMessage());
         }
 
@@ -69,7 +84,7 @@ class NormalizedModelGenerator extends ModelGenerator
                 $limit = null;
                 $type = $matches[1];
                 if (count($matches) > 2) {
-                    $limit = $matches[3] ? (int) $matches[3] : null;
+                    $limit = $matches[3] ? (int)$matches[3] : null;
                 }
 
                 if ($type === 'tinyint' && $limit === 1) {

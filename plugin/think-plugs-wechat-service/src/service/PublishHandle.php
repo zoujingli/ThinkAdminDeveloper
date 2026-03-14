@@ -20,7 +20,6 @@ declare(strict_types=1);
 
 namespace plugin\wechat\service\service;
 
-use plugin\wechat\service\service\AuthService;
 use think\admin\service\Service;
 use WeChat\Exceptions\InvalidDecryptException;
 use WeChat\Exceptions\InvalidResponseException;

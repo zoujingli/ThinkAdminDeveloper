@@ -1,21 +1,36 @@
 <?php
 
 declare(strict_types=1);
+/**
+ * +----------------------------------------------------------------------
+ * | ThinkAdmin Plugin for ThinkAdmin
+ * +----------------------------------------------------------------------
+ * | 版权所有 2014~2026 ThinkAdmin [ thinkadmin.top ]
+ * +----------------------------------------------------------------------
+ * | 官方网站: https://thinkadmin.top
+ * +----------------------------------------------------------------------
+ * | 开源协议 ( https://mit-license.org )
+ * | 免责声明 ( https://thinkadmin.top/disclaimer )
+ * | 会员特权 ( https://thinkadmin.top/vip-introduce )
+ * +----------------------------------------------------------------------
+ * | gitee 代码仓库：https://gitee.com/zoujingli/ThinkAdmin
+ * | github 代码仓库：https://github.com/zoujingli/ThinkAdmin
+ * +----------------------------------------------------------------------
+ */
 
 namespace think\admin\tests;
 
-use plugin\system\service\SystemAuthService;
-use plugin\system\service\SystemContext as PluginSystemContext;
 use plugin\storage\controller\api\Upload as UploadController;
 use plugin\storage\model\SystemFile;
-use plugin\system\model\SystemConfig;
-use think\App;
-use think\Container;
-use think\Request;
+use plugin\system\service\SystemAuthService;
+use plugin\system\service\SystemContext as PluginSystemContext;
 use think\admin\contract\SystemContextInterface;
 use think\admin\runtime\RequestContext;
 use think\admin\tests\Support\SqliteIntegrationTestCase;
+use think\App;
+use think\Container;
 use think\exception\HttpResponseException;
+use think\Request;
 
 /**
  * @internal
@@ -25,50 +40,17 @@ class StorageUploadControllerTest extends SqliteIntegrationTestCase
 {
     private string $appRoot = '';
 
-    protected function defineSchema(): void
-    {
-        $this->createSystemConfigTable();
-        $this->createSystemFileTable();
-    }
-
-    protected function afterSchemaCreated(): void
-    {
-        $context = new PluginSystemContext();
-        Container::getInstance()->instance(SystemContextInterface::class, $context);
-        $this->app->instance(SystemContextInterface::class, $context);
-
-        $this->appRoot = $this->sandboxPath . '/app-root/';
-        is_dir($this->appRoot) || mkdir($this->appRoot, 0777, true);
-        $this->setAppRootPath($this->appRoot);
-
-        $this->createSystemConfigFixture([
-            'type'  => 'storage',
-            'name'  => 'driver',
-            'value' => 'local',
-        ]);
-        $this->createSystemConfigFixture([
-            'type'  => 'storage',
-            'name'  => 'allowed_exts',
-            'value' => 'png,jpg',
-        ]);
-        $this->createSystemConfigFixture([
-            'type'  => 'storage',
-            'name'  => 'local.protocol',
-            'value' => 'path',
-        ]);
-    }
-
     public function testStateReturnsUploadAuthorizationForMissingLocalFile(): void
     {
         $result = $this->callActionController('state', [
-            'key'   => 'pending/upload-test.png',
-            'name'  => 'upload-test.png',
-            'hash'  => 'pending-hash',
-            'xext'  => 'png',
-            'size'  => 128,
-            'mime'  => 'image/png',
-            'safe'  => 0,
-            'uptype'=> 'local',
+            'key' => 'pending/upload-test.png',
+            'name' => 'upload-test.png',
+            'hash' => 'pending-hash',
+            'xext' => 'png',
+            'size' => 128,
+            'mime' => 'image/png',
+            'safe' => 0,
+            'uptype' => 'local',
         ]);
 
         $file = SystemFile::mk()->where(['hash' => 'pending-hash'])->findOrEmpty();
@@ -90,14 +72,14 @@ class StorageUploadControllerTest extends SqliteIntegrationTestCase
         $this->createSandboxUploadFile('fast/existing.png');
 
         $result = $this->callActionController('state', [
-            'key'   => 'fast/existing.png',
-            'name'  => 'existing.png',
-            'hash'  => 'fast-hash',
-            'xext'  => 'png',
-            'size'  => 128,
-            'mime'  => 'image/png',
-            'safe'  => 0,
-            'uptype'=> 'local',
+            'key' => 'fast/existing.png',
+            'name' => 'existing.png',
+            'hash' => 'fast-hash',
+            'xext' => 'png',
+            'size' => 128,
+            'mime' => 'image/png',
+            'safe' => 0,
+            'uptype' => 'local',
         ]);
 
         $file = SystemFile::mk()->where(['hash' => 'fast-hash'])->findOrEmpty();
@@ -116,8 +98,8 @@ class StorageUploadControllerTest extends SqliteIntegrationTestCase
         $upload = $this->createUploadedPng('avatar.png');
 
         $result = $this->callFileController([
-            'key'    => 'local-tests/avatar.png',
-            'safe'   => 0,
+            'key' => 'local-tests/avatar.png',
+            'safe' => 0,
             'uptype' => 'local',
         ], $upload);
 
@@ -135,8 +117,8 @@ class StorageUploadControllerTest extends SqliteIntegrationTestCase
         $upload = $this->createUploadedPng('safe-avatar.png');
 
         $result = $this->callFileController([
-            'key'    => 'safe-tests/safe-avatar.png',
-            'safe'   => 1,
+            'key' => 'safe-tests/safe-avatar.png',
+            'safe' => 1,
             'uptype' => 'local',
         ], $upload);
 
@@ -152,10 +134,10 @@ class StorageUploadControllerTest extends SqliteIntegrationTestCase
     public function testImageFiltersCompletedUnsafeFilesForCurrentAdmin(): void
     {
         $this->createSystemFileFixture([
-            'uuid'        => 9101,
-            'name'        => 'picker-hit.png',
-            'hash'        => 'hash-picker-hit',
-            'xext'        => 'png',
+            'uuid' => 9101,
+            'name' => 'picker-hit.png',
+            'hash' => 'hash-picker-hit',
+            'xext' => 'png',
             'create_time' => '2026-03-10 09:00:00',
             'update_time' => '2026-03-10 09:00:00',
         ]);
@@ -166,17 +148,17 @@ class StorageUploadControllerTest extends SqliteIntegrationTestCase
             'xext' => 'jpg',
         ]);
         $this->createSystemFileFixture([
-            'uuid'   => 9101,
-            'name'   => 'picker-safe.png',
-            'hash'   => 'hash-picker-safe',
-            'xext'   => 'png',
+            'uuid' => 9101,
+            'name' => 'picker-safe.png',
+            'hash' => 'hash-picker-safe',
+            'xext' => 'png',
             'issafe' => 1,
         ]);
         $this->createSystemFileFixture([
-            'uuid'   => 9101,
-            'name'   => 'picker-pending.png',
-            'hash'   => 'hash-picker-pending',
-            'xext'   => 'png',
+            'uuid' => 9101,
+            'name' => 'picker-pending.png',
+            'hash' => 'hash-picker-pending',
+            'xext' => 'png',
             'status' => 1,
         ]);
         $this->createSystemFileFixture([
@@ -187,14 +169,14 @@ class StorageUploadControllerTest extends SqliteIntegrationTestCase
         ]);
 
         $result = $this->callImageController([
-            'output'      => 'json',
-            'type'        => 'png',
-            'name'        => 'picker-hit',
+            'output' => 'json',
+            'type' => 'png',
+            'name' => 'picker-hit',
             'create_time' => '2026-03-10 - 2026-03-10',
-            '_field_'     => 'id',
-            '_order_'     => 'asc',
-            'page'        => 1,
-            'limit'       => 20,
+            '_field_' => 'id',
+            '_order_' => 'asc',
+            'page' => 1,
+            'limit' => 20,
         ]);
 
         $this->assertSame(1, intval($result['code'] ?? 0));
@@ -228,13 +210,13 @@ class StorageUploadControllerTest extends SqliteIntegrationTestCase
         ]);
 
         $result = $this->callImageController([
-            'output'  => 'json',
-            'type'    => 'png',
+            'output' => 'json',
+            'type' => 'png',
             'uptoken' => SystemAuthService::withUploadToken(5001, 'png'),
             '_field_' => 'id',
             '_order_' => 'asc',
-            'page'    => 1,
-            'limit'   => 20,
+            'page' => 1,
+            'limit' => 20,
         ]);
 
         $this->assertSame(1, intval($result['code'] ?? 0));
@@ -245,6 +227,39 @@ class StorageUploadControllerTest extends SqliteIntegrationTestCase
             'picker-admin-visible.png',
             'picker-unid-visible.png',
         ], array_column($result['data']['list'] ?? [], 'name'));
+    }
+
+    protected function defineSchema(): void
+    {
+        $this->createSystemConfigTable();
+        $this->createSystemFileTable();
+    }
+
+    protected function afterSchemaCreated(): void
+    {
+        $context = new PluginSystemContext();
+        Container::getInstance()->instance(SystemContextInterface::class, $context);
+        $this->app->instance(SystemContextInterface::class, $context);
+
+        $this->appRoot = $this->sandboxPath . '/app-root/';
+        is_dir($this->appRoot) || mkdir($this->appRoot, 0777, true);
+        $this->setAppRootPath($this->appRoot);
+
+        $this->createSystemConfigFixture([
+            'type' => 'storage',
+            'name' => 'driver',
+            'value' => 'local',
+        ]);
+        $this->createSystemConfigFixture([
+            'type' => 'storage',
+            'name' => 'allowed_exts',
+            'value' => 'png,jpg',
+        ]);
+        $this->createSystemConfigFixture([
+            'type' => 'storage',
+            'name' => 'local.protocol',
+            'value' => 'path',
+        ]);
     }
 
     private function callActionController(string $action, array $payload): array
@@ -320,7 +335,7 @@ class StorageUploadControllerTest extends SqliteIntegrationTestCase
     private function bindAdminUser(): void
     {
         RequestContext::instance()->setAuth([
-            'id'       => 9101,
+            'id' => 9101,
             'username' => 'storage-admin',
             'password' => md5('changed-password'),
         ], '', true);
@@ -360,11 +375,11 @@ class StorageUploadControllerTest extends SqliteIntegrationTestCase
         file_put_contents($source, base64_decode($this->tinyPngBase64()));
 
         return [
-            'name'     => $name,
-            'type'     => 'image/png',
+            'name' => $name,
+            'type' => 'image/png',
             'tmp_name' => $source,
-            'error'    => 0,
-            'size'     => filesize($source),
+            'error' => 0,
+            'size' => filesize($source),
         ];
     }
 

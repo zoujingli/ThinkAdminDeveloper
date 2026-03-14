@@ -1,6 +1,22 @@
 <?php
 
 declare(strict_types=1);
+/**
+ * +----------------------------------------------------------------------
+ * | ThinkAdmin Plugin for ThinkAdmin
+ * +----------------------------------------------------------------------
+ * | 版权所有 2014~2026 ThinkAdmin [ thinkadmin.top ]
+ * +----------------------------------------------------------------------
+ * | 官方网站: https://thinkadmin.top
+ * +----------------------------------------------------------------------
+ * | 开源协议 ( https://mit-license.org )
+ * | 免责声明 ( https://thinkadmin.top/disclaimer )
+ * | 会员特权 ( https://thinkadmin.top/vip-introduce )
+ * +----------------------------------------------------------------------
+ * | gitee 代码仓库：https://gitee.com/zoujingli/ThinkAdmin
+ * | github 代码仓库：https://github.com/zoujingli/ThinkAdmin
+ * +----------------------------------------------------------------------
+ */
 
 namespace think\admin\tests;
 
@@ -23,18 +39,9 @@ class PaymentLedgerIntegrationTest extends SqliteIntegrationTestCase
     {
         parent::setUp();
         $this->configureAccountAccess([
-            'headimg'    => 'https://example.com/payment-ledger-account.png',
+            'headimg' => 'https://example.com/payment-ledger-account.png',
             'userPrefix' => '台账账号',
         ]);
-    }
-
-    protected function defineSchema(): void
-    {
-        $this->createAccountTables();
-        $this->createPaymentRecordTable();
-        $this->createPaymentRefundTable();
-        $this->createPaymentBalanceTable();
-        $this->createPaymentIntegralTable();
     }
 
     public function testBalancePaymentRefundRoundTripsBalanceLedger(): void
@@ -111,5 +118,14 @@ class PaymentLedgerIntegrationTest extends SqliteIntegrationTestCase
         $this->assertSame('来自订单 ORDER-INTEGRAL-001 退回积分', $refundIntegral->getAttr('remark'));
         $this->assertSame('22.00', $this->decimal(Integral::recount($unid)['usable']));
         $this->assertSame('4.00', $this->decimal(Payment::totalRefundAmount($record->getAttr('code'))['integral']));
+    }
+
+    protected function defineSchema(): void
+    {
+        $this->createAccountTables();
+        $this->createPaymentRecordTable();
+        $this->createPaymentRefundTable();
+        $this->createPaymentBalanceTable();
+        $this->createPaymentIntegralTable();
     }
 }

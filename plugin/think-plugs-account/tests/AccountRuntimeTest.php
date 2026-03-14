@@ -1,20 +1,36 @@
 <?php
 
 declare(strict_types=1);
+/**
+ * +----------------------------------------------------------------------
+ * | ThinkAdmin Plugin for ThinkAdmin
+ * +----------------------------------------------------------------------
+ * | 版权所有 2014~2026 ThinkAdmin [ thinkadmin.top ]
+ * +----------------------------------------------------------------------
+ * | 官方网站: https://thinkadmin.top
+ * +----------------------------------------------------------------------
+ * | 开源协议 ( https://mit-license.org )
+ * | 免责声明 ( https://thinkadmin.top/disclaimer )
+ * | 会员特权 ( https://thinkadmin.top/vip-introduce )
+ * +----------------------------------------------------------------------
+ * | gitee 代码仓库：https://gitee.com/zoujingli/ThinkAdmin
+ * | github 代码仓库：https://github.com/zoujingli/ThinkAdmin
+ * +----------------------------------------------------------------------
+ */
 
 namespace think\admin\tests;
 
 use PHPUnit\Framework\TestCase;
 use plugin\account\service\Account;
+use think\admin\contract\SystemContextInterface;
+use think\admin\runtime\NullSystemContext;
+use think\admin\runtime\RequestContext;
+use think\admin\service\CacheSession;
+use think\admin\service\JwtToken;
+use think\admin\service\RuntimeService;
 use think\App;
 use think\Container;
 use think\Request;
-use think\admin\service\CacheSession;
-use think\admin\contract\SystemContextInterface;
-use think\admin\service\JwtToken;
-use think\admin\runtime\NullSystemContext;
-use think\admin\runtime\RequestContext;
-use think\admin\service\RuntimeService;
 
 /**
  * @internal
@@ -23,6 +39,7 @@ use think\admin\service\RuntimeService;
 class AccountRuntimeTest extends TestCase
 {
     private array $defaultTypes;
+
     private AccountRuntimeSystemContextStub $context;
 
     protected function setUp(): void
@@ -127,6 +144,7 @@ class AccountRuntimeTest extends TestCase
 class AccountRuntimeSystemContextStub implements SystemContextInterface
 {
     private array $config = [];
+
     private array $data = [];
 
     public function buildToken(): string

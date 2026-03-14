@@ -21,7 +21,6 @@ declare(strict_types=1);
 namespace think\admin\helper;
 
 use think\admin\Exception;
-use think\admin\helper\Helper;
 use think\admin\model\QueryFactory;
 use think\admin\service\RuntimeTools;
 use think\db\BaseQuery;

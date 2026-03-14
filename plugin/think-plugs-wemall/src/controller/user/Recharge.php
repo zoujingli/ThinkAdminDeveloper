@@ -20,9 +20,9 @@ declare(strict_types=1);
 
 namespace plugin\wemall\controller\user;
 
-use plugin\system\service\SystemAuthService;
 use plugin\account\model\PluginAccountUser;
 use plugin\payment\service\Balance;
+use plugin\system\service\SystemAuthService;
 use plugin\wemall\model\PluginWemallUserRecharge;
 use think\admin\Controller;
 use think\admin\extend\CodeToolkit;

@@ -1,15 +1,31 @@
 <?php
 
 declare(strict_types=1);
+/**
+ * +----------------------------------------------------------------------
+ * | ThinkAdmin Plugin for ThinkAdmin
+ * +----------------------------------------------------------------------
+ * | 版权所有 2014~2026 ThinkAdmin [ thinkadmin.top ]
+ * +----------------------------------------------------------------------
+ * | 官方网站: https://thinkadmin.top
+ * +----------------------------------------------------------------------
+ * | 开源协议 ( https://mit-license.org )
+ * | 免责声明 ( https://thinkadmin.top/disclaimer )
+ * | 会员特权 ( https://thinkadmin.top/vip-introduce )
+ * +----------------------------------------------------------------------
+ * | gitee 代码仓库：https://gitee.com/zoujingli/ThinkAdmin
+ * | github 代码仓库：https://github.com/zoujingli/ThinkAdmin
+ * +----------------------------------------------------------------------
+ */
 
 namespace think\admin\tests;
 
-use plugin\system\controller\File as FileController;
 use plugin\storage\model\SystemFile;
-use think\Request;
+use plugin\system\controller\File as FileController;
 use think\admin\runtime\RequestContext;
 use think\admin\tests\Support\SqliteIntegrationTestCase;
 use think\exception\HttpResponseException;
+use think\Request;
 
 /**
  * @internal
@@ -17,71 +33,66 @@ use think\exception\HttpResponseException;
  */
 class FileControllerTest extends SqliteIntegrationTestCase
 {
-    protected function defineSchema(): void
-    {
-        $this->createSystemFileTable();
-    }
-
     public function testIndexFiltersFilesByCurrentAdminTypeAndDateRange(): void
     {
         $this->createSystemFileFixture([
-            'uuid'        => 9001,
-            'type'        => 'local',
-            'name'        => 'report-hit.png',
-            'hash'        => 'hash-hit',
-            'xext'        => 'png',
+            'uuid' => 9001,
+            'type' => 'local',
+            'name' => 'report-hit.png',
+            'hash' => 'hash-hit',
+            'xext' => 'png',
             'create_time' => '2026-03-10 08:00:00',
             'update_time' => '2026-03-10 08:00:00',
         ]);
         $this->createSystemFileFixture([
-            'uuid'        => 9001,
-            'type'        => 'local',
-            'name'        => 'report-other-day.png',
-            'hash'        => 'hash-other-day',
-            'xext'        => 'png',
+            'uuid' => 9001,
+            'type' => 'local',
+            'name' => 'report-other-day.png',
+            'hash' => 'hash-other-day',
+            'xext' => 'png',
             'create_time' => '2026-03-09 08:00:00',
             'update_time' => '2026-03-09 08:00:00',
         ]);
         $this->createSystemFileFixture([
-            'uuid'   => 9001,
-            'type'   => 'qiniu',
-            'name'   => 'report-other-type.png',
-            'hash'   => 'hash-other-type',
-            'xext'   => 'png',
+            'uuid' => 9001,
+            'type' => 'qiniu',
+            'name' => 'report-other-type.png',
+            'hash' => 'hash-other-type',
+            'xext' => 'png',
         ]);
         $this->createSystemFileFixture([
-            'uuid'   => 9001,
-            'type'   => 'local',
-            'name'   => 'report-safe.png',
-            'hash'   => 'hash-safe',
-            'xext'   => 'png',
+            'uuid' => 9001,
+            'type' => 'local',
+            'name' => 'report-safe.png',
+            'hash' => 'hash-safe',
+            'xext' => 'png',
             'issafe' => 1,
         ]);
         $this->createSystemFileFixture([
-            'uuid'   => 9001,
-            'type'   => 'local',
-            'name'   => 'report-pending.png',
-            'hash'   => 'hash-pending',
-            'xext'   => 'png',
+            'uuid' => 9001,
+            'type' => 'local',
+            'name' => 'report-pending.png',
+            'hash' => 'hash-pending',
+            'xext' => 'png',
             'status' => 1,
         ]);
         $this->createSystemFileFixture([
-            'uuid'   => 9002,
-            'type'   => 'local',
-            'name'   => 'report-other-user.png',
-            'hash'   => 'hash-other-user',
-            'xext'   => 'png',
+            'uuid' => 9002,
+            'type' => 'local',
+            'name' => 'report-other-user.png',
+            'hash' => 'hash-other-user',
+            'xext' => 'png',
         ]);
 
         $result = $this->callIndexController([
-            'output'      => 'json',
-            'type'        => 'local',
-            'name'        => 'report-hit',
+            'output' => 'json',
+            'type' => 'local',
+            'name' => 'report-hit',
             'create_time' => '2026-03-10 - 2026-03-10',
-            '_field_'     => 'id',
-            '_order_'     => 'asc',
-            'page'        => 1,
-            'limit'       => 20,
+            '_field_' => 'id',
+            '_order_' => 'asc',
+            'page' => 1,
+            'limit' => 20,
         ]);
 
         $this->assertSame(1, intval($result['code'] ?? 0));
@@ -95,7 +106,7 @@ class FileControllerTest extends SqliteIntegrationTestCase
 
     public function testIndexPaginatesCurrentAdminFilesAndFallsBackToDefaultLimit(): void
     {
-        for ($i = 1; $i <= 21; $i++) {
+        for ($i = 1; $i <= 21; ++$i) {
             $this->createSystemFileFixture([
                 'uuid' => 9001,
                 'type' => 'local',
@@ -114,13 +125,13 @@ class FileControllerTest extends SqliteIntegrationTestCase
         ]);
 
         $result = $this->callIndexController([
-            'output'  => 'json',
-            'type'    => 'local',
-            'xext'    => 'png',
+            'output' => 'json',
+            'type' => 'local',
+            'xext' => 'png',
             '_field_' => 'id',
             '_order_' => 'asc',
-            'page'    => 2,
-            'limit'   => 999,
+            'page' => 2,
+            'limit' => 999,
         ]);
 
         $this->assertSame(1, intval($result['code'] ?? 0));
@@ -183,11 +194,11 @@ class FileControllerTest extends SqliteIntegrationTestCase
             'xkey' => 'upload/repeat.png',
         ]);
         $safeDuplicate = $this->createSystemFileFixture([
-            'uuid'   => 9001,
-            'type'   => 'local',
-            'name'   => 'duplicate-safe.png',
-            'hash'   => 'hash-duplicate-safe',
-            'xkey'   => 'upload/repeat.png',
+            'uuid' => 9001,
+            'type' => 'local',
+            'name' => 'duplicate-safe.png',
+            'hash' => 'hash-duplicate-safe',
+            'xkey' => 'upload/repeat.png',
             'issafe' => 1,
         ]);
         $otherUserDuplicate = $this->createSystemFileFixture([
@@ -226,7 +237,7 @@ class FileControllerTest extends SqliteIntegrationTestCase
         ]);
 
         $result = $this->callEditSave([
-            'id'   => intval($owned->getAttr('id')),
+            'id' => intval($owned->getAttr('id')),
             'name' => 'after-edit.png',
         ]);
 
@@ -248,7 +259,7 @@ class FileControllerTest extends SqliteIntegrationTestCase
 
         $view = $this->callEditJson('GET', ['id' => intval($other->getAttr('id'))]);
         $save = $this->callEditJson('POST', [
-            'id'   => intval($other->getAttr('id')),
+            'id' => intval($other->getAttr('id')),
             'name' => 'other-edit-new.png',
         ]);
         $record = SystemFile::mk()->where(['id' => $other->getAttr('id')])->findOrEmpty();
@@ -258,6 +269,11 @@ class FileControllerTest extends SqliteIntegrationTestCase
         $this->assertSame(0, intval($save['code'] ?? 1));
         $this->assertSame('文件记录不存在！', $save['info'] ?? '');
         $this->assertSame('other-edit.png', $record->getAttr('name'));
+    }
+
+    protected function defineSchema(): void
+    {
+        $this->createSystemFileTable();
     }
 
     private function callIndexController(array $query): array
@@ -333,7 +349,7 @@ class FileControllerTest extends SqliteIntegrationTestCase
     private function bindAdminUser(): void
     {
         RequestContext::instance()->setAuth([
-            'id'       => 9001,
+            'id' => 9001,
             'username' => 'tester',
         ], '', true);
     }

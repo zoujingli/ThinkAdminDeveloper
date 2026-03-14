@@ -34,6 +34,7 @@ declare(strict_types=1);
 
 namespace think\admin\contract;
 
+use plugin\storage\service\StorageConfig;
 use think\admin\Exception;
 use think\App;
 use think\Container;
@@ -68,8 +69,8 @@ trait StorageUsageTrait
     public function __construct(App $app)
     {
         $this->app = $app;
-        if (class_exists(\plugin\storage\service\StorageConfig::class)) {
-            $this->link = \plugin\storage\service\StorageConfig::global('link', 'none');
+        if (class_exists(StorageConfig::class)) {
+            $this->link = StorageConfig::global('link', 'none');
         } else {
             $this->link = sysconf('storage.link_type|raw') ?: 'none';
         }

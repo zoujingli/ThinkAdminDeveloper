@@ -1,23 +1,39 @@
 <?php
 
 declare(strict_types=1);
+/**
+ * +----------------------------------------------------------------------
+ * | ThinkAdmin Plugin for ThinkAdmin
+ * +----------------------------------------------------------------------
+ * | 版权所有 2014~2026 ThinkAdmin [ thinkadmin.top ]
+ * +----------------------------------------------------------------------
+ * | 官方网站: https://thinkadmin.top
+ * +----------------------------------------------------------------------
+ * | 开源协议 ( https://mit-license.org )
+ * | 免责声明 ( https://thinkadmin.top/disclaimer )
+ * | 会员特权 ( https://thinkadmin.top/vip-introduce )
+ * +----------------------------------------------------------------------
+ * | gitee 代码仓库：https://gitee.com/zoujingli/ThinkAdmin
+ * | github 代码仓库：https://github.com/zoujingli/ThinkAdmin
+ * +----------------------------------------------------------------------
+ */
 
 namespace think\admin\tests;
 
-use plugin\account\service\Account;
 use plugin\account\model\PluginAccountUser;
+use plugin\account\service\Account;
 use plugin\payment\model\PluginPaymentRecord;
 use plugin\payment\service\Balance;
 use plugin\payment\service\Integral;
 use plugin\payment\service\Payment;
 use plugin\wemall\controller\api\auth\Order as AuthOrderController;
-use plugin\wemall\model\PluginWemallUserCreate;
 use plugin\wemall\model\PluginWemallOrder;
+use plugin\wemall\model\PluginWemallOrderSender;
+use plugin\wemall\model\PluginWemallUserCreate;
 use plugin\wemall\model\PluginWemallUserRebate;
 use plugin\wemall\model\PluginWemallUserRelation;
-use plugin\wemall\model\PluginWemallOrderSender;
-use plugin\wemall\service\UserOrder;
 use plugin\wemall\Service as WemallService;
+use plugin\wemall\service\UserOrder;
 use think\admin\tests\Support\SqliteIntegrationTestCase;
 use think\exception\HttpResponseException;
 
@@ -31,28 +47,9 @@ class PaymentEventIntegrationTest extends SqliteIntegrationTestCase
     {
         parent::setUp();
         $this->configureAccountAccess([
-            'headimg'    => 'https://example.com/wemall-account.png',
+            'headimg' => 'https://example.com/wemall-account.png',
             'userPrefix' => '商城账号',
         ]);
-    }
-
-    protected function defineSchema(): void
-    {
-        $this->createAccountTables();
-        $this->createPaymentBalanceTable();
-        $this->createPaymentIntegralTable();
-        $this->createPaymentRecordTable();
-        $this->createPaymentRefundTable();
-        $this->createPaymentAddressTable();
-        $this->createWemallOrderTable();
-        $this->createWemallOrderItemTable();
-        $this->createWemallOrderSenderTable();
-        $this->createWemallConfigLevelTable();
-        $this->createWemallConfigAgentTable();
-        $this->createWemallUserCreateTable();
-        $this->createWemallUserRelationTable();
-        $this->createWemallUserRebateTable();
-        $this->createWemallUserTransferTable();
     }
 
     public function testSuccessEventPromotesOrderToPaidDeliveryState(): void
@@ -60,9 +57,9 @@ class PaymentEventIntegrationTest extends SqliteIntegrationTestCase
         $account = $this->createBoundAccountFixture();
         $this->registerWemallService();
         $order = $this->createWemallOrderFixture($account, [
-            'order_no'      => 'WEMALL-SUCCESS-001',
-            'amount_real'   => '10.00',
-            'amount_total'  => '10.00',
+            'order_no' => 'WEMALL-SUCCESS-001',
+            'amount_real' => '10.00',
+            'amount_total' => '10.00',
             'delivery_type' => 1,
         ]);
 
@@ -94,9 +91,9 @@ class PaymentEventIntegrationTest extends SqliteIntegrationTestCase
         $account = $this->createBoundAccountFixture(Account::WEB);
         $this->registerWemallService();
         $order = $this->createWemallOrderFixture($account, [
-            'order_no'      => 'WEMALL-VOUCHER-001',
-            'amount_real'   => '8.00',
-            'amount_total'  => '8.00',
+            'order_no' => 'WEMALL-VOUCHER-001',
+            'amount_real' => '8.00',
+            'amount_total' => '8.00',
             'delivery_type' => 1,
         ]);
 
@@ -131,13 +128,13 @@ class PaymentEventIntegrationTest extends SqliteIntegrationTestCase
         $account = $this->createBoundAccountFixture();
         $this->registerWemallService();
         $order = $this->createWemallOrderFixture($account, [
-            'order_no'      => 'WEMALL-CANCEL-001',
-            'status'        => 4,
-            'payment_status'=> 1,
-            'amount_real'   => '10.00',
-            'amount_total'  => '10.00',
-            'payment_amount'=> '10.00',
-            'amount_payment'=> '10.00',
+            'order_no' => 'WEMALL-CANCEL-001',
+            'status' => 4,
+            'payment_status' => 1,
+            'amount_real' => '10.00',
+            'amount_total' => '10.00',
+            'payment_amount' => '10.00',
+            'amount_payment' => '10.00',
             'delivery_type' => 1,
         ]);
 
@@ -165,14 +162,14 @@ class PaymentEventIntegrationTest extends SqliteIntegrationTestCase
         $account = $this->createBoundAccountFixture();
         $this->registerWemallService();
         $order = $this->createWemallOrderFixture($account, [
-            'order_no'        => 'WEMALL-CONFIRM-001',
-            'status'          => 6,
-            'payment_status'  => 1,
-            'amount_real'     => '12.00',
-            'amount_total'    => '12.00',
-            'payment_amount'  => '12.00',
-            'amount_payment'  => '12.00',
-            'reward_balance'  => '2.50',
+            'order_no' => 'WEMALL-CONFIRM-001',
+            'status' => 6,
+            'payment_status' => 1,
+            'amount_real' => '12.00',
+            'amount_total' => '12.00',
+            'payment_amount' => '12.00',
+            'amount_payment' => '12.00',
+            'reward_balance' => '2.50',
             'reward_integral' => '4.00',
         ]);
 
@@ -199,30 +196,30 @@ class PaymentEventIntegrationTest extends SqliteIntegrationTestCase
         $account = $this->createBoundAccountFixture();
         $this->registerWemallService();
         $order = $this->createWemallOrderFixture($account, [
-            'order_no'       => 'WEMALL-REBATE-001',
-            'status'         => 6,
+            'order_no' => 'WEMALL-REBATE-001',
+            'status' => 6,
             'payment_status' => 1,
-            'amount_real'    => '18.00',
-            'amount_total'   => '18.00',
+            'amount_real' => '18.00',
+            'amount_total' => '18.00',
             'payment_amount' => '18.00',
             'amount_payment' => '18.00',
         ]);
 
         $rebate = PluginWemallUserRebate::mk();
         $rebate->save([
-            'unid'         => $account->getUnid(),
-            'order_unid'   => $account->getUnid(),
-            'layer'        => 1,
-            'status'       => 0,
-            'deleted'      => 0,
-            'code'         => 'REBATE-LOCK-001',
-            'hash'         => 'hash-rebate-001',
-            'name'         => '一级返佣',
-            'type'         => 'platform',
-            'date'         => date('Ymd'),
-            'order_no'     => $order->getAttr('order_no') . '-A',
-            'remark'       => '待确认收货返佣',
-            'amount'       => '3.50',
+            'unid' => $account->getUnid(),
+            'order_unid' => $account->getUnid(),
+            'layer' => 1,
+            'status' => 0,
+            'deleted' => 0,
+            'code' => 'REBATE-LOCK-001',
+            'hash' => 'hash-rebate-001',
+            'name' => '一级返佣',
+            'type' => 'platform',
+            'date' => date('Ymd'),
+            'order_no' => $order->getAttr('order_no') . '-A',
+            'remark' => '待确认收货返佣',
+            'amount' => '3.50',
             'order_amount' => '18.00',
         ]);
 
@@ -246,30 +243,30 @@ class PaymentEventIntegrationTest extends SqliteIntegrationTestCase
         $account = $this->createBoundAccountFixture();
         $this->registerWemallService();
         $order = $this->createWemallOrderFixture($account, [
-            'order_no'       => 'WEMALL-PAYCONFIRM-001',
-            'status'         => 6,
+            'order_no' => 'WEMALL-PAYCONFIRM-001',
+            'status' => 6,
             'payment_status' => 1,
-            'amount_real'    => '21.00',
-            'amount_total'   => '21.00',
+            'amount_real' => '21.00',
+            'amount_total' => '21.00',
             'payment_amount' => '21.00',
             'amount_payment' => '21.00',
         ]);
 
         $rebate = PluginWemallUserRebate::mk();
         $rebate->save([
-            'unid'         => $account->getUnid(),
-            'order_unid'   => $account->getUnid(),
-            'layer'        => 1,
-            'status'       => 0,
-            'deleted'      => 0,
-            'code'         => 'REBATE-LOCK-002',
-            'hash'         => 'hash-rebate-002',
-            'name'         => '支付确认返佣',
-            'type'         => 'platform',
-            'date'         => date('Ymd'),
-            'order_no'     => $order->getAttr('order_no') . '-B',
-            'remark'       => '待支付确认返佣',
-            'amount'       => '4.20',
+            'unid' => $account->getUnid(),
+            'order_unid' => $account->getUnid(),
+            'layer' => 1,
+            'status' => 0,
+            'deleted' => 0,
+            'code' => 'REBATE-LOCK-002',
+            'hash' => 'hash-rebate-002',
+            'name' => '支付确认返佣',
+            'type' => 'platform',
+            'date' => date('Ymd'),
+            'order_no' => $order->getAttr('order_no') . '-B',
+            'remark' => '待支付确认返佣',
+            'amount' => '4.20',
             'order_amount' => '21.00',
         ]);
 
@@ -294,9 +291,9 @@ class PaymentEventIntegrationTest extends SqliteIntegrationTestCase
         $current = $account->get();
         $user = $this->createAccountUser(['phone' => $current['phone']]);
         PluginWemallUserRelation::mk()->save([
-            'unid'             => $user->getAttr('id'),
-            'path'             => '',
-            'level_name'       => '',
+            'unid' => $user->getAttr('id'),
+            'path' => '',
+            'level_name' => '',
             'agent_level_name' => '',
         ]);
 
@@ -320,7 +317,7 @@ class PaymentEventIntegrationTest extends SqliteIntegrationTestCase
         $parentUser = PluginAccountUser::mk()->findOrEmpty($parentAccount->getUnid());
         $this->createWemallRelationFixture($parentUser->getAttr('id'), [
             'entry_agent' => 1,
-            'path'        => ',',
+            'path' => ',',
         ]);
 
         $childAccount = $this->createAccountFixture(Account::WEB);
@@ -328,13 +325,13 @@ class PaymentEventIntegrationTest extends SqliteIntegrationTestCase
         $childUser = $this->createAccountUser(['phone' => $childCurrent['phone']]);
         $this->createWemallRelationFixture($childUser->getAttr('id'), [
             'entry_agent' => 0,
-            'entry_member'=> 0,
-            'path'        => ',',
+            'entry_member' => 0,
+            'path' => ',',
         ]);
 
         $this->registerWemallService();
         $this->app->request->withPost([
-            'phone'  => $childUser->getAttr('phone'),
+            'phone' => $childUser->getAttr('phone'),
             'fphone' => $parentUser->getAttr('phone'),
         ]);
         $childAccount->bind(['id' => $childUser->getAttr('id')], ['phone' => $childUser->getAttr('phone')]);
@@ -352,12 +349,12 @@ class PaymentEventIntegrationTest extends SqliteIntegrationTestCase
         $user = $this->createAccountUser();
         $relation = $this->createWemallRelationFixture($user->getAttr('id'));
         PluginWemallUserCreate::mk()->save([
-            'unid'        => $user->getAttr('id'),
-            'status'      => 1,
-            'deleted'     => 0,
+            'unid' => $user->getAttr('id'),
+            'status' => 1,
+            'deleted' => 0,
             'agent_entry' => 1,
-            'phone'       => $user->getAttr('phone'),
-            'name'        => $user->getAttr('nickname'),
+            'phone' => $user->getAttr('phone'),
+            'name' => $user->getAttr('nickname'),
         ]);
 
         $events = [];
@@ -377,7 +374,7 @@ class PaymentEventIntegrationTest extends SqliteIntegrationTestCase
         $user = $this->createAccountUser();
         $relation = $this->createWemallRelationFixture($user->getAttr('id'), [
             'entry_agent' => 1,
-            'entry_member'=> 1,
+            'entry_member' => 1,
         ]);
 
         $events = [];
@@ -396,22 +393,22 @@ class PaymentEventIntegrationTest extends SqliteIntegrationTestCase
     {
         $account = $this->createBoundAccountFixture();
         $order = $this->createWemallOrderFixture($account, [
-            'order_no'         => 'WEMALL-PERFECT-001',
-            'status'           => 1,
-            'amount_goods'     => '10.00',
-            'amount_discount'  => '9.00',
-            'amount_reduct'    => '1.00',
-            'amount_express'   => '0.00',
-            'amount_real'      => '8.00',
-            'amount_total'     => '10.00',
+            'order_no' => 'WEMALL-PERFECT-001',
+            'status' => 1,
+            'amount_goods' => '10.00',
+            'amount_discount' => '9.00',
+            'amount_reduct' => '1.00',
+            'amount_express' => '0.00',
+            'amount_real' => '8.00',
+            'amount_total' => '10.00',
         ]);
         $this->createWemallOrderItemFixture($account, $order->getAttr('order_no'), [
-            'delivery_code'  => 'NONE',
+            'delivery_code' => 'NONE',
             'delivery_count' => 2,
         ]);
         $address = $this->createPaymentAddressFixture($account->getUnid(), [
-            'user_name'   => '张三',
-            'user_phone'  => '13800138000',
+            'user_name' => '张三',
+            'user_phone' => '13800138000',
             'region_prov' => '广东省',
             'region_city' => '深圳市',
             'region_area' => '南山区',
@@ -451,8 +448,8 @@ class PaymentEventIntegrationTest extends SqliteIntegrationTestCase
         $this->createWemallRelationFixture($account->getUnid());
         $login = $account->token()->get(true);
         $order = $this->createWemallOrderFixture($account, [
-            'order_no'       => 'WEMALL-REMOVE-001',
-            'status'         => 0,
+            'order_no' => 'WEMALL-REMOVE-001',
+            'status' => 0,
             'deleted_status' => 0,
         ]);
 
@@ -474,6 +471,25 @@ class PaymentEventIntegrationTest extends SqliteIntegrationTestCase
         $this->assertSame(1, intval($order->getAttr('deleted_status')));
         $this->assertSame('用户主动删除订单！', $order->getAttr('deleted_remark'));
         $this->assertNotEmpty($order->getAttr('deleted_time'));
+    }
+
+    protected function defineSchema(): void
+    {
+        $this->createAccountTables();
+        $this->createPaymentBalanceTable();
+        $this->createPaymentIntegralTable();
+        $this->createPaymentRecordTable();
+        $this->createPaymentRefundTable();
+        $this->createPaymentAddressTable();
+        $this->createWemallOrderTable();
+        $this->createWemallOrderItemTable();
+        $this->createWemallOrderSenderTable();
+        $this->createWemallConfigLevelTable();
+        $this->createWemallConfigAgentTable();
+        $this->createWemallUserCreateTable();
+        $this->createWemallUserRelationTable();
+        $this->createWemallUserRebateTable();
+        $this->createWemallUserTransferTable();
     }
 
     private function registerWemallService(): void

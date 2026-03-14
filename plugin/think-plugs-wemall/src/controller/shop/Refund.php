@@ -20,9 +20,9 @@ declare(strict_types=1);
 
 namespace plugin\wemall\controller\shop;
 
-use plugin\system\service\SystemAuthService;
 use plugin\payment\model\PluginPaymentRecord;
 use plugin\payment\service\Payment;
+use plugin\system\service\SystemAuthService;
 use plugin\wemall\model\PluginWemallOrderRefund;
 use plugin\wemall\service\UserCoupon;
 use plugin\wemall\service\UserOrder;

@@ -24,6 +24,4 @@ namespace plugin\system\controller\api;
  * 文件上传兼容入口.
  * @class Upload
  */
-class Upload extends \plugin\storage\controller\api\Upload
-{
-}
+class Upload extends \plugin\storage\controller\api\Upload {}

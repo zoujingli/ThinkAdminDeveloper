@@ -1,6 +1,22 @@
 <?php
 
 declare(strict_types=1);
+/**
+ * +----------------------------------------------------------------------
+ * | ThinkAdmin Plugin for ThinkAdmin
+ * +----------------------------------------------------------------------
+ * | 版权所有 2014~2026 ThinkAdmin [ thinkadmin.top ]
+ * +----------------------------------------------------------------------
+ * | 官方网站: https://thinkadmin.top
+ * +----------------------------------------------------------------------
+ * | 开源协议 ( https://mit-license.org )
+ * | 免责声明 ( https://thinkadmin.top/disclaimer )
+ * | 会员特权 ( https://thinkadmin.top/vip-introduce )
+ * +----------------------------------------------------------------------
+ * | gitee 代码仓库：https://gitee.com/zoujingli/ThinkAdmin
+ * | github 代码仓库：https://github.com/zoujingli/ThinkAdmin
+ * +----------------------------------------------------------------------
+ */
 
 namespace plugin\storage;
 
@@ -10,25 +26,21 @@ class Service extends Plugin
 {
     /**
      * 定义插件入口.
-     * @var string
      */
     protected string $appCode = 'storage';
 
     /**
      * 定义插件访问前缀.
-     * @var string
      */
     protected string $appPrefix = 'storage';
 
     /**
      * 定义插件名称.
-     * @var string
      */
     protected string $appName = '存储中心';
 
     /**
      * 定义安装包名.
-     * @var string
      */
     protected string $package = 'zoujingli/think-plugs-storage';
 

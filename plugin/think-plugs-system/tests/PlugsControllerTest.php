@@ -1,22 +1,38 @@
 <?php
 
 declare(strict_types=1);
+/**
+ * +----------------------------------------------------------------------
+ * | ThinkAdmin Plugin for ThinkAdmin
+ * +----------------------------------------------------------------------
+ * | 版权所有 2014~2026 ThinkAdmin [ thinkadmin.top ]
+ * +----------------------------------------------------------------------
+ * | 官方网站: https://thinkadmin.top
+ * +----------------------------------------------------------------------
+ * | 开源协议 ( https://mit-license.org )
+ * | 免责声明 ( https://thinkadmin.top/disclaimer )
+ * | 会员特权 ( https://thinkadmin.top/vip-introduce )
+ * +----------------------------------------------------------------------
+ * | gitee 代码仓库：https://gitee.com/zoujingli/ThinkAdmin
+ * | github 代码仓库：https://github.com/zoujingli/ThinkAdmin
+ * +----------------------------------------------------------------------
+ */
 
 namespace think\admin\tests;
 
-use plugin\system\service\SystemAuthService;
 use plugin\system\controller\api\Plugs as PlugsController;
-use plugin\system\service\SystemContext as PluginSystemContext;
-use plugin\system\model\SystemConfig;
 use plugin\system\model\SystemOplog;
+use plugin\system\service\SystemAuthService;
+use plugin\system\service\SystemContext as PluginSystemContext;
 use plugin\worker\model\SystemQueue;
-use think\Container;
-use think\Request;
+use plugin\worker\service\QueueService;
 use think\admin\contract\SystemContextInterface;
-use think\admin\service\QueueService as QueueRuntime;
 use think\admin\runtime\RequestContext;
+use think\admin\service\QueueService as QueueRuntime;
 use think\admin\tests\Support\SqliteIntegrationTestCase;
+use think\Container;
 use think\exception\HttpResponseException;
+use think\Request;
 
 /**
  * @internal
@@ -24,28 +40,11 @@ use think\exception\HttpResponseException;
  */
 class PlugsControllerTest extends SqliteIntegrationTestCase
 {
-    protected function defineSchema(): void
-    {
-        $this->createSystemConfigTable();
-        $this->createSystemOplogTable();
-        $this->createSystemQueueTable();
-    }
-
-    protected function afterSchemaCreated(): void
-    {
-        $context = new PluginSystemContext();
-        Container::getInstance()->instance(SystemContextInterface::class, $context);
-        $this->app->instance(SystemContextInterface::class, $context);
-        $this->app->bind([
-            QueueRuntime::BIND_NAME => \plugin\worker\service\QueueService::class,
-        ]);
-    }
-
     public function testScriptBuildsJavascriptConfigWithAbsoluteUrlsWhenUploadTokenIsValid(): void
     {
         $this->createSystemConfigFixture([
-            'type'  => 'base',
-            'name'  => 'editor',
+            'type' => 'base',
+            'name' => 'editor',
             'value' => 'tinymce',
         ]);
         $uptoken = SystemAuthService::withUploadToken(321, 'jpg,png');
@@ -99,6 +98,23 @@ class PlugsControllerTest extends SqliteIntegrationTestCase
         $this->assertSame(0, SystemOplog::mk()->count());
     }
 
+    protected function defineSchema(): void
+    {
+        $this->createSystemConfigTable();
+        $this->createSystemOplogTable();
+        $this->createSystemQueueTable();
+    }
+
+    protected function afterSchemaCreated(): void
+    {
+        $context = new PluginSystemContext();
+        Container::getInstance()->instance(SystemContextInterface::class, $context);
+        $this->app->instance(SystemContextInterface::class, $context);
+        $this->app->bind([
+            QueueRuntime::BIND_NAME => QueueService::class,
+        ]);
+    }
+
     private function callScriptController(array $query = [])
     {
         $request = (new Request())
@@ -142,7 +158,7 @@ class PlugsControllerTest extends SqliteIntegrationTestCase
     private function bindAdminUser(bool $super): void
     {
         RequestContext::instance()->setAuth([
-            'id'       => $super ? 10000 : 9101,
+            'id' => $super ? 10000 : 9101,
             'username' => $super ? 'admin' : 'tester',
             'password' => md5('changed-password'),
         ], '', true);

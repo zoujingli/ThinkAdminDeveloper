@@ -1,14 +1,31 @@
 <?php
 
 declare(strict_types=1);
+/**
+ * +----------------------------------------------------------------------
+ * | ThinkAdmin Plugin for ThinkAdmin
+ * +----------------------------------------------------------------------
+ * | 版权所有 2014~2026 ThinkAdmin [ thinkadmin.top ]
+ * +----------------------------------------------------------------------
+ * | 官方网站: https://thinkadmin.top
+ * +----------------------------------------------------------------------
+ * | 开源协议 ( https://mit-license.org )
+ * | 免责声明 ( https://thinkadmin.top/disclaimer )
+ * | 会员特权 ( https://thinkadmin.top/vip-introduce )
+ * +----------------------------------------------------------------------
+ * | gitee 代码仓库：https://gitee.com/zoujingli/ThinkAdmin
+ * | github 代码仓库：https://github.com/zoujingli/ThinkAdmin
+ * +----------------------------------------------------------------------
+ */
 
 namespace plugin\worker\service;
 
-use think\admin\contract\QueueHandlerInterface;
-use think\admin\service\ProcessService;
-use think\admin\runtime\RequestContext;
-use think\admin\service\Service;
 use plugin\worker\model\SystemQueue;
+use think\admin\contract\QueueHandlerInterface;
+use think\admin\Exception;
+use think\admin\runtime\RequestContext;
+use think\admin\service\ProcessService;
+use think\admin\service\Service;
 
 /**
  * Shared queue executor for CLI and Worker runtimes.
@@ -47,7 +64,7 @@ class QueueExecutor extends Service
             if (class_exists($command)) {
                 $class = $this->app->make($command, [], true);
                 if (!$class instanceof QueueHandlerInterface) {
-                    throw new \think\admin\Exception("自定义 {$command} 未实现 think\\admin\\contract\\QueueHandlerInterface");
+                    throw new Exception("自定义 {$command} 未实现 think\\admin\\contract\\QueueHandlerInterface");
                 }
 
                 return $this->finish($queue, QueueService::STATE_DONE, strval($class->handle($queue) ?: ''));

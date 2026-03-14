@@ -1,6 +1,22 @@
 <?php
 
 declare(strict_types=1);
+/**
+ * +----------------------------------------------------------------------
+ * | ThinkAdmin Plugin for ThinkAdmin
+ * +----------------------------------------------------------------------
+ * | 版权所有 2014~2026 ThinkAdmin [ thinkadmin.top ]
+ * +----------------------------------------------------------------------
+ * | 官方网站: https://thinkadmin.top
+ * +----------------------------------------------------------------------
+ * | 开源协议 ( https://mit-license.org )
+ * | 免责声明 ( https://thinkadmin.top/disclaimer )
+ * | 会员特权 ( https://thinkadmin.top/vip-introduce )
+ * +----------------------------------------------------------------------
+ * | gitee 代码仓库：https://gitee.com/zoujingli/ThinkAdmin
+ * | github 代码仓库：https://github.com/zoujingli/ThinkAdmin
+ * +----------------------------------------------------------------------
+ */
 
 namespace plugin\worker\service;
 
@@ -17,11 +33,6 @@ use think\admin\service\Service;
 class ProcessService extends Service
 {
     protected ?WorkerConfig $workers = null;
-
-    protected function initialize(): void
-    {
-        $this->workers = new WorkerConfig($this->app);
-    }
 
     public function workerConfig(): WorkerConfig
     {
@@ -106,7 +117,7 @@ class ProcessService extends Service
             $lines = static::exec("ps ax|grep -v grep|grep \"{$cmd}\"", true);
             foreach ($lines as $line) {
                 if (is_numeric(stripos($line, $cmd))) {
-                    $attr = explode(' ', trim((string)preg_replace('#\\s+#', ' ', $line)));
+                    $attr = explode(' ', trim((string)preg_replace('#\s+#', ' ', $line)));
                     [$pid] = [array_shift($attr), array_shift($attr), array_shift($attr), array_shift($attr)];
                     $list[] = ['pid' => (string)$pid, 'cmd' => join(' ', $attr)];
                 }
@@ -141,8 +152,8 @@ class ProcessService extends Service
 
         if (static::isWin()) {
             $script = sprintf(
-                '$item = Get-CimInstance Win32_Process -Filter "ProcessId = %d" | Select-Object -First 1;' . "\n" .
-                'if ($null -ne $item) { "{0}`t{1}" -f $item.ProcessId, $item.CommandLine }',
+                '$item = Get-CimInstance Win32_Process -Filter "ProcessId = %d" | Select-Object -First 1;' . "\n"
+                . 'if ($null -ne $item) { "{0}`t{1}" -f $item.ProcessId, $item.CommandLine }',
                 $pid,
             );
             foreach (static::powershell($script, true) as $line) {
@@ -231,6 +242,121 @@ class ProcessService extends Service
     }
 
     /**
+     * @param array<string, mixed>|string $service
+     */
+    public function workerService(array|string $service): array
+    {
+        return is_array($service) ? $service : $this->workerConfig()->service($service);
+    }
+
+    /**
+     * @param array<string, mixed>|string $service
+     */
+    public function workerState(array|string $service): WorkerState
+    {
+        return new WorkerState($this->workerService($service));
+    }
+
+    /**
+     * @param array<string, mixed>|string $service
+     */
+    public function workerDescribe(array|string $service): array
+    {
+        return $this->workerState($service)->describe();
+    }
+
+    /**
+     * @param array<string, mixed>|string $service
+     */
+    public function workerStart(array|string $service, bool $daemon = true, array $options = [], int $timeout = 5): bool
+    {
+        $service = $this->workerService($service);
+        $state = $this->workerState($service);
+        if ($state->describe()['running']) {
+            return true;
+        }
+
+        static::thinkExec(self::workerCommand('serve', $service['name'], $daemon, $options));
+        return $state->waitStarted($timeout);
+    }
+
+    /**
+     * @param array<string, mixed>|string $service
+     */
+    public function workerStop(array|string $service, int $timeout = 5): bool
+    {
+        return $this->workerState($service)->stop($timeout);
+    }
+
+    /**
+     * @param array<string, mixed>|string $service
+     */
+    public function workerRestart(array|string $service, bool $daemon = true, array $options = [], int $timeout = 5): bool
+    {
+        $service = $this->workerService($service);
+        $state = $this->workerState($service);
+        if ($state->describe()['running'] && !$state->stop($timeout)) {
+            return false;
+        }
+
+        return $this->workerStart($service, $daemon, $options, $timeout);
+    }
+
+    /**
+     * Reload on POSIX and degrade to restart on Windows.
+     *
+     * @param array<string, mixed>|string $service
+     * @return 'reload'|'restart'|false
+     */
+    public function workerReload(array|string $service, bool $daemon = true, array $options = [], int $timeout = 5): false|string
+    {
+        $service = $this->workerService($service);
+        $state = $this->workerState($service);
+        if (!$state->describe()['running']) {
+            return false;
+        }
+
+        if (static::isWin()) {
+            return $this->workerRestart($service, $daemon, $options, $timeout) ? 'restart' : false;
+        }
+
+        return $state->reload() ? 'reload' : false;
+    }
+
+    /**
+     * Spawn a detached worker control command.
+     *
+     * @param array<string, mixed>|string $service
+     */
+    public function workerSpawn(string $action, array|string $service, bool $daemon = true, array $options = [], int $usleep = 0): void
+    {
+        static::thinkExec(self::workerCommand($action, is_array($service) ? (string)$service['name'] : $service, $daemon, $options), $usleep);
+    }
+
+    /**
+     * Build a public worker control command.
+     */
+    public static function workerCommand(string $action, string $target, bool $daemon = true, array $options = []): string
+    {
+        $command = "xadmin:worker {$action} {$target}";
+        if ($daemon && in_array($action, ['start', 'serve', 'restart'], true)) {
+            $command .= ' -d';
+        }
+        if (!empty($options['host']) && is_string($options['host'])) {
+            $command .= " --host {$options['host']}";
+        }
+        if (!empty($options['port']) && is_numeric($options['port'])) {
+            $command .= ' --port ' . intval($options['port']);
+        }
+        return $command;
+    }
+
+    protected function initialize(): void
+    {
+        $this->workers = new WorkerConfig($this->app);
+    }
+
+    /**
      * Query Windows processes by image name and command substring.
      *
      * @return array<int, array{pid:string,cmd:string}>
@@ -299,115 +425,5 @@ class ProcessService extends Service
         }
 
         return ['pid' => trim($pid), 'cmd' => trim($cmd)];
-    }
-
-    /**
-     * @param string|array<string, mixed> $service
-     */
-    public function workerService(string|array $service): array
-    {
-        return is_array($service) ? $service : $this->workerConfig()->service($service);
-    }
-
-    /**
-     * @param string|array<string, mixed> $service
-     */
-    public function workerState(string|array $service): WorkerState
-    {
-        return new WorkerState($this->workerService($service));
-    }
-
-    /**
-     * @param string|array<string, mixed> $service
-     */
-    public function workerDescribe(string|array $service): array
-    {
-        return $this->workerState($service)->describe();
-    }
-
-    /**
-     * @param string|array<string, mixed> $service
-     */
-    public function workerStart(string|array $service, bool $daemon = true, array $options = [], int $timeout = 5): bool
-    {
-        $service = $this->workerService($service);
-        $state = $this->workerState($service);
-        if ($state->describe()['running']) {
-            return true;
-        }
-
-        static::thinkExec(self::workerCommand('serve', $service['name'], $daemon, $options));
-        return $state->waitStarted($timeout);
-    }
-
-    /**
-     * @param string|array<string, mixed> $service
-     */
-    public function workerStop(string|array $service, int $timeout = 5): bool
-    {
-        return $this->workerState($service)->stop($timeout);
-    }
-
-    /**
-     * @param string|array<string, mixed> $service
-     */
-    public function workerRestart(string|array $service, bool $daemon = true, array $options = [], int $timeout = 5): bool
-    {
-        $service = $this->workerService($service);
-        $state = $this->workerState($service);
-        if ($state->describe()['running'] && !$state->stop($timeout)) {
-            return false;
-        }
-
-        return $this->workerStart($service, $daemon, $options, $timeout);
-    }
-
-    /**
-     * Reload on POSIX and degrade to restart on Windows.
-     *
-     * @param string|array<string, mixed> $service
-     * @return 'reload'|'restart'|false
-     */
-    public function workerReload(string|array $service, bool $daemon = true, array $options = [], int $timeout = 5): string|false
-    {
-        $service = $this->workerService($service);
-        $state = $this->workerState($service);
-        if (!$state->describe()['running']) {
-            return false;
-        }
-
-        if (static::isWin()) {
-            return $this->workerRestart($service, $daemon, $options, $timeout) ? 'restart' : false;
-        }
-
-        return $state->reload() ? 'reload' : false;
-    }
-
-    /**
-     * Spawn a detached worker control command.
-     *
-     * @param string|array<string, mixed> $service
-     */
-    public function workerSpawn(string $action, string|array $service, bool $daemon = true, array $options = [], int $usleep = 0): void
-    {
-        static::thinkExec(self::workerCommand($action, is_array($service) ? (string)$service['name'] : $service, $daemon, $options), $usleep);
-    }
-
-    /**
-     * Build a public worker control command.
-     */
-    public static function workerCommand(string $action, string $target, bool $daemon = true, array $options = []): string
-    {
-        $command = "xadmin:worker {$action} {$target}";
-        if ($daemon && in_array($action, ['start', 'serve', 'restart'], true)) {
-            $command .= ' -d';
-        }
-        if (!empty($options['host']) && is_string($options['host'])) {
-            $command .= " --host {$options['host']}";
-        }
-        if (!empty($options['port']) && is_numeric($options['port'])) {
-            $command .= ' --port ' . intval($options['port']);
-        }
-        return $command;
     }
 }

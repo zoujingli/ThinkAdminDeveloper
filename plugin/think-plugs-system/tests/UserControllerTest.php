@@ -1,15 +1,31 @@
 <?php
 
 declare(strict_types=1);
+/**
+ * +----------------------------------------------------------------------
+ * | ThinkAdmin Plugin for ThinkAdmin
+ * +----------------------------------------------------------------------
+ * | 版权所有 2014~2026 ThinkAdmin [ thinkadmin.top ]
+ * +----------------------------------------------------------------------
+ * | 官方网站: https://thinkadmin.top
+ * +----------------------------------------------------------------------
+ * | 开源协议 ( https://mit-license.org )
+ * | 免责声明 ( https://thinkadmin.top/disclaimer )
+ * | 会员特权 ( https://thinkadmin.top/vip-introduce )
+ * +----------------------------------------------------------------------
+ * | gitee 代码仓库：https://gitee.com/zoujingli/ThinkAdmin
+ * | github 代码仓库：https://github.com/zoujingli/ThinkAdmin
+ * +----------------------------------------------------------------------
+ */
 
 namespace think\admin\tests;
 
 use plugin\system\controller\User as UserController;
 use plugin\system\model\SystemUser;
-use think\Request;
 use think\admin\runtime\RequestContext;
 use think\admin\tests\Support\SqliteIntegrationTestCase;
 use think\exception\HttpResponseException;
+use think\Request;
 
 /**
  * @internal
@@ -17,59 +33,53 @@ use think\exception\HttpResponseException;
  */
 class UserControllerTest extends SqliteIntegrationTestCase
 {
-    protected function defineSchema(): void
-    {
-        $this->createSystemBaseTable();
-        $this->createSystemUserTable();
-    }
-
     public function testIndexFiltersActiveUsersByIdentityKeywordAndDateRange(): void
     {
         $this->createSystemBaseFixture([
-            'type'    => '身份权限',
-            'code'    => 'staff',
-            'name'    => '员工身份',
+            'type' => '身份权限',
+            'code' => 'staff',
+            'name' => '员工身份',
             'content' => '员工说明',
-            'status'  => 1,
+            'status' => 1,
         ]);
         $this->createSystemUserFixture([
-            'usertype'      => 'staff',
-            'username'      => 'manager-hit',
-            'nickname'      => '命中用户',
+            'usertype' => 'staff',
+            'username' => 'manager-hit',
+            'nickname' => '命中用户',
             'contact_phone' => '13800138000',
-            'login_at'      => '2026-03-10 10:00:00',
-            'create_time'   => '2026-03-10 08:00:00',
-            'status'        => 1,
+            'login_at' => '2026-03-10 10:00:00',
+            'create_time' => '2026-03-10 08:00:00',
+            'status' => 1,
         ]);
         $this->createSystemUserFixture([
-            'usertype'      => 'staff',
-            'username'      => 'manager-old',
-            'nickname'      => '跨日用户',
+            'usertype' => 'staff',
+            'username' => 'manager-old',
+            'nickname' => '跨日用户',
             'contact_phone' => '13800138001',
-            'login_at'      => '2026-03-09 10:00:00',
-            'create_time'   => '2026-03-09 08:00:00',
-            'status'        => 1,
+            'login_at' => '2026-03-09 10:00:00',
+            'create_time' => '2026-03-09 08:00:00',
+            'status' => 1,
         ]);
         $this->createSystemUserFixture([
-            'usertype'      => 'staff',
-            'username'      => 'manager-history',
-            'nickname'      => '禁用用户',
+            'usertype' => 'staff',
+            'username' => 'manager-history',
+            'nickname' => '禁用用户',
             'contact_phone' => '13800138002',
-            'login_at'      => '2026-03-10 11:00:00',
-            'create_time'   => '2026-03-10 09:00:00',
-            'status'        => 0,
+            'login_at' => '2026-03-10 11:00:00',
+            'create_time' => '2026-03-10 09:00:00',
+            'status' => 0,
         ]);
 
         $result = $this->callIndexController([
-            'output'      => 'json',
-            'type'        => 'index',
-            'usertype'    => 'staff',
-            'username'    => 'manager-hit',
+            'output' => 'json',
+            'type' => 'index',
+            'usertype' => 'staff',
+            'username' => 'manager-hit',
             'create_time' => '2026-03-10 - 2026-03-10',
-            '_field_'     => 'id',
-            '_order_'     => 'asc',
-            'page'        => 1,
-            'limit'       => 20,
+            '_field_' => 'id',
+            '_order_' => 'asc',
+            'page' => 1,
+            'limit' => 20,
         ]);
 
         $this->assertSame(1, intval($result['code'] ?? 0));
@@ -82,22 +92,22 @@ class UserControllerTest extends SqliteIntegrationTestCase
 
     public function testIndexPaginatesHistoryUsers(): void
     {
-        for ($i = 1; $i <= 21; $i++) {
+        for ($i = 1; $i <= 21; ++$i) {
             $this->createSystemUserFixture([
-                'username'    => sprintf('history-user-%02d', $i),
-                'nickname'    => sprintf('历史用户-%02d', $i),
-                'status'      => 0,
+                'username' => sprintf('history-user-%02d', $i),
+                'nickname' => sprintf('历史用户-%02d', $i),
+                'status' => 0,
                 'create_time' => sprintf('2026-03-10 08:%02d:00', $i % 60),
             ]);
         }
 
         $result = $this->callIndexController([
-            'output'  => 'json',
-            'type'    => 'history',
+            'output' => 'json',
+            'type' => 'history',
             '_field_' => 'id',
             '_order_' => 'asc',
-            'page'    => 2,
-            'limit'   => 10,
+            'page' => 2,
+            'limit' => 10,
         ]);
 
         $this->assertSame(1, intval($result['code'] ?? 0));
@@ -113,15 +123,15 @@ class UserControllerTest extends SqliteIntegrationTestCase
     public function testAddAndEditPersistUserProfileAndAuthorization(): void
     {
         $add = $this->callFormController('add', [
-            'usertype'      => 'staff',
-            'username'      => 'operator-new',
-            'nickname'      => '新增运维',
-            'authorize'     => ['2', '3'],
+            'usertype' => 'staff',
+            'username' => 'operator-new',
+            'nickname' => '新增运维',
+            'authorize' => ['2', '3'],
             'contact_phone' => '13800138111',
-            'contact_mail'  => 'operator@example.com',
-            'describe'      => '新增说明',
-            'sort'          => 12,
-            'status'        => 1,
+            'contact_mail' => 'operator@example.com',
+            'describe' => '新增说明',
+            'sort' => 12,
+            'status' => 1,
         ]);
 
         $created = SystemUser::mk()->where(['username' => 'operator-new'])->findOrEmpty();
@@ -133,16 +143,16 @@ class UserControllerTest extends SqliteIntegrationTestCase
         $this->assertSame(',2,3,', $created->getData('authorize'));
 
         $edit = $this->callFormController('edit', [
-            'id'            => intval($created->getAttr('id')),
-            'username'      => 'operator-changed',
-            'usertype'      => 'staff',
-            'nickname'      => '更新运维',
-            'authorize'     => ['3'],
+            'id' => intval($created->getAttr('id')),
+            'username' => 'operator-changed',
+            'usertype' => 'staff',
+            'nickname' => '更新运维',
+            'authorize' => ['3'],
             'contact_phone' => '13800138222',
-            'contact_mail'  => 'updated@example.com',
-            'describe'      => '更新说明',
-            'sort'          => 20,
-            'status'        => 0,
+            'contact_mail' => 'updated@example.com',
+            'describe' => '更新说明',
+            'sort' => 20,
+            'status' => 0,
         ]);
 
         $updated = SystemUser::mk()->findOrEmpty(intval($created->getAttr('id')));
@@ -163,8 +173,8 @@ class UserControllerTest extends SqliteIntegrationTestCase
         ]);
 
         $result = $this->callActionController('pass', [
-            'id'         => intval($user->getAttr('id')),
-            'password'   => 'new-password',
+            'id' => intval($user->getAttr('id')),
+            'password' => 'new-password',
             'repassword' => 'new-password',
         ]);
 
@@ -179,11 +189,11 @@ class UserControllerTest extends SqliteIntegrationTestCase
     {
         $user = $this->createSystemUserFixture([
             'username' => 'lifecycle-user',
-            'status'   => 1,
+            'status' => 1,
         ]);
 
         $state = $this->callActionController('state', [
-            'id'     => intval($user->getAttr('id')),
+            'id' => intval($user->getAttr('id')),
             'status' => 0,
         ]);
         $afterState = SystemUser::mk()->findOrEmpty(intval($user->getAttr('id')));
@@ -204,7 +214,7 @@ class UserControllerTest extends SqliteIntegrationTestCase
     public function testRemoveRejectsSuperAdminAccount(): void
     {
         $super = $this->createSystemUserFixture([
-            'id'       => 10000,
+            'id' => 10000,
             'username' => 'admin',
             'nickname' => '超级管理员',
         ]);
@@ -218,6 +228,12 @@ class UserControllerTest extends SqliteIntegrationTestCase
         $this->assertSame(0, intval($result['code'] ?? 1));
         $this->assertSame('系统超级账号禁止删除！', $result['info'] ?? '');
         $this->assertTrue($record->isExists());
+    }
+
+    protected function defineSchema(): void
+    {
+        $this->createSystemBaseTable();
+        $this->createSystemUserTable();
     }
 
     private function callIndexController(array $query): array
@@ -271,7 +287,7 @@ class UserControllerTest extends SqliteIntegrationTestCase
     private function bindAdminUser(): void
     {
         RequestContext::instance()->setAuth([
-            'id'       => 9101,
+            'id' => 9101,
             'username' => 'tester',
         ], '', true);
     }

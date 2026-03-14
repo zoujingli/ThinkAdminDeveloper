@@ -1,6 +1,22 @@
 <?php
 
 declare(strict_types=1);
+/**
+ * +----------------------------------------------------------------------
+ * | ThinkAdmin Plugin for ThinkAdmin
+ * +----------------------------------------------------------------------
+ * | 版权所有 2014~2026 ThinkAdmin [ thinkadmin.top ]
+ * +----------------------------------------------------------------------
+ * | 官方网站: https://thinkadmin.top
+ * +----------------------------------------------------------------------
+ * | 开源协议 ( https://mit-license.org )
+ * | 免责声明 ( https://thinkadmin.top/disclaimer )
+ * | 会员特权 ( https://thinkadmin.top/vip-introduce )
+ * +----------------------------------------------------------------------
+ * | gitee 代码仓库：https://gitee.com/zoujingli/ThinkAdmin
+ * | github 代码仓库：https://github.com/zoujingli/ThinkAdmin
+ * +----------------------------------------------------------------------
+ */
 
 namespace think\admin\tests;
 
@@ -10,10 +26,10 @@ use plugin\payment\model\PluginPaymentBalance;
 use plugin\payment\model\PluginPaymentIntegral;
 use plugin\payment\service\Balance;
 use plugin\payment\service\Integral;
-use think\Request;
 use think\admin\runtime\RequestContext;
 use think\admin\tests\Support\SqliteIntegrationTestCase;
 use think\exception\HttpResponseException;
+use think\Request;
 
 /**
  * @internal
@@ -21,24 +37,17 @@ use think\exception\HttpResponseException;
  */
 class PaymentLedgerControllerTest extends SqliteIntegrationTestCase
 {
-    protected function defineSchema(): void
-    {
-        $this->createAccountTables();
-        $this->createPaymentBalanceTable();
-        $this->createPaymentIntegralTable();
-    }
-
     public function testBalanceControllerUnlockCancelAndRemoveChain(): void
     {
         $user = $this->createAccountUser();
         Balance::create(intval($user->getAttr('id')), 'ledger-balance-001', '余额发放', '30.00', '后台台账测试');
 
         $unlock = $this->callController(BalanceController::class, 'unlock', [
-            'code'   => 'ledger-balance-001',
+            'code' => 'ledger-balance-001',
             'unlock' => 1,
         ]);
         $cancel = $this->callController(BalanceController::class, 'cancel', [
-            'code'   => 'ledger-balance-001',
+            'code' => 'ledger-balance-001',
             'cancel' => 1,
         ]);
         $remove = $this->callController(BalanceController::class, 'remove', [
@@ -70,11 +79,11 @@ class PaymentLedgerControllerTest extends SqliteIntegrationTestCase
         Integral::create(intval($user->getAttr('id')), 'ledger-integral-001', '积分发放', '18.00', '后台台账测试');
 
         $unlock = $this->callController(IntegralController::class, 'unlock', [
-            'code'   => 'ledger-integral-001',
+            'code' => 'ledger-integral-001',
             'unlock' => 1,
         ]);
         $cancel = $this->callController(IntegralController::class, 'cancel', [
-            'code'   => 'ledger-integral-001',
+            'code' => 'ledger-integral-001',
             'cancel' => 1,
         ]);
         $remove = $this->callController(IntegralController::class, 'remove', [
@@ -120,9 +129,9 @@ class PaymentLedgerControllerTest extends SqliteIntegrationTestCase
 
         $result = $this->callIndexController(BalanceController::class, [
             'output' => 'json',
-            'user'   => 'balance-search-user',
-            'page'   => 1,
-            'limit'  => 20,
+            'user' => 'balance-search-user',
+            'page' => 1,
+            'limit' => 20,
         ]);
 
         $this->assertSame(1, intval($result['code'] ?? 0));
@@ -155,10 +164,10 @@ class PaymentLedgerControllerTest extends SqliteIntegrationTestCase
 
         $result = $this->callIndexController(IntegralController::class, [
             'output' => 'json',
-            'type'   => 'history',
-            'user'   => 'integral-history-user',
-            'page'   => 1,
-            'limit'  => 20,
+            'type' => 'history',
+            'user' => 'integral-history-user',
+            'page' => 1,
+            'limit' => 20,
         ]);
 
         $this->assertSame(1, intval($result['code'] ?? 0));
@@ -194,13 +203,13 @@ class PaymentLedgerControllerTest extends SqliteIntegrationTestCase
         ]);
 
         $result = $this->callIndexController(BalanceController::class, [
-            'output'      => 'json',
-            'user'        => 'balance-range-user',
+            'output' => 'json',
+            'user' => 'balance-range-user',
             'create_time' => '2026-03-10 - 2026-03-10',
-            '_field_'     => 'create_time',
-            '_order_'     => 'desc',
-            'page'        => 1,
-            'limit'       => 20,
+            '_field_' => 'create_time',
+            '_order_' => 'desc',
+            'page' => 1,
+            'limit' => 20,
         ]);
 
         $this->assertSame(1, intval($result['code'] ?? 0));
@@ -230,13 +239,13 @@ class PaymentLedgerControllerTest extends SqliteIntegrationTestCase
         Integral::remove('ledger-integral-deleted-history');
 
         $result = $this->callIndexController(IntegralController::class, [
-            'output'  => 'json',
-            'type'    => 'history',
-            'user'    => 'integral-sort-user',
+            'output' => 'json',
+            'type' => 'history',
+            'user' => 'integral-sort-user',
             '_field_' => 'amount',
             '_order_' => 'desc',
-            'page'    => 1,
-            'limit'   => 20,
+            'page' => 1,
+            'limit' => 20,
         ]);
 
         $this->assertSame(1, intval($result['code'] ?? 0));
@@ -256,18 +265,18 @@ class PaymentLedgerControllerTest extends SqliteIntegrationTestCase
             'nickname' => '余额分页用户',
         ]);
 
-        for ($i = 1; $i <= 11; $i++) {
+        for ($i = 1; $i <= 11; ++$i) {
             $code = sprintf('ledger-balance-page-%02d', $i);
             Balance::create(intval($user->getAttr('id')), $code, "分页余额{$i}", number_format((float)$i, 2, '.', ''), '余额分页测试');
         }
 
         $result = $this->callIndexController(BalanceController::class, [
-            'output'  => 'json',
-            'user'    => 'balance-page-user',
+            'output' => 'json',
+            'user' => 'balance-page-user',
             '_field_' => 'amount',
             '_order_' => 'asc',
-            'page'    => 2,
-            'limit'   => 10,
+            'page' => 2,
+            'limit' => 10,
         ]);
 
         $this->assertSame(1, intval($result['code'] ?? 0));
@@ -288,20 +297,20 @@ class PaymentLedgerControllerTest extends SqliteIntegrationTestCase
             'nickname' => '积分分页用户',
         ]);
 
-        for ($i = 1; $i <= 21; $i++) {
+        for ($i = 1; $i <= 21; ++$i) {
             $code = sprintf('ledger-integral-page-%02d', $i);
             Integral::create(intval($user->getAttr('id')), $code, "分页积分{$i}", number_format((float)$i, 2, '.', ''), '积分分页测试');
             Integral::cancel($code, 1);
         }
 
         $result = $this->callIndexController(IntegralController::class, [
-            'output'  => 'json',
-            'type'    => 'history',
-            'user'    => 'integral-page-user',
+            'output' => 'json',
+            'type' => 'history',
+            'user' => 'integral-page-user',
             '_field_' => 'amount',
             '_order_' => 'asc',
-            'page'    => 2,
-            'limit'   => 999,
+            'page' => 2,
+            'limit' => 999,
         ]);
 
         $this->assertSame(1, intval($result['code'] ?? 0));
@@ -313,6 +322,13 @@ class PaymentLedgerControllerTest extends SqliteIntegrationTestCase
         $this->assertCount(1, $result['data']['list'] ?? []);
         $this->assertSame('ledger-integral-page-21', $result['data']['list'][0]['code'] ?? '');
         $this->assertSame('21.00', $this->decimal($result['data']['list'][0]['amount'] ?? 0));
+    }
+
+    protected function defineSchema(): void
+    {
+        $this->createAccountTables();
+        $this->createPaymentBalanceTable();
+        $this->createPaymentIntegralTable();
     }
 
     /**

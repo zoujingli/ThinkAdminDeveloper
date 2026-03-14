@@ -20,12 +20,12 @@ declare(strict_types=1);
 
 namespace plugin\helper;
 
+use plugin\helper\command\Database;
 use plugin\helper\command\DbBackupStruct;
 use plugin\helper\command\DbIndexStruct;
 use plugin\helper\command\DbMigrateStruct;
 use plugin\helper\command\DbModelStruct;
 use plugin\helper\command\DbRestoreStruct;
-use plugin\helper\command\Database;
 use plugin\helper\command\Package;
 use plugin\helper\command\Publish;
 use plugin\helper\command\Replace;

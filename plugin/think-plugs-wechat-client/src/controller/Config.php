@@ -20,9 +20,9 @@ declare(strict_types=1);
 
 namespace plugin\wechat\client\controller;
 
+use plugin\storage\service\LocalStorage;
 use plugin\wechat\client\service\WechatService;
 use think\admin\Controller;
-use plugin\storage\service\LocalStorage;
 use think\admin\helper\FormBuilder;
 
 /**
@@ -126,44 +126,6 @@ class Config extends Controller
             sysdata('plugin.wechat.wxapp', $builder->validate());
             $this->success('参数保存成功！');
         }
-    }
-
-    /**
-     * 构建第三方平台接口表单.
-     */
-    private function buildJsonrpcForm(): FormBuilder
-    {
-        return FormBuilder::mk()
-            ->addTextInput('auth_url', '公众号授权跳转入口', 'Getway', true, '进行微信授权时会跳转到这个页面，由微信管理员扫二维码进行授权。', '^https?://.*?auth.*?source=SOURCE', [
-                'required-error' => '授权跳转不能为空！',
-                'pattern-error'  => '授权跳转入口格式错误！',
-            ])
-            ->addTextInput('json_rpc', '第三方服务平台接口', 'JsonRpc', true, '由应用插件 <a target="_blank" href="https://thinkadmin.top/plugin/think-plugs-wechat-service.html">ThinkPlugsWechatService</a> 提供的第三方服务平台 JSON-RPC 接口地址。', '^https?://.*?jsonrpc.*?token=TOKEN', [
-                'required-error' => '接口地址不能为空！',
-                'pattern-error'  => '接口地址格式错误！',
-            ])
-            ->addSubmitButton('保存参数')
-            ->addCancelButton();
-    }
-
-    /**
-     * 构建小程序绑定表单.
-     */
-    private function buildWxappForm(): FormBuilder
-    {
-        return FormBuilder::mk()
-            ->addTextInput('appid', '小程序', 'AppId', true, '<b>必选</b>，微信小程序 AppID 需要微信公众号平台获取！', '^wx[0-9a-z]{16}$', [
-                'maxlength'      => 18,
-                'required-error' => '小程序ID不能为空！',
-                'pattern-error'  => '小程序ID格式错误！',
-            ])
-            ->addTextInput('appkey', '小程序密钥', 'AppSecret', true, '<b>必选</b>，微信小程序 AppSecret 需要微信公众号平台获取！', '^[0-9a-z]{32}$', [
-                'maxlength'      => 32,
-                'required-error' => '小程序密钥不能为空！',
-                'pattern-error'  => '小程序密钥格式错误！',
-            ])
-            ->addSubmitButton('保存参数')
-            ->addCancelButton();
     }
 
     /**
@@ -271,5 +233,43 @@ class Config extends Controller
     public function payment_test()
     {
         $this->fetch();
+    }
+
+    /**
+     * 构建第三方平台接口表单.
+     */
+    private function buildJsonrpcForm(): FormBuilder
+    {
+        return FormBuilder::mk()
+            ->addTextInput('auth_url', '公众号授权跳转入口', 'Getway', true, '进行微信授权时会跳转到这个页面，由微信管理员扫二维码进行授权。', '^https?://.*?auth.*?source=SOURCE', [
+                'required-error' => '授权跳转不能为空！',
+                'pattern-error' => '授权跳转入口格式错误！',
+            ])
+            ->addTextInput('json_rpc', '第三方服务平台接口', 'JsonRpc', true, '由应用插件 <a target="_blank" href="https://thinkadmin.top/plugin/think-plugs-wechat-service.html">ThinkPlugsWechatService</a> 提供的第三方服务平台 JSON-RPC 接口地址。', '^https?://.*?jsonrpc.*?token=TOKEN', [
+                'required-error' => '接口地址不能为空！',
+                'pattern-error' => '接口地址格式错误！',
+            ])
+            ->addSubmitButton('保存参数')
+            ->addCancelButton();
+    }
+
+    /**
+     * 构建小程序绑定表单.
+     */
+    private function buildWxappForm(): FormBuilder
+    {
+        return FormBuilder::mk()
+            ->addTextInput('appid', '小程序', 'AppId', true, '<b>必选</b>，微信小程序 AppID 需要微信公众号平台获取！', '^wx[0-9a-z]{16}$', [
+                'maxlength' => 18,
+                'required-error' => '小程序ID不能为空！',
+                'pattern-error' => '小程序ID格式错误！',
+            ])
+            ->addTextInput('appkey', '小程序密钥', 'AppSecret', true, '<b>必选</b>，微信小程序 AppSecret 需要微信公众号平台获取！', '^[0-9a-z]{32}$', [
+                'maxlength' => 32,
+                'required-error' => '小程序密钥不能为空！',
+                'pattern-error' => '小程序密钥格式错误！',
+            ])
+            ->addSubmitButton('保存参数')
+            ->addCancelButton();
     }
 }

@@ -1,6 +1,22 @@
 <?php
 
 declare(strict_types=1);
+/**
+ * +----------------------------------------------------------------------
+ * | ThinkAdmin Plugin for ThinkAdmin
+ * +----------------------------------------------------------------------
+ * | 版权所有 2014~2026 ThinkAdmin [ thinkadmin.top ]
+ * +----------------------------------------------------------------------
+ * | 官方网站: https://thinkadmin.top
+ * +----------------------------------------------------------------------
+ * | 开源协议 ( https://mit-license.org )
+ * | 免责声明 ( https://thinkadmin.top/disclaimer )
+ * | 会员特权 ( https://thinkadmin.top/vip-introduce )
+ * +----------------------------------------------------------------------
+ * | gitee 代码仓库：https://gitee.com/zoujingli/ThinkAdmin
+ * | github 代码仓库：https://github.com/zoujingli/ThinkAdmin
+ * +----------------------------------------------------------------------
+ */
 
 namespace think\admin\tests;
 
@@ -335,57 +351,57 @@ class ArchitectureBoundaryTest extends TestCase
     public function testPhpSourcesDoNotReferenceLegacyBoundaryNamespaces(): void
     {
         $forbidden = [
-            'think\\admin\\system\\NodeService',
-            'think\\admin\\runtime\\AppService',
-            'think\\admin\\runtime\\ModuleService',
-            'think\\admin\\runtime\\PluginService',
-            'think\\admin\\runtime\\MultAccess',
-            'think\\admin\\runtime\\QueueService',
-            'think\\admin\\runtime\\ProcessService',
-            'think\\admin\\runtime\\RuntimeService',
-            'think\\admin\\runtime\\RuntimeTools',
-            'think\\admin\\runtime\\Route',
-            'think\\admin\\runtime\\Url',
-            'think\\admin\\auth\\CaptchaService',
-            'think\\admin\\auth\\CacheSession',
-            'think\\admin\\auth\\RequestTokenService',
-            'think\\admin\\extend\\JwtToken',
-            'think\\admin\\extend\\FaviconBuilder',
-            'think\\admin\\extend\\ImageSliderVerify',
-            'think\\admin\\extend\\JsonRpcHttpClient',
-            'think\\admin\\extend\\JsonRpcHttpServer',
-            'think\\admin\\Helper',
-            'think\\admin\\Service',
-            'think\\admin\\Storage',
-            'think\\admin\\contract\\AdminContextInterface',
-            'think\\admin\\runtime\\AdminContext',
-            'think\\admin\\runtime\\NullAdminContext',
-            'plugin\\system\\runtime\\AdminContext',
-            'plugin\\system\\runtime\\SystemContext',
-            'plugin\\system\\auth\\AdminService',
-            'plugin\\system\\auth\\',
-            'plugin\\system\\system\\SystemService',
-            'plugin\\storage\\StorageConfig',
-            'plugin\\storage\\StorageManager',
-            'plugin\\storage\\support\\StorageAuthorize',
-            'think\\admin\\storage\\',
-            'plugin\\worker\\queue\\',
-            'plugin\\worker\\support\\',
-            'plugin\\worker\\Server',
-            'plugin\\helper\\support\\',
-            'plugin\\helper\\integration\\',
-            'plugin\\helper\\DbBackupStruct',
-            'plugin\\helper\\DbIndexStruct',
-            'plugin\\helper\\DbMigrateStruct',
-            'plugin\\helper\\DbModelStruct',
-            'plugin\\helper\\DbRestoreStruct',
-            'plugin\\wechat\\service\\handle\\',
-            'plugin\\wechat\\service\\AuthService',
-            'plugin\\wechat\\service\\ConfigService',
-            'plugin\\payment\\queue\\',
-            'plugin\\wemall\\integration\\',
-            'plugin\\wuma\\Query',
-            'plugin\\wuma\\Script',
+            'think\admin\system\NodeService',
+            'think\admin\runtime\AppService',
+            'think\admin\runtime\ModuleService',
+            'think\admin\runtime\PluginService',
+            'think\admin\runtime\MultAccess',
+            'think\admin\runtime\QueueService',
+            'think\admin\runtime\ProcessService',
+            'think\admin\runtime\RuntimeService',
+            'think\admin\runtime\RuntimeTools',
+            'think\admin\runtime\Route',
+            'think\admin\runtime\Url',
+            'think\admin\auth\CaptchaService',
+            'think\admin\auth\CacheSession',
+            'think\admin\auth\RequestTokenService',
+            'think\admin\extend\JwtToken',
+            'think\admin\extend\FaviconBuilder',
+            'think\admin\extend\ImageSliderVerify',
+            'think\admin\extend\JsonRpcHttpClient',
+            'think\admin\extend\JsonRpcHttpServer',
+            'think\admin\Helper',
+            'think\admin\Service',
+            'think\admin\Storage',
+            'think\admin\contract\AdminContextInterface',
+            'think\admin\runtime\AdminContext',
+            'think\admin\runtime\NullAdminContext',
+            'plugin\system\runtime\AdminContext',
+            'plugin\system\runtime\SystemContext',
+            'plugin\system\auth\AdminService',
+            'plugin\system\auth\\',
+            'plugin\system\system\SystemService',
+            'plugin\storage\StorageConfig',
+            'plugin\storage\StorageManager',
+            'plugin\storage\support\StorageAuthorize',
+            'think\admin\storage\\',
+            'plugin\worker\queue\\',
+            'plugin\worker\support\\',
+            'plugin\worker\Server',
+            'plugin\helper\support\\',
+            'plugin\helper\integration\\',
+            'plugin\helper\DbBackupStruct',
+            'plugin\helper\DbIndexStruct',
+            'plugin\helper\DbMigrateStruct',
+            'plugin\helper\DbModelStruct',
+            'plugin\helper\DbRestoreStruct',
+            'plugin\wechat\service\handle\\',
+            'plugin\wechat\service\AuthService',
+            'plugin\wechat\service\ConfigService',
+            'plugin\payment\queue\\',
+            'plugin\wemall\integration\\',
+            'plugin\wuma\Query',
+            'plugin\wuma\Script',
             'usession(',
             'user_session_store',
             'user_session_touch',

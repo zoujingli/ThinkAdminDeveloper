@@ -20,7 +20,6 @@ declare(strict_types=1);
 
 namespace plugin\storage\service;
 
-use plugin\storage\service\StorageConfig;
 use think\admin\contract\StorageInterface;
 use think\admin\contract\StorageUsageTrait;
 
@@ -146,13 +145,13 @@ class LocalStorage implements StorageInterface
      */
     protected function init()
     {
-        $type = (string) StorageConfig::driver('local', 'protocol', 'follow');
+        $type = (string)StorageConfig::driver('local', 'protocol', 'follow');
         if ($type === 'follow') {
             $type = $this->app->request->scheme();
         }
         $this->domain = trim(dirname($this->app->request->baseFile()), '\/');
         if ($type !== 'path') {
-            $domain = (string) StorageConfig::driver('local', 'domain', $this->app->request->host());
+            $domain = (string)StorageConfig::driver('local', 'domain', $this->app->request->host());
             if ($type === 'auto') {
                 $this->domain = "//{$domain}";
             } elseif (in_array($type, ['http', 'https'])) {

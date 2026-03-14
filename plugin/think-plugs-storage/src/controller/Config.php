@@ -22,6 +22,7 @@ namespace plugin\storage\controller;
 
 use plugin\storage\service\StorageConfig;
 use think\admin\Controller;
+use think\admin\Exception;
 use think\admin\runtime\SystemContext;
 use think\admin\service\Storage;
 
@@ -43,7 +44,7 @@ class Config extends Controller
         StorageConfig::initialize();
         $this->title = '存储配置中心';
         $this->files = Storage::types();
-        $this->driver = strtolower((string) StorageConfig::global('driver', 'local'));
+        $this->driver = strtolower((string)StorageConfig::global('driver', 'local'));
         $this->driverName = $this->files[$this->driver] ?? $this->driver;
         $this->canEdit = $this->canManage();
         return $this->fetch('config/index');
@@ -53,7 +54,7 @@ class Config extends Controller
      * 修改文件存储.
      * @auth true
      * @login true
-     * @throws \think\admin\Exception
+     * @throws Exception
      */
     public function storage()
     {
@@ -64,22 +65,21 @@ class Config extends Controller
             $this->type = input('type', array_key_first(Storage::types()) ?: 'local');
             $this->points = Storage::regions($this->type);
             return $this->fetch(Storage::template($this->type));
-        } else {
-            $post = $this->request->post();
-            if (!empty($post['storage']['allowed_exts'])) {
-                $deny = ['sh', 'asp', 'bat', 'cmd', 'exe', 'php'];
-                $exts = array_unique(str2arr(strtolower($post['storage']['allowed_exts'])));
-                if (count(array_intersect($deny, $exts)) > 0) {
-                    $this->error('禁止上传可执行的文件！');
-                }
-                $post['storage']['allowed_exts'] = join(',', $exts);
-            }
-            foreach ($post as $name => $value) {
-                sysconf($name, $value);
-            }
-            sysoplog('系统配置管理', '修改系统存储参数');
-            $this->success('修改文件存储成功！');
         }
+        $post = $this->request->post();
+        if (!empty($post['storage']['allowed_exts'])) {
+            $deny = ['sh', 'asp', 'bat', 'cmd', 'exe', 'php'];
+            $exts = array_unique(str2arr(strtolower($post['storage']['allowed_exts'])));
+            if (count(array_intersect($deny, $exts)) > 0) {
+                $this->error('禁止上传可执行的文件！');
+            }
+            $post['storage']['allowed_exts'] = join(',', $exts);
+        }
+        foreach ($post as $name => $value) {
+            sysconf($name, $value);
+        }
+        sysoplog('系统配置管理', '修改系统存储参数');
+        $this->success('修改文件存储成功！');
     }
 
     private function authorizeView(): void

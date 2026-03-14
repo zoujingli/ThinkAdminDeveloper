@@ -20,9 +20,6 @@ declare(strict_types=1);
 
 namespace think\admin\service;
 
-use think\admin\service\ProcessService;
-use think\admin\service\Service;
-
 /**
  * 模块与包信息服务。
  * @class ModuleService

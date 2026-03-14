@@ -20,8 +20,8 @@ declare(strict_types=1);
 
 namespace plugin\system\controller\api;
 
-use plugin\system\service\SystemAuthService;
 use plugin\system\model\SystemConfig;
+use plugin\system\service\SystemAuthService;
 use think\admin\Controller;
 use think\admin\service\RuntimeService;
 use think\exception\HttpResponseException;

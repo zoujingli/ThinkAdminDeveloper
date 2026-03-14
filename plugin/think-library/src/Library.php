@@ -20,9 +20,9 @@ declare(strict_types=1);
 
 namespace think\admin;
 
-use think\admin\runtime\RequestContext;
 use think\admin\extend\FileTools;
 use think\admin\middleware\MultAccess;
+use think\admin\runtime\RequestContext;
 use think\admin\service\RuntimeService;
 use think\App;
 use think\exception\HttpException;
@@ -154,7 +154,6 @@ class Library extends Service
                 }
                 return $next($request)->header($header);
             });
-
         }
     }
 }

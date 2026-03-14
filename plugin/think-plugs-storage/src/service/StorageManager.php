@@ -1,18 +1,32 @@
 <?php
 
 declare(strict_types=1);
+/**
+ * +----------------------------------------------------------------------
+ * | ThinkAdmin Plugin for ThinkAdmin
+ * +----------------------------------------------------------------------
+ * | 版权所有 2014~2026 ThinkAdmin [ thinkadmin.top ]
+ * +----------------------------------------------------------------------
+ * | 官方网站: https://thinkadmin.top
+ * +----------------------------------------------------------------------
+ * | 开源协议 ( https://mit-license.org )
+ * | 免责声明 ( https://thinkadmin.top/disclaimer )
+ * | 会员特权 ( https://thinkadmin.top/vip-introduce )
+ * +----------------------------------------------------------------------
+ * | gitee 代码仓库：https://gitee.com/zoujingli/ThinkAdmin
+ * | github 代码仓库：https://github.com/zoujingli/ThinkAdmin
+ * +----------------------------------------------------------------------
+ */
 
 namespace plugin\storage\service;
 
-use think\App;
 use think\admin\Exception;
+use think\App;
 use think\Container;
 
 class StorageManager
 {
-    public function __construct(protected App $app)
-    {
-    }
+    public function __construct(protected App $app) {}
 
     public function drivers(): array
     {
@@ -41,7 +55,7 @@ class StorageManager
 
     public function driverName(?string $name = null): string
     {
-        $name = strtolower((string) ($name ?: StorageConfig::global('driver', $this->app->config->get('think_plugs_storage.default', 'local'))));
+        $name = strtolower((string)($name ?: StorageConfig::global('driver', $this->app->config->get('think_plugs_storage.default', 'local'))));
         return $name ?: 'local';
     }
 
@@ -60,7 +74,7 @@ class StorageManager
     {
         $types = [];
         foreach ($this->drivers() as $name => $driver) {
-            $label = (string) ($driver['label'] ?? $name);
+            $label = (string)($driver['label'] ?? $name);
             $types[$name] = function_exists('lang') ? lang($label) : $label;
         }
         return $types;
@@ -70,7 +84,7 @@ class StorageManager
     {
         $regions = $this->driver($name)['regions'] ?? null;
         if (is_callable($regions)) {
-            return (array) call_user_func($regions);
+            return (array)call_user_func($regions);
         }
         return is_array($regions) ? $regions : [];
     }
@@ -87,7 +101,7 @@ class StorageManager
             throw new Exception("Storage driver [{$name}] does not support upload authorization.");
         }
         $storage = Container::getInstance()->make($this->driverClass($name));
-        return (array) call_user_func($authorize, $storage, $key, $safe, $attname, $hash);
+        return (array)call_user_func($authorize, $storage, $key, $safe, $attname, $hash);
     }
 
     public function mimes(): array

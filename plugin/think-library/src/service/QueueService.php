@@ -1,11 +1,27 @@
 <?php
 
 declare(strict_types=1);
+/**
+ * +----------------------------------------------------------------------
+ * | ThinkAdmin Plugin for ThinkAdmin
+ * +----------------------------------------------------------------------
+ * | 版权所有 2014~2026 ThinkAdmin [ thinkadmin.top ]
+ * +----------------------------------------------------------------------
+ * | 官方网站: https://thinkadmin.top
+ * +----------------------------------------------------------------------
+ * | 开源协议 ( https://mit-license.org )
+ * | 免责声明 ( https://thinkadmin.top/disclaimer )
+ * | 会员特权 ( https://thinkadmin.top/vip-introduce )
+ * +----------------------------------------------------------------------
+ * | gitee 代码仓库：https://gitee.com/zoujingli/ThinkAdmin
+ * | github 代码仓库：https://github.com/zoujingli/ThinkAdmin
+ * +----------------------------------------------------------------------
+ */
 
 namespace think\admin\service;
 
-use think\Container;
 use think\admin\contract\QueueManagerInterface;
+use think\Container;
 
 /**
  * Standard queue facade.
@@ -14,24 +30,6 @@ use think\admin\contract\QueueManagerInterface;
 class QueueService
 {
     public const BIND_NAME = 'think.admin.runtime.queue';
-
-    /**
-     * Resolve the concrete queue provider.
-     */
-    protected static function provider(array $vars = [], bool $newInstance = false): QueueManagerInterface
-    {
-        $container = Container::getInstance();
-        if (!$container->bound(static::BIND_NAME)) {
-            throw new \RuntimeException('ThinkPlugsWorker is required for queue runtime operations.');
-        }
-
-        $provider = $container->make($container->getAlias(static::BIND_NAME), $vars, $newInstance);
-        if (!$provider instanceof QueueManagerInterface) {
-            throw new \RuntimeException('Queue runtime provider must implement think\\admin\\contract\\QueueManagerInterface.');
-        }
-
-        return $provider;
-    }
 
     public static function instance(array $var = [], bool $new = false): QueueManagerInterface
     {
@@ -51,5 +49,23 @@ class QueueService
     public static function inContext(?string $code = null): bool
     {
         return static::provider()->isInContext($code);
+    }
+
+    /**
+     * Resolve the concrete queue provider.
+     */
+    protected static function provider(array $vars = [], bool $newInstance = false): QueueManagerInterface
+    {
+        $container = Container::getInstance();
+        if (!$container->bound(static::BIND_NAME)) {
+            throw new \RuntimeException('ThinkPlugsWorker is required for queue runtime operations.');
+        }
+
+        $provider = $container->make($container->getAlias(static::BIND_NAME), $vars, $newInstance);
+        if (!$provider instanceof QueueManagerInterface) {
+            throw new \RuntimeException('Queue runtime provider must implement think\admin\contract\QueueManagerInterface.');
+        }
+
+        return $provider;
     }
 }

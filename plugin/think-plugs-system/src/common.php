@@ -17,7 +17,6 @@ declare(strict_types=1);
  * | github 代码仓库：https://github.com/zoujingli/ThinkAdmin
  * +----------------------------------------------------------------------
  */
-
 use think\admin\Exception;
 use think\admin\runtime\SystemContext;
 

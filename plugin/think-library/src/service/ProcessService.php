@@ -1,6 +1,22 @@
 <?php
 
 declare(strict_types=1);
+/**
+ * +----------------------------------------------------------------------
+ * | ThinkAdmin Plugin for ThinkAdmin
+ * +----------------------------------------------------------------------
+ * | 版权所有 2014~2026 ThinkAdmin [ thinkadmin.top ]
+ * +----------------------------------------------------------------------
+ * | 官方网站: https://thinkadmin.top
+ * +----------------------------------------------------------------------
+ * | 开源协议 ( https://mit-license.org )
+ * | 免责声明 ( https://thinkadmin.top/disclaimer )
+ * | 会员特权 ( https://thinkadmin.top/vip-introduce )
+ * +----------------------------------------------------------------------
+ * | gitee 代码仓库：https://gitee.com/zoujingli/ThinkAdmin
+ * | github 代码仓库：https://github.com/zoujingli/ThinkAdmin
+ * +----------------------------------------------------------------------
+ */
 
 namespace think\admin\service;
 
@@ -13,19 +29,6 @@ use think\Container;
 class ProcessService extends Service
 {
     public const BIND_NAME = 'think.admin.runtime.process';
-
-    /**
-     * Resolve the concrete process provider class.
-     */
-    protected static function providerClass(): string
-    {
-        $container = Container::getInstance();
-        if (!$container->bound(static::BIND_NAME)) {
-            throw new \RuntimeException('ThinkPlugsWorker is required for process runtime operations.');
-        }
-
-        return $container->getAlias(static::BIND_NAME);
-    }
 
     /**
      * 生成 PHP 指令.
@@ -164,5 +167,18 @@ class ProcessService extends Service
     {
         $provider = static::providerClass();
         return $provider::workerCommand($action, $target, $daemon, $options);
+    }
+
+    /**
+     * Resolve the concrete process provider class.
+     */
+    protected static function providerClass(): string
+    {
+        $container = Container::getInstance();
+        if (!$container->bound(static::BIND_NAME)) {
+            throw new \RuntimeException('ThinkPlugsWorker is required for process runtime operations.');
+        }
+
+        return $container->getAlias(static::BIND_NAME);
     }
 }

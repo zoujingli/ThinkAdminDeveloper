@@ -20,8 +20,8 @@ declare(strict_types=1);
 
 namespace plugin\account\controller\api;
 
-use plugin\wechat\client\service\WechatService;
 use plugin\account\service\Account;
+use plugin\wechat\client\service\WechatService;
 use think\admin\Controller;
 use think\exception\HttpResponseException;
 use think\Response;
@@ -167,15 +167,6 @@ class Wxapp extends Controller
     }
 
     /**
-     * 返回带账号令牌的成功结果并同步 Cookie。
-     */
-    private function successWithToken(string $info, array $data): void
-    {
-        Account::syncTokenCookie(strval($data['token'] ?? ''));
-        $this->success($info, $data);
-    }
-
-    /**
      * 获取直播列表.
      */
     public function getLiveList()
@@ -225,6 +216,15 @@ class Wxapp extends Controller
         } else {
             $this->error('接口未开通');
         }
+    }
+
+    /**
+     * 返回带账号令牌的成功结果并同步 Cookie。
+     */
+    private function successWithToken(string $info, array $data): void
+    {
+        Account::syncTokenCookie(strval($data['token'] ?? ''));
+        $this->success($info, $data);
     }
 
     /**

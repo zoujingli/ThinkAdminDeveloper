@@ -200,18 +200,19 @@ class FormBuilder
     public function toArray(): array
     {
         return [
-            'type'     => $this->type,
-            'mode'     => $this->mode,
-            'action'   => $this->action ?? '',
+            'type' => $this->type,
+            'mode' => $this->mode,
+            'action' => $this->action ?? '',
             'variable' => $this->variable,
-            'fields'   => $this->getFields(),
-            'buttons'  => $this->buttonItems,
-            'rules'    => $this->getValidateRules(),
+            'fields' => $this->getFields(),
+            'buttons' => $this->buttonItems,
+            'rules' => $this->getValidateRules(),
         ];
     }
 
     /**
      * 使用收集到的规则验证请求数据.
+     * @param mixed $input
      */
     public function validate($input = '', ?callable $callable = null): array
     {
@@ -282,13 +283,13 @@ class FormBuilder
     public function addTextArea(string $name, string $title, string $substr = '', bool $required = false, $remark = '', array $attrs = []): self
     {
         return $this->addField([
-            'type'     => 'textarea',
-            'name'     => $name,
-            'title'    => $title,
+            'type' => 'textarea',
+            'name' => $name,
+            'title' => $title,
             'subtitle' => $substr,
             'required' => $required,
-            'remark'   => (string) $remark,
-            'attrs'    => $attrs,
+            'remark' => (string)$remark,
+            'attrs' => $attrs,
         ]);
     }
 
@@ -306,14 +307,14 @@ class FormBuilder
     public function addTextInput(string $name, string $title, string $substr = '', bool $required = false, string $remark = '', ?string $pattern = null, array $attrs = []): self
     {
         return $this->addField([
-            'type'     => $attrs['type'] ?? 'text',
-            'name'     => $name,
-            'title'    => $title,
+            'type' => $attrs['type'] ?? 'text',
+            'name' => $name,
+            'title' => $title,
             'subtitle' => $substr,
             'required' => $required,
-            'remark'   => $remark,
-            'pattern'  => $pattern,
-            'attrs'    => $attrs,
+            'remark' => $remark,
+            'pattern' => $pattern,
+            'attrs' => $attrs,
         ]);
     }
 
@@ -368,12 +369,12 @@ class FormBuilder
     public function addUploadOneImage(string $name, string $title, string $substr = '', bool $required = false, array $attrs = []): self
     {
         return $this->addField([
-            'type'     => 'image',
-            'name'     => $name,
-            'title'    => $title,
+            'type' => 'image',
+            'name' => $name,
+            'title' => $title,
             'subtitle' => $substr,
             'required' => $required,
-            'attrs'    => $attrs,
+            'attrs' => $attrs,
         ]);
     }
 
@@ -389,12 +390,12 @@ class FormBuilder
     public function addUploadOneVideo(string $name, string $title, string $substr = '', bool $required = false, array $attrs = []): self
     {
         return $this->addField([
-            'type'     => 'video',
-            'name'     => $name,
-            'title'    => $title,
+            'type' => 'video',
+            'name' => $name,
+            'title' => $title,
             'subtitle' => $substr,
             'required' => $required,
-            'attrs'    => $attrs,
+            'attrs' => $attrs,
         ]);
     }
 
@@ -410,12 +411,12 @@ class FormBuilder
     public function addUploadMulImage(string $name, string $title, string $substr = '', bool $required = false, array $attrs = []): self
     {
         return $this->addField([
-            'type'     => 'images',
-            'name'     => $name,
-            'title'    => $title,
+            'type' => 'images',
+            'name' => $name,
+            'title' => $title,
             'subtitle' => $substr,
             'required' => $required,
-            'attrs'    => $attrs,
+            'attrs' => $attrs,
         ]);
     }
 
@@ -432,13 +433,13 @@ class FormBuilder
     public function addCheckInput(string $name, string $title, string $substr, string $vname, bool $required = false, array $attrs = [], string $type = 'checkbox'): self
     {
         return $this->addField([
-            'type'     => $type,
-            'name'     => $name,
-            'title'    => $title,
+            'type' => $type,
+            'name' => $name,
+            'title' => $title,
             'subtitle' => $substr,
             'required' => $required,
-            'attrs'    => $attrs,
-            'vname'    => $vname,
+            'attrs' => $attrs,
+            'vname' => $vname,
         ]);
     }
 
@@ -491,14 +492,14 @@ class FormBuilder
     protected function addInput(string $name, string $title, string $subtitle = '', string $remark = '', array $attrs = []): self
     {
         return $this->addField([
-            'type'     => $attrs['type'] ?? 'text',
-            'name'     => $name,
-            'title'    => $title,
+            'type' => $attrs['type'] ?? 'text',
+            'name' => $name,
+            'title' => $title,
             'subtitle' => $subtitle,
-            'remark'   => $remark,
+            'remark' => $remark,
             'required' => !empty($attrs['required']),
-            'pattern'  => $attrs['pattern'] ?? null,
-            'attrs'    => $attrs,
+            'pattern' => $attrs['pattern'] ?? null,
+            'attrs' => $attrs,
         ]);
     }
 
@@ -508,8 +509,8 @@ class FormBuilder
     protected function _attrs(array $attrs, string $html = ''): string
     {
         foreach ($attrs as $k => $v) {
-            $name = htmlspecialchars((string) $k, ENT_QUOTES, 'UTF-8');
-            $html .= is_null($v) ? sprintf(' %s', $name) : sprintf(' %s="%s"', $name, htmlspecialchars((string) $v, ENT_QUOTES, 'UTF-8'));
+            $name = htmlspecialchars((string)$k, ENT_QUOTES, 'UTF-8');
+            $html .= is_null($v) ? sprintf(' %s', $name) : sprintf(' %s="%s"', $name, htmlspecialchars((string)$v, ENT_QUOTES, 'UTF-8'));
         }
         return $html;
     }
@@ -532,11 +533,11 @@ class FormBuilder
         $attrs = $this->mergeClass($attrs, trim("layui-btn {$class}"));
         $this->buttons[] = sprintf('<button %s>%s</button>', $this->_attrs($attrs), $name);
         $this->buttonItems[] = [
-            'name'    => $name,
+            'name' => $name,
             'confirm' => $confirm,
-            'type'    => $type,
-            'class'   => trim("layui-btn {$class}"),
-            'attrs'   => $attrs,
+            'type' => $type,
+            'class' => trim("layui-btn {$class}"),
+            'attrs' => $attrs,
         ];
         return $this;
     }
@@ -547,31 +548,31 @@ class FormBuilder
     private function normalizeField(array $field): array
     {
         $field = array_merge([
-            'type'     => 'text',
-            'name'     => '',
-            'title'    => '',
+            'type' => 'text',
+            'name' => '',
+            'title' => '',
             'subtitle' => '',
-            'substr'   => '',
-            'remark'   => '',
+            'substr' => '',
+            'remark' => '',
             'required' => false,
-            'pattern'  => null,
-            'attrs'    => [],
-            'rules'    => [],
-            'vname'    => '',
+            'pattern' => null,
+            'attrs' => [],
+            'rules' => [],
+            'vname' => '',
         ], $field);
         if ($field['subtitle'] === '' && $field['substr'] !== '') {
-            $field['subtitle'] = (string) $field['substr'];
+            $field['subtitle'] = (string)$field['substr'];
         }
-        $field['type'] = $this->normalizeType((string) $field['type']);
-        $field['name'] = trim((string) $field['name']);
-        $field['title'] = trim((string) $field['title']);
-        $field['subtitle'] = (string) $field['subtitle'];
-        $field['remark'] = (string) $field['remark'];
+        $field['type'] = $this->normalizeType((string)$field['type']);
+        $field['name'] = trim((string)$field['name']);
+        $field['title'] = trim((string)$field['title']);
+        $field['subtitle'] = (string)$field['subtitle'];
+        $field['remark'] = (string)$field['remark'];
         $field['required'] = !empty($field['required']);
-        $field['pattern'] = $field['pattern'] === null || $field['pattern'] === '' ? null : (string) $field['pattern'];
+        $field['pattern'] = $field['pattern'] === null || $field['pattern'] === '' ? null : (string)$field['pattern'];
         $field['attrs'] = is_array($field['attrs']) ? $field['attrs'] : [];
         $field['rules'] = is_array($field['rules']) ? $field['rules'] : [];
-        $field['vname'] = trim((string) $field['vname']);
+        $field['vname'] = trim((string)$field['vname']);
         if ($field['name'] === '' || $field['title'] === '') {
             throw new \InvalidArgumentException('FormBuilder 字段 name 与 title 不能为空');
         }
@@ -583,25 +584,25 @@ class FormBuilder
         if ($field['required']) {
             $attrs['required'] = 'required';
             $attrs['required-error'] = $attrs['required-error'] ?? sprintf('%s不能为空！', $field['title']);
-            $this->addValidateRule($field['name'], 'require', (string) $attrs['required-error']);
+            $this->addValidateRule($field['name'], 'require', (string)$attrs['required-error']);
         }
         if (is_string($field['pattern'])) {
             $attrs['pattern'] = $field['pattern'];
             $attrs['pattern-error'] = $attrs['pattern-error'] ?? sprintf('%s格式错误！', $field['title']);
             if ($rule = $this->resolvePatternRule($field['pattern'])) {
-                $this->addValidateRule($field['name'], $rule, (string) $attrs['pattern-error']);
+                $this->addValidateRule($field['name'], $rule, (string)$attrs['pattern-error']);
             }
         }
         foreach ($field['rules'] as $rule => $message) {
             if (is_string($rule) && $rule !== '') {
-                $this->addValidateRule($field['name'], $rule, (string) $message);
+                $this->addValidateRule($field['name'], $rule, (string)$message);
             }
         }
         $field['attrs'] = $attrs;
         $field['validate'] = [
             'messages' => array_filter([
                 'required' => $attrs['required-error'] ?? '',
-                'pattern'  => $attrs['pattern-error'] ?? '',
+                'pattern' => $attrs['pattern-error'] ?? '',
             ]),
             'portable' => array_filter($this->extractFieldRules($field['name'])),
         ];
@@ -615,15 +616,15 @@ class FormBuilder
     private function collectField(array $field): void
     {
         $this->items[] = [
-            'name'     => $field['name'],
-            'type'     => $field['type'],
-            'title'    => $field['title'],
+            'name' => $field['name'],
+            'type' => $field['type'],
+            'title' => $field['title'],
             'subtitle' => $field['subtitle'],
-            'remark'   => $field['remark'],
+            'remark' => $field['remark'],
             'required' => $field['required'],
-            'pattern'  => $field['pattern'],
-            'attrs'    => $field['attrs'],
-            'vname'    => $field['vname'],
+            'pattern' => $field['pattern'],
+            'attrs' => $field['attrs'],
+            'vname' => $field['vname'],
             'validate' => $field['validate'],
         ];
     }
@@ -882,8 +883,8 @@ class FormBuilder
     private function _buildFormModal(): string
     {
         $attrs = array_merge([
-            'action'    => $this->resolveAction(),
-            'method'    => 'post',
+            'action' => $this->resolveAction(),
+            'method' => 'post',
             'data-auto' => 'true',
         ], $this->formAttrs);
         $attrs = $this->mergeClass($attrs, 'layui-form layui-card');

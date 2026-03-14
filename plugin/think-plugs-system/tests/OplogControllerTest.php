@@ -1,14 +1,30 @@
 <?php
 
 declare(strict_types=1);
+/**
+ * +----------------------------------------------------------------------
+ * | ThinkAdmin Plugin for ThinkAdmin
+ * +----------------------------------------------------------------------
+ * | 版权所有 2014~2026 ThinkAdmin [ thinkadmin.top ]
+ * +----------------------------------------------------------------------
+ * | 官方网站: https://thinkadmin.top
+ * +----------------------------------------------------------------------
+ * | 开源协议 ( https://mit-license.org )
+ * | 免责声明 ( https://thinkadmin.top/disclaimer )
+ * | 会员特权 ( https://thinkadmin.top/vip-introduce )
+ * +----------------------------------------------------------------------
+ * | gitee 代码仓库：https://gitee.com/zoujingli/ThinkAdmin
+ * | github 代码仓库：https://github.com/zoujingli/ThinkAdmin
+ * +----------------------------------------------------------------------
+ */
 
 namespace think\admin\tests;
 
 use plugin\system\controller\Oplog as OplogController;
 use plugin\system\model\SystemOplog;
-use think\Request;
 use think\admin\tests\Support\SqliteIntegrationTestCase;
 use think\exception\HttpResponseException;
+use think\Request;
 
 /**
  * @internal
@@ -16,56 +32,51 @@ use think\exception\HttpResponseException;
  */
 class OplogControllerTest extends SqliteIntegrationTestCase
 {
-    protected function defineSchema(): void
-    {
-        $this->createSystemOplogTable();
-    }
-
     public function testIndexFiltersLogsByUsernameActionKeywordAndDateRange(): void
     {
         $this->createSystemOplogFixture([
-            'username'    => 'alice',
-            'action'      => '导出日志',
-            'content'     => '命中日志内容',
-            'node'        => 'system/oplog/index',
-            'geoip'       => '8.8.8.8',
+            'username' => 'alice',
+            'action' => '导出日志',
+            'content' => '命中日志内容',
+            'node' => 'system/oplog/index',
+            'geoip' => '8.8.8.8',
             'create_time' => '2026-03-10 08:00:00',
         ]);
         $this->createSystemOplogFixture([
-            'username'    => 'alice',
-            'action'      => '导出日志',
-            'content'     => '跨日日志内容',
-            'node'        => 'system/oplog/index',
-            'geoip'       => '8.8.4.4',
+            'username' => 'alice',
+            'action' => '导出日志',
+            'content' => '跨日日志内容',
+            'node' => 'system/oplog/index',
+            'geoip' => '8.8.4.4',
             'create_time' => '2026-03-09 08:00:00',
         ]);
         $this->createSystemOplogFixture([
-            'username'    => 'alice',
-            'action'      => '清理日志',
-            'content'     => '行为不匹配',
-            'node'        => 'system/oplog/clear',
-            'geoip'       => '1.1.1.1',
+            'username' => 'alice',
+            'action' => '清理日志',
+            'content' => '行为不匹配',
+            'node' => 'system/oplog/clear',
+            'geoip' => '1.1.1.1',
             'create_time' => '2026-03-10 09:00:00',
         ]);
         $this->createSystemOplogFixture([
-            'username'    => 'bob',
-            'action'      => '导出日志',
-            'content'     => '用户不匹配',
-            'node'        => 'system/oplog/index',
-            'geoip'       => '127.0.0.1',
+            'username' => 'bob',
+            'action' => '导出日志',
+            'content' => '用户不匹配',
+            'node' => 'system/oplog/index',
+            'geoip' => '127.0.0.1',
             'create_time' => '2026-03-10 10:00:00',
         ]);
 
         $result = $this->callIndexController([
-            'output'      => 'json',
-            'username'    => 'alice',
-            'action'      => '导出日志',
-            'content'     => '命中日志',
+            'output' => 'json',
+            'username' => 'alice',
+            'action' => '导出日志',
+            'content' => '命中日志',
             'create_time' => '2026-03-10 - 2026-03-10',
-            '_field_'     => 'id',
-            '_order_'     => 'asc',
-            'page'        => 1,
-            'limit'       => 20,
+            '_field_' => 'id',
+            '_order_' => 'asc',
+            'page' => 1,
+            'limit' => 20,
         ]);
 
         $this->assertSame(1, intval($result['code'] ?? 0));
@@ -81,25 +92,25 @@ class OplogControllerTest extends SqliteIntegrationTestCase
 
     public function testIndexPaginatesLogsAndFallsBackToDefaultLimit(): void
     {
-        for ($i = 1; $i <= 21; $i++) {
+        for ($i = 1; $i <= 21; ++$i) {
             $this->createSystemOplogFixture([
-                'username'    => 'pager',
-                'action'      => '分页行为',
-                'content'     => sprintf('page-log-%02d', $i),
-                'node'        => 'system/oplog/index',
-                'geoip'       => '127.0.0.1',
+                'username' => 'pager',
+                'action' => '分页行为',
+                'content' => sprintf('page-log-%02d', $i),
+                'node' => 'system/oplog/index',
+                'geoip' => '127.0.0.1',
                 'create_time' => sprintf('2026-03-10 10:%02d:00', $i % 60),
             ]);
         }
 
         $result = $this->callIndexController([
-            'output'   => 'json',
+            'output' => 'json',
             'username' => 'pager',
-            'action'   => '分页行为',
-            '_field_'  => 'id',
-            '_order_'  => 'asc',
-            'page'     => 2,
-            'limit'    => 999,
+            'action' => '分页行为',
+            '_field_' => 'id',
+            '_order_' => 'asc',
+            'page' => 2,
+            'limit' => 999,
         ]);
 
         $this->assertSame(1, intval($result['code'] ?? 0));
@@ -138,6 +149,11 @@ class OplogControllerTest extends SqliteIntegrationTestCase
         $this->assertSame(1, intval($result['code'] ?? 0));
         $this->assertSame('日志清理成功！', $result['info'] ?? '');
         $this->assertSame(0, SystemOplog::mk()->count());
+    }
+
+    protected function defineSchema(): void
+    {
+        $this->createSystemOplogTable();
     }
 
     private function callIndexController(array $query): array

@@ -20,13 +20,13 @@ declare(strict_types=1);
 
 namespace plugin\storage\controller\api;
 
-use plugin\storage\service\StorageConfig;
 use plugin\storage\model\SystemFile;
+use plugin\storage\service\LocalStorage;
+use plugin\storage\service\StorageConfig;
 use think\admin\Controller;
 use think\admin\helper\QueryHelper;
 use think\admin\runtime\SystemContext;
 use think\admin\service\Storage;
-use plugin\storage\service\LocalStorage;
 use think\db\exception\DataNotFoundException;
 use think\db\exception\DbException;
 use think\db\exception\ModelNotFoundException;
@@ -48,7 +48,7 @@ class Upload extends Controller
     {
         $data = ['exts' => []];
         [$uuid, $unid, $exts] = $this->initUnid(false);
-        $allows = str2arr((string) StorageConfig::global('allowed_exts', ''));
+        $allows = str2arr((string)StorageConfig::global('allowed_exts', ''));
         if (empty($uuid) && $unid > 0) {
             $allows = array_intersect($exts, $allows);
         }
@@ -56,7 +56,7 @@ class Upload extends Controller
             $data['exts'][$ext] = Storage::mime($ext);
         }
         $data['exts'] = json_encode($data['exts'], JSON_UNESCAPED_UNICODE);
-        $data['nameType'] = (string) StorageConfig::global('naming', 'xmd5');
+        $data['nameType'] = (string)StorageConfig::global('naming', 'xmd5');
         return view(dirname(__DIR__, 2) . '/view/api/upload.js', $data)->contentType('application/x-javascript');
     }
 
@@ -166,7 +166,7 @@ class Upload extends Controller
         if (strtolower(pathinfo(parse_url($saveFileName, PHP_URL_PATH), PATHINFO_EXTENSION)) !== $extension) {
             $this->error('文件后缀异常，请重新上传文件！');
         }
-        if (!in_array($extension, str2arr((string) StorageConfig::global('allowed_exts', '')))) {
+        if (!in_array($extension, str2arr((string)StorageConfig::global('allowed_exts', '')))) {
             $this->error('文件类型受限，请在后台配置规则！');
         }
         if (empty($uuid) && $unid > 0 && !in_array($extension, $unexts)) {
@@ -228,7 +228,7 @@ class Upload extends Controller
         if (in_array($type, array_keys(Storage::types()))) {
             return $type;
         }
-        return strtolower((string) StorageConfig::global('driver', 'local'));
+        return strtolower((string)StorageConfig::global('driver', 'local'));
     }
 
     /**

@@ -1,15 +1,30 @@
 <?php
 
 declare(strict_types=1);
+/**
+ * +----------------------------------------------------------------------
+ * | ThinkAdmin Plugin for ThinkAdmin
+ * +----------------------------------------------------------------------
+ * | 版权所有 2014~2026 ThinkAdmin [ thinkadmin.top ]
+ * +----------------------------------------------------------------------
+ * | 官方网站: https://thinkadmin.top
+ * +----------------------------------------------------------------------
+ * | 开源协议 ( https://mit-license.org )
+ * | 免责声明 ( https://thinkadmin.top/disclaimer )
+ * | 会员特权 ( https://thinkadmin.top/vip-introduce )
+ * +----------------------------------------------------------------------
+ * | gitee 代码仓库：https://gitee.com/zoujingli/ThinkAdmin
+ * | github 代码仓库：https://github.com/zoujingli/ThinkAdmin
+ * +----------------------------------------------------------------------
+ */
 
 namespace plugin\worker\command;
 
-use InvalidArgumentException;
 use plugin\worker\model\SystemQueue;
-use plugin\worker\service\QueueService as WorkerQueueService;
 use plugin\worker\service\HttpServer;
 use plugin\worker\service\ProcessService;
 use plugin\worker\service\QueueServer;
+use plugin\worker\service\QueueService as WorkerQueueService;
 use plugin\worker\service\WorkerConfig;
 use think\admin\Command;
 use think\admin\service\QueueService as QueueRuntime;
@@ -17,7 +32,6 @@ use think\console\Input;
 use think\console\input\Argument;
 use think\console\input\Option;
 use think\console\Output;
-use Throwable;
 use Workerman\Worker as Workerman;
 
 /**
@@ -49,7 +63,7 @@ class Worker extends Command
 
         try {
             $targets = $this->workers->targets($target);
-        } catch (InvalidArgumentException $exception) {
+        } catch (\InvalidArgumentException $exception) {
             $output->error($exception->getMessage());
             return 1;
         }
@@ -254,7 +268,7 @@ class Worker extends Command
         try {
             $queue = QueueRuntime::register($title, 'version', 0, [], 1, 0);
             $code = $queue->getCode();
-        } catch (Throwable $exception) {
+        } catch (\Throwable $exception) {
             $this->output->writeln("># Worker [queue] failed to create smoke task: {$exception->getMessage()}");
             return 1;
         }
@@ -263,7 +277,7 @@ class Worker extends Command
 
         $lastStatus = 0;
         $lastMessage = '';
-        for ($i = 0; $i < 20; $i++) {
+        for ($i = 0; $i < 20; ++$i) {
             usleep(500000);
             $record = SystemQueue::mk()->where(['code' => $code])->findOrEmpty();
             if ($record->isEmpty()) {
@@ -428,7 +442,7 @@ class Worker extends Command
         if ($service['classes'] !== []) {
             foreach ($service['classes'] as $class) {
                 if (!class_exists($class)) {
-                    throw new InvalidArgumentException("Worker service class [{$class}] is not defined.");
+                    throw new \InvalidArgumentException("Worker service class [{$class}] is not defined.");
                 }
                 $workers[] = new $class();
             }
@@ -453,7 +467,7 @@ class Worker extends Command
             return [new QueueServer($service, $this->app->getRootPath())];
         }
 
-        throw new InvalidArgumentException("Unsupported worker driver [{$service['driver']}], only http and queue are supported.");
+        throw new \InvalidArgumentException("Unsupported worker driver [{$service['driver']}], only http and queue are supported.");
     }
 
     /**
@@ -553,7 +567,7 @@ class Worker extends Command
             return [false, '', 'empty HTTP response'];
         }
 
-        if (preg_match('#^HTTP/\\S+\\s+(\\d{3})#', $statusLine, $match)) {
+        if (preg_match('#^HTTP/\S+\s+(\d{3})#', $statusLine, $match)) {
             $status = intval($match[1]);
             if (($status >= 200 && $status < 400) || in_array($status, [401, 403], true)) {
                 return [true, $statusLine, ''];

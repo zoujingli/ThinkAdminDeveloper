@@ -20,15 +20,15 @@ declare(strict_types=1);
 
 namespace think\admin;
 
-use think\admin\service\JwtToken;
 use think\admin\helper\DeleteHelper;
 use think\admin\helper\FormHelper;
 use think\admin\helper\QueryHelper;
 use think\admin\helper\SaveHelper;
 use think\admin\helper\ValidateHelper;
 use think\admin\runtime\SystemContext;
-use think\admin\service\QueueService;
+use think\admin\service\JwtToken;
 use think\admin\service\NodeService;
+use think\admin\service\QueueService;
 use think\App;
 use think\db\BaseQuery;
 use think\db\exception\DataNotFoundException;
@@ -215,7 +215,6 @@ class Controller extends \stdClass
      * @param string $field 指定数据主键
      * @param mixed $where 额外更新条件
      * @param array $data 表单扩展数据
-     * @return array|bool
      * @throws Exception
      * @throws DataNotFoundException
      * @throws DbException

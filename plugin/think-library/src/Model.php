@@ -39,17 +39,17 @@ use think\model\concern\SoftDelete;
  */
 abstract class Model extends \think\Model
 {
-    protected $autoWriteTimestamp = 'datetime';
-
-    protected $createTime = 'create_time';
-
-    protected $updateTime = 'update_time';
-
     /**
      * 日志过滤.
      * @var callable
      */
     public static $oplogCall;
+
+    protected $autoWriteTimestamp = 'datetime';
+
+    protected $createTime = 'create_time';
+
+    protected $updateTime = 'update_time';
 
     /**
      * 日志类型.

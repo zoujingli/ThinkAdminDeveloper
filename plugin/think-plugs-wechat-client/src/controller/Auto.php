@@ -20,8 +20,8 @@ declare(strict_types=1);
 
 namespace plugin\wechat\client\controller;
 
-use plugin\wechat\client\model\WechatAuto;
 use plugin\system\service\SystemService;
+use plugin\wechat\client\model\WechatAuto;
 use think\admin\Controller;
 use think\admin\extend\CodeToolkit;
 use think\admin\helper\QueryHelper;

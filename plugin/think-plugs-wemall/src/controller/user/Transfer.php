@@ -20,8 +20,8 @@ declare(strict_types=1);
 
 namespace plugin\wemall\controller\user;
 
-use plugin\system\service\SystemAuthService;
 use plugin\account\model\PluginAccountUser;
+use plugin\system\service\SystemAuthService;
 use plugin\wemall\model\PluginWemallUserTransfer;
 use plugin\wemall\service\UserTransfer;
 use think\admin\Controller;

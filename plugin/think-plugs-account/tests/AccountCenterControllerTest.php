@@ -1,6 +1,22 @@
 <?php
 
 declare(strict_types=1);
+/**
+ * +----------------------------------------------------------------------
+ * | ThinkAdmin Plugin for ThinkAdmin
+ * +----------------------------------------------------------------------
+ * | 版权所有 2014~2026 ThinkAdmin [ thinkadmin.top ]
+ * +----------------------------------------------------------------------
+ * | 官方网站: https://thinkadmin.top
+ * +----------------------------------------------------------------------
+ * | 开源协议 ( https://mit-license.org )
+ * | 免责声明 ( https://thinkadmin.top/disclaimer )
+ * | 会员特权 ( https://thinkadmin.top/vip-introduce )
+ * +----------------------------------------------------------------------
+ * | gitee 代码仓库：https://gitee.com/zoujingli/ThinkAdmin
+ * | github 代码仓库：https://github.com/zoujingli/ThinkAdmin
+ * +----------------------------------------------------------------------
+ */
 
 namespace think\admin\tests;
 
@@ -25,11 +41,6 @@ class AccountCenterControllerTest extends SqliteIntegrationTestCase
         $this->configureAccountAccess();
     }
 
-    protected function defineSchema(): void
-    {
-        $this->createAccountTables();
-    }
-
     public function testBindControllerAssociatesUserAndClearsVerifyCode(): void
     {
         $phone = $this->randomPhone('1360099');
@@ -39,7 +50,7 @@ class AccountCenterControllerTest extends SqliteIntegrationTestCase
 
         $this->rememberVerifyCode($phone, $verify);
         $response = $this->callCenterController('bind', [
-            'phone'  => $phone,
+            'phone' => $phone,
             'verify' => $verify,
             'passwd' => 'Secret@123',
         ], strval($login['token'] ?? ''));
@@ -73,6 +84,11 @@ class AccountCenterControllerTest extends SqliteIntegrationTestCase
         $this->assertSame(0, intval($response['data']['unid'] ?? -1));
         $this->assertArrayNotHasKey('id', $response['data']['user'] ?? []);
         $this->assertSame(0, intval($bind->getAttr('unid')));
+    }
+
+    protected function defineSchema(): void
+    {
+        $this->createAccountTables();
     }
 
     private function callCenterController(string $action, array $post, string $token): array

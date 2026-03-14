@@ -21,8 +21,8 @@ declare(strict_types=1);
 namespace think\admin\service;
 
 use think\admin\Exception;
-use think\admin\runtime\RequestContext;
 use think\admin\Library;
+use think\admin\runtime\RequestContext;
 
 /**
  * 基于 Token SID 的缓存会话服务。

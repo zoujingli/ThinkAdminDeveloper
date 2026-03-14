@@ -20,9 +20,9 @@ declare(strict_types=1);
 
 namespace plugin\system\controller;
 
-use plugin\system\service\SystemAuthService;
 use plugin\system\model\SystemMenu;
 use plugin\system\service\MenuService;
+use plugin\system\service\SystemAuthService;
 use think\admin\Controller;
 use think\admin\extend\ArrayTree;
 use think\db\exception\DataNotFoundException;

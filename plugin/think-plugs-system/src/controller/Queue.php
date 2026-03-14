@@ -20,8 +20,8 @@ declare(strict_types=1);
 
 namespace plugin\system\controller;
 
-use plugin\worker\model\SystemQueue;
 use plugin\system\service\SystemAuthService;
+use plugin\worker\model\SystemQueue;
 use think\admin\Controller;
 use think\admin\helper\QueryHelper;
 use think\admin\service\ProcessService;

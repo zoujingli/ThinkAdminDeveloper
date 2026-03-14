@@ -20,9 +20,9 @@ declare(strict_types=1);
 
 namespace plugin\system\controller;
 
+use plugin\system\model\SystemUser;
 use plugin\system\service\MenuService;
 use plugin\system\service\SystemAuthService;
-use plugin\system\model\SystemUser;
 use think\admin\Controller;
 use think\admin\Exception;
 use think\db\exception\DataNotFoundException;

@@ -57,7 +57,7 @@ class Config extends Controller
         StorageConfig::initialize();
         $this->title = '系统参数配置';
         $this->files = Storage::types();
-        $this->storageDriver = strtolower((string) StorageConfig::global('driver', 'local'));
+        $this->storageDriver = strtolower((string)StorageConfig::global('driver', 'local'));
         $this->storageName = $this->files[$this->storageDriver] ?? $this->storageDriver;
         $this->storageEditable = SystemAuthService::isSuper()
             || SystemAuthService::check('storage/config/index')

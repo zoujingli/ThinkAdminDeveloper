@@ -20,9 +20,9 @@ declare(strict_types=1);
 
 namespace plugin\wechat\client\controller;
 
+use plugin\system\service\SystemService;
 use plugin\wechat\client\model\WechatKeys;
 use plugin\wechat\client\service\WechatService;
-use plugin\system\service\SystemService;
 use think\admin\Controller;
 use think\admin\helper\QueryHelper;
 use think\db\exception\DataNotFoundException;

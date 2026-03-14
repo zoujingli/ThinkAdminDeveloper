@@ -5,7 +5,16 @@ declare(strict_types=1);
  * +----------------------------------------------------------------------
  * | ThinkAdmin Plugin for ThinkAdmin
  * +----------------------------------------------------------------------
- * | Copyright 2014~2026 ThinkAdmin [ thinkadmin.top ]
+ * | 版权所有 2014~2026 ThinkAdmin [ thinkadmin.top ]
+ * +----------------------------------------------------------------------
+ * | 官方网站: https://thinkadmin.top
+ * +----------------------------------------------------------------------
+ * | 开源协议 ( https://mit-license.org )
+ * | 免责声明 ( https://thinkadmin.top/disclaimer )
+ * | 会员特权 ( https://thinkadmin.top/vip-introduce )
+ * +----------------------------------------------------------------------
+ * | gitee 代码仓库：https://gitee.com/zoujingli/ThinkAdmin
+ * | github 代码仓库：https://github.com/zoujingli/ThinkAdmin
  * +----------------------------------------------------------------------
  */
 
@@ -15,8 +24,6 @@ use think\Request;
 use Workerman\Connection\TcpConnection;
 use Workerman\Protocols\Http\Request as WorkerRequest;
 use Workerman\Worker;
-
-use const DIRECTORY_SEPARATOR;
 
 /**
  * ThinkPHP request bridge for Workerman.
@@ -146,9 +153,9 @@ class ThinkRequest extends Request
         $root = dirname(__DIR__, 4);
         $pathInfo = '/' . ltrim($this->pathinfo, '/');
         $server = [
-            'DOCUMENT_ROOT' => $root . DIRECTORY_SEPARATOR . 'public',
+            'DOCUMENT_ROOT' => $root . \DIRECTORY_SEPARATOR . 'public',
             'SCRIPT_NAME' => '/index.php',
-            'SCRIPT_FILENAME' => $root . DIRECTORY_SEPARATOR . 'public' . DIRECTORY_SEPARATOR . 'index.php',
+            'SCRIPT_FILENAME' => $root . \DIRECTORY_SEPARATOR . 'public' . \DIRECTORY_SEPARATOR . 'index.php',
             'PHP_SELF' => '/index.php',
             'PATH_INFO' => $pathInfo === '/' ? '/' : $pathInfo,
             'REQUEST_URI' => $request->uri(),

@@ -1,19 +1,35 @@
 <?php
 
 declare(strict_types=1);
+/**
+ * +----------------------------------------------------------------------
+ * | ThinkAdmin Plugin for ThinkAdmin
+ * +----------------------------------------------------------------------
+ * | 版权所有 2014~2026 ThinkAdmin [ thinkadmin.top ]
+ * +----------------------------------------------------------------------
+ * | 官方网站: https://thinkadmin.top
+ * +----------------------------------------------------------------------
+ * | 开源协议 ( https://mit-license.org )
+ * | 免责声明 ( https://thinkadmin.top/disclaimer )
+ * | 会员特权 ( https://thinkadmin.top/vip-introduce )
+ * +----------------------------------------------------------------------
+ * | gitee 代码仓库：https://gitee.com/zoujingli/ThinkAdmin
+ * | github 代码仓库：https://github.com/zoujingli/ThinkAdmin
+ * +----------------------------------------------------------------------
+ */
 
 namespace think\admin\tests;
 
 use plugin\system\controller\Config as ConfigController;
-use plugin\system\service\SystemContext as PluginSystemContext;
 use plugin\system\model\SystemConfig;
 use plugin\system\model\SystemOplog;
-use think\Container;
-use think\Request;
+use plugin\system\service\SystemContext as PluginSystemContext;
 use think\admin\contract\SystemContextInterface;
 use think\admin\runtime\RequestContext;
 use think\admin\tests\Support\SqliteIntegrationTestCase;
+use think\Container;
 use think\exception\HttpResponseException;
+use think\Request;
 
 /**
  * @internal
@@ -21,28 +37,15 @@ use think\exception\HttpResponseException;
  */
 class ConfigControllerTest extends SqliteIntegrationTestCase
 {
-    protected function defineSchema(): void
-    {
-        $this->createSystemConfigTable();
-        $this->createSystemOplogTable();
-    }
-
-    protected function afterSchemaCreated(): void
-    {
-        $context = new PluginSystemContext();
-        Container::getInstance()->instance(SystemContextInterface::class, $context);
-        $this->app->instance(SystemContextInterface::class, $context);
-    }
-
     public function testSystemPostPersistsConfigsAndWritesOplog(): void
     {
         $result = $this->callPostController('system', [
-            'site_name'   => '测试后台',
-            'site_theme'  => 'green-1',
-            'site_copy'   => 'Unit Test Copy',
-            'site_icon'   => '/upload/local-icon.png',
-            'login_name'  => '管理后台',
-            'xpath'       => '/should-be-ignored',
+            'site_name' => '测试后台',
+            'site_theme' => 'green-1',
+            'site_copy' => 'Unit Test Copy',
+            'site_icon' => '/upload/local-icon.png',
+            'login_name' => '管理后台',
+            'xpath' => '/should-be-ignored',
         ]);
 
         $configs = SystemConfig::mk()->order('id asc')->column('value', 'name');
@@ -66,18 +69,18 @@ class ConfigControllerTest extends SqliteIntegrationTestCase
     public function testSystemPostUpdatesExistingConfigRowsWithoutDuplicates(): void
     {
         $this->createSystemConfigFixture([
-            'type'  => 'base',
-            'name'  => 'site_name',
+            'type' => 'base',
+            'name' => 'site_name',
             'value' => '旧站点名',
         ]);
         $this->createSystemConfigFixture([
-            'type'  => 'base',
-            'name'  => 'site_theme',
+            'type' => 'base',
+            'name' => 'site_theme',
             'value' => 'default',
         ]);
 
         $result = $this->callPostController('system', [
-            'site_name'  => '新站点名',
+            'site_name' => '新站点名',
             'site_theme' => 'blue-1',
         ]);
 
@@ -89,6 +92,19 @@ class ConfigControllerTest extends SqliteIntegrationTestCase
         $this->assertSame(1, $siteThemeRows);
         $this->assertSame('新站点名', SystemConfig::mk()->where(['type' => 'base', 'name' => 'site_name'])->value('value'));
         $this->assertSame('blue-1', SystemConfig::mk()->where(['type' => 'base', 'name' => 'site_theme'])->value('value'));
+    }
+
+    protected function defineSchema(): void
+    {
+        $this->createSystemConfigTable();
+        $this->createSystemOplogTable();
+    }
+
+    protected function afterSchemaCreated(): void
+    {
+        $context = new PluginSystemContext();
+        Container::getInstance()->instance(SystemContextInterface::class, $context);
+        $this->app->instance(SystemContextInterface::class, $context);
     }
 
     private function callPostController(string $action, array $post): array
@@ -116,7 +132,7 @@ class ConfigControllerTest extends SqliteIntegrationTestCase
     private function bindAdminUser(): void
     {
         RequestContext::instance()->setAuth([
-            'id'       => 9101,
+            'id' => 9101,
             'username' => 'tester',
             'password' => md5('changed-password'),
         ], '', true);

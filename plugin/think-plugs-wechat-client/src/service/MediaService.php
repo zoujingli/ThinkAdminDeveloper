@@ -20,15 +20,15 @@ declare(strict_types=1);
 
 namespace plugin\wechat\client\service;
 
-use plugin\wechat\client\model\WechatMedia;
-use plugin\wechat\client\model\WechatNews;
-use plugin\wechat\client\model\WechatNewsArticle;
 use Endroid\QrCode\Builder\Builder;
 use Endroid\QrCode\Encoding\Encoding;
 use Endroid\QrCode\ErrorCorrectionLevel\ErrorCorrectionLevelHigh;
 use Endroid\QrCode\RoundBlockSizeMode\RoundBlockSizeModeMargin;
 use Endroid\QrCode\Writer\PngWriter;
 use Endroid\QrCode\Writer\Result\ResultInterface;
+use plugin\wechat\client\model\WechatMedia;
+use plugin\wechat\client\model\WechatNews;
+use plugin\wechat\client\model\WechatNewsArticle;
 use think\admin\Exception;
 use think\admin\service\Service;
 use think\admin\service\Storage;

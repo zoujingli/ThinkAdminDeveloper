@@ -20,9 +20,9 @@ declare(strict_types=1);
 
 namespace plugin\system\controller\api;
 
-use Psr\Log\NullLogger;
 use plugin\system\service\SystemAuthService;
 use plugin\worker\model\SystemQueue;
+use Psr\Log\NullLogger;
 use think\admin\Controller;
 use think\exception\HttpResponseException;
 

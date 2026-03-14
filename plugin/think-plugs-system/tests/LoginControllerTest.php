@@ -1,22 +1,38 @@
 <?php
 
 declare(strict_types=1);
+/**
+ * +----------------------------------------------------------------------
+ * | ThinkAdmin Plugin for ThinkAdmin
+ * +----------------------------------------------------------------------
+ * | 版权所有 2014~2026 ThinkAdmin [ thinkadmin.top ]
+ * +----------------------------------------------------------------------
+ * | 官方网站: https://thinkadmin.top
+ * +----------------------------------------------------------------------
+ * | 开源协议 ( https://mit-license.org )
+ * | 免责声明 ( https://thinkadmin.top/disclaimer )
+ * | 会员特权 ( https://thinkadmin.top/vip-introduce )
+ * +----------------------------------------------------------------------
+ * | gitee 代码仓库：https://gitee.com/zoujingli/ThinkAdmin
+ * | github 代码仓库：https://github.com/zoujingli/ThinkAdmin
+ * +----------------------------------------------------------------------
+ */
 
 namespace think\admin\tests;
 
-use plugin\system\service\SystemAuthService;
 use plugin\system\controller\Login as LoginController;
-use plugin\system\service\SystemContext as PluginSystemContext;
 use plugin\system\model\SystemConfig;
 use plugin\system\model\SystemOplog;
-use think\Container;
-use think\Request;
-use think\admin\service\CacheSession;
+use plugin\system\service\SystemAuthService;
+use plugin\system\service\SystemContext as PluginSystemContext;
 use think\admin\contract\SystemContextInterface;
-use think\admin\service\JwtToken;
 use think\admin\runtime\RequestContext;
+use think\admin\service\CacheSession;
+use think\admin\service\JwtToken;
 use think\admin\tests\Support\SqliteIntegrationTestCase;
+use think\Container;
 use think\exception\HttpResponseException;
+use think\Request;
 
 /**
  * @internal
@@ -24,30 +40,13 @@ use think\exception\HttpResponseException;
  */
 class LoginControllerTest extends SqliteIntegrationTestCase
 {
-    protected function defineSchema(): void
-    {
-        $this->createSystemConfigTable();
-        $this->createSystemUserTable();
-        $this->createSystemOplogTable();
-    }
-
-    protected function afterSchemaCreated(): void
-    {
-        $context = new PluginSystemContext();
-        Container::getInstance()->instance(SystemContextInterface::class, $context);
-        $this->app->instance(SystemContextInterface::class, $context);
-        $this->app->config->set(array_merge(include TEST_PROJECT_ROOT . '/config/view.php', [
-            'view_path' => TEST_PROJECT_ROOT . '/plugin/think-plugs-system/src/view' . DIRECTORY_SEPARATOR,
-        ]), 'view');
-    }
-
     public function testCaptchaReturnsCodeAndUniqidForFreshToken(): void
     {
         $type = 'LoginCaptcha';
         $token = 'login-page-token-1';
 
         $result = $this->callActionController('captcha', [
-            'type'  => $type,
+            'type' => $type,
             'token' => $token,
         ]);
 
@@ -57,7 +56,7 @@ class LoginControllerTest extends SqliteIntegrationTestCase
         $this->assertStringStartsWith('captcha', strval($result['data']['uniqid'] ?? ''));
         $this->assertStringStartsWith('data:image/png;base64,', strval($result['data']['image'] ?? ''));
         $this->assertSame([
-            'type'  => $type,
+            'type' => $type,
             'token' => $token,
         ], $this->app->cache->get($this->captchaMapKey(strval($result['data']['uniqid'] ?? '')), []));
     }
@@ -68,18 +67,18 @@ class LoginControllerTest extends SqliteIntegrationTestCase
         $token = 'login-page-token-2';
 
         $captcha = $this->callActionController('captcha', [
-            'type'  => $type,
+            'type' => $type,
             'token' => $token,
         ]);
 
         $failed = $this->callActionController('index', [
             'username' => 'missing-user',
             'password' => md5('wrong-password'),
-            'verify'   => strval($captcha['data']['code'] ?? ''),
-            'uniqid'   => strval($captcha['data']['uniqid'] ?? ''),
+            'verify' => strval($captcha['data']['code'] ?? ''),
+            'uniqid' => strval($captcha['data']['uniqid'] ?? ''),
         ]);
         $nextCaptcha = $this->callActionController('captcha', [
-            'type'  => $type,
+            'type' => $type,
             'token' => $token,
         ]);
 
@@ -92,21 +91,21 @@ class LoginControllerTest extends SqliteIntegrationTestCase
     public function testIndexLogsInUserUpdatesStatsAndWritesOplog(): void
     {
         $user = $this->createSystemUserFixture([
-            'id'       => 9101,
+            'id' => 9101,
             'username' => 'tester',
             'password' => md5('secret123'),
-            'status'   => 1,
+            'status' => 1,
         ]);
         $captcha = $this->callActionController('captcha', [
-            'type'  => 'LoginCaptcha',
+            'type' => 'LoginCaptcha',
             'token' => 'login-page-token-3',
         ]);
 
         $result = $this->callActionController('index', [
             'username' => 'tester',
             'password' => md5($user->getData('password') . strval($captcha['data']['uniqid'] ?? '')),
-            'verify'   => strval($captcha['data']['code'] ?? ''),
-            'uniqid'   => strval($captcha['data']['uniqid'] ?? ''),
+            'verify' => strval($captcha['data']['code'] ?? ''),
+            'uniqid' => strval($captcha['data']['uniqid'] ?? ''),
         ]);
 
         $user = $user->refresh();
@@ -135,10 +134,10 @@ class LoginControllerTest extends SqliteIntegrationTestCase
     public function testOutClearsCurrentSessionAndReturnsLoginRedirect(): void
     {
         $user = $this->createSystemUserFixture([
-            'id'       => 9201,
+            'id' => 9201,
             'username' => 'logout-user',
             'password' => md5('logout-pass'),
-            'status'   => 1,
+            'status' => 1,
         ]);
         $sessionId = 'logout-session-id';
 
@@ -160,7 +159,7 @@ class LoginControllerTest extends SqliteIntegrationTestCase
     public function testGetIndexRedirectsLoggedInUsersToAdminHome(): void
     {
         RequestContext::instance()->setAuth([
-            'id'       => 9301,
+            'id' => 9301,
             'username' => 'redirect-user',
         ], '', true);
 
@@ -173,28 +172,28 @@ class LoginControllerTest extends SqliteIntegrationTestCase
     public function testGetIndexRendersLoginPageAndSyncsSiteHostForGuests(): void
     {
         $this->createSystemConfigFixture([
-            'type'  => 'base',
-            'name'  => 'site_name',
+            'type' => 'base',
+            'name' => 'site_name',
             'value' => '测试站点',
         ]);
         $this->createSystemConfigFixture([
-            'type'  => 'base',
-            'name'  => 'app_name',
+            'type' => 'base',
+            'name' => 'app_name',
             'value' => 'ThinkAdmin Test',
         ]);
         $this->createSystemConfigFixture([
-            'type'  => 'base',
-            'name'  => 'app_version',
+            'type' => 'base',
+            'name' => 'app_version',
             'value' => 'v1.0.0',
         ]);
         $this->createSystemConfigFixture([
-            'type'  => 'base',
-            'name'  => 'site_copy',
+            'type' => 'base',
+            'name' => 'site_copy',
             'value' => 'Copyright Test',
         ]);
         $this->createSystemConfigFixture([
-            'type'  => 'base',
-            'name'  => 'login_name',
+            'type' => 'base',
+            'name' => 'login_name',
             'value' => '管理后台登录',
         ]);
 
@@ -211,6 +210,23 @@ class LoginControllerTest extends SqliteIntegrationTestCase
         $this->assertStringContainsString('ThinkAdmin Test', $content);
         $this->assertStringContainsString('Copyright Test', $content);
         $this->assertSame('https://admin.example.com', $siteHost);
+    }
+
+    protected function defineSchema(): void
+    {
+        $this->createSystemConfigTable();
+        $this->createSystemUserTable();
+        $this->createSystemOplogTable();
+    }
+
+    protected function afterSchemaCreated(): void
+    {
+        $context = new PluginSystemContext();
+        Container::getInstance()->instance(SystemContextInterface::class, $context);
+        $this->app->instance(SystemContextInterface::class, $context);
+        $this->app->config->set(array_merge(include TEST_PROJECT_ROOT . '/config/view.php', [
+            'view_path' => TEST_PROJECT_ROOT . '/plugin/think-plugs-system/src/view' . DIRECTORY_SEPARATOR,
+        ]), 'view');
     }
 
     private function callActionController(string $action, array $payload = [], string $method = 'POST'): array

@@ -127,9 +127,9 @@ class OpenApiService extends Service
     public function getData(): array
     {
         $input = ValidateHelper::instance()->init([
-            'time.require'  => lang('请求参数 %s 不能为空！', ['time']),
-            'sign.require'  => lang('请求参数 %s 不能为空！', ['sign']),
-            'data.require'  => lang('请求参数 %s 不能为空！', ['data']),
+            'time.require' => lang('请求参数 %s 不能为空！', ['time']),
+            'sign.require' => lang('请求参数 %s 不能为空！', ['sign']),
+            'data.require' => lang('请求参数 %s 不能为空！', ['data']),
             'appid.require' => lang('请求参数 %s 不能为空！', ['appid']),
             'nostr.require' => lang('请求参数 %s 不能为空！', ['nostr']),
         ], 'post', [$this, 'baseError']);
@@ -208,13 +208,13 @@ class OpenApiService extends Service
     {
         $array = $this->signData($data);
         throw new HttpResponseException(json([
-            'code'  => $code,
-            'info'  => $info,
-            'time'  => $array['time'],
-            'sign'  => $array['sign'],
+            'code' => $code,
+            'info' => $info,
+            'time' => $array['time'],
+            'sign' => $array['sign'],
             'appid' => $array['appid'],
             'nostr' => $array['nostr'],
-            'data'  => $this->type !== 'json' ? json_decode($array['data'], true) : $array['data'],
+            'data' => $this->type !== 'json' ? json_decode($array['data'], true) : $array['data'],
         ]));
     }
 

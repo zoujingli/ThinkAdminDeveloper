@@ -1,10 +1,25 @@
 <?php
 
 declare(strict_types=1);
-
+/**
+ * +----------------------------------------------------------------------
+ * | ThinkAdmin Plugin for ThinkAdmin
+ * +----------------------------------------------------------------------
+ * | 版权所有 2014~2026 ThinkAdmin [ thinkadmin.top ]
+ * +----------------------------------------------------------------------
+ * | 官方网站: https://thinkadmin.top
+ * +----------------------------------------------------------------------
+ * | 开源协议 ( https://mit-license.org )
+ * | 免责声明 ( https://thinkadmin.top/disclaimer )
+ * | 会员特权 ( https://thinkadmin.top/vip-introduce )
+ * +----------------------------------------------------------------------
+ * | gitee 代码仓库：https://gitee.com/zoujingli/ThinkAdmin
+ * | github 代码仓库：https://github.com/zoujingli/ThinkAdmin
+ * +----------------------------------------------------------------------
+ */
 use plugin\helper\command\Publish;
-use think\App;
 use think\admin\service\RuntimeService;
+use think\App;
 use think\console\Input;
 use think\console\Output;
 
@@ -33,26 +48,26 @@ function runPublishSmoke(string $projectRoot): void
 
     try {
         mkdir($root . '/vendor/composer', 0777, true);
-        createPluginPackage($root, 'demo', 'vendor/demo-plugin', 'plugin\\demo\\Service');
+        createPluginPackage($root, 'demo', 'vendor/demo-plugin', 'plugin\demo\Service');
         createPluginPackage(
             $root,
             'system',
             'vendor/system-plugin',
-            'plugin\\system\\Service',
+            'plugin\system\Service',
             '20241010000001_install_system20241010.php'
         );
         createPluginPackage(
             $root,
             'storage',
             'vendor/storage-plugin',
-            'plugin\\storage\\Service',
+            'plugin\storage\Service',
             '20241010000002_install_storage20241010.php'
         );
         createPluginPackage(
             $root,
             'worker',
             'vendor/worker-plugin',
-            'plugin\\worker\\Service',
+            'plugin\worker\Service',
             '20241010000008_install_worker20241010.php'
         );
 
@@ -60,7 +75,7 @@ function runPublishSmoke(string $projectRoot): void
         RuntimeService::init($app);
         $app->config->set([
             'default' => 'file',
-            'stores'  => [
+            'stores' => [
                 'file' => ['type' => 'File', 'path' => $root . '/runtime/cache'],
             ],
         ], 'cache');
@@ -73,9 +88,9 @@ function runPublishSmoke(string $projectRoot): void
 
         $services = require $root . '/vendor/services.php';
         $versions = require $root . '/vendor/versions.php';
-        $manifest = json_decode((string) file_get_contents($root . '/database/migrations/.xadmin-published.json'), true, 512, JSON_THROW_ON_ERROR);
+        $manifest = json_decode((string)file_get_contents($root . '/database/migrations/.xadmin-published.json'), true, 512, JSON_THROW_ON_ERROR);
 
-        foreach (['plugin\\demo\\Service', 'plugin\\system\\Service', 'plugin\\storage\\Service', 'plugin\\worker\\Service'] as $service) {
+        foreach (['plugin\demo\Service', 'plugin\system\Service', 'plugin\storage\Service', 'plugin\worker\Service'] as $service) {
             assertTrue(in_array($service, $services, true), "missing published service {$service}");
         }
 
@@ -116,7 +131,7 @@ function assertHelperOwner(string $name, string $expectedFile): void
 
     assertSameValue(
         realpath($expectedFile),
-        realpath((string) $reflection->getFileName()),
+        realpath((string)$reflection->getFileName()),
         "{$name} should be loaded from {$expectedFile}"
     );
 }
@@ -126,12 +141,12 @@ function createPluginPackage(string $root, string $code, string $name, string $s
     $path = "{$root}/plugin/{$code}";
     mkdir($path, 0777, true);
     file_put_contents($path . '/composer.json', json_encode([
-        'name'        => $name,
-        'type'        => 'think-admin-plugin',
-        'version'     => '1.0.0',
+        'name' => $name,
+        'type' => 'think-admin-plugin',
+        'version' => '1.0.0',
         'description' => ucfirst($code),
-        'extra'       => [
-            'think'  => ['services' => [$service]],
+        'extra' => [
+            'think' => ['services' => [$service]],
             'xadmin' => ['service' => ['code' => $code, 'name' => ucfirst($code)]],
         ],
     ], JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES));

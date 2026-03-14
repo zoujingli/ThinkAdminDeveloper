@@ -5,7 +5,7 @@ declare(strict_types=1);
  * +----------------------------------------------------------------------
  * | ThinkAdmin Plugin for ThinkAdmin
  * +----------------------------------------------------------------------
- * | Copyright (c) 2014~2026 ThinkAdmin [ thinkadmin.top ]
+ * | 版权所有 2014~2026 ThinkAdmin [ thinkadmin.top ]
  * +----------------------------------------------------------------------
  * | 官方网站: https://thinkadmin.top
  * +----------------------------------------------------------------------
@@ -13,29 +13,27 @@ declare(strict_types=1);
  * | 免责声明 ( https://thinkadmin.top/disclaimer )
  * | 会员特权 ( https://thinkadmin.top/vip-introduce )
  * +----------------------------------------------------------------------
- * | gitee 代码仓库: https://gitee.com/zoujingli/ThinkAdmin
- * | github 代码仓库: https://github.com/zoujingli/ThinkAdmin
+ * | gitee 代码仓库：https://gitee.com/zoujingli/ThinkAdmin
+ * | github 代码仓库：https://github.com/zoujingli/ThinkAdmin
  * +----------------------------------------------------------------------
  */
 
 namespace think\admin\helper;
 
-use think\admin\helper\Helper;
 use think\admin\model\QueryFactory;
 use think\db\BaseQuery;
 use think\db\exception\DbException;
-use think\model\concern\SoftDelete;
 use think\Model;
+use think\model\concern\SoftDelete;
 
 /**
- * 通用删除管理器
+ * 通用删除管理器.
  * @class DeleteHelper
  */
 class DeleteHelper extends Helper
 {
     /**
      * @param BaseQuery|Model|string $dbQuery
-     * @param string $field
      * @param mixed $where
      * @throws DbException
      */

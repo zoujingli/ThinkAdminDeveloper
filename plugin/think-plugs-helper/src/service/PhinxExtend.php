@@ -1,6 +1,22 @@
 <?php
 
 declare(strict_types=1);
+/**
+ * +----------------------------------------------------------------------
+ * | ThinkAdmin Plugin for ThinkAdmin
+ * +----------------------------------------------------------------------
+ * | 版权所有 2014~2026 ThinkAdmin [ thinkadmin.top ]
+ * +----------------------------------------------------------------------
+ * | 官方网站: https://thinkadmin.top
+ * +----------------------------------------------------------------------
+ * | 开源协议 ( https://mit-license.org )
+ * | 免责声明 ( https://thinkadmin.top/disclaimer )
+ * | 会员特权 ( https://thinkadmin.top/vip-introduce )
+ * +----------------------------------------------------------------------
+ * | gitee 代码仓库：https://gitee.com/zoujingli/ThinkAdmin
+ * | github 代码仓库：https://github.com/zoujingli/ThinkAdmin
+ * +----------------------------------------------------------------------
+ */
 
 namespace plugin\helper\service;
 
@@ -8,10 +24,10 @@ use Phinx\Db\Adapter\AdapterInterface;
 use Phinx\Db\Adapter\MysqlAdapter;
 use Phinx\Db\Table;
 use plugin\system\model\SystemMenu;
-use think\admin\service\PluginService;
-use think\admin\Library;
 use think\admin\extend\ArrayTree;
 use think\admin\extend\FileTools;
+use think\admin\Library;
+use think\admin\service\PluginService;
 use think\admin\service\ProcessService;
 use think\helper\Str;
 use think\migration\Migrator;
@@ -44,7 +60,7 @@ class PhinxExtend
     public static function write2menu(array $zdata, $exists = [], ?Migrator $migrator = null): bool
     {
         if ($migrator instanceof Migrator) {
-            return static::write2menuByMigrator($migrator, $zdata, (array) $exists);
+            return static::write2menuByMigrator($migrator, $zdata, (array)$exists);
         }
         try {
             if (!empty($exists) && SystemMenu::mk()->where($exists)->findOrEmpty()->isExists()) {
@@ -215,13 +231,47 @@ class PhinxExtend
     }
 
     /**
+     * 检查迁移连接中的数据是否存在。
+     * @param array<string, mixed> $where
+     */
+    public static function migrationRowExists(Migrator $migrator, string $table, array $where = []): bool
+    {
+        return static::migrationRowId($migrator, $table, $where, false) > 0;
+    }
+
+    /**
+     * 获取迁移连接中的记录编号。
+     * @param array<string, mixed> $where
+     */
+    public static function migrationRowId(Migrator $migrator, string $table, array $where = [], bool $selectId = true): int
+    {
+        [$sql, $params] = static::buildMigrationWhereSql($migrator, $table, $where);
+        $field = $selectId ? $migrator->getAdapter()->quoteColumnName('id') : '1';
+        $stmt = $migrator->query("SELECT {$field} FROM {$sql} LIMIT 1", $params);
+        if ($stmt === false) {
+            return 0;
+        }
+
+        $row = $stmt->fetch(\PDO::FETCH_ASSOC);
+        if ($row === false) {
+            return 0;
+        }
+
+        if (!$selectId) {
+            return 1;
+        }
+
+        return intval($row['id'] ?? array_values($row)[0] ?? 0);
+    }
+
+    /**
      * 单个写入菜单.
      * @param array $menu 菜单数据
      * @param int $ppid 上级菜单
      */
     private static function write1menu(array $menu, int $ppid = 0): int
     {
-        return (int) SystemMenu::mk()->insertGetId(static::normalizeMenuRow($menu, $ppid));
+        return (int)SystemMenu::mk()->insertGetId(static::normalizeMenuRow($menu, $ppid));
     }
 
     /**
@@ -296,40 +346,6 @@ class PhinxExtend
     }
 
     /**
-     * 检查迁移连接中的数据是否存在。
-     * @param array<string, mixed> $where
-     */
-    public static function migrationRowExists(Migrator $migrator, string $table, array $where = []): bool
-    {
-        return static::migrationRowId($migrator, $table, $where, false) > 0;
-    }
-
-    /**
-     * 获取迁移连接中的记录编号。
-     * @param array<string, mixed> $where
-     */
-    public static function migrationRowId(Migrator $migrator, string $table, array $where = [], bool $selectId = true): int
-    {
-        [$sql, $params] = static::buildMigrationWhereSql($migrator, $table, $where);
-        $field = $selectId ? $migrator->getAdapter()->quoteColumnName('id') : '1';
-        $stmt = $migrator->query("SELECT {$field} FROM {$sql} LIMIT 1", $params);
-        if ($stmt === false) {
-            return 0;
-        }
-
-        $row = $stmt->fetch(\PDO::FETCH_ASSOC);
-        if ($row === false) {
-            return 0;
-        }
-
-        if (!$selectId) {
-            return 1;
-        }
-
-        return intval($row['id'] ?? array_values($row)[0] ?? 0);
-    }
-
-    /**
      * 构建迁移查询的 where 片段。
      * @param array<string, mixed> $where
      * @return array{0:string,1:array<int, mixed>}
@@ -379,7 +395,7 @@ class PhinxExtend
     /**
      * 生成索引名称.
      */
-    private static function genIndexName(string $table, string|array $name, bool $unique = false): string
+    private static function genIndexName(string $table, array|string $name, bool $unique = false): string
     {
         $getInitials = function (string $str): string {
             return implode('', array_map(function ($part) {
@@ -407,7 +423,7 @@ class PhinxExtend
         }
 
         if (is_array($spec)) {
-            $columns = array_values(array_filter((array) ($spec['columns'] ?? []), 'is_string'));
+            $columns = array_values(array_filter((array)($spec['columns'] ?? []), 'is_string'));
             $unique = !empty($spec['unique']);
             $options = array_diff_key($spec, ['columns' => true]);
             $options['name'] = $options['name'] ?? self::genIndexName($table, $columns, $unique);

@@ -1,15 +1,32 @@
 <?php
 
 declare(strict_types=1);
+/**
+ * +----------------------------------------------------------------------
+ * | ThinkAdmin Plugin for ThinkAdmin
+ * +----------------------------------------------------------------------
+ * | 版权所有 2014~2026 ThinkAdmin [ thinkadmin.top ]
+ * +----------------------------------------------------------------------
+ * | 官方网站: https://thinkadmin.top
+ * +----------------------------------------------------------------------
+ * | 开源协议 ( https://mit-license.org )
+ * | 免责声明 ( https://thinkadmin.top/disclaimer )
+ * | 会员特权 ( https://thinkadmin.top/vip-introduce )
+ * +----------------------------------------------------------------------
+ * | gitee 代码仓库：https://gitee.com/zoujingli/ThinkAdmin
+ * | github 代码仓库：https://github.com/zoujingli/ThinkAdmin
+ * +----------------------------------------------------------------------
+ */
 
 namespace plugin\helper\tests;
 
 use PHPUnit\Framework\TestCase;
 use plugin\helper\command\Publish;
+use think\admin\service\RuntimeService;
 use think\App;
+use think\console\Command;
 use think\console\Input;
 use think\console\Output;
-use think\admin\service\RuntimeService;
 
 /**
  * @internal
@@ -25,7 +42,7 @@ class PublishTest extends TestCase
     {
         $this->root = sys_get_temp_dir() . '/thinkadmin-helper-test-' . bin2hex(random_bytes(6));
         mkdir($this->root . '/vendor/composer', 0777, true);
-        $this->createPluginPackage('demo', 'vendor/demo-plugin', 'plugin\\demo\\Service');
+        $this->createPluginPackage('demo', 'vendor/demo-plugin', 'plugin\demo\Service');
     }
 
     protected function tearDown(): void
@@ -54,19 +71,19 @@ class PublishTest extends TestCase
         $this->createPluginPackage(
             'system',
             'vendor/system-plugin',
-            'plugin\\system\\Service',
+            'plugin\system\Service',
             '20241010000001_install_system20241010.php'
         );
         $this->createPluginPackage(
             'storage',
             'vendor/storage-plugin',
-            'plugin\\storage\\Service',
+            'plugin\storage\Service',
             '20241010000002_install_storage20241010.php'
         );
         $this->createPluginPackage(
             'worker',
             'vendor/worker-plugin',
-            'plugin\\worker\\Service',
+            'plugin\worker\Service',
             '20241010000008_install_worker20241010.php'
         );
 
@@ -75,13 +92,13 @@ class PublishTest extends TestCase
 
         $services = require $this->root . '/vendor/services.php';
         $versions = require $this->root . '/vendor/versions.php';
-        $manifest = json_decode((string) file_get_contents($this->root . '/database/migrations/.xadmin-published.json'), true);
+        $manifest = json_decode((string)file_get_contents($this->root . '/database/migrations/.xadmin-published.json'), true);
 
         $this->assertSame(0, $code);
-        $this->assertContains('plugin\\demo\\Service', $services);
-        $this->assertContains('plugin\\system\\Service', $services);
-        $this->assertContains('plugin\\storage\\Service', $services);
-        $this->assertContains('plugin\\worker\\Service', $services);
+        $this->assertContains('plugin\demo\Service', $services);
+        $this->assertContains('plugin\system\Service', $services);
+        $this->assertContains('plugin\storage\Service', $services);
+        $this->assertContains('plugin\worker\Service', $services);
         $this->assertSame('System', $versions['vendor/system-plugin']['name']);
         $this->assertSame('plugin', $versions['vendor/storage-plugin']['type']);
         $this->assertFileExists($this->root . '/database/migrations/20241010000002_install_storage20241010.php');
@@ -98,7 +115,7 @@ class PublishTest extends TestCase
         $this->createPluginPackage(
             'system',
             'vendor/system-plugin',
-            'plugin\\system\\Service',
+            'plugin\system\Service',
             '20241010000001_install_system20241010.php'
         );
 
@@ -122,7 +139,7 @@ class PublishTest extends TestCase
             '20241010000001_install_system20241010.php' => $this->root . '/plugin/system/stc/database/20241010000001_install_system20241010.php',
         ]);
 
-        $manifest = json_decode((string) file_get_contents($targetDir . '/' . self::MIGRATION_MANIFEST), true);
+        $manifest = json_decode((string)file_get_contents($targetDir . '/' . self::MIGRATION_MANIFEST), true);
 
         $this->assertFileDoesNotExist($targetDir . '/20241010000002_install_storage20241010.php');
         $this->assertFileExists($targetDir . '/20241010000001_install_system20241010.php');
@@ -132,8 +149,8 @@ class PublishTest extends TestCase
 
     public function testSyncMigrationsRejectsDuplicateVersions(): void
     {
-        $this->createPluginPackage('system-a', 'vendor/system-a', 'plugin\\systema\\Service', '20241010000011_install_system_a.php');
-        $this->createPluginPackage('system-b', 'vendor/system-b', 'plugin\\systemb\\Service', '20241010000011_install_system_b.php');
+        $this->createPluginPackage('system-a', 'vendor/system-a', 'plugin\systema\Service', '20241010000011_install_system_a.php');
+        $this->createPluginPackage('system-b', 'vendor/system-b', 'plugin\systemb\Service', '20241010000011_install_system_b.php');
 
         $command = $this->newCommand();
 
@@ -153,7 +170,7 @@ class PublishTest extends TestCase
         $this->createPluginPackage(
             'system',
             'vendor/system-plugin',
-            'plugin\\system\\Service',
+            'plugin\system\Service',
             '20241010000001_install_system20241010.php'
         );
 
@@ -166,7 +183,7 @@ class PublishTest extends TestCase
             '20241010000001_install_system20241010.php' => $this->root . '/plugin/system/stc/database/20241010000001_install_system20241010.php',
         ]);
 
-        $manifest = json_decode((string) file_get_contents($targetDir . '/' . self::MIGRATION_MANIFEST), true);
+        $manifest = json_decode((string)file_get_contents($targetDir . '/' . self::MIGRATION_MANIFEST), true);
 
         $this->assertFileDoesNotExist($targetDir . '/20241010000001_install_legacy_system.php');
         $this->assertFileExists($targetDir . '/20241010000001_install_system20241010.php');
@@ -218,7 +235,7 @@ class PublishTest extends TestCase
      */
     private function invokeSyncMigrations(Publish $command, array $sources, bool $force = false): void
     {
-        $property = new \ReflectionProperty(\think\console\Command::class, 'output');
+        $property = new \ReflectionProperty(Command::class, 'output');
         $property->setAccessible(true);
         $property->setValue($command, new Output('buffer'));
 

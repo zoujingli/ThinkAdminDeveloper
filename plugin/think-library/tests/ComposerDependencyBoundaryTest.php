@@ -1,6 +1,22 @@
 <?php
 
 declare(strict_types=1);
+/**
+ * +----------------------------------------------------------------------
+ * | ThinkAdmin Plugin for ThinkAdmin
+ * +----------------------------------------------------------------------
+ * | 版权所有 2014~2026 ThinkAdmin [ thinkadmin.top ]
+ * +----------------------------------------------------------------------
+ * | 官方网站: https://thinkadmin.top
+ * +----------------------------------------------------------------------
+ * | 开源协议 ( https://mit-license.org )
+ * | 免责声明 ( https://thinkadmin.top/disclaimer )
+ * | 会员特权 ( https://thinkadmin.top/vip-introduce )
+ * +----------------------------------------------------------------------
+ * | gitee 代码仓库：https://gitee.com/zoujingli/ThinkAdmin
+ * | github 代码仓库：https://github.com/zoujingli/ThinkAdmin
+ * +----------------------------------------------------------------------
+ */
 
 namespace think\admin\tests;
 
@@ -148,7 +164,7 @@ class ComposerDependencyBoundaryTest extends TestCase
     private function localRequires(string $package): array
     {
         $requires = array_keys($this->packages[$package]['require'] ?? []);
-        $locals = array_values(array_filter($requires, fn(string $name): bool => isset($this->packages[$name])));
+        $locals = array_values(array_filter($requires, fn (string $name): bool => isset($this->packages[$name])));
         sort($locals);
         return $locals;
     }

@@ -36,7 +36,7 @@ use think\model\concern\SoftDelete;
  * @property string $code 数据代码
  * @property string $content 数据内容
  * @property string $create_time 创建时间
- * @property string|null $delete_time 删除时间
+ * @property null|string $delete_time 删除时间
  * @property string $name 数据名称
  * @property string $type 数据类型
  * @class SystemBase
@@ -47,7 +47,7 @@ class SystemBase extends Model
 
     protected $deleteTime = 'delete_time';
 
-    protected $defaultSoftDelete = null;
+    protected $defaultSoftDelete;
 
     protected $updateTime = false;
 
@@ -238,6 +238,7 @@ class SystemBase extends Model
 
     /**
      * 打包内容元数据.
+     * @param mixed $plugins
      */
     public static function packContent(string $text = '', $plugins = []): string
     {
@@ -286,7 +287,7 @@ class SystemBase extends Model
     private static function normalizePluginCodes($plugins): array
     {
         $items = [];
-        foreach ((array) $plugins as $plugin) {
+        foreach ((array)$plugins as $plugin) {
             $plugin = trim(strval($plugin));
             if ($plugin === '') {
                 continue;
