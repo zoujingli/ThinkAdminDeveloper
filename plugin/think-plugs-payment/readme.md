@@ -67,9 +67,14 @@ composer remove zoujingli/think-plugs-payment
 
 接口节点：
 
-- `payment/api.auth.address/*`
-- `payment/api.auth.balance/*`
-- `payment/api.auth.integral/*`
+- `/api/payment/auth/address/*`
+- `/api/payment/auth/balance/*`
+- `/api/payment/auth/integral/*`
+
+双入口约定：
+
+- 后台页面走 `/payment/...`
+- 用户侧支付接口走 `/api/payment/...`
 
 支付通知路由：
 

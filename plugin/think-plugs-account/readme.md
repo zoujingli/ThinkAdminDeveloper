@@ -64,17 +64,21 @@ composer remove zoujingli/think-plugs-account
 
 接口入口：
 
-- `account/api.login/*`
-- `account/api.auth/*`
-- `account/api.auth.center/*`
-- `account/api.wechat/*`
-- `account/api.wxapp/*`
+- `/api/account/login/*`
+- `/api/account/auth/*`
+- `/api/account/auth/center/*`
+- `/api/account/wechat/*`
+- `/api/account/wxapp/*`
+
+双入口约定：
+
+- 后台页面仍走 `/account/...`
+- 终端接口统一走 `/api/account/...`
 
 接口认证说明：
 
 - 登录成功后返回 `account-auth` JWT 令牌
 - 后续接口统一通过请求头 `Authorization: Bearer <token>` 认证
-- 浏览器整页请求可额外读取认证 Cookie
 - 认证链路不再依赖 Session
 - 登录来源可以是手机、公众号、小程序或 App，但认证协议统一为账号 JWT
 - 统一规范以 [../../docs/architecture/auth-token-session.md](../../docs/architecture/auth-token-session.md) 为准

@@ -62,12 +62,25 @@ composer remove zoujingli/think-plugs-wechat-service
 
 接口节点：
 
-- `plugin-wechat-service/api.client/jsonrpc`
-- `plugin-wechat-service/api.push/*`
+- `/api/plugin-wechat-service/client/jsonrpc`
+- `/api/plugin-wechat-service/push/*`
 
 JSON-RPC 地址示例：
 
-- `http://example.com/plugin-wechat-service/api.client/jsonrpc?token=TOKEN`
+- `http://example.com/api/plugin-wechat-service/client/jsonrpc?token=TOKEN`
+
+双入口约定：
+
+- 后台页面统一走 `/plugin-wechat-service/...`
+- 开放平台接口统一走 `/api/plugin-wechat-service/...`
+
+典型示例：
+
+- `/plugin-wechat-service/config/index`
+- `/api/plugin-wechat-service/push/ticket`
+- `/api/plugin-wechat-service/push/notify/appid/$APPID$`
+- `/api/plugin-wechat-service/push/auth?source=SOURCE`
+- `/api/plugin-wechat-service/client/jsonrpc?token=TOKEN`
 
 ## 命令说明
 

@@ -55,6 +55,30 @@ php think xadmin:publish --migrate
 - `system/auth/index`
 - `system/user/index`
 
+## 双入口标准
+
+`ThinkPlugsSystem` 同时承载后台页面入口和系统 API 入口：
+
+- Web 页面：`/system/...`
+- API 接口：`/api/system/...`
+
+典型示例：
+
+- `/system/index/index`
+- `/system/config/index`
+- `/system/queue/index`
+- `/api/system/plugs/script`
+- `/api/system/queue/status`
+- `/api/system/system/config`
+
+前端公共脚本会下发：
+
+- `taSystem`
+- `taSystemApi`
+- `taApiPrefix`
+- `taStorage`
+- `taStorageApi`
+
 ## 全局能力
 
 - 辅助函数：`auth`、`system_user`、`system_uri`

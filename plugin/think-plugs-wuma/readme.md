@@ -78,10 +78,15 @@ composer remove zoujingli/think-plugs-wuma
 
 接口节点：
 
-- `wuma/api.base/*`
-- `wuma/api.coder/*`
-- `wuma/api.auth/*`
-- `wuma/api.login/*`
+- `/api/wuma/base/*`
+- `/api/wuma/coder/*`
+- `/api/wuma/auth/*`
+- `/api/wuma/login/*`
+
+双入口约定：
+
+- 运营后台页面走 `/wuma/...`
+- 设备、扫码与登录接口走 `/api/wuma/...`
 
 接口请求头规范：
 
@@ -95,7 +100,7 @@ composer remove zoujingli/think-plugs-wuma
 设备接口示例：
 
 ```http
-POST /wuma/api.login/login HTTP/1.1
+POST /api/wuma/login/login HTTP/1.1
 Authorization: Bearer <token>
 X-Device-Code: PDA-001
 X-Device-Type: warehouse

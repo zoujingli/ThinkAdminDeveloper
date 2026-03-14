@@ -90,6 +90,10 @@ flowchart TD
 - 请求首段命中插件前缀时切换到插件
 - 未命中插件前缀时回退到单应用
 - 动态插件切换默认关闭
+- 页面入口统一使用 `/{plugin}/...`
+- 接口入口统一使用 `/api/{plugin}/{controller}/{action}`
+- 页面链接统一使用 `sysuri()`，接口链接统一使用 `apiuri()`
+- 旧 `/{plugin}/api.xxx/...` 只保留兼容，不再作为新代码标准
 
 ### 服务注册
 
@@ -101,8 +105,8 @@ flowchart TD
 ### 认证
 
 - 后台与 API 统一优先使用 `Authorization: Bearer <JWT>`
-- 浏览器场景可额外读取认证 Cookie 完成整页请求鉴权
-- 不再使用 Session 承载后台登录态
+- 不再使用 Session 或认证 Cookie 承载后台登录态
+- 后台壳页首跳允许一次性 `access_key` 引导，后续请求统一落到 `Authorization`
 - 用户临时态统一使用基于 Token SID 的 `CacheSession`
 - 统一入口为 `tsession()`
 
@@ -124,6 +128,17 @@ flowchart TD
 - 后台统一使用 `LayUI + $.module.use(...)`
 - `RequireJS` 已彻底移除
 - 数据导出统一使用前端 JavaScript 模块
+- 系统脚本统一下发 `taSystem / taSystemApi / taStorage / taStorageApi / taApiPrefix`
+- 上传、图标、队列等高频模块优先消费这组变量，不再手工拼 `api.xxx`
+
+### 双入口示例
+
+- 页面：`/system/index/index`
+- 页面：`/storage/config/index`
+- 接口：`/api/system/plugs/script`
+- 接口：`/api/storage/upload/file`
+- 接口：`/api/wechat/view/news?id=1`
+- 接口：`/api/plugin-wechat-service/client/jsonrpc?token=TOKEN`
 
 ### 目录
 

@@ -18,10 +18,10 @@
 ## 架构说明
 
 - 基础入口层：`Controller`、`Model`、`Plugin`、`Command` 为所有插件提供统一基类和调用约定。
-- 服务层：`service` 负责插件注册查询、存储门面、会话、JWT、RPC、运行控制和 Worker 门面。
-- 运行时层：`runtime` 只负责请求/系统上下文门面。
-- 路由层：`route` 负责 `Route` / `Url` 适配。
-- 中间件层：`middleware` 负责多应用切换中间件。
+- 服务层：`service` 负责插件注册查询、运行时门面、存储门面、会话和标准能力适配。
+- 运行时层：`runtime` 负责请求上下文、系统上下文和插件命中结果传递。
+- 路由层：`route` 负责 `Route` / `Url` 适配和插件前缀 URL 生成。
+- 中间件层：`middleware` 负责多入口切换与请求改写。
 - 支撑层：`model / helper / extend / contract` 负责模型与查询标准化、控制器辅助能力、基础工具和标准契约。
 
 ## 组件边界
@@ -42,7 +42,7 @@
 当前核心实现已经按职责收敛到这些域：
 
 - `service`
-  负责 `AppService / ModuleService / NodeService / PluginService`、`Storage / CacheSession / JwtToken`、`RuntimeService / QueueService / ProcessService`、`JsonRpc* / FaviconBuilder / ImageSliderVerify` 等门面能力。
+  负责 `AppService / ModuleService / NodeService / PluginService`、`Storage / CacheSession / JwtToken`、`RuntimeService / QueueService / ProcessService` 等门面能力。
 - `runtime`
   只保留 `SystemContext / NullSystemContext / RequestContext / RequestTokenService` 这类上下文对象。
 - `route`
@@ -114,9 +114,14 @@ composer require zoujingli/think-library
 
 - `app` 只保留一个 `single_app`
 - 插件通过 URL 前缀注册访问入口
+- Web 页面入口统一使用 `/{plugin}/...`
+- API 接口入口统一使用 `/api/{plugin}/{controller}/{action}`
+- API 入口会自动映射到现有 `controller/api/*`，例如 `/api/storage/upload/file` -> `controller/api/Upload::file`
 - 请求首段命中已注册前缀时切换到对应插件
 - 未命中插件前缀时回退到单应用
+- 旧式插件接口路径 `/{plugin}/api.xxx/...` 继续兼容，便于平滑迁移
 - 动态插件切换默认关闭，需要显式开启 `app.plugin.switch.enabled`
+- 统一 URL 生成规则为：页面用 `sysuri()`，标准接口用 `apiuri()`
 
 配置示例：
 
@@ -128,6 +133,7 @@ return [
             'system' => 'system',
             'wechat' => ['wechat', 'mp'],
         ],
+        'api_prefix' => 'api',
         'switch' => [
             'enabled' => false,
             'query' => '_plugin',
@@ -137,10 +143,31 @@ return [
 ];
 ```
 
+标准示例：
+
+- 页面：`/system/config/index`
+- 页面：`/storage/config/index`
+- 接口：`/api/system/plugs/script`
+- 接口：`/api/storage/upload/file`
+- 接口：`/api/wechat/view/news?id=1`
+
+## 前端脚本变量
+
+系统后台脚本统一注入这些变量，供前端模块按标准入口加载：
+
+- `taApiPrefix`：当前 API 前缀，默认 `api`
+- `taSystem`：系统后台 Web 根地址，例如 `/system`
+- `taSystemApi`：系统后台 API 根地址，例如 `/api/system`
+- `taStorage`：存储中心 Web 根地址，例如 `/storage`
+- `taStorageApi`：存储中心 API 根地址，例如 `/api/storage`
+- `taTokenHeader`：认证请求头名称
+- `taTokenScheme`：认证方案，默认 `Bearer`
+
 ## 认证机制
 
 - 后台统一使用 `Authorization: Bearer <JWT>`
-- 浏览器整页请求可额外读取认证 Cookie，但登录态不再由 Session 承载
+- 后台登录态不再由 Session 或认证 Cookie 承载
+- 后台壳页首跳允许使用一次性 `access_key` 引导，随后统一落到本地 `localStorage + Authorization`
 - `ThinkLibrary` 负责基础 JWT 与请求令牌解析门面
 - 令牌会话统一使用 `CacheSession` / `tsession()`，并按 Token SID 隔离
 - 表单防重与一次性令牌基于缓存实现，不再依赖 Session
@@ -173,6 +200,7 @@ return [
 - 存储门面与统一调用入口
 - HTTP / RPC / 文件 / 编码工具
 - 插件元数据读取与菜单解析
+- `apiuri()` 统一生成 `/api/{plugin}/...` 风格地址
 
 ## 使用示例
 

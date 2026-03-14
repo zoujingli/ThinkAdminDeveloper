@@ -8,7 +8,8 @@
 
 - 登录态必须由显式 Token 表达
 - 临时用户态必须绑定到 Token 对应的 `sid`
-- `Authorization` 优先于认证 Cookie
+- 业务请求统一使用 `Authorization`
+- 后台壳页首跳只允许一次性 `access_key` 引导，不长期在 URL 或 Cookie 中保留认证态
 - 登录来源可以有多种，但认证协议尽量收敛
 
 ## 标准认证协议
@@ -17,7 +18,7 @@
 
 - 类型：`system-auth`
 - 载体：`Authorization: Bearer <JWT>`
-- 浏览器整页请求：可回退后台认证 Cookie
+- 首屏壳页：允许一次性 `access_key`
 - 会话：JWT 内的 `sid` 绑定 `CacheSession`
 
 适用场景：
@@ -30,7 +31,6 @@
 
 - 类型：`account-auth`
 - 载体：`Authorization: Bearer <JWT>`
-- 浏览器整页请求：可回退账号认证 Cookie
 - 会话：JWT 内的 `sid` 绑定 `CacheSession`
 
 适用场景：
@@ -75,7 +75,8 @@
 统一入口为请求级令牌解析服务：
 
 - 有 `Authorization` 时，只按请求头判定
-- 没有 `Authorization` 时，才回退认证 Cookie
+- 后台壳页首次进入时，可通过一次性 `access_key` 引导写入本地 Token
+- 不再依赖认证 Cookie 回退
 - 不再混用 `Api-Token`、`Api-Code`、`Api-Type`
 
 统一请求头：

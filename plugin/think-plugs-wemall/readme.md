@@ -79,10 +79,15 @@ composer remove zoujingli/think-plugs-wemall
 
 接口节点：
 
-- `wemall/api.goods/*`
-- `wemall/api.data/*`
-- `wemall/api.auth/*`
-- `wemall/api.help/*`
+- `/api/wemall/goods/*`
+- `/api/wemall/data/*`
+- `/api/wemall/auth/*`
+- `/api/wemall/help/*`
+
+双入口约定：
+
+- 商城后台页面走 `/wemall/...`
+- 商城客户端接口走 `/api/wemall/...`
 
 ## 命令说明
 

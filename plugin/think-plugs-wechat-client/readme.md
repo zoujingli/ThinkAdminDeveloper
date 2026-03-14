@@ -71,10 +71,23 @@ composer remove zoujingli/think-plugs-wechat-client
 
 接口节点：
 
-- `wechat/api.push/*`
-- `wechat/api.view/*`
-- `wechat/api.js/*`
-- `wechat/api.login/*`
+- `/api/wechat/push/*`
+- `/api/wechat/view/*`
+- `/api/wechat/js/*`
+- `/api/wechat/login/*`
+
+双入口约定：
+
+- 后台页面统一走 `/wechat/...`
+- 公开接口、预览页和测试接口统一走 `/api/wechat/...`
+
+典型示例：
+
+- `/wechat/news/index`
+- `/api/wechat/view/news?id=1`
+- `/api/wechat/view/text?content=hello`
+- `/api/wechat/test/jsapiQrc`
+- `/api/wechat/login/oauth`
 
 ## 命令说明
 

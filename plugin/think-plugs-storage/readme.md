@@ -12,7 +12,7 @@
 
 - `ThinkPlugsStorage` 是统一文件存储中心，负责驱动注册、标准配置、上传授权、上传接口和存储配置页面。
 - 组件把本地、Alist、Qiniu、Upyun、AliOSS、TxCos 等驱动统一成一套配置和授权协议。
-- 后台用户通过 `storage/config/*` 管理存储，前端上传脚本通过 `storage/api.upload/*` 获取授权与上传状态。
+- 后台用户通过 `storage/config/*` 管理存储，前端上传脚本通过 `/api/storage/upload/*` 获取授权与上传状态。
 - 组件不再让独立后台插件承载具体存储实现，系统后台只保留入口摘要。
 
 ## 架构说明
@@ -65,13 +65,26 @@ composer remove zoujingli/think-plugs-storage
 
 - `storage/config/index`
 - `storage/config/storage?type=<driver>`
-- `storage/api.upload/index`
+- `/api/storage/upload/index`
 
 说明：
 
 - `ThinkPlugsSystem` 中提供“进入存储中心”的入口卡片与桥接入口
-- `system/config/storage` 与 `system/api.upload/*` 作为系统后台桥接入口，不承载具体实现
+- `system/config/storage` 与旧 `storage/api.upload/*` 只保留兼容桥接，不承载具体实现
 - 驱动枚举、模板名称、区域列表、上传授权都由 `ThinkPlugsStorage` 提供
+
+## 双入口标准
+
+- Web 页面：`/storage/...`
+- API 接口：`/api/storage/upload/*`
+
+标准上传链路：
+
+1. 加载 `/api/storage/upload/index` 获取上传脚本
+2. 调用 `/api/storage/upload/state` 获取上传授权
+3. 上传或秒传完成后回调 `/api/storage/upload/done`
+
+旧的 `storage/api.upload/*` 仅保留兼容，不再作为新代码入口。
 
 ## 标准配置
 
@@ -123,9 +136,9 @@ composer remove zoujingli/think-plugs-storage
 - `Storage::regions($driver)`
 - `Storage::template($driver)`
 - `Storage::authorize($driver, $key, ...)`
-- `storage/api.upload/state`
-- `storage/api.upload/file`
-- `storage/api.upload/done`
+- `/api/storage/upload/state`
+- `/api/storage/upload/file`
+- `/api/storage/upload/done`
 
 ## 兼容规则
 

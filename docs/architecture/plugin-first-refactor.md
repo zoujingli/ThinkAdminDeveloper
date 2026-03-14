@@ -8,6 +8,8 @@
 - `app/*` 不再作为默认多应用集合
 - `app` 只保留单应用兜底入口
 - 当 `/x/...` 命中已注册插件前缀时进入插件
+- Web 页面标准入口为 `/{plugin}/...`
+- API 标准入口为 `/api/{plugin}/{controller}/{action}`
 - 当 `/x/...` 未命中插件时回退到单应用控制器解析
 - `_plugin / X-Plugin-App` 只保留为可选调试开关，默认关闭
 
@@ -101,6 +103,25 @@
 - `ThinkPlugsSystem` 负责系统后台壳层、认证权限和 `system_*` 核心表
 - `ThinkPlugsWorker` 负责守护进程生命周期
 - `ThinkPlugsHelper` 负责安装、发布和迁移导出
+- 新 API 入口直接映射现有 `controller/api/*`，旧的 `plugin/api.xxx/...` 仍保留兼容
+
+### 双入口标准
+
+- 页面入口统一使用 `/{plugin}/...`
+- 接口入口统一使用 `/api/{plugin}/{controller}/{action}`
+- 页面链接优先使用 `sysuri()`
+- 接口链接优先使用 `apiuri()`
+- 系统后台脚本会统一下发 `taSystem / taSystemApi / taStorage / taStorageApi / taApiPrefix`
+- 插件模板、静态脚本、上传脚本和公开预览页都应优先消费这组变量或 `apiuri()`
+
+示例：
+
+- `/system/index/index`
+- `/storage/config/index`
+- `/api/system/plugs/script`
+- `/api/storage/upload/index`
+- `/api/wechat/view/text`
+- `/api/plugin-wechat-service/client/jsonrpc`
 
 ### 数据库脚本
 
