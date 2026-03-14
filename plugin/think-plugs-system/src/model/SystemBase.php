@@ -274,12 +274,8 @@ class SystemBase extends Model
      * 格式化创建时间.
      * @param mixed $value
      */
-    public function getCreateTimeAttr($value): string
-    {
-        return format_datetime($value);
-    }
 
-    /**
+/**
      * 标准化插件编码列表.
      * @param mixed $plugins
      * @return string[]

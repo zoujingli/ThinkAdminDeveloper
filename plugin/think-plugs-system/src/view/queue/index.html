@@ -97,8 +97,8 @@
                         ][d.status] || '') + '执行时间：';
                         d.enter_time = d.enter_time || '';
                         d.outer_time = d.outer_time || '0.0000';
-                        if (d.enter_time.length > 12) {
-                            d.html += d.enter_time.substring(12) + '<span class="color-desc"> ( ' + d.outer_time + ' ) </span>';
+                        if (String(d.enter_time) !== '' && String(d.enter_time) !== '0' && String(d.enter_time) !== '0.0000') {
+                            d.html += String(d.enter_time) + '<span class="color-desc"> ( ' + d.outer_time + ' ) </span>';
                             d.html += ' 已执行 <b class="color-blue">' + (d.attempts || 0) + '</b> 次';
                         } else {
                             d.html += '<span class="color-desc">任务未执行</span>'

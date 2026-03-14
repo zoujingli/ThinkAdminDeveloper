@@ -90,7 +90,7 @@ class Certificate extends Controller
             'numb' => CodeToolkit::uniqidNumber(16, 'CT'),
             'comp' => $this->user['company_name'] ?? '',
             'hash' => strtolower(md5(uniqid())),
-            'date' => format_datetime(time()),
+            'date' => date('Y-m-d H:i:s'),
         ];
         $items = json_decode($data['items'], true);
         foreach ($items as $key => &$item) {

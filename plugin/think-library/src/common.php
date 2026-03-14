@@ -422,23 +422,3 @@ if (!function_exists('format_bytes')) {
         return $size;
     }
 }
-if (!function_exists('format_datetime')) {
-    /**
-     * 日期格式标准输出.
-     * @param int|string $datetime 输入日期
-     * @param string $format 输出格式
-     */
-    function format_datetime($datetime, string $format = 'Y年m月d日 H:i:s'): string
-    {
-        if (empty($datetime)) {
-            return '-';
-        }
-        if (is_numeric($datetime)) {
-            return date(lang($format), intval($datetime));
-        }
-        if ($timestamp = strtotime((string)$datetime)) {
-            return date(lang($format), $timestamp);
-        }
-        return (string)$datetime;
-    }
-}

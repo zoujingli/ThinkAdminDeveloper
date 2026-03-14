@@ -125,10 +125,4 @@ class Fans extends Controller
     /**
      * 列表数据处理.
      */
-    protected function _index_page_filter(array &$data)
-    {
-        foreach ($data as &$vo) {
-            $vo['subscribe_at'] = format_datetime($vo['subscribe_at']);
-        }
-    }
 }
