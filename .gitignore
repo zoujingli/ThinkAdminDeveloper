@@ -5,6 +5,7 @@
 .fleet
 .vscode
 .DS_Store
+.phpunit.result.cache
 
 /log
 /vendor
