@@ -40,7 +40,7 @@ use plugin\payment\service\contract\PaymentResponse;
 use plugin\payment\service\contract\PaymentUsageTrait;
 use plugin\payment\service\Payment;
 use think\admin\Exception;
-use think\admin\extend\http\HttpClient;
+use think\admin\extend\HttpClient;
 use think\Response;
 
 /**

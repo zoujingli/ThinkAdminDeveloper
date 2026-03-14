@@ -24,7 +24,7 @@ use plugin\payment\service\Balance;
 use plugin\payment\service\Integral;
 use plugin\wemall\controller\api\Auth;
 use plugin\wemall\model\PluginWemallUserCheckin;
-use think\admin\extend\codec\CodeToolkit;
+use think\admin\extend\CodeToolkit;
 use think\admin\helper\QueryHelper;
 use think\exception\HttpResponseException;
 

@@ -26,7 +26,7 @@ return [
     'domain' => '',
     // httponly 访问设置
     'httponly' => true,
-    // 是否允许服务端写回 Cookie（默认关闭，认证与语言均不依赖 Cookie）
+    // 是否允许服务端写回 Cookie（默认关闭，开启后可回写认证与语言 Cookie）
     'setcookie' => false,
     // cookie 安全传输，只支持 https 协议
     'secure' => request()->isSsl(),

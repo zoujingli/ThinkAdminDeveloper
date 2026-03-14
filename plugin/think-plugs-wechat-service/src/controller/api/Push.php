@@ -20,9 +20,9 @@ declare(strict_types=1);
 
 namespace plugin\wechat\service\controller\api;
 
-use plugin\wechat\service\AuthService;
-use plugin\wechat\service\handle\PublishHandle;
-use plugin\wechat\service\handle\ReceiveHandle;
+use plugin\wechat\service\service\AuthService;
+use plugin\wechat\service\service\PublishHandle;
+use plugin\wechat\service\service\ReceiveHandle;
 use plugin\wechat\service\model\WechatAuth;
 use think\admin\Controller;
 use think\admin\Exception;

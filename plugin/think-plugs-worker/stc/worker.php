@@ -48,32 +48,11 @@ return [
             'driver' => 'queue',
             'process' => [
                 'name' => 'ThinkAdminQueue',
-                'count' => 1,
+                'count' => 2,
             ],
             'queue' => [
                 'scan_interval' => 1,
                 'batch_limit' => 20,
-            ],
-        ],
-        'websocket' => [
-            'enabled' => false,
-            'label' => 'ThinkAdmin WebSocket',
-            'driver' => 'socket',
-            'server' => [
-                'scheme' => 'websocket',
-                'host' => '0.0.0.0',
-                'port' => 8686,
-                'context' => [],
-            ],
-            'socket' => [
-                'type' => 'workerman',
-            ],
-            'process' => [
-                'name' => 'ThinkAdminWebSocket',
-                'count' => 1,
-                'onMessage' => static function ($connection, $data): void {
-                    $connection->send((string)$data);
-                },
             ],
         ],
     ],

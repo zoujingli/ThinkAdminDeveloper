@@ -25,7 +25,7 @@ use plugin\wechat\client\service\PaymentService;
 use plugin\wechat\client\service\WechatService;
 use think\admin\Controller;
 use think\admin\Exception;
-use think\admin\extend\codec\CodeToolkit;
+use think\admin\extend\CodeToolkit;
 use think\Response;
 use WeChat\Contracts\Tools;
 use WeChat\Exceptions\InvalidResponseException;

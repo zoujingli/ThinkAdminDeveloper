@@ -36,7 +36,7 @@ namespace plugin\payment;
 
 use plugin\account\Service as AccountService;
 use plugin\payment\service\Payment;
-use think\admin\extend\codec\CodeToolkit;
+use think\admin\extend\CodeToolkit;
 use think\admin\Plugin;
 use think\Request;
 

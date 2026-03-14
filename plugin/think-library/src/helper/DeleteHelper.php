@@ -20,10 +20,11 @@ declare(strict_types=1);
 
 namespace think\admin\helper;
 
-use think\admin\Helper;
-use think\admin\query\QueryFactory;
+use think\admin\helper\Helper;
+use think\admin\model\QueryFactory;
 use think\db\BaseQuery;
 use think\db\exception\DbException;
+use think\model\concern\SoftDelete;
 use think\Model;
 
 /**
@@ -47,8 +48,8 @@ class DeleteHelper extends Helper
         if (!empty($where)) {
             $query->where($where);
         }
-        if (!isset($where[$field]) && is_string($value)) {
-            $query->whereIn($field, str2arr($value));
+        if (!isset($where[$field]) && $value !== null && $value !== '') {
+            $query->whereIn($field, is_array($value) ? $value : str2arr(strval($value)));
         }
 
         if ($this->class->callback('_delete_filter', $query, $where) === false) {
@@ -59,8 +60,9 @@ class DeleteHelper extends Helper
             $this->class->error('数据删除失败！');
         }
 
-        if ($result = $query->delete() !== false) {
-            $model = $query->getModel();
+        $model = $query->getModel();
+        $result = $this->deleteRecords($query, $model);
+        if ($result) {
             if ($model instanceof \think\admin\Model) {
                 $model->onAdminDelete(strval($value));
             }
@@ -75,5 +77,29 @@ class DeleteHelper extends Helper
         } else {
             $this->class->error('数据删除失败！');
         }
+    }
+
+    private function deleteRecords(BaseQuery $query, ?Model $model = null): bool
+    {
+        if ($model instanceof Model && $this->usesSoftDelete($model)) {
+            $result = false;
+            foreach ((clone $query)->select() as $item) {
+                $result = $item->delete() || $result;
+            }
+            return $result;
+        }
+
+        return $query->delete() !== false;
+    }
+
+    private function usesSoftDelete(Model $model): bool
+    {
+        $traits = [];
+        foreach ([get_class($model), ...class_parents($model)] as $class) {
+            $traits = array_merge($traits, class_uses($class) ?: []);
+        }
+
+        return in_array(SoftDelete::class, array_values(array_unique($traits)), true)
+            && $model->getOption('deleteTime', 'delete_time') !== false;
     }
 }

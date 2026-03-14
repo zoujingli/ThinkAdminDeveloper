@@ -40,9 +40,21 @@ return [
     // 默认时区
     'default_timezone' => 'Asia/Shanghai',
     // 后台 JWT 有效期（秒，0 表示不过期）
-    'admin_token_expire' => 604800,
+    'system_token_expire' => 604800,
+    // 后台 JWT 认证 Cookie 名称（Authorization 优先，其次读取此 Cookie）
+    'system_token_cookie' => 'system_access_token',
     // 上传令牌有效期（秒）
-    'admin_upload_token_expire' => 1800,
+    'system_upload_token_expire' => 1800,
+    // Token 会话默认有效期（秒，0 表示不过期）
+    'token_session_expire' => 7200,
+    // Token 会话读取时是否自动续期
+    'token_session_touch' => true,
+    // Token 会话惰性清理间隔（秒）
+    'token_session_gc_interval' => 300,
+    // Token 会话指定缓存仓库，留空使用默认仓库
+    'token_session_store' => '',
+    // 终端账号 JWT 认证 Cookie 名称（Authorization 优先，其次读取此 Cookie）
+    'account_token_cookie' => 'account_access_token',
     // CORS 启用状态（默认开启跨域）
     'cors_on' => true,
     // CORS 配置跨域域名（仅需填域名，留空则自动域名）
@@ -52,7 +64,7 @@ return [
     // CORS 是否允许携带 Cookie 等凭证
     'cors_credentials' => false,
     // CORS 跨域头部字段
-    'cors_headers' => 'Api-Type,Api-Name,Api-Uuid,Api-Token,User-Form-Token',
+    'cors_headers' => 'X-Device-Code,X-Device-Type',
     // X-Frame-Options 配置
     'cors_frame' => 'sameorigin',
     // RBAC 登录页面（填写登录地址）

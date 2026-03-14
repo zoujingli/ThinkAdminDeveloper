@@ -21,10 +21,10 @@ declare(strict_types=1);
 namespace plugin\wechat\client\controller;
 
 use plugin\wechat\client\model\WechatAuto;
+use plugin\system\service\SystemService;
 use think\admin\Controller;
-use think\admin\extend\codec\CodeToolkit;
+use think\admin\extend\CodeToolkit;
 use think\admin\helper\QueryHelper;
-use think\admin\system\SystemService;
 use think\db\exception\DataNotFoundException;
 use think\db\exception\DbException;
 use think\db\exception\ModelNotFoundException;

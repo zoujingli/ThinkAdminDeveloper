@@ -29,7 +29,7 @@ use plugin\wemall\model\PluginWemallUserRebate;
 use plugin\wemall\model\PluginWemallUserRelation;
 use plugin\wemall\model\PluginWemallUserTransfer;
 use think\admin\Exception;
-use think\admin\extend\codec\CodeToolkit;
+use think\admin\extend\CodeToolkit;
 use think\admin\Library;
 use think\db\exception\DataNotFoundException;
 use think\db\exception\DbException;

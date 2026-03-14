@@ -24,9 +24,9 @@ use plugin\account\model\PluginAccountUser;
 use plugin\account\service\Account;
 use plugin\account\service\Message;
 use think\admin\Controller;
-use think\admin\extend\codec\CodeToolkit;
-use think\admin\extend\auth\ImageSliderVerify;
-use think\admin\extend\auth\JwtToken;
+use think\admin\extend\CodeToolkit;
+use think\admin\service\ImageSliderVerify;
+use think\admin\service\JwtToken;
 use think\exception\HttpResponseException;
 
 /**
@@ -69,7 +69,7 @@ class Login extends Controller
                     }
                 }
                 $account->isBind() || $account->bind($inset, $inset);
-                $this->success('登录成功', $account->expire()->get(true));
+                $this->successWithToken('登录成功', $account->expire()->get(true));
             } else {
                 $this->error('短信验证失败');
             }
@@ -96,7 +96,7 @@ class Login extends Controller
                 $inset = ['phone' => $user->getAttr('phone')];
                 $account = Account::mk(Account::WAP, $inset);
                 $account->set(['unid' => $user->getAttr('id')] + $inset);
-                $this->success('登录成功！', $account->token()->get(true));
+                $this->successWithToken('登录成功！', $account->token()->get(true));
             } else {
                 $this->error('解密失败！');
             }
@@ -140,7 +140,7 @@ class Login extends Controller
                     $account->isNull() && $account->set($inset);
                 }
                 $account->isBind() || $account->bind($inset, $inset);
-                $this->success('登录成功', $account->expire()->get(true));
+                $this->successWithToken('登录成功', $account->expire()->get(true));
             } else {
                 $this->error('密码错误');
             }
@@ -172,7 +172,7 @@ class Login extends Controller
                     $this->error('账号不存在');
                 }
                 $account->pwdModify($data['passwd']);
-                $this->success('重置成功', $account->expire()->get(true));
+                $this->successWithToken('重置成功', $account->expire()->get(true));
             } else {
                 $this->error('验证码错误');
             }
@@ -205,7 +205,7 @@ class Login extends Controller
                 $account->pwdModify($data['passwd']);
                 // 触发注册事件
                 $this->app->event->trigger('PluginAccountRegister', $account);
-                $this->success('注册成功', $account->get(true));
+                $this->successWithToken('注册成功', $account->get(true));
             } else {
                 $this->error('短信验证失败');
             }
@@ -270,5 +270,14 @@ class Login extends Controller
         // state: [ -1:需要刷新, 0:验证失败, 1:验证成功 ]
         $state = ImageSliderVerify::verify($data['uniqid'], $data['verify']);
         $this->success('验证结果', ['state' => $state]);
+    }
+
+    /**
+     * 返回带账号令牌的成功结果并同步 Cookie。
+     */
+    private function successWithToken(string $info, array $data): void
+    {
+        Account::syncTokenCookie(strval($data['token'] ?? ''));
+        $this->success($info, $data);
     }
 }

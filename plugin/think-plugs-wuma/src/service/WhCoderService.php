@@ -27,7 +27,7 @@ use plugin\wuma\model\PluginWumaSourceAssignItem;
 use plugin\wuma\model\PluginWumaWarehouseOrderDataMins;
 use plugin\wuma\model\PluginWumaWarehouseReplace;
 use think\admin\Exception;
-use think\admin\Service;
+use think\admin\service\Service;
 use think\db\exception\DataNotFoundException;
 use think\db\exception\DbException;
 use think\db\exception\ModelNotFoundException;

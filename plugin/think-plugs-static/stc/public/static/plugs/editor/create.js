@@ -13,8 +13,8 @@
                 MENU_CONF: {
                     uploadImage: {
                         async customUpload(file, insertFn) {
-                            if (window.AdminUploadAdapter) {
-                                new window.AdminUploadAdapter().upload([file], url => insertFn(url, file.name))
+                            if (window.SystemUploadAdapter) {
+                                new window.SystemUploadAdapter().upload([file], url => insertFn(url, file.name))
                             } else {
                                 let reader = new window.FileReader();
                                 reader.addEventListener('load', () => insertFn(reader.result, file.name));
@@ -24,8 +24,8 @@
                     },
                     uploadVideo: {
                         async customUpload(file, insertFn) {
-                            if (window.AdminUploadAdapter) {
-                                new window.AdminUploadAdapter().upload([file], url => insertFn(url, file.name))
+                            if (window.SystemUploadAdapter) {
+                                new window.SystemUploadAdapter().upload([file], url => insertFn(url, file.name))
                             } else {
                                 let reader = new window.FileReader();
                                 reader.addEventListener('load', () => insertFn(reader.result, file.name));

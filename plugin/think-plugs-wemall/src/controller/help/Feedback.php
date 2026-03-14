@@ -20,12 +20,12 @@ declare(strict_types=1);
 
 namespace plugin\wemall\controller\help;
 
+use plugin\system\service\SystemAuthService;
 use plugin\account\model\PluginAccountUser;
 use plugin\wemall\model\PluginWemallHelpFeedback;
 use plugin\wemall\model\PluginWemallHelpProblem;
 use think\admin\Controller;
 use think\admin\helper\QueryHelper;
-use think\admin\auth\AdminService;
 use think\db\exception\DataNotFoundException;
 use think\db\exception\DbException;
 use think\db\exception\ModelNotFoundException;
@@ -133,7 +133,7 @@ class Feedback extends Controller
     {
         if ($this->request->isPost() && !empty($data['reply'])) {
             $data['reply_st'] = 1;
-            $data['reply_by'] = AdminService::instance()->getUserId();
+            $data['reply_by'] = SystemAuthService::instance()->getUserId();
             if (($data['reply_time'] ?? '-') !== '-') {
                 $data['reply_time'] = date('Y-m-d H:i:s');
             }

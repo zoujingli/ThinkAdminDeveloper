@@ -20,11 +20,11 @@ declare(strict_types=1);
 
 namespace think\admin\helper;
 
-use think\admin\Helper;
+use think\admin\helper\Helper;
 use think\admin\Library;
-use think\admin\auth\AdminService;
-use think\admin\query\QueryFactory;
-use think\admin\system\SystemService;
+use think\admin\model\QueryFactory;
+use think\admin\runtime\SystemContext;
+use think\admin\service\RuntimeTools;
 use think\Container;
 use think\db\BaseQuery;
 use think\db\exception\DataNotFoundException;
@@ -283,10 +283,12 @@ class QueryHelper extends Helper
                 }
             }
             $inner = strpos($get['spm'] ?? '', 'm-') === 0;
-            $prefix = $inner ? (sysuri('admin/index/index') . '#') : '';
+            $prefix = $inner ? (sysuri('system/index/index') . '#') : '';
             $config = ['list_rows' => $limit, 'query' => $get];
             if (is_numeric($page)) {
                 $config['page'] = $page;
+            } elseif (isset($get['page']) && is_numeric($get['page'])) {
+                $config['page'] = max(1, intval($get['page']));
             }
             $data = ($paginate = $this->query->paginate($config, static::getCount($this->query, $total)))->toArray();
             $result = ['page' => ['limit' => $data['per_page'], 'total' => $data['total'], 'pages' => $data['last_page'], 'current' => $data['current_page']], 'list' => $data['data']];
@@ -403,7 +405,7 @@ class QueryHelper extends Helper
             'mSave' => [SaveHelper::class, 'init'],
             'mQuery' => [QueryHelper::class, 'init'],
             'mDelete' => [DeleteHelper::class, 'init'],
-            'mUpdate' => [SystemService::class, 'update'],
+            'mUpdate' => [RuntimeTools::class, 'update'],
         ];
         if (isset($hooks[$method])) {
             [$class, $method] = $hooks[$method];
@@ -421,7 +423,7 @@ class QueryHelper extends Helper
     {
         $query = QueryFactory::build($dbQuery);
         if ($this->app->request->isPost() && $this->app->request->post('action') === 'sort') {
-            AdminService::isLogin() or $this->class->error('请重新登录！');
+            SystemContext::isLogin() or $this->class->error('请重新登录！');
             if (method_exists($query, 'getTableFields') && in_array($field, $query->getTableFields(), true)) {
                 if ($this->app->request->has($pk = $query->getPk() ?: 'id', 'post')) {
                     $map = [$pk => $this->app->request->post($pk, 0)];

@@ -24,7 +24,7 @@ use plugin\wuma\model\PluginWumaCodeRule;
 use plugin\wuma\model\PluginWumaCodeRuleRange;
 use plugin\wuma\model\PluginWumaWarehouseRelationData;
 use think\admin\Exception;
-use think\admin\extend\codec\CodeToolkit;
+use think\admin\extend\CodeToolkit;
 use think\db\exception\DataNotFoundException;
 use think\db\exception\DbException;
 use think\db\exception\ModelNotFoundException;

@@ -49,7 +49,7 @@ use plugin\payment\service\payment\IntegralPayment;
 use plugin\payment\service\payment\VoucherPayment;
 use plugin\payment\service\payment\WechatPayment;
 use think\admin\Exception;
-use think\admin\extend\codec\CodeToolkit;
+use think\admin\extend\CodeToolkit;
 use think\db\Query;
 use think\db\Raw;
 
@@ -235,7 +235,7 @@ abstract class Payment
      */
     public static function mk(string $code): PaymentInterface
     {
-        if (in_array($code, [self::EMPTY, self::COUPON, self::BALANCE, self::INTEGRAL])) {
+        if (in_array($code, [self::EMPTY, self::COUPON, self::BALANCE, self::INTEGRAL, self::VOUCHER], true)) {
             if (empty(self::$types[$code]['status'])) {
                 throw new Exception(self::typeName($code) . '已被禁用！');
             }

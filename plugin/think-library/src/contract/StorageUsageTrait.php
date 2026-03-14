@@ -68,8 +68,8 @@ trait StorageUsageTrait
     public function __construct(App $app)
     {
         $this->app = $app;
-        if (class_exists(\plugin\storage\StorageConfig::class)) {
-            $this->link = \plugin\storage\StorageConfig::global('link', 'none');
+        if (class_exists(\plugin\storage\service\StorageConfig::class)) {
+            $this->link = \plugin\storage\service\StorageConfig::global('link', 'none');
         } else {
             $this->link = sysconf('storage.link_type|raw') ?: 'none';
         }

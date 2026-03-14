@@ -20,13 +20,13 @@ declare(strict_types=1);
 
 namespace plugin\storage\controller\api;
 
-use plugin\storage\StorageConfig;
+use plugin\storage\service\StorageConfig;
+use plugin\storage\model\SystemFile;
 use think\admin\Controller;
 use think\admin\helper\QueryHelper;
-use think\admin\model\SystemFile;
-use think\admin\auth\AdminService;
-use think\admin\Storage;
-use think\admin\storage\LocalStorage;
+use think\admin\runtime\SystemContext;
+use think\admin\service\Storage;
+use plugin\storage\service\LocalStorage;
 use think\db\exception\DataNotFoundException;
 use think\db\exception\DbException;
 use think\db\exception\ModelNotFoundException;
@@ -256,8 +256,8 @@ class Upload extends Controller
      */
     private function initUnid(bool $check = true): array
     {
-        $uuid = AdminService::getUserId();
-        [$unid, $exts] = AdminService::withUploadUnid();
+        $uuid = SystemContext::getUserId();
+        [$unid, $exts] = SystemContext::withUploadUnid();
         if ($check && empty($uuid) && empty($unid)) {
             $this->error('未登录，禁止使用文件上传！');
         } else {

@@ -20,14 +20,14 @@ declare(strict_types=1);
 
 namespace plugin\wuma\service;
 
+use plugin\system\service\SystemAuthService;
 use plugin\wuma\model\PluginWumaWarehouseOrder;
 use plugin\wuma\model\PluginWumaWarehouseOrderData;
 use plugin\wuma\model\PluginWumaWarehouseOrderDataMins;
 use plugin\wuma\model\PluginWumaWarehouseOrderDataNums;
 use plugin\wuma\model\PluginWumaWarehouseStock;
 use think\admin\Exception;
-use think\admin\extend\codec\CodeToolkit;
-use think\admin\auth\AdminService;
+use think\admin\extend\CodeToolkit;
 use think\db\exception\DataNotFoundException;
 use think\db\exception\DbException;
 use think\db\exception\ModelNotFoundException;
@@ -166,7 +166,7 @@ class WhImportService
         [$count, $maps, $unis] = WhCoderService::code2count($codes);
         // 创建入库订单数据
         ($dataModel = PluginWumaWarehouseOrderData::mk())->save(array_merge([
-            'code' => $body['code'], 'number' => $count, 'create_by' => AdminService::getUserId(),
+            'code' => $body['code'], 'number' => $count, 'create_by' => SystemAuthService::getUserId(),
         ], $extra));
         $ddid = $dataModel->getAttr('id');
         // 组装入库真实数据

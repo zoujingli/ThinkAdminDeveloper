@@ -20,7 +20,6 @@ declare(strict_types=1);
 
 namespace think\admin\model;
 
-use think\admin\extend\model\VirtualStreamModel;
 use think\Model;
 
 /**
@@ -46,6 +45,6 @@ class ModelFactory
             }
             $name = basename(str_replace('\\', '/', $name));
         }
-        return VirtualStreamModel::mk($name, $data, $conn);
+        return new RuntimeModel($name, $data, $conn);
     }
 }

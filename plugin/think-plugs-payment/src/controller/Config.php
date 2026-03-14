@@ -25,7 +25,7 @@ use plugin\payment\model\PluginPaymentConfig;
 use plugin\payment\service\Payment;
 use think\admin\Controller;
 use think\admin\Exception;
-use think\admin\extend\codec\CodeToolkit;
+use think\admin\extend\CodeToolkit;
 use think\admin\helper\QueryHelper;
 use think\db\exception\DataNotFoundException;
 use think\db\exception\DbException;

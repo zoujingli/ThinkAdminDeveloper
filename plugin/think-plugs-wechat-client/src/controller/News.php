@@ -20,12 +20,12 @@ declare(strict_types=1);
 
 namespace plugin\wechat\client\controller;
 
+use plugin\system\service\SystemAuthService;
 use plugin\wechat\client\model\WechatNews;
 use plugin\wechat\client\model\WechatNewsArticle;
 use plugin\wechat\client\service\MediaService;
 use think\admin\Controller;
 use think\admin\helper\QueryHelper;
-use think\admin\auth\AdminService;
 use think\db\exception\DataNotFoundException;
 use think\db\exception\DbException;
 use think\db\exception\ModelNotFoundException;
@@ -69,7 +69,7 @@ class News extends Controller
             $this->fetch('form');
         } else {
             $update = [
-                'create_by' => AdminService::getUserId(),
+                'create_by' => SystemAuthService::getUserId(),
                 'article_id' => $this->_buildArticle($this->request->post('data', [])),
             ];
             if (WechatNews::mk()->save($update) !== false) {

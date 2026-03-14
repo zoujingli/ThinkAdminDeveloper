@@ -20,13 +20,13 @@ declare(strict_types=1);
 
 namespace plugin\wemall\controller\user;
 
+use plugin\system\service\SystemAuthService;
 use plugin\account\model\PluginAccountUser;
 use plugin\payment\service\Balance;
 use plugin\wemall\model\PluginWemallUserRecharge;
 use think\admin\Controller;
-use think\admin\extend\codec\CodeToolkit;
+use think\admin\extend\CodeToolkit;
 use think\admin\helper\QueryHelper;
-use think\admin\auth\AdminService;
 use think\db\exception\DataNotFoundException;
 use think\db\exception\DbException;
 use think\db\exception\ModelNotFoundException;
@@ -87,7 +87,7 @@ class Recharge extends Controller
             $this->app->db->transaction(function () use ($recharge) {
                 $recharge->save([
                     'deleted' => 1,
-                    'deleted_by' => AdminService::getUserId(),
+                    'deleted_by' => SystemAuthService::getUserId(),
                     'deleted_time' => date('Y-m-d H:i:s'),
                 ]);
                 Balance::cancel($recharge->getAttr('code'));
@@ -125,7 +125,7 @@ class Recharge extends Controller
                     $this->error('充值金额不能为零！');
                 }
                 $this->app->db->transaction(static function () use ($data) {
-                    $data['create_by'] = AdminService::getUserId();
+                    $data['create_by'] = SystemAuthService::getUserId();
                     // 创建充值记录
                     PluginWemallUserRecharge::mk()->where(['code' => $data['code']])->findOrEmpty()->save($data);
                     // 创建余额变更

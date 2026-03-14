@@ -39,7 +39,7 @@ use plugin\payment\model\PluginPaymentRecord;
 use plugin\payment\model\PluginPaymentRefund;
 use plugin\payment\service\Payment;
 use think\admin\Exception;
-use think\admin\extend\codec\CodeToolkit;
+use think\admin\extend\CodeToolkit;
 use think\admin\Library;
 use think\App;
 use WeChat\Exceptions\InvalidResponseException;
@@ -144,7 +144,7 @@ trait PaymentUsageTrait
     public static function syncRefund(string $pCode, ?string &$rCode = '', ?string $amount = null, string $reason = ''): PluginPaymentRecord
     {
         // 检查退款单号
-        if ($rCode && PluginPaymentRefund::mk()->where(['code' => $pCode])->findOrEmpty()->isExists()) {
+        if ($rCode && PluginPaymentRefund::mk()->where(['code' => $rCode])->findOrEmpty()->isExists()) {
             throw new Exception('退款单已存在！', 2);
         }
         // 查询支付记录
@@ -174,15 +174,16 @@ trait PaymentUsageTrait
         // 支付金额大于0，并需要创建退款记录
         $refundAmountFloat = strval($amount);
         $currentRefundAmount = strval($record->getAttr('refund_amount'));
-        if (bccomp(bcadd($currentRefundAmount, $refundAmountFloat, 2), strval($record->getAttr('payment_amount')), 2) <= 0) {
-            PluginPaymentRefund::mk()->save(array_merge([
-                'unid' => $record->getAttr('unid'), 'record_code' => $pCode,
-                'usid' => $record->getAttr('usid'), 'refund_amount' => $amount,
-                'code' => $rCode = $rCode ?: Payment::withRefundCode(), 'refund_remark' => $reason,
-            ], $extra));
-            // 同步刷新金额
-            self::withPaymentByRefundTotal($record);
+        if (bccomp(bcadd($currentRefundAmount, $refundAmountFloat, 2), strval($record->getAttr('payment_amount')), 2) > 0) {
+            throw new Exception('退款金额溢出！');
         }
+        PluginPaymentRefund::mk()->save(array_merge([
+            'unid' => $record->getAttr('unid'), 'record_code' => $pCode,
+            'usid' => $record->getAttr('usid'), 'refund_amount' => $amount,
+            'code' => $rCode = $rCode ?: Payment::withRefundCode(), 'refund_remark' => $reason,
+        ], $extra));
+        // 同步刷新金额
+        self::withPaymentByRefundTotal($record);
         // 更新模型数据
         $record->save();
         // 触发取消支付事件

@@ -20,12 +20,12 @@ declare(strict_types=1);
 
 namespace plugin\center\controller;
 
+use plugin\system\service\SystemAuthService;
 use plugin\center\Service;
 use plugin\center\service\Plugin;
 use think\admin\Controller;
 use think\admin\Exception;
-use think\admin\auth\AdminService;
-use think\admin\runtime\PluginService;
+use think\admin\service\PluginService;
 use think\db\exception\DataNotFoundException;
 use think\db\exception\DbException;
 use think\db\exception\ModelNotFoundException;
@@ -116,14 +116,14 @@ class Index extends Controller
         if (count(Plugin::getLocalPlugs('module', true)) > 1) {
             $this->menus[] = [
                 'id' => 9999999,
-                'url' => admuri('index/index', ['from' => 'force']),
+                'url' => system_uri('index/index', ['from' => 'force']),
                 'node' => 'plugin-center/index/index',
                 'title' => '返回首页',
             ];
         }
-        $this->super = AdminService::isSuper();
+        $this->super = SystemAuthService::isSuper();
         $this->title = $this->plugin['name'] ?? '';
-        $this->theme = AdminService::getUserTheme();
+        $this->theme = SystemAuthService::getUserTheme();
         $this->fetch('layout/index');
     }
 

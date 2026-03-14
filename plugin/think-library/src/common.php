@@ -18,18 +18,16 @@ declare(strict_types=1);
  * +----------------------------------------------------------------------
  */
 use think\admin\Exception;
-use think\admin\extend\codec\CodeToolkit;
-use think\admin\extend\http\HttpClient;
+use think\admin\extend\CodeToolkit;
+use think\admin\extend\HttpClient;
 use think\admin\helper\QueryHelper;
-use think\admin\auth\TokenHelper;
+use think\admin\service\CacheSession;
 use think\admin\helper\ValidateHelper;
 use think\admin\Library;
-use think\admin\auth\AdminService;
 use think\admin\model\ModelFactory;
-use think\admin\queue\QueueService;
-use think\admin\runtime\RuntimeService;
-use think\admin\system\SystemService;
-use think\admin\Storage;
+use think\admin\service\RuntimeService;
+use think\admin\service\RuntimeTools;
+use think\admin\service\Storage;
 use think\db\BaseQuery;
 use think\db\Query;
 use think\helper\Str;
@@ -45,7 +43,7 @@ if (!function_exists('p')) {
      */
     function p($data, bool $new = false, ?string $file = null)
     {
-        return SystemService::putDebug($data, $new, $file);
+        return RuntimeTools::putDebug($data, $new, $file);
     }
 }
 if (!function_exists('m')) {
@@ -61,40 +59,6 @@ if (!function_exists('m')) {
     }
 }
 
-if (!function_exists('auth')) {
-    /**
-     * 访问权限检查.
-     */
-    function auth(?string $node): bool
-    {
-        return AdminService::check($node);
-    }
-}
-if (!function_exists('admin_user')) {
-    /**
-     * 获取当前后台用户数据.
-     * @param null|string $field 指定字段
-     * @param mixed $default 默认值
-     * @return array|mixed
-     */
-    function admin_user(?string $field = null, $default = null)
-    {
-        return AdminService::getUser($field, $default);
-    }
-}
-if (!function_exists('admuri')) {
-    /**
-     * 生成后台 URL 地址
-     * @param string $url 路由地址
-     * @param array $vars PATH 变量
-     * @param bool|string $suffix 后缀
-     * @param bool|string $domain 域名
-     */
-    function admuri(string $url = '', array $vars = [], $suffix = true, $domain = false): string
-    {
-        return sysuri('admin/index/index', [], $suffix, $domain) . '#' . url($url, $vars)->build();
-    }
-}
 if (!function_exists('_vali')) {
     /**
      * 快捷输入并验证（ 支持 规则 # 别名 ）.
@@ -173,6 +137,15 @@ if (!function_exists('sysuri')) {
         $new = preg_replace("#/{$tmp}(\\.{$ext})?#", '', $old = parse_url($url, PHP_URL_PATH) ?: '', -1, $count);
         $count > 0 && $suffix && $new && $ext !== '' && $new !== Library::$sapp->request->baseUrl() && $new .= ".{$ext}";
         return str_replace($old, $new ?: '/', $url);
+    }
+}
+if (!function_exists('tsession')) {
+    /**
+     * 获取令牌会话服务实例。
+     */
+    function tsession(): CacheSession
+    {
+        return CacheSession::instance();
     }
 }
 
@@ -263,38 +236,6 @@ if (!function_exists('isOnline')) {
     }
 }
 
-if (!function_exists('sysconf')) {
-    /**
-     * 获取或配置系统参数.
-     * @param string $name 参数名称
-     * @param mixed $value 参数内容
-     * @return mixed
-     * @throws Exception
-     */
-    function sysconf(string $name = '', $value = null)
-    {
-        if (is_null($value) && is_string($name)) {
-            return SystemService::get($name);
-        }
-        return SystemService::set($name, $value);
-    }
-}
-if (!function_exists('sysdata')) {
-    /**
-     * JSON 数据读取与存储.
-     * @param string $name 数据名称
-     * @param mixed $value 数据内容
-     * @return mixed
-     * @throws Exception
-     */
-    function sysdata(string $name, $value = null)
-    {
-        if (is_null($value)) {
-            return SystemService::getData($name);
-        }
-        return SystemService::setData($name, $value);
-    }
-}
 if (!function_exists('syspath')) {
     /**
      * 获取文件绝对路径.
@@ -308,42 +249,6 @@ if (!function_exists('syspath')) {
         }
         $attr = ['/' => DIRECTORY_SEPARATOR, '\\' => DIRECTORY_SEPARATOR];
         return rtrim($root, '\/') . DIRECTORY_SEPARATOR . ltrim(strtr($name, $attr), '\/');
-    }
-}
-if (!function_exists('sysoplog')) {
-    /**
-     * 写入系统日志.
-     * @param string $action 日志行为
-     * @param string $content 日志内容
-     */
-    function sysoplog(string $action, string $content): bool
-    {
-        return SystemService::setOplog($action, $content);
-    }
-}
-if (!function_exists('systoken')) {
-    /**
-     * 生成 CSRF-TOKEN 参数.
-     */
-    function systoken(): string
-    {
-        return TokenHelper::token();
-    }
-}
-if (!function_exists('sysqueue')) {
-    /**
-     * 注册异步处理任务
-     * @param string $title 任务名称
-     * @param string $command 执行内容
-     * @param int $later 延时执行时间
-     * @param array $data 任务附加数据
-     * @param int $rscript 任务类型(0单例,1多例)
-     * @param int $loops 循环等待时间
-     * @throws Exception
-     */
-    function sysqueue(string $title, string $command, int $later = 0, array $data = [], int $rscript = 1, int $loops = 0): string
-    {
-        return QueueService::register($title, $command, $later, $data, $rscript, $loops)->code;
     }
 }
 
@@ -415,7 +320,7 @@ if (!function_exists('data_save')) {
      */
     function data_save($dbQuery, array $data, string $key = 'id', $where = [])
     {
-        return SystemService::save($dbQuery, $data, $key, $where);
+        return RuntimeTools::save($dbQuery, $data, $key, $where);
     }
 }
 if (!function_exists('down_file')) {

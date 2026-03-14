@@ -22,9 +22,9 @@ namespace plugin\wechat\client\controller;
 
 use plugin\wechat\client\model\WechatKeys;
 use plugin\wechat\client\service\WechatService;
+use plugin\system\service\SystemService;
 use think\admin\Controller;
 use think\admin\helper\QueryHelper;
-use think\admin\system\SystemService;
 use think\db\exception\DataNotFoundException;
 use think\db\exception\DbException;
 use think\db\exception\ModelNotFoundException;

@@ -2,13 +2,13 @@
 
 declare(strict_types=1);
 
-use plugin\storage\support\StorageAuthorize;
-use think\admin\storage\AliossStorage;
-use think\admin\storage\AlistStorage;
-use think\admin\storage\LocalStorage;
-use think\admin\storage\QiniuStorage;
-use think\admin\storage\TxcosStorage;
-use think\admin\storage\UpyunStorage;
+use plugin\storage\service\StorageAuthorize;
+use plugin\storage\service\AliossStorage;
+use plugin\storage\service\AlistStorage;
+use plugin\storage\service\LocalStorage;
+use plugin\storage\service\QiniuStorage;
+use plugin\storage\service\TxcosStorage;
+use plugin\storage\service\UpyunStorage;
 
 return [
     'default' => 'local',

@@ -23,8 +23,8 @@ namespace plugin\account\service\message;
 use plugin\account\service\contract\MessageInterface;
 use plugin\account\service\contract\MessageUsageTrait;
 use think\admin\Exception;
-use think\admin\extend\codec\CodeToolkit;
-use think\admin\extend\http\HttpClient;
+use think\admin\extend\CodeToolkit;
+use think\admin\extend\HttpClient;
 
 /**
  * 阿里云短信服务

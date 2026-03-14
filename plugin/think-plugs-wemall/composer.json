@@ -17,11 +17,12 @@
     "zoujingli/think-plugs-account": "^8.0",
     "zoujingli/think-plugs-helper": "^8.0",
     "zoujingli/think-plugs-payment": "^8.0",
+    "zoujingli/think-plugs-system": "^8.0",
     "zoujingli/think-plugs-storage": "^8.0"
   },
   "autoload": {
     "files": [
-      "./src/helper.php"
+      "./src/common.php"
     ],
     "psr-4": {
       "plugin\\wemall\\": "src"

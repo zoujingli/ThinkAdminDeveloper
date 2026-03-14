@@ -20,12 +20,12 @@ declare(strict_types=1);
 
 namespace plugin\wemall\controller\help;
 
+use plugin\system\service\SystemAuthService;
 use plugin\account\model\PluginAccountUser;
 use plugin\wemall\model\PluginWemallHelpQuestion;
 use plugin\wemall\model\PluginWemallHelpQuestionX;
 use think\admin\Controller;
 use think\admin\helper\QueryHelper;
-use think\admin\auth\AdminService;
 use think\db\exception\DataNotFoundException;
 use think\db\exception\DbException;
 use think\db\exception\ModelNotFoundException;
@@ -104,7 +104,7 @@ class Question extends Controller
             PluginWemallHelpQuestionX::mk()->save([
                 'ccid' => $data['id'],
                 'content' => $data['content'],
-                'reply_by' => AdminService::getUserId(),
+                'reply_by' => SystemAuthService::getUserId(),
             ]);
             unset($data['content']);
         }

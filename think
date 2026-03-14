@@ -18,7 +18,7 @@ declare(strict_types=1);
  * // | github 代码仓库：https://github.com/zoujingli/ThinkAdmin
  * // +----------------------------------------------------------------------
  */
-use think\admin\runtime\RuntimeService;
+use think\admin\service\RuntimeService;
 
 // 加载基础文件
 require __DIR__ . '/vendor/autoload.php';

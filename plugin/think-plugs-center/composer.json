@@ -15,11 +15,12 @@
     "php": "^8.0",
     "ext-json": "*",
     "zoujingli/think-plugs-helper": "^8.0",
-    "zoujingli/think-library": "^8.0"
+    "zoujingli/think-library": "^8.0",
+    "zoujingli/think-plugs-system": "^8.0"
   },
   "autoload": {
     "files": [
-      "src/helper.php"
+      "src/common.php"
     ],
     "psr-4": {
       "plugin\\center\\": "src"

@@ -20,8 +20,9 @@ declare(strict_types=1);
 
 namespace think\admin;
 
-use think\admin\process\ProcessService;
-use think\admin\queue\QueueService;
+use think\admin\contract\QueueManagerInterface;
+use think\admin\service\ProcessService;
+use think\admin\service\QueueService;
 use think\console\Input;
 use think\console\Output;
 
@@ -34,7 +35,7 @@ abstract class Command extends \think\console\Command
     /**
      * 任务控制服务
      */
-    protected QueueService $queue;
+    protected QueueManagerInterface $queue;
 
     /**
      * 进程控制服务
@@ -65,8 +66,8 @@ abstract class Command extends \think\console\Command
     {
         $this->queue = QueueService::instance();
         $this->process = ProcessService::instance();
-        if (defined('WorkQueueCode') && $this->queue->code !== WorkQueueCode) {
-            $this->queue->initialize(WorkQueueCode);
+        if (($code = QueueService::currentCode()) !== '' && $this->queue->getCode() !== $code) {
+            $this->queue->initialize($code);
         }
         return $this;
     }
@@ -78,7 +79,7 @@ abstract class Command extends \think\console\Command
      */
     protected function setQueueError(string $message): void
     {
-        if (defined('WorkQueueCode')) {
+        if (QueueService::inContext()) {
             $this->queue->error($message);
         } else {
             $this->process->message($message);
@@ -93,7 +94,7 @@ abstract class Command extends \think\console\Command
      */
     protected function setQueueSuccess(string $message): void
     {
-        if (defined('WorkQueueCode')) {
+        if (QueueService::inContext()) {
             $this->queue->success($message);
         } else {
             $this->process->message($message);
@@ -111,8 +112,8 @@ abstract class Command extends \think\console\Command
      */
     protected function setQueueProgress(?string $message = null, ?string $progress = null, int $backline = 0): static
     {
-        if (defined('WorkQueueCode')) {
-            $this->queue->progress(2, $message, $progress, $backline);
+        if (QueueService::inContext()) {
+            $this->queue->progress(QueueService::STATE_LOCK, $message, $progress, $backline);
         } elseif (is_string($message)) {
             $this->process->message($message, $backline);
         }

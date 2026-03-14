@@ -21,7 +21,7 @@ declare(strict_types=1);
 namespace think\admin;
 
 use think\admin\helper\QueryHelper;
-use think\admin\query\QueryFactory;
+use think\admin\model\QueryFactory;
 use think\db\BaseQuery;
 use think\db\Mongo;
 use think\db\Query;
@@ -125,6 +125,20 @@ abstract class Model extends \think\Model
     }
 
     /**
+     * 追加模型数据并标记为待持久化变更。
+     */
+    public function appendData(array $data, bool $overwrite = false): static
+    {
+        foreach ($data as $name => $value) {
+            if ($overwrite || !$this->hasData($name)) {
+                $this->setAttr($name, $value);
+            }
+        }
+
+        return $this;
+    }
+
+    /**
      * 创建查询实例.
      * @return Mongo|Query
      */
@@ -135,12 +149,14 @@ abstract class Model extends \think\Model
 
     public function getDeletedAtAttr($value, array $data): mixed
     {
-        return $data['delete_time'] ?? $value;
+        $field = $this->softDeleteField();
+        return $data[$field] ?? $data['delete_time'] ?? $data['deleted_time'] ?? $value;
     }
 
     public function getDeletedAttr($value, array $data): int
     {
-        return empty($data['delete_time']) ? 0 : 1;
+        $field = $this->softDeleteField();
+        return empty($data[$field] ?? ($data['delete_time'] ?? $data['deleted_time'] ?? null)) ? 0 : 1;
     }
 
     public function normalizeLegacySoftDeleteCall(BaseQuery $query, string $method, array &$args): bool
@@ -194,7 +210,7 @@ abstract class Model extends \think\Model
         }
 
         if (in_array($args[0], ['deleted_at', 'deleted_time'], true)) {
-            $args[0] = 'delete_time';
+            $args[0] = $this->softDeleteField();
         }
 
         return false;
@@ -253,7 +269,7 @@ abstract class Model extends \think\Model
 
                 if (is_array($item) && isset($item[0]) && in_array($item[0], ['deleted_at', 'deleted_time'], true)) {
                     $matched = true;
-                    $item[0] = 'delete_time';
+                    $item[0] = $this->softDeleteField();
                 }
 
                 $result[] = $item;
@@ -270,7 +286,7 @@ abstract class Model extends \think\Model
 
                 if (in_array($key, ['deleted_at', 'deleted_time'], true)) {
                     $matched = true;
-                    $result['delete_time'] = $value;
+                    $result[$this->softDeleteField()] = $value;
                     continue;
                 }
 
@@ -284,6 +300,12 @@ abstract class Model extends \think\Model
     private function isDeletedTruthy(mixed $value): bool
     {
         return in_array($value, [1, '1', true], true);
+    }
+
+    private function softDeleteField(): string
+    {
+        $field = $this->getOption('deleteTime', 'delete_time');
+        return is_string($field) && $field !== '' ? $field : 'delete_time';
     }
 
     /**

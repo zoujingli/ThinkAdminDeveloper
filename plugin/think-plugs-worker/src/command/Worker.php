@@ -4,19 +4,20 @@ declare(strict_types=1);
 
 namespace plugin\worker\command;
 
-use GatewayWorker\BusinessWorker;
-use GatewayWorker\Gateway;
-use GatewayWorker\Register;
 use InvalidArgumentException;
-use plugin\worker\support\HttpServer;
-use plugin\worker\support\QueueWorker;
-use plugin\worker\support\WorkerConfig;
-use plugin\worker\support\WorkerState;
+use plugin\worker\model\SystemQueue;
+use plugin\worker\service\QueueService as WorkerQueueService;
+use plugin\worker\service\HttpServer;
+use plugin\worker\service\ProcessService;
+use plugin\worker\service\QueueServer;
+use plugin\worker\service\WorkerConfig;
 use think\admin\Command;
+use think\admin\service\QueueService as QueueRuntime;
 use think\console\Input;
 use think\console\input\Argument;
 use think\console\input\Option;
 use think\console\Output;
+use Throwable;
 use Workerman\Worker as Workerman;
 
 /**
@@ -26,10 +27,12 @@ class Worker extends Command
 {
     protected WorkerConfig $workers;
 
+    protected ProcessService $manager;
+
     public function configure(): void
     {
         $this->setName('xadmin:worker')
-            ->addArgument('action', Argument::OPTIONAL, 'start|serve|stop|restart|reload|status|query', 'start')
+            ->addArgument('action', Argument::OPTIONAL, 'start|serve|stop|restart|reload|status|query|check', 'start')
             ->addArgument('target', Argument::OPTIONAL, 'http|queue|all|<service>', 'http')
             ->addOption('host', 'H', Option::VALUE_OPTIONAL, 'Override the service host.')
             ->addOption('port', 'p', Option::VALUE_OPTIONAL, 'Override the service port.')
@@ -40,6 +43,7 @@ class Worker extends Command
     public function execute(Input $input, Output $output): int
     {
         $this->workers = new WorkerConfig($this->app);
+        $this->manager = ProcessService::instance();
         $action = strtolower(trim((string)$input->getArgument('action')));
         $target = strtolower(trim((string)$input->getArgument('target')));
 
@@ -81,6 +85,7 @@ class Worker extends Command
             'stop' => $this->stopTargets($targets),
             'status' => $this->statusTargets($targets),
             'query' => $this->queryTargets($targets),
+            'check' => $this->checkTargets($targets),
             'reload' => $this->reloadTargets($targets),
             'restart' => $this->restartTargets($targets),
             default => $this->invalidAction(),
@@ -129,15 +134,13 @@ class Worker extends Command
     {
         $status = 0;
         foreach ($targets as $name) {
-            $service = $this->workers->service($name);
-            $state = new WorkerState($service);
-            $info = $state->describe();
+            $info = $this->manager->workerDescribe($name);
             if (!$info['running']) {
                 $this->output->writeln("Worker [{$name}] is not running");
                 continue;
             }
 
-            if ($state->stop()) {
+            if ($this->manager->workerStop($name)) {
                 $this->output->writeln("Worker [{$name}] stop signal sent to pid {$info['pid']}");
             } else {
                 $this->output->writeln("Worker [{$name}] failed to stop");
@@ -156,7 +159,7 @@ class Worker extends Command
     protected function statusTargets(array $targets): int
     {
         foreach ($targets as $name) {
-            $info = (new WorkerState($this->workers->service($name)))->describe();
+            $info = $this->manager->workerDescribe($name);
             if ($info['running']) {
                 $this->output->writeln("Worker [{$name}] process {$info['pid']} running");
             } else {
@@ -175,7 +178,7 @@ class Worker extends Command
     protected function queryTargets(array $targets): int
     {
         foreach ($targets as $name) {
-            $info = (new WorkerState($this->workers->service($name)))->describe();
+            $info = $this->manager->workerDescribe($name);
             if (!$info['running']) {
                 $this->output->writeln("># [{$name}] no related worker process found");
                 continue;
@@ -190,28 +193,123 @@ class Worker extends Command
     }
 
     /**
-     * Reload POSIX services.
+     * Perform runtime smoke checks for the selected services.
+     *
+     * @param string[] $targets
+     */
+    protected function checkTargets(array $targets): int
+    {
+        $status = 0;
+        foreach ($targets as $name) {
+            $status = max($status, $this->checkService($this->withOverrides($this->workers->service($name))));
+        }
+
+        return $status;
+    }
+
+    /**
+     * Perform a smoke check for a single service.
+     */
+    protected function checkService(array $service): int
+    {
+        $name = (string)$service['name'];
+        $info = $this->manager->workerDescribe($name);
+        if (!$info['running']) {
+            $this->output->writeln("Worker [{$name}] is not running");
+            return 1;
+        }
+
+        return match ($service['driver']) {
+            'http' => $this->checkHttpService($service),
+            'queue' => $this->checkQueueService(),
+            default => 1,
+        };
+    }
+
+    /**
+     * Probe the HTTP runtime with a real local request.
+     */
+    protected function checkHttpService(array $service): int
+    {
+        $host = $this->probeHost((string)($service['server']['host'] ?? '127.0.0.1'));
+        $port = intval($service['server']['port'] ?? 0);
+        [$ok, $statusLine, $error] = $this->probeHttp($host, $port);
+
+        if ($ok) {
+            $this->output->writeln("># Worker [http] smoke check passed: {$statusLine}");
+            return 0;
+        }
+
+        $this->output->writeln("># Worker [http] smoke check failed: {$error}");
+        return 1;
+    }
+
+    /**
+     * Probe the queue runtime by creating and waiting for a simple smoke task.
+     */
+    protected function checkQueueService(): int
+    {
+        $title = 'Smoke Queue ' . date('YmdHis') . mt_rand(100, 999);
+
+        try {
+            $queue = QueueRuntime::register($title, 'version', 0, [], 1, 0);
+            $code = $queue->getCode();
+        } catch (Throwable $exception) {
+            $this->output->writeln("># Worker [queue] failed to create smoke task: {$exception->getMessage()}");
+            return 1;
+        }
+
+        $this->output->writeln("># Worker [queue] smoke task created: {$code}");
+
+        $lastStatus = 0;
+        $lastMessage = '';
+        for ($i = 0; $i < 20; $i++) {
+            usleep(500000);
+            $record = SystemQueue::mk()->where(['code' => $code])->findOrEmpty();
+            if ($record->isEmpty()) {
+                continue;
+            }
+
+            $lastStatus = intval($record->getAttr('status') ?: 0);
+            $lastMessage = trim((string)$record->getAttr('exec_desc'));
+            if ($lastStatus === WorkerQueueService::STATE_DONE) {
+                $this->cleanupQueueSmokeTask($code);
+                $this->output->writeln("># Worker [queue] smoke check passed: {$code} {$lastMessage}");
+                return 0;
+            }
+
+            if ($lastStatus === WorkerQueueService::STATE_ERROR) {
+                $this->output->writeln("># Worker [queue] smoke check failed: {$code} {$lastMessage}");
+                return 1;
+            }
+        }
+
+        $message = $lastMessage === '' ? 'timeout waiting for queue completion' : $lastMessage;
+        $this->output->writeln("># Worker [queue] smoke check failed: {$code} status {$lastStatus}, {$message}");
+        return 1;
+    }
+
+    /**
+     * Reload services.
+     * Uses a Workerman reload signal on POSIX and a controlled restart on Windows.
      *
      * @param string[] $targets
      */
     protected function reloadTargets(array $targets): int
     {
-        if ($this->process->iswin()) {
-            $this->output->error('Reload is only available on Linux or macOS.');
-            return 1;
-        }
-
         $status = 0;
         foreach ($targets as $name) {
-            $state = new WorkerState($this->workers->service($name));
-            $info = $state->describe();
+            $info = $this->manager->workerDescribe($name);
             if (!$info['running']) {
                 $this->output->writeln("Worker [{$name}] is not running");
                 continue;
             }
 
-            if ($state->reload()) {
+            $mode = $this->manager->workerReload($name, true, $this->overrideOptions());
+            if ($mode === 'reload') {
                 $this->output->writeln("Worker [{$name}] reload signal sent to pid {$info['pid']}");
+            } elseif ($mode === 'restart') {
+                $this->output->writeln("Worker [{$name}] restarted to apply reload on Windows");
             } else {
                 $this->output->writeln("Worker [{$name}] failed to reload");
                 $status = 1;
@@ -228,12 +326,23 @@ class Worker extends Command
      */
     protected function restartTargets(array $targets): int
     {
-        $status = $this->stopTargets($targets);
+        if (!$this->input->getOption('daemon')) {
+            $status = $this->stopTargets($targets);
+            foreach ($targets as $name) {
+                $status = max($status, $this->serveService($this->withOverrides($this->workers->service($name))));
+            }
+            return $status;
+        }
+
+        $status = 0;
         foreach ($targets as $name) {
-            $service = $this->withOverrides($this->workers->service($name));
-            $status = max($status, $this->input->getOption('daemon')
-                ? $this->startDaemon($service)
-                : $this->serveService($service));
+            if ($this->manager->workerRestart($name, true, $this->overrideOptions())) {
+                $info = $this->manager->workerDescribe($name);
+                $this->output->writeln("># Worker [{$name}] restarted successfully for pid {$info['pid']}");
+            } else {
+                $this->output->writeln("># Worker [{$name}] failed to restart");
+                $status = 1;
+            }
         }
 
         return $status;
@@ -245,10 +354,9 @@ class Worker extends Command
     protected function startDaemon(array $service): int
     {
         $name = $service['name'];
-        $state = new WorkerState($service);
-        $info = $state->describe();
+        $info = $this->manager->workerDescribe($name);
 
-        $command = $this->daemonCommand($name);
+        $command = $this->manager->workerCommand('serve', $name, true, $this->overrideOptions());
         $this->output->comment(">$ {$this->process->think($command)}");
 
         if ($info['running']) {
@@ -256,9 +364,8 @@ class Worker extends Command
             return 0;
         }
 
-        $this->process->thinkExec($command);
-        if ($state->waitStarted()) {
-            $info = $state->describe();
+        if ($this->manager->workerStart($name, true, $this->overrideOptions())) {
+            $info = $this->manager->workerDescribe($name);
             $this->output->writeln("># Worker [{$name}] started successfully for pid {$info['pid']}");
             return 0;
         }
@@ -277,7 +384,7 @@ class Worker extends Command
 
         $label = $service['label'] ?: strtoupper($service['name']);
         $this->output->writeln("Starting worker service [{$service['name']}] ({$label})...");
-        if ($this->process->iswin()) {
+        if ($this->process->isWin()) {
             $this->output->writeln('You can exit with <info>`CTRL-C`</info>');
         }
 
@@ -302,7 +409,7 @@ class Worker extends Command
             }
         }
 
-        Workerman::$daemonize = !$this->process->iswin() && (bool)$this->input->getOption('daemon');
+        Workerman::$daemonize = !$this->process->isWin() && (bool)$this->input->getOption('daemon');
         foreach (['pidFile', 'logFile', 'statusFile', 'stdoutFile', 'logFileMaxSize', 'stopTimeout', 'eventLoopClass', 'onMasterReload', 'onMasterStop', 'onWorkerExit'] as $name) {
             if (array_key_exists($name, $runtime) && $runtime[$name] !== null && $runtime[$name] !== '') {
                 Workerman::${$name} = $runtime[$name];
@@ -343,74 +450,10 @@ class Worker extends Command
         }
 
         if ($service['driver'] === 'queue') {
-            return [new QueueWorker($service, $this->app->getRootPath())];
+            return [new QueueServer($service, $this->app->getRootPath())];
         }
 
-        $worker = $this->makeSocketWorker($service);
-        $this->applyWorkerOptions($worker, $service);
-        return [$worker];
-    }
-
-    /**
-     * Apply worker-level options.
-     */
-    protected function applyWorkerOptions(object $worker, array $service): void
-    {
-        foreach ((array)$service['process'] as $name => $value) {
-            if (in_array($name, ['daemonize', 'statusFile', 'stdoutFile', 'pidFile', 'logFile', 'logFileMaxSize', 'stopTimeout', 'eventLoopClass', 'onMasterReload', 'onMasterStop', 'onWorkerExit'], true)) {
-                continue;
-            }
-            $worker->{$name} = $value;
-        }
-    }
-
-    /**
-     * Create a generic socket runtime worker.
-     */
-    protected function makeSocketWorker(array $service): BusinessWorker|Gateway|Register|Workerman
-    {
-        $type = strtolower((string)($service['socket']['type'] ?? 'workerman'));
-        $listen = $this->resolveListen($service);
-        $context = (array)($service['server']['context'] ?? []);
-
-        return match ($type) {
-            'gateway' => class_exists(Gateway::class)
-                ? new Gateway($listen, $context)
-                : throw new InvalidArgumentException('Please install workerman/gateway-worker first.'),
-            'register' => class_exists(Register::class)
-                ? new Register($listen, $context)
-                : throw new InvalidArgumentException('Please install workerman/gateway-worker first.'),
-            'business' => class_exists(BusinessWorker::class)
-                ? new BusinessWorker($listen, $context)
-                : throw new InvalidArgumentException('Please install workerman/gateway-worker first.'),
-            default => new Workerman($listen, $context),
-        };
-    }
-
-    /**
-     * Resolve the socket listen address.
-     */
-    protected function resolveListen(array $service): string
-    {
-        $server = (array)($service['server'] ?? []);
-        $listen = trim((string)($server['listen'] ?? ''));
-        if ($listen === '') {
-            $scheme = strtolower((string)($server['scheme'] ?? 'websocket'));
-            $host = trim((string)($server['host'] ?? '')) ?: '0.0.0.0';
-            $port = max(1, intval($server['port'] ?? 80));
-            return "{$scheme}://{$host}:{$port}";
-        }
-
-        if (!is_array($attr = parse_url($listen))) {
-            return $listen;
-        }
-
-        $scheme = strtolower((string)($server['scheme'] ?? ($attr['scheme'] ?? 'websocket')));
-        $host = trim((string)($server['host'] ?? ''));
-        $port = intval($server['port'] ?? 0);
-        $host = $host !== '' ? $host : (string)($attr['host'] ?? '0.0.0.0');
-        $port = max(1, $port > 0 ? $port : intval($attr['port'] ?? 80));
-        return "{$scheme}://{$host}:{$port}";
+        throw new InvalidArgumentException("Unsupported worker driver [{$service['driver']}], only http and queue are supported.");
     }
 
     /**
@@ -434,19 +477,31 @@ class Worker extends Command
     }
 
     /**
+     * Apply worker-level options.
+     */
+    protected function applyWorkerOptions(object $worker, array $service): void
+    {
+        foreach ((array)$service['process'] as $name => $value) {
+            if (in_array($name, ['daemonize', 'statusFile', 'stdoutFile', 'pidFile', 'logFile', 'logFileMaxSize', 'stopTimeout', 'eventLoopClass', 'onMasterReload', 'onMasterStop', 'onWorkerExit'], true)) {
+                continue;
+            }
+            $worker->{$name} = $value;
+        }
+    }
+
+    /**
      * Build the detached start command.
      */
-    protected function daemonCommand(string $name): string
+    protected function overrideOptions(): array
     {
-        $command = "xadmin:worker serve {$name} -d";
+        $options = [];
         if (($host = $this->input->getOption('host')) && is_string($host) && $host !== '') {
-            $command .= " --host {$host}";
+            $options['host'] = $host;
         }
         if (($port = $this->input->getOption('port')) && is_numeric($port) && intval($port) > 0) {
-            $command .= " --port " . intval($port);
+            $options['port'] = intval($port);
         }
-
-        return $command;
+        return $options;
     }
 
     /**
@@ -460,9 +515,61 @@ class Worker extends Command
             $argv[0] ?? 'think',
             'start',
         ];
-        if (!$this->process->iswin() && $this->input->getOption('daemon')) {
+        if (!$this->process->isWin() && $this->input->getOption('daemon')) {
             $argv[] = '-d';
         }
+    }
+
+    /**
+     * Normalize a probe host for local runtime checks.
+     */
+    protected function probeHost(string $host): string
+    {
+        return in_array($host, ['', '0.0.0.0', '::', '[::]'], true) ? '127.0.0.1' : $host;
+    }
+
+    /**
+     * Probe an HTTP endpoint and return the raw status line.
+     *
+     * @return array{0:bool,1:string,2:string}
+     */
+    protected function probeHttp(string $host, int $port, string $path = '/'): array
+    {
+        if ($port < 1) {
+            return [false, '', 'invalid HTTP port'];
+        }
+
+        $socket = @fsockopen($host, $port, $errno, $error, 3.0);
+        if (!is_resource($socket)) {
+            return [false, '', trim("connect {$host}:{$port} failed ({$errno}) {$error}")];
+        }
+
+        stream_set_timeout($socket, 3);
+        fwrite($socket, "GET {$path} HTTP/1.1\r\nHost: {$host}\r\nConnection: close\r\n\r\n");
+        $statusLine = trim(strval(fgets($socket)));
+        fclose($socket);
+
+        if ($statusLine === '') {
+            return [false, '', 'empty HTTP response'];
+        }
+
+        if (preg_match('#^HTTP/\\S+\\s+(\\d{3})#', $statusLine, $match)) {
+            $status = intval($match[1]);
+            if (($status >= 200 && $status < 400) || in_array($status, [401, 403], true)) {
+                return [true, $statusLine, ''];
+            }
+        }
+
+        return [false, $statusLine, "unexpected HTTP response: {$statusLine}"];
+    }
+
+    /**
+     * Remove transient queue artifacts after a successful smoke check.
+     */
+    protected function cleanupQueueSmokeTask(string $code): void
+    {
+        $this->app->cache->delete("queue_{$code}_progress");
+        SystemQueue::mk()->where(['code' => $code])->delete();
     }
 
     /**
@@ -470,7 +577,7 @@ class Worker extends Command
      */
     protected function invalidAction(): int
     {
-        $this->output->error('Wrong operation, allow start|serve|stop|restart|reload|status|query');
+        $this->output->error('Wrong operation, allow start|serve|stop|restart|reload|status|query|check');
         return 1;
     }
 }

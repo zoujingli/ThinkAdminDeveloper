@@ -24,7 +24,7 @@ use plugin\wemall\model\PluginWemallUserTransfer;
 use plugin\wemall\service\UserRebate;
 use think\admin\Command;
 use think\admin\Exception;
-use think\admin\storage\LocalStorage;
+use plugin\storage\service\LocalStorage;
 use think\console\Input;
 use think\console\Output;
 use think\db\exception\DbException;

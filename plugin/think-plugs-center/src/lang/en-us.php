@@ -37,7 +37,7 @@ return array_merge($extra, [
     '未配置菜单' => 'Menu Not Configured',
     '无记录' => 'No Records',
 
-    // 用户菜单（与 think-plugs-admin 共享）
+    // 用户菜单（与 think-plugs-system 共享）
     '基本资料' => 'Basic Information',
     '安全设置' => 'Security Setting',
     '缓存加速' => 'Cache Acceleration',

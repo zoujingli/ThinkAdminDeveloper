@@ -1,0 +1,125 @@
+<?php
+
+declare(strict_types=1);
+/**
+ * +----------------------------------------------------------------------
+ * | ThinkAdmin Plugin for ThinkAdmin
+ * +----------------------------------------------------------------------
+ * | 版权所有 2014~2026 ThinkAdmin [ thinkadmin.top ]
+ * +----------------------------------------------------------------------
+ * | 官方网站: https://thinkadmin.top
+ * +----------------------------------------------------------------------
+ * | 开源协议 ( https://mit-license.org )
+ * | 免责声明 ( https://thinkadmin.top/disclaimer )
+ * | 会员特权 ( https://thinkadmin.top/vip-introduce )
+ * +----------------------------------------------------------------------
+ * | gitee 代码仓库：https://gitee.com/zoujingli/ThinkAdmin
+ * | github 代码仓库：https://github.com/zoujingli/ThinkAdmin
+ * +----------------------------------------------------------------------
+ */
+
+namespace plugin\system\controller\api;
+
+use Psr\Log\NullLogger;
+use plugin\system\service\SystemAuthService;
+use plugin\worker\model\SystemQueue;
+use think\admin\Controller;
+use think\exception\HttpResponseException;
+
+/**
+ * 任务监听服务管理.
+ * @class Queue
+ */
+class Queue extends Controller
+{
+    /**
+     * 停止监听服务
+     * @login true
+     */
+    public function stop()
+    {
+        if (SystemAuthService::isSuper()) {
+            try {
+                $message = $this->app->console->call('xadmin:worker', ['stop', 'queue'])->fetch();
+                if (stripos($message, 'stop signal sent') !== false) {
+                    sysoplog('系统运维管理', '尝试停止任务监听服务');
+                    $this->success('停止任务监听服务成功！');
+                } elseif (stripos($message, 'is not running') !== false) {
+                    $this->success('没有找到需要停止的服务！');
+                } else {
+                    $this->error(nl2br($message));
+                }
+            } catch (HttpResponseException $exception) {
+                throw $exception;
+            } catch (\Exception $exception) {
+                trace_file($exception);
+                $this->error($exception->getMessage());
+            }
+        } else {
+            $this->error('请使用超管账号操作！');
+        }
+    }
+
+    /**
+     * 启动监听服务
+     * @login true
+     */
+    public function start()
+    {
+        if (SystemAuthService::isSuper()) {
+            try {
+                $message = $this->app->console->call('xadmin:worker', ['start', 'queue', '--daemon'])->fetch();
+                if (stripos($message, 'started successfully for pid') !== false) {
+                    sysoplog('系统运维管理', '尝试启动任务监听服务');
+                    $this->success('任务监听服务启动成功！');
+                } elseif (stripos($message, 'already running for pid') !== false) {
+                    $this->success('任务监听服务已经启动！');
+                } else {
+                    $this->error(nl2br($message));
+                }
+            } catch (HttpResponseException $exception) {
+                throw $exception;
+            } catch (\Exception $exception) {
+                trace_file($exception);
+                $this->error($exception->getMessage());
+            }
+        } else {
+            $this->error('请使用超管账号操作！');
+        }
+    }
+
+    /**
+     * 检查监听服务
+     * @login true
+     */
+    public function status()
+    {
+        if (SystemAuthService::isSuper()) {
+            try {
+                $message = $this->app->console->call('xadmin:worker', ['status', 'queue'])->fetch();
+                if (preg_match('/process.*?\d+.*?running/i', $message)) {
+                    echo "<span class='color-green pointer' data-tips-text='{$message}'>{$this->app->lang->get('已启动')}</span>";
+                } else {
+                    echo "<span class='color-red pointer' data-tips-text='{$message}'>{$this->app->lang->get('未启动')}</span>";
+                }
+            } catch (\Error|\Exception $exception) {
+                echo "<span class='color-red pointer' data-tips-text='{$exception->getMessage()}'>{$this->app->lang->get('异 常')}</span>";
+            }
+        } else {
+            $message = lang('只有超级管理员才能操作！');
+            echo "<span class='color-red pointer' data-tips-text='{$message}'>{$this->app->lang->get('无权限')}</span>";
+        }
+    }
+
+    /**
+     * 查询任务进度.
+     * @login true
+     */
+    public function progress()
+    {
+        $input = $this->_vali(['code.require' => '任务编号不能为空！']);
+        $this->app->db->setLog(new NullLogger()); /* 关闭数据库请求日志 */
+        $message = SystemQueue::mk()->where($input)->value('message', '');
+        $this->success('获取任务进度成功！', json_decode($message, true));
+    }
+}

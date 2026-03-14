@@ -7,7 +7,6 @@ declare(strict_types=1);
  *
  * - `http` runs the ThinkAdmin application through Workerman.
  * - `queue` runs the queue scheduler for long-running background tasks.
- * - extra services can be added under `services`.
  */
 return [
     // Shared defaults. Each service can override its own runtime and monitor options.
@@ -55,32 +54,11 @@ return [
             'driver' => 'queue',
             'process' => [
                 'name' => 'ThinkAdminQueue',
-                'count' => 1,
+                'count' => 2,
             ],
             'queue' => [
                 'scan_interval' => 1,
                 'batch_limit' => 20,
-            ],
-        ],
-        'websocket' => [
-            'enabled' => false,
-            'label' => 'ThinkAdmin WebSocket',
-            'driver' => 'socket',
-            'server' => [
-                'scheme' => 'websocket',
-                'host' => '0.0.0.0',
-                'port' => 8686,
-                'context' => [],
-            ],
-            'socket' => [
-                'type' => 'workerman',
-            ],
-            'process' => [
-                'name' => 'ThinkAdminWebSocket',
-                'count' => 1,
-                'onMessage' => static function ($connection, $data): void {
-                    $connection->send((string)$data);
-                },
             ],
         ],
     ],

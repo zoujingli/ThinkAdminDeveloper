@@ -32,7 +32,7 @@ declare(strict_types=1);
 
 namespace plugin\wechat\service\controller;
 
-use plugin\wechat\service\AuthService;
+use plugin\wechat\service\service\AuthService;
 use plugin\wechat\service\model\WechatAuth;
 use think\admin\Controller;
 use think\admin\helper\QueryHelper;

@@ -21,6 +21,7 @@ declare(strict_types=1);
 namespace plugin\wuma;
 
 use plugin\wuma\command\Create;
+use plugin\wuma\controller\Query;
 use think\admin\Plugin;
 
 /**

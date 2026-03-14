@@ -23,7 +23,7 @@ namespace plugin\wechat\client\service;
 use plugin\wechat\client\model\WechatPaymentRecord;
 use plugin\wechat\client\model\WechatPaymentRefund;
 use think\admin\Exception;
-use think\admin\extend\codec\CodeToolkit;
+use think\admin\extend\CodeToolkit;
 use think\admin\Library;
 use think\Response;
 use WeChat\Exceptions\InvalidResponseException;

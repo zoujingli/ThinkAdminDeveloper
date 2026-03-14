@@ -20,6 +20,7 @@ declare(strict_types=1);
 
 namespace plugin\wemall\controller\shop;
 
+use plugin\system\service\SystemAuthService;
 use plugin\payment\model\PluginPaymentRecord;
 use plugin\payment\service\Payment;
 use plugin\wemall\model\PluginWemallOrderRefund;
@@ -28,7 +29,6 @@ use plugin\wemall\service\UserOrder;
 use plugin\wemall\service\UserRefund;
 use think\admin\Controller;
 use think\admin\helper\QueryHelper;
-use think\admin\auth\AdminService;
 use think\db\exception\DataNotFoundException;
 use think\db\exception\DbException;
 use think\db\exception\ModelNotFoundException;
@@ -152,7 +152,7 @@ class Refund extends Controller
                         unset($data['payment_amount'], $data['balance_amount'], $data['integral_amount']);
                     }
                     // 后台操作人
-                    $data['admin_by'] = AdminService::getUserId();
+                    $data['admin_by'] = SystemAuthService::getUserId();
                     // 更新售后数据
                     $refund->save($data);
                     // 同步订单状态

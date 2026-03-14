@@ -40,6 +40,11 @@
         "prefix": "storage",
         "type": "plugin",
         "name": "存储中心"
+      },
+      "migrate": {
+        "file": "20241010000002_install_storage20241010.php",
+        "class": "InstallStorage20241010",
+        "name": "StoragePlugin"
       }
     },
     "config": {

@@ -21,9 +21,9 @@ declare(strict_types=1);
 namespace think\admin\helper;
 
 use think\admin\Exception;
-use think\admin\Helper;
-use think\admin\query\QueryFactory;
-use think\admin\system\SystemService;
+use think\admin\helper\Helper;
+use think\admin\model\QueryFactory;
+use think\admin\service\RuntimeTools;
 use think\db\BaseQuery;
 use think\db\exception\DataNotFoundException;
 use think\db\exception\DbException;
@@ -71,7 +71,7 @@ class FormHelper extends Helper
         if ($this->app->request->isPost()) {
             $edata = array_merge($this->app->request->post(), $edata);
             if ($this->class->callback('_form_filter', $edata, $where) !== false) {
-                $result = SystemService::save($query, $edata, $field, $where) !== false;
+                $result = RuntimeTools::save($query, $edata, $field, $where) !== false;
                 if ($this->class->callback('_form_result', $result, $edata) !== false) {
                     if ($result !== false) {
                         $this->class->success('数据保存成功！');

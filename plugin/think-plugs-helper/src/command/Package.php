@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace plugin\helper\command;
 
-use plugin\helper\support\PhinxExtend;
+use plugin\system\service\SystemService;
+use plugin\helper\service\PhinxExtend;
 use think\admin\Command;
 use think\admin\Exception;
 use think\admin\Library;
-use think\admin\system\SystemService;
 use think\console\input\Option;
 use think\db\exception\DataNotFoundException;
 use think\db\exception\DbException;

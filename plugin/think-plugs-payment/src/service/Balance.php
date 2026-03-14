@@ -64,12 +64,15 @@ abstract class Balance
         // 扣减余额检查
         $map = ['unid' => $unid, 'cancel' => 0, 'deleted' => 0];
         $usable = PluginPaymentBalance::mk()->where($map)->sum('amount');
-        if ($amount < 0 && abs($amount) > $usable) {
+        $amountValue = strval($amount);
+        $isDecrease = bccomp($amountValue, '0', 2) < 0;
+        $decrease = ltrim($amountValue, '-');
+        if ($isDecrease && bccomp($decrease, strval($usable), 2) === 1) {
             throw new Exception('扣减余额不足！');
         }
 
         // 余额标准字段
-        $data = ['unid' => $unid, 'code' => $code, 'name' => $name, 'amount' => strval($amount), 'remark' => $remark];
+        $data = ['unid' => $unid, 'code' => $code, 'name' => $name, 'amount' => $amountValue, 'remark' => $remark];
 
         // 锁定状态处理
         $data['unlock'] = intval($unlock);
@@ -79,7 +82,7 @@ abstract class Balance
 
         // 统计操作前的金额
         $data['amount_prev'] = $usable;
-        $data['amount_next'] = bcadd(strval($usable), strval($amount), 2);
+        $data['amount_next'] = bcadd(strval($usable), $amountValue, 2);
 
         // 检查编号是否重复
         $map = ['unid' => $unid, 'code' => $code, 'deleted' => 0];
@@ -184,6 +187,6 @@ abstract class Balance
     {
         ($model = self::get($code))->save($data);
         self::recount($model->getAttr('unid'));
-        return $model->refresh();
+        return PluginPaymentBalance::mk()->withTrashed()->findOrEmpty($model->getKey());
     }
 }

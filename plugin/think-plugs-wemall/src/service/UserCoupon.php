@@ -24,7 +24,7 @@ use plugin\wemall\model\PluginWemallConfigCoupon;
 use plugin\wemall\model\PluginWemallUserCoupon;
 use plugin\wemall\model\PluginWemallUserRelation;
 use think\admin\Exception;
-use think\admin\extend\codec\CodeToolkit;
+use think\admin\extend\CodeToolkit;
 use think\db\exception\DataNotFoundException;
 use think\db\exception\DbException;
 use think\db\exception\ModelNotFoundException;

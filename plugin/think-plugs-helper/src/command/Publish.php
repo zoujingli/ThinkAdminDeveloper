@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace plugin\helper\command;
 
-use think\admin\extend\filesystem\FileTools;
-use think\admin\runtime\AppService;
-use think\admin\runtime\RuntimeService;
+use think\admin\extend\FileTools;
+use think\admin\service\AppService;
+use think\admin\service\RuntimeService;
 use think\console\Command;
 use think\console\Input;
 use think\console\input\Option;
@@ -297,41 +297,27 @@ class Publish extends Command
      */
     private function parse(): self
     {
-        [$services, $versions] = [[], []];
+        [$services, $versions, $known] = [[], [], []];
 
         if (is_file($file = syspath('vendor/composer/installed.json'))) {
             $packages = json_decode((string) @file_get_contents($file), true);
             foreach ($packages['packages'] ?? $packages as $package) {
-                $installPath = syspath("vendor/{$package['name']}/");
-                $type = $package['type'] ?? '';
-                $meta = $this->normalizePackageMeta($package);
-                if ($type === 'think-admin-plugin' || !empty($package['extra']['plugin'])) {
-                    $this->packages[] = [
-                        'path' => rtrim($installPath, '\/'),
-                        'publish' => (array) ($package['extra']['xadmin']['publish'] ?? []),
-                    ];
+                $name = strval($package['name'] ?? '');
+                if ($name === '') {
+                    continue;
                 }
-                $versions[$package['name']] = $meta;
-
-                if (!empty($package['extra']['think']['services'])) {
-                    $services = array_merge($services, (array) $package['extra']['think']['services']);
-                }
-
-                if (!empty($package['extra']['think']['config'])) {
-                    $configPath = $this->app->getConfigPath();
-                    foreach ((array) $package['extra']['think']['config'] as $name => $file) {
-                        if (is_file($target = $configPath . $name . '.php')) {
-                            $this->output->info("File {$target} exist!");
-                            continue;
-                        }
-                        if (!is_file($source = $installPath . $file)) {
-                            $this->output->info("File {$source} not exist!");
-                            continue;
-                        }
-                        copy($source, $target);
-                    }
-                }
+                $known[$name] = true;
+                $this->mergePackage($package, syspath("vendor/{$name}/"), $services, $versions);
             }
+        }
+
+        foreach ($this->discoverWorkspacePackages() as $package) {
+            $name = strval($package['name'] ?? '');
+            if ($name === '' || isset($known[$name])) {
+                continue;
+            }
+            $known[$name] = true;
+            $this->mergePackage($package, strval($package['__path'] ?? ''), $services, $versions);
         }
 
         $services = array_values(array_unique(array_filter(array_map('strval', $services))));
@@ -344,6 +330,71 @@ class Publish extends Command
         @file_put_contents(syspath('vendor/versions.php'), preg_replace('#\s+=>\s+array\s+\(#m', ' => array (', $content));
 
         return $this;
+    }
+
+    /**
+     * 合并单个组件元数据。
+     * @param array<string, mixed> $package
+     * @param array<int, string> $services
+     * @param array<string, array<string, mixed>> $versions
+     */
+    private function mergePackage(array $package, string $installPath, array &$services, array &$versions): void
+    {
+        $installPath = rtrim($installPath, '\/');
+        $type = strval($package['type'] ?? '');
+        $meta = $this->normalizePackageMeta($package);
+        if ($installPath !== '' && ($type === 'think-admin-plugin' || !empty($package['extra']['plugin']))) {
+            $this->packages[] = [
+                'path' => $installPath,
+                'publish' => (array) ($package['extra']['xadmin']['publish'] ?? []),
+            ];
+        }
+        if (!empty($package['name'])) {
+            $versions[strval($package['name'])] = $meta;
+        }
+
+        if (!empty($package['extra']['think']['services'])) {
+            $services = array_merge($services, (array) $package['extra']['think']['services']);
+        }
+
+        if ($installPath !== '' && !empty($package['extra']['think']['config'])) {
+            $configPath = $this->app->getConfigPath();
+            foreach ((array) $package['extra']['think']['config'] as $name => $file) {
+                if (is_file($target = $configPath . $name . '.php')) {
+                    $this->output->info("File {$target} exist!");
+                    continue;
+                }
+                if (!is_file($source = $installPath . DIRECTORY_SEPARATOR . ltrim(strval($file), '\/'))) {
+                    $this->output->info("File {$source} not exist!");
+                    continue;
+                }
+                copy($source, $target);
+            }
+        }
+    }
+
+    /**
+     * 扫描当前工作区的本地插件包。
+     * @return array<int, array<string, mixed>>
+     */
+    private function discoverWorkspacePackages(): array
+    {
+        $items = [];
+        $pluginRoot = syspath('plugin');
+        if (!is_dir($pluginRoot)) {
+            return $items;
+        }
+
+        foreach (glob($pluginRoot . DIRECTORY_SEPARATOR . '*' . DIRECTORY_SEPARATOR . 'composer.json') ?: [] as $file) {
+            $manifest = json_decode((string) @file_get_contents($file), true);
+            if (!is_array($manifest) || empty($manifest['name'])) {
+                continue;
+            }
+            $manifest['__path'] = dirname($file);
+            $items[] = $manifest;
+        }
+
+        return $items;
     }
 
     /**

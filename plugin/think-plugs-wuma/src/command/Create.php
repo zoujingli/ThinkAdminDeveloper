@@ -21,9 +21,9 @@ declare(strict_types=1);
 namespace plugin\wuma\command;
 
 use think\admin\Command;
-use think\admin\extend\codec\CodeToolkit;
+use think\admin\extend\CodeToolkit;
 use think\admin\Library;
-use think\admin\process\ProcessService as Process;
+use think\admin\service\ProcessService as Process;
 use think\Exception;
 
 /**
@@ -93,9 +93,9 @@ class Create extends Command
         $token = base64_encode(json_encode([
             'auth' => $auth, 'host' => sysconf('site_host'), 'target' => syspath('safefile/code/'),
         ]));
-        $binary = dirname(__DIR__, 2) . '/stc/bin/' . (Process::iswin() ? 'coder.exe' : 'coder');
+        $binary = dirname(__DIR__, 2) . '/stc/bin/' . (Process::isWin() ? 'coder.exe' : 'coder');
         // 赋予文件可执行权限
-        if (!Process::iswin() && file_exists($binary) && !is_executable($binary)) {
+        if (!Process::isWin() && file_exists($binary) && !is_executable($binary)) {
             Process::exec("/usr/bin/chmod +x {$binary}");
         }
         // 检查是否具有可执行权限

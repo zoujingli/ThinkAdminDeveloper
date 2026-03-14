@@ -20,16 +20,15 @@ declare(strict_types=1);
 
 namespace think\admin;
 
-use think\admin\extend\auth\JwtToken;
+use think\admin\service\JwtToken;
 use think\admin\helper\DeleteHelper;
 use think\admin\helper\FormHelper;
 use think\admin\helper\QueryHelper;
 use think\admin\helper\SaveHelper;
-use think\admin\node\NodeService;
-use think\admin\auth\TokenHelper;
 use think\admin\helper\ValidateHelper;
-use think\admin\auth\AdminService;
-use think\admin\queue\QueueService;
+use think\admin\runtime\SystemContext;
+use think\admin\service\QueueService;
+use think\admin\service\NodeService;
 use think\App;
 use think\db\BaseQuery;
 use think\db\exception\DataNotFoundException;
@@ -64,16 +63,6 @@ class Controller extends \stdClass
      * 请求参数对象
      */
     public Request $request;
-
-    /**
-     * 表单CSRF验证状态
-     */
-    public bool $csrf_state = false;
-
-    /**
-     * 表单CSRF验证消息.
-     */
-    public string $csrf_message = '';
 
     /**
      * Constructor.
@@ -115,8 +104,9 @@ class Controller extends \stdClass
         $result = ['code' => $code, 'info' => is_string($info) ? lang($info) : $info, 'data' => $data];
         if (JwtToken::isRejwt()) {
             $result['token'] = JwtToken::token();
-        } elseif ($token = AdminService::buildToken()) {
+        } elseif ($token = SystemContext::buildToken()) {
             $result['token'] = $token;
+            SystemContext::syncTokenCookie($token);
         }
         throw new HttpResponseException(json($result));
     }
@@ -142,11 +132,7 @@ class Controller extends \stdClass
         foreach ($this as $name => $value) {
             $vars[$name] = $value;
         }
-        if ($this->csrf_state) {
-            TokenHelper::fetch($tpl, $vars, $node);
-        } else {
-            throw new HttpResponseException(view($tpl, $vars));
-        }
+        throw new HttpResponseException(view($tpl, $vars));
     }
 
     /**
@@ -277,12 +263,12 @@ class Controller extends \stdClass
     }
 
     /**
-     * 检查表单令牌验证
+     * 兼容旧表单令牌调用。
      * @param bool $return 是否返回结果
      */
     protected function _applyFormToken(bool $return = false): bool
     {
-        return TokenHelper::instance()->init($return);
+        return true;
     }
 
     /**
@@ -298,7 +284,7 @@ class Controller extends \stdClass
     {
         try {
             $queue = QueueService::register($title, $command, $later, $data, $rscript, $loops);
-            $this->success('创建任务成功！', $queue->code);
+            $this->success('创建任务成功！', $queue->getCode());
         } catch (Exception $exception) {
             $code = $exception->getData();
             if (is_string($code) && stripos($code, 'Q') === 0) {

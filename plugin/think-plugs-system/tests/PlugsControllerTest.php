@@ -1,0 +1,157 @@
+<?php
+
+declare(strict_types=1);
+
+namespace think\admin\tests;
+
+use plugin\system\service\SystemAuthService;
+use plugin\system\controller\api\Plugs as PlugsController;
+use plugin\system\service\SystemContext as PluginSystemContext;
+use plugin\system\model\SystemConfig;
+use plugin\system\model\SystemOplog;
+use plugin\worker\model\SystemQueue;
+use think\Container;
+use think\Request;
+use think\admin\contract\SystemContextInterface;
+use think\admin\service\QueueService as QueueRuntime;
+use think\admin\runtime\RequestContext;
+use think\admin\tests\Support\SqliteIntegrationTestCase;
+use think\exception\HttpResponseException;
+
+/**
+ * @internal
+ * @coversNothing
+ */
+class PlugsControllerTest extends SqliteIntegrationTestCase
+{
+    protected function defineSchema(): void
+    {
+        $this->createSystemConfigTable();
+        $this->createSystemOplogTable();
+        $this->createSystemQueueTable();
+    }
+
+    protected function afterSchemaCreated(): void
+    {
+        $context = new PluginSystemContext();
+        Container::getInstance()->instance(SystemContextInterface::class, $context);
+        $this->app->instance(SystemContextInterface::class, $context);
+        $this->app->bind([
+            QueueRuntime::BIND_NAME => \plugin\worker\service\QueueService::class,
+        ]);
+    }
+
+    public function testScriptBuildsJavascriptConfigWithAbsoluteUrlsWhenUploadTokenIsValid(): void
+    {
+        $this->createSystemConfigFixture([
+            'type'  => 'base',
+            'name'  => 'editor',
+            'value' => 'tinymce',
+        ]);
+        $uptoken = SystemAuthService::withUploadToken(321, 'jpg,png');
+
+        $response = $this->callScriptController([
+            'uptoken' => $uptoken,
+        ]);
+        $contentType = strval($response->getHeader('Content-Type'));
+        $content = strval($response->getContent());
+
+        $this->assertStringContainsString('application/javascript', $contentType);
+        $this->assertStringContainsString('window.taDebug = true;', $content);
+        $this->assertStringContainsString("window.taSystem = 'https://admin.example.com/system", $content);
+        $this->assertStringContainsString("window.taStorage = 'https://admin.example.com/storage", $content);
+        $this->assertStringContainsString("window.taTokenHeader = 'Authorization';", $content);
+        $this->assertStringContainsString("window.taTokenScheme = 'Bearer';", $content);
+        $this->assertStringContainsString('window.taTokenExpire = 604800;', $content);
+        $this->assertStringContainsString("window.taEditor = 'tinymce';", $content);
+    }
+
+    public function testOptimizeRegistersQueueAndBlocksDuplicatesForSuperAdmin(): void
+    {
+        $first = $this->callActionController('optimize', [], true);
+        $second = $this->callActionController('optimize', [], true);
+
+        $queues = SystemQueue::mk()->where(['title' => '优化数据库所有数据表'])->select();
+        $oplogs = SystemOplog::mk()->where(['action' => '系统运维管理'])->order('id asc')->select();
+
+        $this->assertSame(1, intval($first['code'] ?? 0));
+        $this->assertSame('创建任务成功！', $first['info'] ?? '');
+        $this->assertSame(1, intval($second['code'] ?? 0));
+        $this->assertSame('任务已经存在，无需再次创建！', $second['info'] ?? '');
+        $this->assertCount(1, $queues);
+        $this->assertSame('xadmin:database optimize', $queues[0]->getData('command'));
+        $this->assertSame(1, intval($queues[0]->getData('status')));
+        $this->assertSame($queues[0]->getData('code'), $first['data'] ?? '');
+        $this->assertSame($queues[0]->getData('code'), $second['data'] ?? '');
+        $this->assertCount(2, $oplogs);
+        $this->assertSame('创建数据库优化任务', $oplogs[0]->getData('content'));
+        $this->assertSame('admin', $oplogs[0]->getData('username'));
+        $this->assertSame('创建数据库优化任务', $oplogs[1]->getData('content'));
+    }
+
+    public function testOptimizeRejectsNonSuperAdmin(): void
+    {
+        $result = $this->callActionController('optimize', [], false);
+
+        $this->assertSame(0, intval($result['code'] ?? 1));
+        $this->assertSame('请使用超管账号操作！', $result['info'] ?? '');
+        $this->assertSame(0, SystemQueue::mk()->count());
+        $this->assertSame(0, SystemOplog::mk()->count());
+    }
+
+    private function callScriptController(array $query = [])
+    {
+        $request = (new Request())
+            ->withGet($query)
+            ->withServer(['HTTPS' => 'on'])
+            ->setHost('admin.example.com')
+            ->setMethod('GET')
+            ->setController('plugs')
+            ->setAction('script');
+
+        $this->setRequestPayload($request, $query);
+        $this->app->instance('request', $request);
+
+        $controller = new PlugsController($this->app);
+
+        return $controller->script();
+    }
+
+    private function callActionController(string $action, array $payload = [], bool $super = true): array
+    {
+        $request = (new Request())
+            ->withGet($payload)
+            ->withPost($payload)
+            ->setMethod('POST')
+            ->setController('plugs')
+            ->setAction($action);
+
+        $this->bindAdminUser($super);
+        $this->setRequestPayload($request, $payload);
+        $this->app->instance('request', $request);
+
+        try {
+            $controller = new PlugsController($this->app);
+            $controller->{$action}();
+            self::fail("Expected PlugsController::{$action} to throw HttpResponseException.");
+        } catch (HttpResponseException $exception) {
+            return json_decode($exception->getResponse()->getContent(), true) ?: [];
+        }
+    }
+
+    private function bindAdminUser(bool $super): void
+    {
+        RequestContext::instance()->setAuth([
+            'id'       => $super ? 10000 : 9101,
+            'username' => $super ? 'admin' : 'tester',
+            'password' => md5('changed-password'),
+        ], '', true);
+    }
+
+    private function setRequestPayload(Request $request, array $data): void
+    {
+        $property = new \ReflectionProperty(Request::class, 'request');
+        $property->setAccessible(true);
+        $property->setValue($request, $data);
+    }
+}

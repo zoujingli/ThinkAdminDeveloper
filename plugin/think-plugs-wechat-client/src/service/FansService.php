@@ -22,7 +22,7 @@ namespace plugin\wechat\client\service;
 
 use plugin\wechat\client\model\WechatFans;
 use think\admin\Library;
-use think\admin\Service;
+use think\admin\service\Service;
 
 /**
  * 微信粉丝信息.

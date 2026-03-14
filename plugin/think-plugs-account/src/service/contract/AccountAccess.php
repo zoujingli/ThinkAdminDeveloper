@@ -25,8 +25,7 @@ use plugin\account\model\PluginAccountBind;
 use plugin\account\model\PluginAccountUser;
 use plugin\account\service\Account;
 use think\admin\Exception;
-use think\admin\extend\codec\CodeToolkit;
-use think\admin\extend\auth\JwtToken;
+use think\admin\extend\CodeToolkit;
 use think\App;
 use think\db\exception\DbException;
 
@@ -36,13 +35,6 @@ use think\db\exception\DbException;
  */
 class AccountAccess implements AccountInterface
 {
-    /**
-     * 测试专用 TOKEN
-     * 主要用于接口文档演示.
-     * @var string
-     */
-    public const tester = 'tester';
-
     /**
      * 当前应用实例.
      * @var App
@@ -195,9 +187,10 @@ class AccountAccess implements AccountInterface
             }
             $data['user'] = $this->user->hidden(['sort', 'password'], true)->toArray();
             if ($rejwt) {
-                $data['token'] = $this->isjwt ? JwtToken::token([
-                    'type' => $this->auth->getAttr('type'), 'token' => $this->auth->getAttr('token'),
-                ]) : $this->auth->getAttr('token');
+                $data['token'] = $this->isjwt ? Account::buildJwtToken(
+                    strval($this->auth->getAttr('type')),
+                    strval($this->auth->getAttr('token'))
+                ) : $this->auth->getAttr('token');
             }
         }
         return $data;
@@ -313,6 +306,8 @@ class AccountAccess implements AccountInterface
                 'usid' => intval($this->bind->getAttr('id')),
             ]);
         }
+        $this->bind->refresh();
+        $this->user = $this->bind->user()->findOrEmpty();
         return $this->get();
     }
 

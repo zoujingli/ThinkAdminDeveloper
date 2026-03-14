@@ -63,6 +63,8 @@ use think\model\relation\HasOne;
  */
 class PluginPaymentIntegral extends Abs
 {
+    protected $deleteTime = 'deleted_time';
+
     /**
      * 关联用户数据.
      */

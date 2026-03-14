@@ -25,7 +25,7 @@ use plugin\wemall\model\PluginWemallUserTransfer;
 use plugin\wemall\service\UserRebate;
 use plugin\wemall\service\UserTransfer;
 use think\admin\Exception;
-use think\admin\extend\codec\CodeToolkit;
+use think\admin\extend\CodeToolkit;
 use think\db\exception\DataNotFoundException;
 use think\db\exception\DbException;
 use think\db\exception\ModelNotFoundException;

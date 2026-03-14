@@ -20,11 +20,11 @@ declare(strict_types=1);
 
 namespace plugin\wemall\controller\api;
 
+use plugin\system\model\SystemBase;
 use plugin\account\model\PluginAccountUser;
 use plugin\wemall\service\ConfigService;
 use think\admin\Controller;
 use think\admin\Exception;
-use think\admin\model\SystemBase;
 
 /**
  * 基础数据接口.

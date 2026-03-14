@@ -20,11 +20,14 @@ declare(strict_types=1);
 
 namespace plugin\account\service;
 
-use plugin\account\model\PluginAccountAuth;
 use plugin\account\service\contract\AccountAccess;
 use plugin\account\service\contract\AccountInterface;
+use think\admin\service\CacheSession;
+use think\admin\runtime\RequestTokenService;
 use think\admin\Exception;
-use think\admin\extend\auth\JwtToken;
+use think\admin\service\JwtToken;
+use think\admin\extend\CodeToolkit;
+use think\Request;
 
 /**
  * 用户账号调度器.
@@ -32,6 +35,8 @@ use think\admin\extend\auth\JwtToken;
  */
 abstract class Account
 {
+    private const TOKEN_TYPE = 'account-auth';
+
     public const WAP = 'wap';
 
     public const WEB = 'web';
@@ -67,17 +72,13 @@ abstract class Account
      */
     public static function mk(string $type, $token = '', bool $isjwt = true): AccountInterface
     {
-        if ($token === AccountAccess::tester) {
-            if (empty($type)) {
-                $type = PluginAccountAuth::mk()->where(['token' => $token])->value('type');
-                if (empty($type)) {
-                    throw new Exception('账号不存在！');
-                }
-            }
-        } elseif ($isjwt && is_string($token) && strlen($token) > 32) {
-            $data = JwtToken::verify($token);
-            [$type, $token] = [$type ?: ($data['type'] ?? ''), $data['token'] ?? $token];
-            if (($data['type'] ?? '') !== $type) {
+        $jwtData = [];
+        if ($isjwt && is_string($token) && strlen($token) > 32) {
+            $jwtData = JwtToken::verify($token);
+            static::verifyJwtPayload($jwtData);
+            static::verifyTokenSession($jwtData);
+            [$type, $token] = [$type ?: ($jwtData['type'] ?? ''), $jwtData['token'] ?? $token];
+            if (($jwtData['type'] ?? '') !== $type) {
                 throw new Exception('授权不匹配！');
             }
         }
@@ -191,21 +192,119 @@ abstract class Account
     }
 
     /**
+     * 获取账号认证 Cookie 名称.
+     */
+    public static function getTokenCookie(): string
+    {
+        return RequestTokenService::getAccountTokenCookie();
+    }
+
+    /**
+     * 解析当前请求中的账号令牌.
+     */
+    public static function requestToken(?Request $request = null): string
+    {
+        return RequestTokenService::accountToken($request);
+    }
+
+    /**
+     * 获取账号 JWT 类型。
+     */
+    public static function getTokenType(): string
+    {
+        return self::TOKEN_TYPE;
+    }
+
+    /**
+     * 获取当前账号会话编号。
+     */
+    public static function currentSessionId(): string
+    {
+        return trim(strval(sysvar('plugin_account_user_session_id') ?: ''));
+    }
+
+    /**
+     * 绑定账号缓存会话并返回会话编号。
+     * @throws Exception
+     */
+    public static function bindSession(?string $sessionId = null): string
+    {
+        $sessionId = trim(strval($sessionId ?: static::currentSessionId()));
+        if ($sessionId === '') {
+            $sessionId = CodeToolkit::uuid();
+        }
+
+        $scope = static::sessionScope($sessionId);
+        if (CacheSession::exists($scope)) {
+            CacheSession::touch(static::expire(), $scope);
+        } else {
+            CacheSession::put([], static::expire(), $scope);
+        }
+
+        sysvar('plugin_account_user_session_id', $sessionId);
+        return $sessionId;
+    }
+
+    /**
+     * 构建账号 JWT。
+     * @throws Exception
+     */
+    public static function buildJwtToken(string $type, string $token, ?string $sessionId = null): string
+    {
+        return JwtToken::token([
+            'typ' => self::TOKEN_TYPE,
+            'sid' => static::bindSession($sessionId),
+            'jti' => CodeToolkit::uuid(),
+            'type' => $type,
+            'token' => $token,
+        ]);
+    }
+
+    /**
+     * 销毁当前账号缓存会话。
+     * @throws Exception
+     */
+    public static function destroySession(?string $sessionId = null): void
+    {
+        $sessionId = trim(strval($sessionId ?: static::currentSessionId()));
+        if ($sessionId !== '') {
+            CacheSession::destroy(static::sessionScope($sessionId));
+        }
+        sysvar('plugin_account_user_session_id', '');
+    }
+
+    /**
+     * 同步账号认证 Cookie.
+     */
+    public static function syncTokenCookie(string $token): string
+    {
+        $token = trim($token);
+        if ($token === '') {
+            static::forgetTokenCookie();
+            return '';
+        }
+
+        cookie(static::getTokenCookie(), $token, ['expire' => static::expire()]);
+        return $token;
+    }
+
+    /**
+     * 清理账号认证 Cookie.
+     */
+    public static function forgetTokenCookie(): void
+    {
+        cookie(static::getTokenCookie(), null);
+    }
+
+    /**
      * 解析请求令牌.
      * @throws Exception
      */
     public static function token(string $token = '', ?string &$type = null): AccountInterface
     {
-        if ($token === AccountAccess::tester) {
-            $map = ['token' => $token];
-            empty($type) || ($map['type'] = $type);
-            $auth = PluginAccountAuth::mk()->where($map)->findOrEmpty();
-            if ($auth->isEmpty()) {
-                throw new Exception('账号不存在！');
-            }
-            return static::mk($type = $auth->getAttr('type'), $auth->getAttr('token'));
-        }
         $data = JwtToken::verify($token);
+        static::verifyJwtPayload($data);
+        static::verifyTokenSession($data);
         return static::mk($type = $data['type'] ?? '-', $data['token'] ?? '-');
     }
 
@@ -268,5 +367,44 @@ abstract class Account
             }
         }
         return self::$types;
+    }
+
+    /**
+     * 获取账号会话作用域。
+     */
+    private static function sessionScope(string $sessionId): string
+    {
+        return 'sid:' . trim($sessionId);
+    }
+
+    /**
+     * 校验账号 JWT 绑定的缓存会话。
+     * @throws Exception
+     */
+    private static function verifyTokenSession(array $data): void
+    {
+        $sessionId = trim(strval($data['sid'] ?? ''));
+        if ($sessionId === '') {
+            return;
+        }
+
+        $scope = static::sessionScope($sessionId);
+        if (!CacheSession::exists($scope)) {
+            throw new Exception('登录已超时！', 401);
+        }
+
+        CacheSession::touch(static::expire(), $scope);
+        sysvar('plugin_account_user_session_id', $sessionId);
+    }
+
+    /**
+     * 校验账号 JWT 载荷类型。
+     * @throws Exception
+     */
+    private static function verifyJwtPayload(array $data): void
+    {
+        if (strval($data['typ'] ?? '') !== self::TOKEN_TYPE) {
+            throw new Exception('登录已超时！', 401);
+        }
     }
 }

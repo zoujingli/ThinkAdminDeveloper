@@ -34,13 +34,13 @@ declare(strict_types=1);
 
 namespace plugin\payment\controller;
 
+use plugin\system\service\SystemAuthService;
 use plugin\account\model\PluginAccountUser;
 use plugin\payment\model\PluginPaymentRecord;
 use plugin\payment\service\Payment;
 use think\admin\Controller;
-use think\admin\extend\codec\CodeToolkit;
+use think\admin\extend\CodeToolkit;
 use think\admin\helper\QueryHelper;
-use think\admin\auth\AdminService;
 use think\db\exception\DataNotFoundException;
 use think\db\exception\DbException;
 use think\db\exception\ModelNotFoundException;
@@ -105,7 +105,7 @@ class Record extends Controller
             if ($action->getAttr('payment_status') === 1) {
                 $this->success('该凭证已审核！');
             }
-            $data['audit_user'] = AdminService::getUserId();
+            $data['audit_user'] = SystemAuthService::getUserId();
             $data['audit_time'] = date('Y-m-d H:i:s');
             $data['audit_remark'] = $data['remark'];
             $data['payment_time'] = date('Y-m-d H:i:s');
@@ -145,7 +145,7 @@ class Record extends Controller
                 $query->whereOr([['payment_status', '=', 1], ['audit_status', '>', 0]]);
             })->where($data)->column('code,channel_code,payment_amount,payment_coupon');
             foreach ($items as $item) {
-                $amount = bcsub($item['payment_amount'], $item['payment_coupon'], 2);
+                $amount = bcsub(strval($item['payment_amount']), strval($item['payment_coupon']), 2);
                 Payment::mk($item['channel_code'])->refund($item['code'], $amount);
             }
             $this->success('退款申请成功！');

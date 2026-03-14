@@ -20,20 +20,13 @@ declare(strict_types=1);
 
 namespace think\admin;
 
-use think\admin\context\RequestContext;
-use think\admin\extend\filesystem\FileTools;
-use think\admin\runtime\RuntimeService;
-use think\admin\command\Database;
-use think\admin\queue\command\Queue;
-use think\admin\command\Replace;
-use think\admin\command\Sysmenu;
-use think\admin\runtime\middleware\MultAccess;
-use think\admin\auth\middleware\JwtTokenAuth;
-use think\admin\auth\middleware\RbacAccess;
+use think\admin\runtime\RequestContext;
+use think\admin\extend\FileTools;
+use think\admin\middleware\MultAccess;
+use think\admin\service\RuntimeService;
 use think\App;
 use think\exception\HttpException;
 use think\exception\HttpResponseException;
-use think\middleware\LoadLangPack;
 use think\Request;
 use think\Response;
 use think\Service;
@@ -54,14 +47,6 @@ class Library extends Service
     {
         // 静态应用赋值
         static::$sapp = $this->app;
-
-        // 注册 ThinkAdmin 指令
-        $this->commands([
-            Queue::class,
-            Sysmenu::class,
-            Replace::class,
-            Database::class,
-        ]);
 
         // 动态应用运行参数
         RuntimeService::apply();
@@ -149,7 +134,7 @@ class Library extends Service
                         $hosts = str2arr($hosts);
                     }
                     if (empty($hosts) || in_array(parse_url(strtolower($origin), PHP_URL_HOST), $hosts)) {
-                        $headers = str2arr(strval($this->app->config->get('app.cors_headers', 'Api-Type,Api-Name,Api-Uuid,Api-Token,User-Form-Token')));
+                        $headers = str2arr(strval($this->app->config->get('app.cors_headers', 'X-Device-Code,X-Device-Type')));
                         $headers = array_values(array_filter(array_unique(array_map('trim', $headers))));
                         $header['Access-Control-Allow-Origin'] = $origin;
                         $header['Access-Control-Allow-Methods'] = $this->app->config->get('app.cors_methods', 'GET,PUT,POST,PATCH,DELETE');
@@ -170,18 +155,6 @@ class Library extends Service
                 return $next($request)->header($header);
             });
 
-            // 初始化 JWT 认证与语言包
-            $this->app->middleware->add(JwtTokenAuth::class);
-            $isapi = $this->app->request->header('api-token') !== null;
-            $agent = preg_replace('|\s+|', '', $this->app->request->header('user-agent', ''));
-            $isrpc = is_numeric(stripos($agent, 'think-admin-jsonrpc')) || is_numeric(stripos($agent, 'PHPYarRPC'));
-            if (empty($isapi) && empty($isrpc)) {
-                // 页面请求统一加载语言包
-                $this->app->middleware->add(LoadLangPack::class);
-            }
-
-            // 注册权限验证中间键
-            $this->app->middleware->add(RbacAccess::class, 'route');
         }
     }
 }

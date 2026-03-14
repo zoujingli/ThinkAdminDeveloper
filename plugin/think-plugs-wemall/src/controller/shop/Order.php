@@ -27,7 +27,7 @@ use plugin\wemall\model\PluginWemallOrderSender;
 use plugin\wemall\service\UserOrder;
 use plugin\wemall\service\UserRefund;
 use think\admin\Controller;
-use think\admin\extend\codec\CodeToolkit;
+use think\admin\extend\CodeToolkit;
 use think\admin\helper\QueryHelper;
 use think\db\exception\DataNotFoundException;
 use think\db\exception\DbException;

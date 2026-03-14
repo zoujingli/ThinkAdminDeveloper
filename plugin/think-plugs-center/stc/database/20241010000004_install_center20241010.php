@@ -29,7 +29,7 @@ declare(strict_types=1);
 // +----------------------------------------------------------------------
 
 use plugin\center\Service;
-use plugin\helper\support\PhinxExtend;
+use plugin\helper\service\PhinxExtend;
 use think\migration\Migrator;
 
 class InstallCenter20241010 extends Migrator

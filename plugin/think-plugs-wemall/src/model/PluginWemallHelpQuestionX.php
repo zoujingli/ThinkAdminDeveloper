@@ -20,7 +20,7 @@ declare(strict_types=1);
 
 namespace plugin\wemall\model;
 
-use think\admin\model\SystemUser;
+use plugin\system\model\SystemUser;
 use think\model\relation\HasOne;
 
 /**

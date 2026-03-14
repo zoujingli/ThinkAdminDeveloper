@@ -32,7 +32,7 @@
           "stc/public/index.php": "public/index.php",
           "stc/public/static/plugs": "public/static/plugs",
           "stc/public/static/theme": "public/static/theme",
-          "stc/public/static/admin.js": "public/static/admin.js",
+          "stc/public/static/system.js": "public/static/system.js",
           "stc/public/static/login.js": "public/static/login.js"
         }
       }

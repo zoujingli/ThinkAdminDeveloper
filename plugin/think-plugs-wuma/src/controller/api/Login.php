@@ -82,8 +82,8 @@ class Login extends Base
             'login_at' => date('Y-m-d H:i:s'),
             'login_num' => $this->app->db->raw('login_num+1'),
             'login_vars' => json_encode([
-                'code' => input('code', ''),
-                'type' => input('type', ''),
+                'code' => strval($this->device['code'] ?? ''),
+                'type' => strval($this->device['type'] ?? ''),
             ], JSON_UNESCAPED_UNICODE),
         ]));
 

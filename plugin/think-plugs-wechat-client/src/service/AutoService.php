@@ -22,8 +22,8 @@ namespace plugin\wechat\client\service;
 
 use plugin\wechat\client\model\WechatAuto;
 use think\admin\Exception;
-use think\admin\Service;
-use think\admin\queue\QueueService;
+use think\admin\service\QueueService;
+use think\admin\service\Service;
 
 /**
  * 关注自动回复服务

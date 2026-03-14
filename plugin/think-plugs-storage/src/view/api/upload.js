@@ -56,7 +56,7 @@
     }
 
     // 创建对象
-    UploadAdapter.adapter = window.AdminUploadAdapter = Adapter;
+    UploadAdapter.adapter = window.SystemUploadAdapter = Adapter;
 
     // 上传文件
     function Adapter(option, uploader) {

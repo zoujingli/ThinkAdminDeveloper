@@ -22,7 +22,7 @@ namespace plugin\wemall\controller\shop\goods;
 
 use plugin\wemall\model\PluginWemallGoodsCate;
 use think\admin\Controller;
-use think\admin\extend\data\ArrayTree;
+use think\admin\extend\ArrayTree;
 use think\admin\helper\QueryHelper;
 use think\db\exception\DataNotFoundException;
 use think\db\exception\DbException;

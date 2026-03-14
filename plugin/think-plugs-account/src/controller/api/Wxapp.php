@@ -61,7 +61,7 @@ class Wxapp extends Controller
                 'unionid' => $unionid,
                 'session_key' => $sesskey,
             ];
-            $this->success('授权换取成功', Account::mk($this->type)->set($data, true));
+            $this->successWithToken('授权换取成功', Account::mk($this->type)->set($data, true));
         } catch (HttpResponseException $exception) {
             throw $exception;
         } catch (\Exception $exception) {
@@ -95,13 +95,13 @@ class Wxapp extends Controller
                 if ($data['nickname'] === '微信用户') {
                     unset($data['headimg'], $data['nickname']);
                 }
-                $this->success('解密成功', Account::mk($this->type)->set($data, true));
+                $this->successWithToken('解密成功', Account::mk($this->type)->set($data, true));
             } elseif (is_array($result)) {
                 if (!empty($result['phoneNumber'])) {
                     $data = ['appid' => $this->params['appid'], 'openid' => $openid, 'unionid' => $unionid];
                     ($account = Account::mk($this->type))->set($data);
                     $account->bind(['phone' => $result['phoneNumber']], $data);
-                    $this->success('绑定成功', $account->get(true));
+                    $this->successWithToken('绑定成功', $account->get(true));
                 } else {
                     $this->success('解密成功', $result);
                 }
@@ -164,6 +164,15 @@ class Wxapp extends Controller
             trace_file($exception);
             $this->error($exception->getMessage());
         }
+    }
+
+    /**
+     * 返回带账号令牌的成功结果并同步 Cookie。
+     */
+    private function successWithToken(string $info, array $data): void
+    {
+        Account::syncTokenCookie(strval($data['token'] ?? ''));
+        $this->success($info, $data);
     }
 
     /**

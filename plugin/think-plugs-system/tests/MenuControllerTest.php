@@ -1,0 +1,259 @@
+<?php
+
+declare(strict_types=1);
+
+namespace think\admin\tests;
+
+use plugin\system\controller\Menu as MenuController;
+use plugin\system\model\SystemMenu;
+use think\Request;
+use think\admin\runtime\RequestContext;
+use think\admin\tests\Support\SqliteIntegrationTestCase;
+use think\exception\HttpResponseException;
+
+/**
+ * @internal
+ * @coversNothing
+ */
+class MenuControllerTest extends SqliteIntegrationTestCase
+{
+    protected function defineSchema(): void
+    {
+        $this->createSystemMenuTable();
+    }
+
+    public function testIndexFlattensTreeAndNormalizesInternalUrls(): void
+    {
+        $root = $this->createSystemMenuFixture([
+            'title'  => '系统配置',
+            'url'    => '#',
+            'status' => 1,
+        ]);
+        $this->createSystemMenuFixture([
+            'pid'    => intval($root->getAttr('id')),
+            'title'  => '数据字典',
+            'url'    => 'system/base/index',
+            'params' => 'tab=dict',
+            'status' => 1,
+            'sort'   => 20,
+        ]);
+        $this->createSystemMenuFixture([
+            'pid'    => intval($root->getAttr('id')),
+            'title'  => '外链文档',
+            'url'    => 'https://example.com/docs',
+            'status' => 1,
+            'sort'   => 10,
+        ]);
+        $other = $this->createSystemMenuFixture([
+            'title'  => '其它根菜单',
+            'url'    => '#',
+            'status' => 1,
+        ]);
+        $this->createSystemMenuFixture([
+            'pid'    => intval($other->getAttr('id')),
+            'title'  => '其它子菜单',
+            'url'    => 'system/auth/index',
+            'status' => 1,
+        ]);
+
+        $result = $this->callIndexController([
+            'output'  => 'json',
+            'type'    => 'index',
+            'pid'     => intval($root->getAttr('id')),
+            '_field_' => 'id',
+            '_order_' => 'asc',
+            'page'    => 1,
+            'limit'   => 20,
+        ]);
+
+        $this->assertSame(1, intval($result['code'] ?? 0));
+        $this->assertSame('JSON-DATA', $result['info'] ?? '');
+        $this->assertCount(3, $result['data']['list'] ?? []);
+        $this->assertSame('系统配置', $result['data']['list'][0]['title'] ?? '');
+        $this->assertSame('数据字典', $result['data']['list'][1]['title'] ?? '');
+        $this->assertStringContainsString('system/base/index', $result['data']['list'][1]['url'] ?? '');
+        $this->assertStringContainsString('tab=dict', $result['data']['list'][1]['url'] ?? '');
+        $this->assertSame('https://example.com/docs', $result['data']['list'][2]['url'] ?? '');
+    }
+
+    public function testRecycleShowsDisabledBranchOnly(): void
+    {
+        $root = $this->createSystemMenuFixture([
+            'title'  => '回收根菜单',
+            'url'    => '#',
+            'status' => 1,
+        ]);
+        $this->createSystemMenuFixture([
+            'pid'    => intval($root->getAttr('id')),
+            'title'  => '已删除子菜单',
+            'url'    => 'system/auth/index',
+            'status' => 0,
+        ]);
+        $this->createSystemMenuFixture([
+            'pid'    => intval($root->getAttr('id')),
+            'title'  => '有效子菜单',
+            'url'    => 'system/base/index',
+            'status' => 1,
+        ]);
+        $this->createSystemMenuFixture([
+            'title'  => '孤立禁用根菜单',
+            'url'    => '#',
+            'status' => 0,
+        ]);
+
+        $result = $this->callIndexController([
+            'output'  => 'json',
+            'type'    => 'recycle',
+            '_field_' => 'id',
+            '_order_' => 'asc',
+            'page'    => 1,
+            'limit'   => 20,
+        ]);
+
+        $titles = array_column($result['data']['list'] ?? [], 'title');
+
+        $this->assertSame(1, intval($result['code'] ?? 0));
+        $this->assertContains('回收根菜单', $titles);
+        $this->assertContains('已删除子菜单', $titles);
+        $this->assertNotContains('有效子菜单', $titles);
+        $this->assertNotContains('孤立禁用根菜单', $titles);
+    }
+
+    public function testAddAndEditPersistMenuFields(): void
+    {
+        $root = $this->createSystemMenuFixture([
+            'title' => '上级菜单',
+            'url'   => '#',
+        ]);
+
+        $add = $this->callFormController('add', [
+            'pid'    => intval($root->getAttr('id')),
+            'title'  => '新增菜单',
+            'icon'   => 'layui-icon layui-icon-star',
+            'node'   => 'system/base/index',
+            'url'    => 'system/base/index',
+            'params' => 'tab=menu',
+            'target' => '_blank',
+            'sort'   => 30,
+            'status' => 1,
+        ]);
+
+        $created = SystemMenu::mk()->where(['title' => '新增菜单'])->findOrEmpty();
+
+        $this->assertSame(1, intval($add['code'] ?? 0));
+        $this->assertSame('数据保存成功！', $add['info'] ?? '');
+        $this->assertTrue($created->isExists());
+        $this->assertSame('_blank', $created->getData('target'));
+
+        $edit = $this->callFormController('edit', [
+            'id'     => intval($created->getAttr('id')),
+            'pid'    => intval($root->getAttr('id')),
+            'title'  => '更新菜单',
+            'icon'   => 'layui-icon layui-icon-template',
+            'node'   => 'system/file/index',
+            'url'    => 'system/file/index',
+            'params' => 'type=image',
+            'target' => '_self',
+            'sort'   => 40,
+            'status' => 0,
+        ]);
+
+        $updated = SystemMenu::mk()->findOrEmpty(intval($created->getAttr('id')));
+
+        $this->assertSame(1, intval($edit['code'] ?? 0));
+        $this->assertSame('数据保存成功！', $edit['info'] ?? '');
+        $this->assertSame('更新菜单', $updated->getData('title'));
+        $this->assertSame('system/file/index', $updated->getData('url'));
+        $this->assertSame('type=image', $updated->getData('params'));
+        $this->assertSame(0, intval($updated->getData('status')));
+    }
+
+    public function testStateAndRemoveUpdateMenuLifecycle(): void
+    {
+        $menu = $this->createSystemMenuFixture([
+            'title'  => '生命周期菜单',
+            'status' => 1,
+            'url'    => 'system/base/index',
+        ]);
+
+        $state = $this->callActionController('state', [
+            'id'     => intval($menu->getAttr('id')),
+            'status' => 0,
+        ]);
+        $afterState = SystemMenu::mk()->findOrEmpty(intval($menu->getAttr('id')));
+
+        $remove = $this->callActionController('remove', [
+            'id' => intval($menu->getAttr('id')),
+        ]);
+
+        $this->assertSame(1, intval($state['code'] ?? 0));
+        $this->assertSame('数据保存成功！', $state['info'] ?? '');
+        $this->assertSame(0, intval($afterState->getData('status')));
+        $this->assertSame(1, intval($remove['code'] ?? 0));
+        $this->assertSame('数据删除成功！', $remove['info'] ?? '');
+        $this->assertFalse(SystemMenu::mk()->where(['id' => $menu->getAttr('id')])->findOrEmpty()->isExists());
+    }
+
+    private function callIndexController(array $query): array
+    {
+        $request = (new Request())
+            ->withGet($query)
+            ->setMethod('GET')
+            ->setController('menu')
+            ->setAction('index');
+
+        $this->bindAdminUser();
+        $this->setRequestPayload($request, $query);
+        $this->app->instance('request', $request);
+
+        try {
+            $controller = new MenuController($this->app);
+            $controller->index();
+            self::fail('Expected MenuController::index to throw HttpResponseException.');
+        } catch (HttpResponseException $exception) {
+            return json_decode($exception->getResponse()->getContent(), true) ?: [];
+        }
+    }
+
+    private function callFormController(string $action, array $post): array
+    {
+        return $this->callActionController($action, $post);
+    }
+
+    private function callActionController(string $action, array $post = []): array
+    {
+        $request = (new Request())
+            ->withGet($post)
+            ->withPost($post)
+            ->setMethod('POST')
+            ->setController('menu')
+            ->setAction($action);
+
+        $this->bindAdminUser();
+        $this->setRequestPayload($request, $post);
+        $this->app->instance('request', $request);
+
+        try {
+            $controller = new MenuController($this->app);
+            $controller->{$action}();
+            self::fail("Expected MenuController::{$action} to throw HttpResponseException.");
+        } catch (HttpResponseException $exception) {
+            return json_decode($exception->getResponse()->getContent(), true) ?: [];
+        }
+    }
+
+    private function bindAdminUser(): void
+    {
+        RequestContext::instance()->setAuth([
+            'id'       => 9101,
+            'username' => 'tester',
+        ], '', true);
+    }
+
+    private function setRequestPayload(Request $request, array $data): void
+    {
+        $property = new \ReflectionProperty(Request::class, 'request');
+        $property->setAccessible(true);
+        $property->setValue($request, $data);
+    }
+}

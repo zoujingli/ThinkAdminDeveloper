@@ -11,7 +11,7 @@
 // | gitee 代码仓库：https://gitee.com/zoujingli/think-plugs-static
 // | github 代码仓库：https://github.com/zoujingli/think-plugs-static
 // +----------------------------------------------------------------------
-// | 自定义后台扩展脚本，需要在加载 admin.js 后载入
+// | 自定义后台扩展脚本，需要在加载 system.js 后载入
 // | 使用 composer require zoujingli/think-plugs-static 时不会更新此文件
 // +----------------------------------------------------------------------
 

@@ -20,10 +20,10 @@ declare(strict_types=1);
 
 namespace plugin\storage\controller;
 
-use plugin\storage\StorageConfig;
+use plugin\storage\service\StorageConfig;
 use think\admin\Controller;
-use think\admin\auth\AdminService;
-use think\admin\Storage;
+use think\admin\runtime\SystemContext;
+use think\admin\service\Storage;
 
 /**
  * 存储参数配置.
@@ -100,15 +100,15 @@ class Config extends Controller
 
     private function canView(): bool
     {
-        return AdminService::isSuper()
-            || AdminService::check('storage/config/index')
-            || AdminService::check('storage/config/storage');
+        return SystemContext::isSuper()
+            || SystemContext::check('storage/config/index')
+            || SystemContext::check('storage/config/storage');
     }
 
     private function canManage(): bool
     {
-        return AdminService::isSuper()
-            || AdminService::check('storage/config/storage')
-            || AdminService::check('storage/config/index');
+        return SystemContext::isSuper()
+            || SystemContext::check('storage/config/storage')
+            || SystemContext::check('storage/config/index');
     }
 }

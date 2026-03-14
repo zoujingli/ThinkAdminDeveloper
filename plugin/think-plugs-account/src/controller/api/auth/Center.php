@@ -23,8 +23,9 @@ namespace plugin\account\controller\api\auth;
 use plugin\account\controller\api\Auth;
 use plugin\account\model\PluginAccountAuth;
 use plugin\account\model\PluginAccountBind;
+use plugin\account\service\Account;
 use plugin\account\service\Message;
-use think\admin\Storage;
+use think\admin\service\Storage;
 use think\exception\HttpResponseException;
 
 /**
@@ -92,6 +93,8 @@ class Center extends Auth
                     PluginAccountAuth::mk()->where(['usid' => $this->usid])->delete();
                     PluginAccountBind::mk()->where(['unid' => $this->unid])->delete();
                 });
+                Account::destroySession();
+                Account::forgetTokenCookie();
                 $this->success('账号注销成功！');
             } catch (HttpResponseException $exception) {
                 throw $exception;
@@ -129,7 +132,9 @@ class Center extends Auth
                 if (!empty($data['passwd'])) {
                     $this->account->pwdModify($data['passwd']);
                 }
-                $this->success('关联成功!', $this->account->get(true));
+                $result = $this->account->get(true);
+                Account::syncTokenCookie(strval($result['token'] ?? ''));
+                $this->success('关联成功!', $result);
             } else {
                 $this->error('验证失败');
             }

@@ -61,15 +61,8 @@ abstract class Auth extends Controller
     protected function initialize()
     {
         try {
-            // 获取请求令牌内容
-            // 优先识别 Bearer Token 机制，再识别 api-token 字段
-            $token = $this->request->header('Authorization', '');
-            if (!empty($token) && stripos($token, 'Bearer ') === 0) {
-                $token = substr($token, 7);
-            }
-            if (empty($token)) {
-                $token = $this->request->header('api-token', '');
-            }
+            // 统一识别 Authorization，未携带请求头时再读取认证 Cookie。
+            $token = Account::requestToken($this->request);
             if (empty($token)) {
                 $this->error('需要登录授权', [], 401);
             }

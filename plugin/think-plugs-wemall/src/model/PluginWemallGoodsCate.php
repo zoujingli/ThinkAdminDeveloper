@@ -21,7 +21,7 @@ declare(strict_types=1);
 namespace plugin\wemall\model;
 
 use plugin\account\model\Abs;
-use think\admin\extend\data\ArrayTree;
+use think\admin\extend\ArrayTree;
 use think\db\exception\DataNotFoundException;
 use think\db\exception\DbException;
 use think\db\exception\ModelNotFoundException;

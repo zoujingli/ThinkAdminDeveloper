@@ -33,7 +33,8 @@ declare(strict_types=1);
 namespace plugin\wuma\controller\api;
 
 use think\admin\Controller;
-use think\admin\extend\auth\JwtToken;
+use think\admin\runtime\RequestTokenService;
+use think\admin\service\JwtToken;
 use think\exception\HttpResponseException;
 
 abstract class Base extends Controller
@@ -82,14 +83,14 @@ abstract class Base extends Controller
     {
         parent::initialize();
         // 读取请求令牌数据
-        $this->token = $this->request->header('api-token', '');
+        $this->token = RequestTokenService::parseHeaderToken(strval($this->request->header('Authorization', '')));
         // 获取设备类型及序号
         $this->device = $this->_vali([
             'code.require' => '设备序号不能为空！',
             'type.require' => '设备类型不能为空！',
         ], [
-            'code' => $this->request->header('api-code', ''),
-            'type' => $this->request->header('api-type', ''),
+            'code' => $this->request->header('X-Device-Code', ''),
+            'type' => $this->request->header('X-Device-Type', ''),
         ]);
         // 读取请求数据
         $data = $this->_vali([

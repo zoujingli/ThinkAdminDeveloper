@@ -79,16 +79,19 @@ abstract class Integral
         // 扣减积分检查
         $map = ['unid' => $unid, 'cancel' => 0, 'deleted' => 0];
         $usable = PluginPaymentIntegral::mk()->where($map)->sum('amount');
-        if ($amount < 0 && abs($amount) > $usable) {
+        $amountValue = strval($amount);
+        $isDecrease = bccomp($amountValue, '0', 2) < 0;
+        $decrease = ltrim($amountValue, '-');
+        if ($isDecrease && bccomp($decrease, strval($usable), 2) === 1) {
             throw new Exception('扣减积分不足！');
         }
 
         // 积分标准字段
-        $data = ['unid' => $unid, 'code' => $code, 'name' => $name, 'amount' => strval($amount), 'remark' => $remark];
+        $data = ['unid' => $unid, 'code' => $code, 'name' => $name, 'amount' => $amountValue, 'remark' => $remark];
 
         // 统计操作前的金额
         $data['amount_prev'] = $usable;
-        $data['amount_next'] = bcadd(strval($usable), strval($amount), 2);
+        $data['amount_next'] = bcadd(strval($usable), $amountValue, 2);
 
         // 锁定状态处理
         $data['unlock'] = intval($unlock);
@@ -197,6 +200,6 @@ abstract class Integral
     {
         ($model = self::get($code))->save($data);
         self::recount($model->getAttr('unid'));
-        return $model->refresh();
+        return PluginPaymentIntegral::mk()->withTrashed()->findOrEmpty($model->getKey());
     }
 }

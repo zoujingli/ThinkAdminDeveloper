@@ -25,7 +25,7 @@ use plugin\wechat\client\command\Clear;
 use plugin\wechat\client\command\Fans;
 use plugin\wechat\client\service\AutoService;
 use plugin\wechat\client\service\PaymentService;
-use think\admin\extend\codec\CodeToolkit;
+use think\admin\extend\CodeToolkit;
 use think\admin\Plugin;
 use think\Request;
 

@@ -24,7 +24,7 @@ use plugin\wemall\controller\api\Auth;
 use plugin\wemall\model\PluginWemallHelpFeedback;
 use think\admin\Exception;
 use think\admin\helper\QueryHelper;
-use think\admin\Storage;
+use think\admin\service\Storage;
 
 /**
  * 意见反馈管理.

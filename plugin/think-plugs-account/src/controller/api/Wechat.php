@@ -98,6 +98,7 @@ class Wechat extends Controller
                     $data['headimg'] = $fansinfo['headimgurl'];
                 }
                 $result['userinfo'] = Account::mk(static::type)->set($data, true);
+                Account::syncTokenCookie(strval($result['userinfo']['token'] ?? ''));
                 // 返回数据给前端
                 $script[] = "window.WeChatOpenid='{$result['openid']}'";
                 $script[] = 'window.WeChatFansInfo=' . json_encode($result['fansinfo'], 64 | 128 | 256);

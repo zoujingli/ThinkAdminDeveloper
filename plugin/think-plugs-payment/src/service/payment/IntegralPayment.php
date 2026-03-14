@@ -90,8 +90,11 @@ class IntegralPayment implements PaymentInterface
             }
             $record = static::syncRefund($pcode, $rcode, $amount, $reason);
             $remark = "来自订单 {$record->getAttr('order_no')} 退回积分";
-            $integral = bcdiv($amount, $record->getAttr('payment_amount'), 6);
-            $integral = bcmul($integral, $record->getAttr('used_integral'), 2);
+            $integral = bcdiv(
+                bcmul(strval($amount), strval($record->getAttr('used_integral')), 6),
+                strval($record->getAttr('payment_amount')),
+                2
+            );
             IntegralService::create($record->getAttr('unid'), $rcode, '账号积分退还', strval($integral), $remark, true);
             return [1, '发起退款成功！'];
         } catch (\Exception $exception) {
