@@ -63,7 +63,8 @@ class MediaService extends Service
 
         // 文章内容编号
         $data['articles'] = [];
-        $aids = $data['articleids'] = str2arr($data['article_id']);
+        $articleIds = $data['article_id'] ?? ($data['articleids'] ?? '');
+        $aids = $data['articleids'] = str2arr(is_array($articleIds) ? join(',', $articleIds) : (string)$articleIds);
         if (empty($aids)) {
             return $data;
         }

@@ -34,7 +34,7 @@
 
             /*! 初始化上传组件 */
             this.adapter = new Adapter(this.option, layui.upload.render({
-                url: '{:url("storage/api.upload/file",[],false,true)}', auto: false, elem: elem, accept: 'file', multiple: this.option.mult, exts: this.option.exts.join('|'), acceptMime: this.option.mimes.join(','), choose: function (obj) {
+                url: '{:apiuri("storage/upload/file",[],false,true)}', auto: false, elem: elem, accept: 'file', multiple: this.option.mult, exts: this.option.exts.join('|'), acceptMime: this.option.mimes.join(','), choose: function (obj) {
                     obj.items = [], obj.files = obj.pushFile();
                     layui.each(obj.files, function (idx, file) {
                         obj.items.push(file);
@@ -116,7 +116,7 @@
     Adapter.prototype.request = function (file, done) {
         let that = this, data = {key: file.xkey, safe: that.option.safe, uptype: that.option.type};
         data.size = file.size, data.name = file.name, data.hash = file.xmd5, data.mime = file.type, data.xext = file.xext;
-        jQuery.ajax("{:url('storage/api.upload/state',[],false,true)}", {
+        jQuery.ajax("{:apiuri('storage/upload/state',[],false,true)}", {
             data: data, method: 'post', success: function (ret) {
                 file.id = ret.data.id || 0, file.xurl = ret.data.url;
                 file.xsafe = ret.data.safe, file.xpath = ret.data.key, file.xtype = ret.data.uptype;
@@ -209,7 +209,7 @@
         /*! 检查单个文件上传返回的结果 */
         if (ret.code < 1) return $.msg.tips(ret.info || '{:lang("文件上传失败！")}');
         if (typeof file.xurl !== 'string') return $.msg.tips('{:lang("无效的文件上传对象！")}');
-        jQuery.post("{:url('storage/api.upload/done',[],false,true)}", {id: file.id, hash: file.xmd5});
+        jQuery.post("{:apiuri('storage/upload/done',[],false,true)}", {id: file.id, hash: file.xmd5});
         /*! 单个文件上传成功结果处理 */
         if (typeof done === 'function') {
             done.call(this.option.elem, file.xurl, this.files['id']);

@@ -34,7 +34,7 @@ use WeChat\Exceptions\LocalCacheException;
  * @example 域名请修改为自己的地址，放到网页代码合适位置
  *
  * <meta name="referrer" content="always">
- * <script referrerpolicy="unsafe-url" src="https://your.domain.com/plugin-account/api.wechat/oauth?mode=1"></script>
+ * <script referrerpolicy="unsafe-url" src="https://your.domain.com/api/account/wechat/oauth?mode=1"></script>
  *
  * 授权模式支持两种模块，参数 mode=0 时为静默授权，mode=1 时为完整授权
  * 注意：回跳地址默认从 Header 中的 http_referer 获取，也可以传 source 参数

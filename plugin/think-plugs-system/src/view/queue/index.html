@@ -4,11 +4,11 @@
 
 {if isset($super) and $super}
 
-<a data-table-id="QueueTable" class="layui-btn layui-btn-sm layui-btn-primary" data-queue="{:url('system/api.plugs/optimize')}">{:lang('优化数据库')}</a>
+<a data-table-id="QueueTable" class="layui-btn layui-btn-sm layui-btn-primary" data-queue="{:apiuri('system/plugs/optimize')}">{:lang('优化数据库')}</a>
 
 {if isset($iswin) and ($iswin or php_sapi_name() eq 'cli')}
-<button data-load='{:url("system/api.queue/start")}' class='layui-btn layui-btn-sm layui-btn-primary'>{:lang('开启服务')}</button>
-<button data-load='{:url("system/api.queue/stop")}' class='layui-btn layui-btn-sm layui-btn-primary'>{:lang('关闭服务')}</button>
+<button data-load='{:apiuri("system/queue/start")}' class='layui-btn layui-btn-sm layui-btn-primary'>{:lang('开启服务')}</button>
+<button data-load='{:apiuri("system/queue/stop")}' class='layui-btn layui-btn-sm layui-btn-primary'>{:lang('关闭服务')}</button>
 {/if}
 
 {if auth("clean")}
@@ -29,7 +29,7 @@
     <!--{if isset($super) and $super}-->
     <b>{:lang('服务状态')}：</b><b class="margin-right-5" data-queue-message><span class="color-desc">{:lang('检查中')}</span></b>
     <b data-tips-text="{:lang('点击可复制【服务启动指令】')}" class="layui-icon pointer margin-right-20" data-copy="{$command|default=''}">&#xe633;</b>
-    <script>$('[data-queue-message]').load('{:sysuri("system/api.queue/status")}');</script>
+    <script>$('[data-queue-message]').load('{:apiuri("system/queue/status")}');</script>
     <!--{/if}-->
 
     <b>{:lang('任务统计')}：</b>{:lang('待处理 %s 个任务，处理中 %s 个任务，已完成 %s 个任务，已失败 %s 个任务。', [

@@ -116,7 +116,7 @@ class Auto extends Command
                 foreach ($item['articles'] as $vo) {
                     if (empty($news)) {
                         $news[] = [
-                            'url' => url("@wechat/api.view/item/id/{$vo['id']}", [], false, $host)->build(),
+                            'url' => apiuri('wechat/view/item', ['id' => $vo['id']], false, $host),
                             'title' => $vo['title'], 'picurl' => $vo['local_url'], 'description' => $vo['digest'],
                         ];
                     }

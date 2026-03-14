@@ -161,7 +161,7 @@ class Push extends Controller
             return $this->applyAuth($service, $resource, $authcode);
         }
         # 生成微信授权链接，使用刷新跳转到授权网页
-        $redirect = sysuri('api.push/auth', [], false, true) . "?source={$source}";
+        $redirect = apiuri('plugin-wechat-service/push/auth', [], false, true) . "?source={$source}";
         if ($redirect = $service->getAuthRedirect($redirect)) {
             # 生成微信授权链接成功
             return response("<script>location.href='{$redirect}'</script>", 200, ["Refresh:0;url={$redirect}"]);

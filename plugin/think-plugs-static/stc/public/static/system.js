@@ -16,8 +16,10 @@
 let srcs = document.scripts[document.scripts.length - 1].src.split('/');
 window.appRoot = srcs.slice(0, -2).join('/') + '/';
 window.baseRoot = srcs.slice(0, -1).join('/') + '/';
-window.tapiRoot = window.taSystem || window.appRoot + "system";
-window.storageRoot = window.taStorage || window.tapiRoot;
+window.twebRoot = window.taSystem || window.appRoot + "system";
+window.tapiRoot = window.taSystemApi || window.appRoot + (window.taApiPrefix || 'api') + "/system";
+window.storageRoot = window.taStorage || window.appRoot + "storage";
+window.storageApiRoot = window.taStorageApi || window.appRoot + (window.taApiPrefix || 'api') + "/storage";
 
 /*! 挂载 layui & jquery 对象 */
 layui.config({base: baseRoot + 'plugs/layui_exts/'});
@@ -159,7 +161,7 @@ window.$.module = window.jQuery.module || new function () {
         upload: {
             deps: ['md5', 'notify'],
             loader: function () {
-                return that.loadScript(storageRoot + '/api.upload/index?', 'upload').then(function () {
+                return that.loadScript(storageApiRoot + '/upload/index?', 'upload').then(function () {
                     return window.taUploadModule || window.SystemUploadAdapter;
                 });
             }
@@ -1068,7 +1070,7 @@ $(function () {
         }
         // 单图或多图选择器 ( image|images )
         if (typeof this.dataset.file === 'string' && /^images?$/.test(this.dataset.file)) {
-            return $.form.modal(storageRoot + '/api.upload/image', this.dataset, '图片选择器')
+            return $.form.modal(storageApiRoot + '/upload/image', this.dataset, '图片选择器')
         }
         // 其他文件上传处理
         this.dataset.inited || $(this).uploadFile(undefined, function () {
@@ -1189,7 +1191,7 @@ $(function () {
 
     /*! 注册 data-icon 事件行为 */
     $.base.onEvent('click', '[data-icon]', function () {
-        let location = tapiRoot + '/api.plugs/icon', field = this.dataset.icon || this.dataset.field || 'icon';
+        let location = tapiRoot + '/plugs/icon', field = this.dataset.icon || this.dataset.field || 'icon';
         $.form.iframe(location + (location.indexOf('?') > -1 ? '&' : '?') + 'field=' + field, '图标选择', ['900px', '700px']);
     });
 

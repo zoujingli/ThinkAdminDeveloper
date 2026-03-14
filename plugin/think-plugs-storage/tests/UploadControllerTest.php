@@ -60,7 +60,7 @@ class StorageUploadControllerTest extends SqliteIntegrationTestCase
         $this->assertSame('local', $result['data']['uptype'] ?? '');
         $this->assertSame(0, intval($result['data']['safe'] ?? -1));
         $this->assertStringContainsString('/upload/pending/upload-test.png', strval($result['data']['url'] ?? ''));
-        $this->assertStringContainsString('/storage/api.upload/file', strval($result['data']['server'] ?? ''));
+        $this->assertStringContainsString('/api/storage/upload/file', strval($result['data']['server'] ?? ''));
         $this->assertTrue($file->isExists());
         $this->assertSame('pending/upload-test.png', $file->getData('xkey'));
         $this->assertSame(0, intval($file->getData('isfast')));

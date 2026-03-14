@@ -57,8 +57,11 @@ class PlugsControllerTest extends SqliteIntegrationTestCase
 
         $this->assertStringContainsString('application/javascript', $contentType);
         $this->assertStringContainsString('window.taDebug = true;', $content);
+        $this->assertStringContainsString("window.taApiPrefix = 'api';", $content);
         $this->assertStringContainsString("window.taSystem = 'https://admin.example.com/system", $content);
         $this->assertStringContainsString("window.taStorage = 'https://admin.example.com/storage", $content);
+        $this->assertStringContainsString("window.taSystemApi = 'https://admin.example.com/api/system';", $content);
+        $this->assertStringContainsString("window.taStorageApi = 'https://admin.example.com/api/storage';", $content);
         $this->assertStringContainsString("window.taTokenHeader = 'Authorization';", $content);
         $this->assertStringContainsString("window.taTokenScheme = 'Bearer';", $content);
         $this->assertStringContainsString('window.taTokenExpire = 604800;', $content);

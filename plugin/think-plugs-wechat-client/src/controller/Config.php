@@ -39,12 +39,12 @@ class Config extends Controller
      */
     public function options()
     {
-        $this->thrNotify = sysuri('wechat/api.push/index', [], false, true);
+        $this->thrNotify = apiuri('wechat/push/index', [], false, true);
         if ($this->request->isGet()) {
             try {
                 // 生成微信授权链接
                 $source = enbase64url(sysuri('system/index/index', [], false, true) . '#' . $this->request->url());
-                $authurl = sysconf('wechat.service_authurl|raw') ?: 'https://open.cuci.cc/plugin-wechat-service/api.push/auth?source=SOURCE';
+                $authurl = sysconf('wechat.service_authurl|raw') ?: 'https://open.cuci.cc/api/plugin-wechat-service/push/auth?source=SOURCE';
                 $this->authurl = str_replace('source=SOURCE', "source={$source}", $authurl);
                 // 授权成功后的参数保存
                 if (input('?appid') && input('?appkey')) {
@@ -100,8 +100,8 @@ class Config extends Controller
     {
         $builder = $this->buildJsonrpcForm();
         if ($this->request->isGet()) {
-            $authUrl = sysconf('wechat.service_authurl|raw') ?: 'https://open.cuci.cc/plugin-wechat-service/api.push/auth?source=SOURCE';
-            $jsonRpc = sysconf('wechat.service_jsonrpc|raw') ?: 'https://open.cuci.cc/plugin-wechat-service/api.client/jsonrpc?token=TOKEN';
+            $authUrl = sysconf('wechat.service_authurl|raw') ?: 'https://open.cuci.cc/api/plugin-wechat-service/push/auth?source=SOURCE';
+            $jsonRpc = sysconf('wechat.service_jsonrpc|raw') ?: 'https://open.cuci.cc/api/plugin-wechat-service/client/jsonrpc?token=TOKEN';
             $builder->fetch(['vo' => ['auth_url' => $authUrl, 'json_rpc' => $jsonRpc]]);
         } else {
             $data = $builder->validate();

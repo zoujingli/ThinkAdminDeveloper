@@ -23,6 +23,7 @@ namespace plugin\system\controller\api;
 use plugin\system\service\SystemAuthService;
 use think\admin\Controller;
 use think\admin\Exception;
+use think\admin\service\PluginService;
 use think\Response;
 
 /**
@@ -83,8 +84,11 @@ class Plugs extends Controller
         $domain = $unid > 0;
         return response(join("\r\n", [
             sprintf('window.taDebug = %s;', $this->app->isDebug() ? 'true' : 'false'),
+            sprintf("window.taApiPrefix = '%s';", PluginService::entryPrefix()),
             sprintf("window.taSystem = '%s';", sysuri('system/index/index', [], false, $domain)),
             sprintf("window.taStorage = '%s';", sysuri('storage/index/index', [], false, $domain)),
+            sprintf("window.taSystemApi = '%s';", $this->buildApiRoot('system', $domain)),
+            sprintf("window.taStorageApi = '%s';", $this->buildApiRoot('storage', $domain)),
             sprintf("window.taTokenHeader = '%s';", SystemAuthService::getTokenHeader()),
             sprintf("window.taTokenScheme = '%s';", SystemAuthService::getTokenScheme()),
             sprintf('window.taTokenExpire = %d;', SystemAuthService::getTokenExpire()),
@@ -104,5 +108,12 @@ class Plugs extends Controller
         } else {
             $this->error('请使用超管账号操作！');
         }
+    }
+
+    private function buildApiRoot(string $plugin, bool $domain): string
+    {
+        $prefix = PluginService::prefix($plugin) ?: $plugin;
+        $path = '/' . trim(PluginService::entryPrefix() . '/' . $prefix, '/');
+        return ($domain ? $this->request->domain(true) : '') . $path;
     }
 }

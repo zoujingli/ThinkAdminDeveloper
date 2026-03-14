@@ -68,7 +68,7 @@ layui.define(function (exports) {
         // 读取任务进度信息
         this.LoadProgress = function () {
             if (queue.doAjax === false || that.$box.length < 1) return false;
-            $.form.load(tapiRoot + '/api.queue/progress', {code: code}, 'post', function (ret) {
+            $.form.load(tapiRoot + '/queue/progress', {code: code}, 'post', function (ret) {
                 if (ret.code) {
                     let lines = [];
                     for (let idx in ret.data.history) {

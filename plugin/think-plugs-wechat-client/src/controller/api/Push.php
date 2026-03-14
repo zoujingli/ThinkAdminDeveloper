@@ -256,7 +256,7 @@ class Push extends Controller
                 }
                 foreach ($news['articles'] as $vo) {
                     $articles[] = [
-                        'url' => url("@wechat/api.view/item/id/{$vo['id']}", [], false, true)->build(),
+                        'url' => apiuri('wechat/view/item', ['id' => $vo['id']], false, true),
                         'title' => $vo['title'], 'picurl' => $vo['local_url'], 'description' => $vo['digest'],
                     ];
                 }

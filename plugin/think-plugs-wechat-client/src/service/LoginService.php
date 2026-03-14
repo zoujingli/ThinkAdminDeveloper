@@ -61,7 +61,7 @@ class LoginService
     public static function qrcode(string $code, int $mode = 0, $domain = true): array
     {
         $data = ['auth' => self::gauth($code), 'mode' => $mode];
-        $image = MediaService::getQrcode(sysuri('wechat/api.login/oauth', $data, false, $domain));
+        $image = MediaService::getQrcode(apiuri('wechat/login/oauth', $data, false, $domain));
         return ['code' => $code, 'auth' => $data['auth'], 'image' => $image->getDataUri()];
     }
 
