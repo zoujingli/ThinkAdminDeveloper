@@ -70,7 +70,7 @@ class RouteTemplateBoundaryTest extends TestCase
             }
 
             $path = $file->getPathname();
-            if ($path === __FILE__) {
+            if ($this->isSelf($path)) {
                 continue;
             }
             $content = file_get_contents($path) ?: '';
@@ -96,7 +96,7 @@ class RouteTemplateBoundaryTest extends TestCase
             }
 
             $path = $file->getPathname();
-            if ($path === __FILE__) {
+            if ($this->isSelf($path)) {
                 continue;
             }
             $content = file_get_contents($path) ?: '';
@@ -121,7 +121,7 @@ class RouteTemplateBoundaryTest extends TestCase
             }
 
             $path = $file->getPathname();
-            if ($path === __FILE__) {
+            if ($this->isSelf($path)) {
                 continue;
             }
             $content = file_get_contents($path) ?: '';
@@ -175,7 +175,7 @@ class RouteTemplateBoundaryTest extends TestCase
         $items = [];
         foreach ($targets as $target) {
             if (is_file($target)) {
-                if ($target !== __FILE__ && in_array(strtolower(pathinfo($target, PATHINFO_EXTENSION)), $extensions, true)) {
+                if (!$this->isSelf($target) && in_array(strtolower(pathinfo($target, PATHINFO_EXTENSION)), $extensions, true)) {
                     $items[$target] = file_get_contents($target) ?: '';
                 }
                 continue;
@@ -194,7 +194,7 @@ class RouteTemplateBoundaryTest extends TestCase
                 }
 
                 $path = $file->getPathname();
-                if ($path === __FILE__) {
+                if ($this->isSelf($path)) {
                     continue;
                 }
                 if (!in_array(strtolower($file->getExtension()), $extensions, true)) {
@@ -211,5 +211,12 @@ class RouteTemplateBoundaryTest extends TestCase
     private function path(string $relative): string
     {
         return $this->projectRoot . '/' . ltrim($relative, '/');
+    }
+
+    private function isSelf(string $path): bool
+    {
+        $left = strtr(realpath($path) ?: $path, '\\', '/');
+        $right = strtr(realpath(__FILE__) ?: __FILE__, '\\', '/');
+        return $left === $right;
     }
 }

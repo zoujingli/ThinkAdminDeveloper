@@ -164,7 +164,6 @@ abstract class Model extends \think\Model
      * 兼容读取旧版 deleted_at 访问器。
      * @param mixed $value 原始字段值
      * @param array $data 当前模型数据
-     * @return mixed
      */
     public function getDeletedAtAttr($value, array $data): mixed
     {
@@ -179,7 +178,6 @@ abstract class Model extends \think\Model
      * 追加 deleted 虚拟属性，兼容旧模板与旧业务判断。
      * @param mixed $value 原始字段值
      * @param array $data 当前模型数据
-     * @return int
      */
     public function getDeletedAttr($value, array $data): int
     {
@@ -190,7 +188,6 @@ abstract class Model extends \think\Model
     /**
      * 兼容旧 deleted 写法，自动映射为当前软删字段值。
      * @param mixed $value 字段数据
-     * @return int|string
      */
     public function setDeletedAttr($value): int|string
     {
@@ -204,7 +201,6 @@ abstract class Model extends \think\Model
      * @param BaseQuery $query 查询对象
      * @param string $method 调用方法
      * @param array $args 调用参数
-     * @return bool
      */
     public function normalizeLegacySoftDeleteCall(BaseQuery $query, string $method, array &$args): bool
     {
@@ -287,7 +283,6 @@ abstract class Model extends \think\Model
      * 在模型魔术调用阶段兜底兼容旧软删查询写法。
      * @param string $method 调用方法
      * @param array $args 调用参数
-     * @return mixed
      */
     private function handleCompatQueryCall(string $method, array &$args): mixed
     {
@@ -301,7 +296,6 @@ abstract class Model extends \think\Model
 
     /**
      * 判断当前模型是否启用了软删除查询。
-     * @return bool
      */
     private function usesSoftDeleteQuery(): bool
     {
@@ -312,7 +306,6 @@ abstract class Model extends \think\Model
     /**
      * 兼容 whereNull / whereNotNull 的旧软删字段名。
      * @param array $args 调用参数
-     * @return bool
      */
     private function normalizeLegacySoftDeleteNull(array &$args): bool
     {
@@ -331,7 +324,6 @@ abstract class Model extends \think\Model
      * 兼容 where / whereOr 中的旧 deleted 条件。
      * @param BaseQuery $query 查询对象
      * @param array $args 调用参数
-     * @return bool
      */
     private function normalizeLegacySoftDeleteWhere(BaseQuery $query, array &$args): bool
     {
@@ -418,7 +410,6 @@ abstract class Model extends \think\Model
     /**
      * 判断旧 deleted 标记是否表示已删除。
      * @param mixed $value 字段值
-     * @return bool
      */
     private function isDeletedTruthy(mixed $value): bool
     {
@@ -454,7 +445,6 @@ abstract class Model extends \think\Model
     /**
      * 将旧布尔软删标记转换为 ORM 标准时间字段值。
      * @param mixed $value 字段值
-     * @return string|null
      */
     private function normalizeLegacySoftDeleteTime(mixed $value): ?string
     {
@@ -471,7 +461,6 @@ abstract class Model extends \think\Model
 
     /**
      * 获取当前模型实际使用的软删字段名。
-     * @return string
      */
     private function softDeleteField(): string
     {

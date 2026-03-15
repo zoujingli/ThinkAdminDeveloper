@@ -29,7 +29,7 @@ interface QueueManagerInterface extends QueueRuntimeInterface
 
     public function reset(int $wait = 0): self;
 
-    public function registerTask(string $title, string $command, int $later = 0, array $data = [], int $rscript = 0, int $loops = 0): self;
+    public function registerTask(string $title, string $command, int $later = 0, array $data = [], int $loops = 0, ?int $legacyLoops = null): self;
 
     public function getCurrentCode(): string;
 

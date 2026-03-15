@@ -761,7 +761,7 @@ class PluginService extends Service
 
     /**
      * 标准化 API 入口路径。
-     * /api/{plugin}/upload/file -> api.upload/file
+     * /api/{plugin}/upload/file -> api.upload/file.
      */
     private static function normalizeApiPathinfo(string $pathinfo): string
     {

@@ -56,10 +56,16 @@ class ArchitectureBoundaryTest extends TestCase
         $this->assertFileExists($this->path('plugin/think-library/src/service/PluginService.php'));
         $this->assertFileExists($this->path('plugin/think-library/src/helper/Helper.php'));
         $this->assertFileExists($this->path('plugin/think-library/src/runtime/RequestTokenService.php'));
+        $this->assertFileExists($this->path('plugin/think-library/src/helper/FormBuilder.php'));
+        $this->assertFileExists($this->path('plugin/think-library/src/helper/PageBuilder.php'));
 
         $this->assertFileDoesNotExist($this->path('plugin/think-library/src/Service.php'));
         $this->assertFileDoesNotExist($this->path('plugin/think-library/src/Storage.php'));
         $this->assertFileDoesNotExist($this->path('plugin/think-library/src/Helper.php'));
+        $this->assertFileDoesNotExist($this->path('plugin/think-library/src/service/FormBuilder.php'));
+        $this->assertFileDoesNotExist($this->path('plugin/think-library/src/service/PageBuilder.php'));
+        $this->assertFileDoesNotExist($this->path('plugin/think-plugs-system/src/service/FormBuilder.php'));
+        $this->assertFileDoesNotExist($this->path('plugin/think-plugs-system/src/service/PageBuilder.php'));
         $this->assertFileDoesNotExist($this->path('plugin/think-library/src/auth/CacheSession.php'));
         $this->assertFileDoesNotExist($this->path('plugin/think-library/src/auth/RequestTokenService.php'));
         $this->assertFileDoesNotExist($this->path('plugin/think-library/src/system/NodeService.php'));
@@ -86,7 +92,7 @@ class ArchitectureBoundaryTest extends TestCase
         }));
         sort($dirs);
 
-        $this->assertSame(['contract', 'extend', 'helper', 'middleware', 'model', 'route', 'runtime', 'service'], $dirs);
+        $this->assertSame(['attribute', 'contract', 'extend', 'helper', 'middleware', 'model', 'route', 'runtime', 'service'], $dirs);
     }
 
     public function testLibraryRouteFilesStayInRouteDirectory(): void
@@ -141,8 +147,8 @@ class ArchitectureBoundaryTest extends TestCase
         $this->assertFileExists($this->path('plugin/think-plugs-system/src/service/SystemContext.php'));
         $this->assertFileExists($this->path('plugin/think-plugs-system/src/service/SystemService.php'));
         $this->assertFileExists($this->path('plugin/think-plugs-system/src/service/SystemAuthService.php'));
-        $this->assertFileExists($this->path('plugin/think-plugs-system/src/service/JwtTokenAuth.php'));
-        $this->assertFileExists($this->path('plugin/think-plugs-system/src/service/RbacAccess.php'));
+        $this->assertFileExists($this->path('plugin/think-plugs-system/src/middleware/JwtTokenAuth.php'));
+        $this->assertFileExists($this->path('plugin/think-plugs-system/src/middleware/RbacAccess.php'));
 
         $this->assertFileDoesNotExist($this->path('plugin/think-library/src/contract/AdminContextInterface.php'));
         $this->assertFileDoesNotExist($this->path('plugin/think-library/src/runtime/AdminContext.php'));
@@ -152,6 +158,8 @@ class ArchitectureBoundaryTest extends TestCase
         $this->assertFileDoesNotExist($this->path('plugin/think-plugs-system/src/runtime/AdminContext.php'));
         $this->assertFileDoesNotExist($this->path('plugin/think-plugs-system/src/auth/AdminService.php'));
         $this->assertFileDoesNotExist($this->path('plugin/think-plugs-system/src/auth/SystemAuthService.php'));
+        $this->assertFileDoesNotExist($this->path('plugin/think-plugs-system/src/service/JwtTokenAuth.php'));
+        $this->assertFileDoesNotExist($this->path('plugin/think-plugs-system/src/service/RbacAccess.php'));
         $this->assertFileDoesNotExist($this->path('plugin/think-plugs-system/src/runtime/SystemContext.php'));
         $this->assertFileDoesNotExist($this->path('plugin/think-plugs-system/src/system/SystemService.php'));
     }
@@ -163,7 +171,7 @@ class ArchitectureBoundaryTest extends TestCase
         }));
         sort($dirs);
 
-        $this->assertSame(['controller', 'lang', 'model', 'route', 'service', 'view'], $dirs);
+        $this->assertSame(['controller', 'lang', 'middleware', 'model', 'route', 'service', 'view'], $dirs);
     }
 
     public function testStoragePluginSourceDirectoriesStayStandardized(): void
@@ -421,8 +429,8 @@ class ArchitectureBoundaryTest extends TestCase
                 continue;
             }
 
-            $path = $file->getPathname();
-            if ($path === __FILE__) {
+            $path = str_replace('\\', '/', $file->getPathname());
+            if ($path === str_replace('\\', '/', __FILE__) || str_contains($path, '/tests/')) {
                 continue;
             }
             $content = file_get_contents($path) ?: '';

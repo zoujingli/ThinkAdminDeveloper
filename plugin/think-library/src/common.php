@@ -37,20 +37,22 @@ use think\Model;
 
 if (!function_exists('p')) {
     /**
-     * 打印输出数据到文件.
-     * @param mixed $data 输出的数据
-     * @param bool $new 强制替换文件
-     * @param ?string $file 保存文件名称
-     * @return false|int
+     * 输出调试数据到运行日志文件。
+     *
+     * @param mixed $data 调试数据
+     * @param bool $new 是否覆盖原文件
+     * @param ?string $file 指定日志文件
      */
-    function p($data, bool $new = false, ?string $file = null)
+    function p($data, bool $new = false, ?string $file = null): false|int
     {
         return RuntimeTools::putDebug($data, $new, $file);
     }
 }
+
 if (!function_exists('m')) {
     /**
-     * 动态创建模型对象
+     * 动态创建模型实例。
+     *
      * @param string $name 模型名称
      * @param array $data 初始数据
      * @param string $conn 指定连接
@@ -63,97 +65,137 @@ if (!function_exists('m')) {
 
 if (!function_exists('_vali')) {
     /**
-     * 快捷输入并验证（ 支持 规则 # 别名 ）.
-     * @param array $rules 验证规则（ 验证信息数组 ）
-     * @param array|string $type 输入方式 ( post. 或 get. )
-     * @param null|callable $callable 异常处理操作
+     * 快捷读取输入并执行验证。
+     *
+     * @param array $rules 验证规则
+     * @param array|string $type 输入源或输入数据
+     * @param ?callable $callable 验证失败回调
      */
-    function _vali(array $rules, $type = '', ?callable $callable = null): array
+    function _vali(array $rules, array|string $type = '', ?callable $callable = null): array
     {
         return ValidateHelper::instance()->init($rules, $type, $callable);
     }
 }
+
 if (!function_exists('_query')) {
     /**
-     * 快捷查询逻辑器.
-     * @param BaseQuery|Model|string $dbQuery
-     * @param null|array|string $input
+     * 创建快捷查询构造器。
+     *
+     * @param BaseQuery|Model|string $dbQuery 查询对象或模型名称
+     * @param null|array|string $input 附加输入条件
      */
-    function _query($dbQuery, $input = null): QueryHelper
+    function _query(BaseQuery|Model|string $dbQuery, array|string|null $input = null): QueryHelper
     {
         return QueryHelper::instance()->init($dbQuery, $input);
     }
 }
+
 if (!function_exists('sysvar')) {
     /**
-     * 读写单次请求的内存缓存.
-     * 仅用于轻量临时缓存，不再承载当前插件、当前登录态这类核心上下文，
-     * 这些状态已经统一迁到 RequestContext。
-     * @param null|string $name 数据名称
-     * @param null|mixed $value 数据内容
-     * @return null|array|mixed 返回内容
+     * 读写单次请求内的轻量级内存变量。
+     *
+     * 仅用于当前请求周期内的临时缓存。
+     * 传入空字符串 `('', '')` 时会清空全部缓存。
+     *
+     * @param ?string $name 变量名
+     * @param mixed $value 变量值
+     * @return mixed
      */
     function sysvar(?string $name = null, $value = null)
     {
         static $swap = [];
+
         if ($name === '' && $value === '') {
             return $swap = [];
         }
-        if (is_null($value)) {
-            return is_null($name) ? $swap : ($swap[$name] ?? null);
+        if ($value === null) {
+            return $name === null ? $swap : ($swap[$name] ?? null);
         }
+
         return $swap[$name] = $value;
     }
 }
+
 if (!function_exists('sysuri')) {
     /**
-     * 生成最短 URL 地址
+     * 生成系统页面 URL。
+     *
+     * 相对路径会按当前应用、控制器、操作自动补全，
+     * 绝对路径、命名路由和外部地址会直接交给路由器处理。
+     *
      * @param string $url 路由地址
-     * @param array $vars PATH 变量
-     * @param bool|string $suffix 后缀
-     * @param bool|string $domain 域名
+     * @param array $vars 路由参数
+     * @param bool|string $suffix 后缀配置
+     * @param bool|string $domain 域名配置
      */
-    function sysuri(string $url = '', array $vars = [], $suffix = true, $domain = false): string
+    function sysuri(string $url = '', array $vars = [], bool|string $suffix = true, bool|string $domain = false): string
     {
-        if (preg_match('#^(https?://|\|/|@)#', $url)) {
+        if (preg_match('#^(?:https?://|/|@)#', $url)) {
             return Library::$sapp->route->buildUrl($url, $vars)->suffix($suffix)->domain($domain)->build();
         }
-        if (count($attr = $url === '' ? [] : explode('/', rtrim($url, '/'))) < 3) {
-            $map = [Library::$sapp->http->getName(), Library::$sapp->request->controller(), Library::$sapp->request->action(true)];
+
+        $attr = $url === '' ? [] : array_values(array_filter(explode('/', trim($url, '/')), 'strlen'));
+        if (count($attr) > 3) {
+            return Library::$sapp->route->buildUrl('/' . join('/', $attr), $vars)->suffix($suffix)->domain($domain)->build();
+        }
+        if (count($attr) < 3) {
+            $map = [
+                Library::$sapp->http->getName(),
+                Library::$sapp->request->controller(),
+                Library::$sapp->request->action(true),
+            ];
             while (count($attr) < 3) {
                 array_unshift($attr, $map[2 - count($attr)] ?? 'index');
             }
         }
+
+        $attr[0] = Str::lower($attr[0]);
         $attr[1] = Str::snake($attr[1]);
         [$rcf, $tmp] = [Library::$sapp->config->get('route', []), uniqid('think_admin_replace_temp_vars_')];
-        $map = [Str::lower($rcf['default_app'] ?? ''), Str::snake($rcf['default_controller'] ?? ''), Str::lower($rcf['default_action'] ?? '')];
-        for ($idx = count($attr) - 1; $idx >= 0; --$idx) {
-            if ($attr[$idx] == ($map[$idx] ?: 'index')) {
+        $map = [
+            Str::lower(AppService::singleCode()),
+            Str::snake($rcf['default_controller'] ?? ''),
+            Str::lower($rcf['default_action'] ?? ''),
+        ];
+
+        for ($idx = min(count($attr), count($map)) - 1; $idx >= 0; --$idx) {
+            if ($attr[$idx] === ($map[$idx] ?: 'index')) {
                 $attr[$idx] = $tmp;
             } else {
                 break;
             }
         }
+
         $url = Library::$sapp->route->buildUrl(join('/', $attr), $vars)->suffix($suffix)->domain($domain)->build();
-        $ext = is_string($suffix) ? $suffix : ($rcf['url_html_suffix'] ?? 'html');
-        $new = preg_replace("#/{$tmp}(\\.{$ext})?#", '', $old = parse_url($url, PHP_URL_PATH) ?: '', -1, $count);
-        $count > 0 && $suffix && $new && $ext !== '' && $new !== Library::$sapp->request->baseUrl() && $new .= ".{$ext}";
+        $ext = is_string($suffix) ? ltrim($suffix, '.') : strval($rcf['url_html_suffix'] ?? 'html');
+        $pattern = $ext === ''
+            ? '#/' . preg_quote($tmp, '#') . '#'
+            : '#/' . preg_quote($tmp, '#') . '(\.' . preg_quote($ext, '#') . ')?#';
+        $old = parse_url($url, PHP_URL_PATH) ?: '';
+        $new = preg_replace($pattern, '', $old, -1, $count) ?? $old;
+        if ($count > 0 && $suffix && $new !== '' && $ext !== '' && $new !== Library::$sapp->request->baseUrl()) {
+            $new .= ".{$ext}";
+        }
+
         return str_replace($old, $new ?: '/', $url);
     }
 }
+
 if (!function_exists('apiuri')) {
     /**
-     * 生成标准 API URL 地址。
-     * 新规则统一走 /api/{plugin}/{controller}/{action}，
-     * 内部仍会回落到现有 controller/api/* 控制器实现。
-     * @param string $url 路由地址，支持 plugin/controller/action 或 controller/action
-     * @param array $vars PATH 变量
-     * @param bool|string $suffix 后缀
-     * @param bool|string $domain 域名
+     * 生成标准插件 API URL。
+     *
+     * 统一输出 `/api/{plugin}/{controller}/{action}` 风格地址，
+     * 并兼容当前插件上下文与 `controller/api/*` 的历史写法。
+     *
+     * @param string $url 路由地址
+     * @param array $vars 路由参数
+     * @param bool|string $suffix 后缀配置
+     * @param bool|string $domain 域名配置
      */
-    function apiuri(string $url = '', array $vars = [], $suffix = true, $domain = false): string
+    function apiuri(string $url = '', array $vars = [], bool|string $suffix = true, bool|string $domain = false): string
     {
-        if (preg_match('#^(https?://|\|/|@)#', $url)) {
+        if (preg_match('#^(?:https?://|/|@)#', $url)) {
             return Library::$sapp->route->buildUrl($url, $vars)->suffix($suffix)->domain($domain)->build();
         }
 
@@ -172,16 +214,23 @@ if (!function_exists('apiuri')) {
             $action = $attrs[0];
         }
 
-        $controller = trim(str_replace('.', '/', $controller), '/');
-        if (stripos($controller, 'api/') === 0) {
-            $controller = substr($controller, 4);
+        $module = Str::lower(trim(str_replace('\\', '/', $module), '/')) ?: AppService::singleCode();
+        $controller = trim(str_replace(['.', '\\'], '/', $controller), '/');
+        $segments = array_values(array_filter(explode('/', $controller), 'strlen'));
+        if (($segments[0] ?? '') !== '' && strcasecmp($segments[0], 'api') === 0) {
+            array_shift($segments);
         }
+        $controller = join('/', array_map(static function (string $segment): string {
+            return Str::snake($segment);
+        }, $segments)) ?: 'index';
+        $action = trim(str_replace('\\', '/', $action), '/') ?: 'index';
 
         $apiPrefix = PluginService::entryPrefix();
         $target = '/' . trim("{$apiPrefix}/{$module}/{$controller}/{$action}", '/');
         return Library::$sapp->route->buildUrl($target, $vars)->suffix($suffix)->domain($domain)->build();
     }
 }
+
 if (!function_exists('tsession')) {
     /**
      * 获取令牌会话服务实例。
@@ -194,84 +243,121 @@ if (!function_exists('tsession')) {
 
 if (!function_exists('encode')) {
     /**
-     * 加密 UTF8 字符串.
+     * 将 UTF-8 文本编码为兼容旧逻辑的短字符串。
      */
     function encode(string $content): string
     {
-        [$chars, $length] = ['', strlen($string = CodeToolkit::text2utf8($content))];
-        for ($i = 0; $i < $length; ++$i) {
-            $chars .= str_pad(base_convert(strval(ord($string[$i])), 10, 36), 2, '0', 0);
+        $string = CodeToolkit::text2utf8($content);
+        $length = strlen($string);
+        if ($length === 0) {
+            return '';
         }
+
+        $chars = '';
+        for ($i = 0; $i < $length; ++$i) {
+            $chars .= str_pad(base_convert((string)ord($string[$i]), 10, 36), 2, '0', STR_PAD_LEFT);
+        }
+
         return $chars;
     }
 }
 
 if (!function_exists('decode')) {
     /**
-     * 解密 UTF8 字符串.
+     * 将 `encode()` 结果还原为 UTF-8 文本。
      */
     function decode(string $content): string
     {
+        if ($content === '') {
+            return '';
+        }
+
         $chars = '';
         foreach (str_split($content, 2) as $char) {
-            $chars .= chr(intval(base_convert($char, 36, 10)));
+            if (strlen($char) < 2) {
+                continue;
+            }
+            $chars .= chr((int)base_convert($char, 36, 10));
         }
+
         return CodeToolkit::text2utf8($chars);
     }
 }
 
 if (!function_exists('str2arr')) {
     /**
-     * 字符串转数组.
-     * @param string $text 待转内容
-     * @param string $separ 分隔字符
-     * @param ?array $allow 限定规则
+     * 将字符串或数组标准化为数组。
+     *
+     * 字符串会按分隔符拆分；数组会递归展开。
+     * 返回结果会自动去空白，并按需执行 allow 白名单过滤。
+     *
+     * @param array|string $text 原始内容
+     * @param string $separ 分隔符
+     * @param ?array $allow 白名单限制
      */
-    function str2arr(string $text, string $separ = ',', ?array $allow = null): array
+    function str2arr(array|string $text, string $separ = ',', ?array $allow = null): array
     {
         $items = [];
-        foreach (explode($separ, trim($text, $separ)) as $item) {
-            $item = trim($item);
-            if ($item !== '' && (!is_array($allow) || in_array($item, $allow, true))) {
+
+        foreach ((array)$text as $item) {
+            if (is_array($item)) {
+                foreach (str2arr($item, $separ, $allow) as $value) {
+                    $items[] = $value;
+                }
+                continue;
+            }
+            if (!is_scalar($item) || $item === false || $item === null) {
+                continue;
+            }
+            if (is_string($item)) {
+                foreach (explode($separ, trim($item, $separ)) as $value) {
+                    $value = trim($value);
+                    if ($value !== '' && (!is_array($allow) || in_array($value, $allow, true))) {
+                        $items[] = $value;
+                    }
+                }
+                continue;
+            }
+            if (!is_array($allow) || in_array($item, $allow, true)) {
                 $items[] = $item;
             }
         }
+
         return $items;
     }
 }
+
 if (!function_exists('arr2str')) {
     /**
-     * 数组转字符串.
-     * @param array $data 待转数组
-     * @param string $separ 分隔字符
-     * @param ?array $allow 限定规则
+     * 将字符串或数组标准化为分隔字符串。
+     *
+     * 内部会复用 `str2arr()` 做统一归一化，
+     * 最终输出形如 `,a,b,c,` 的历史兼容格式。
+     *
+     * @param array|string $data 原始内容
+     * @param string $separ 分隔符
+     * @param ?array $allow 白名单限制
      */
-    function arr2str(array $data, string $separ = ',', ?array $allow = null): string
+    function arr2str(array|string $data, string $separ = ',', ?array $allow = null): string
     {
-        foreach ($data as $key => $item) {
-            $item = is_string($item) ? trim($item) : $item;
-            if ($item === '' || (is_array($allow) && !in_array($item, $allow, true))) {
-                unset($data[$key]);
-            } else {
-                $data[$key] = $item;
-            }
-        }
-        return $separ . join($separ, $data) . $separ;
+        $items = str2arr($data, $separ, $allow);
+        return empty($items) ? '' : $separ . join($separ, $items) . $separ;
     }
 }
 
 if (!function_exists('isDebug')) {
     /**
-     * 调试模式运行.
+     * 判断当前是否处于调试模式。
      */
     function isDebug(): bool
     {
         return RuntimeService::isDebug();
     }
 }
+
 if (!function_exists('isOnline')) {
     /**
-     * 产品模式运行.
+     * 判断当前是否处于生产模式。
      */
     function isOnline(): bool
     {
@@ -281,15 +367,17 @@ if (!function_exists('isOnline')) {
 
 if (!function_exists('syspath')) {
     /**
-     * 获取文件绝对路径.
-     * @param string $name 文件路径
-     * @param ?string $root 程序根路径
+     * 拼接项目根目录下的绝对路径。
+     *
+     * @param string $name 相对路径
+     * @param ?string $root 根路径
      */
     function syspath(string $name = '', ?string $root = null): string
     {
-        if (is_null($root)) {
+        if ($root === null) {
             $root = Library::$sapp->getRootPath();
         }
+
         $attr = ['/' => DIRECTORY_SEPARATOR, '\\' => DIRECTORY_SEPARATOR];
         return rtrim($root, '\/') . DIRECTORY_SEPARATOR . ltrim(strtr($name, $attr), '\/');
     }
@@ -297,16 +385,17 @@ if (!function_exists('syspath')) {
 
 if (!function_exists('enbase64url')) {
     /**
-     * Base64安全URL编码
+     * Base64 URL 安全编码。
      */
     function enbase64url(string $string): string
     {
         return CodeToolkit::enSafe64($string);
     }
 }
+
 if (!function_exists('debase64url')) {
     /**
-     * Base64安全URL解码
+     * Base64 URL 安全解码。
      */
     function debase64url(string $string): string
     {
@@ -316,48 +405,57 @@ if (!function_exists('debase64url')) {
 
 if (!function_exists('xss_safe')) {
     /**
-     * 文本内容XSS过滤.
+     * 对文本执行基础 XSS 安全处理。
+     *
+     * 当前逻辑会移除 script 标签，并中和内联事件属性。
      */
     function xss_safe(string $text): string
     {
-        // 将所有 onxxx= 中的字母 o 替换为符号 ο，注意它不是字母
-        $rules = ['#<script.*?<\/script>#is' => '', '#(\s)on(\w+=\S)#i' => '$1οn$2'];
-        return preg_replace(array_keys($rules), array_values($rules), trim($text));
+        $rules = [
+            '#<script\b[^>]*>.*?</script>#is' => '',
+            '#(\s+)on([a-z_][\w:-]*\s*=)#i' => '$1data-on-$2',
+        ];
+
+        return preg_replace(array_keys($rules), array_values($rules), trim($text)) ?? trim($text);
     }
 }
+
 if (!function_exists('http_get')) {
     /**
-     * 以 get 模拟网络请求
-     * @param string $url HTTP请求URL地址
-     * @param array|string $query GET请求参数
-     * @param array $options CURL参数
-     * @return bool|string
+     * 发送 GET 请求。
+     *
+     * @param string $url 请求地址
+     * @param array|string $query 查询参数
+     * @param array $options 客户端配置
      */
-    function http_get(string $url, $query = [], array $options = [])
+    function http_get(string $url, array|string $query = [], array $options = []): bool|string
     {
         return HttpClient::get($url, $query, $options);
     }
 }
+
 if (!function_exists('http_post')) {
     /**
-     * 以 post 模拟网络请求
-     * @param string $url HTTP请求URL地址
-     * @param array|string $data POST请求数据
-     * @param array $options CURL参数
-     * @return bool|string
+     * 发送 POST 请求。
+     *
+     * @param string $url 请求地址
+     * @param array|string $data 提交数据
+     * @param array $options 客户端配置
      */
-    function http_post(string $url, $data, array $options = [])
+    function http_post(string $url, array|string $data, array $options = []): bool|string
     {
         return HttpClient::post($url, $data, $options);
     }
 }
+
 if (!function_exists('data_save')) {
     /**
-     * 数据增量保存.
-     * @param Model|Query|string $dbQuery
-     * @param array $data 需要保存或更新的数据
-     * @param string $key 条件主键限制
-     * @param mixed $where 其它的where条件
+     * 按主键或条件执行增量保存。
+     *
+     * @param Model|Query|string $dbQuery 查询对象或模型
+     * @param array $data 保存数据
+     * @param string $key 主键字段
+     * @param mixed $where 附加条件
      * @return bool|int
      * @throws Exception
      */
@@ -366,12 +464,14 @@ if (!function_exists('data_save')) {
         return RuntimeTools::save($dbQuery, $data, $key, $where);
     }
 }
+
 if (!function_exists('down_file')) {
     /**
-     * 下载远程文件到本地.
-     * @param string $source 远程文件地址
-     * @param bool $force 是否强制重新下载
-     * @param int $expire 强制本地存储时间
+     * 下载远程文件并返回本地访问地址。
+     *
+     * @param string $source 源文件地址
+     * @param bool $force 是否强制重下
+     * @param int $expire 本地缓存秒数
      */
     function down_file(string $source, bool $force = false, int $expire = 0): string
     {
@@ -381,44 +481,61 @@ if (!function_exists('down_file')) {
 
 if (!function_exists('trace_file')) {
     /**
-     * 输出异常数据到文件.
-     * @param Throwable $exception 支持 Exception 与 Error（PHP 7+）
+     * 将异常信息落盘到 runtime/trace 目录。
+     *
+     * @param Throwable $exception 异常对象
      */
     function trace_file(Throwable $exception): bool
     {
-        $path = Library::$sapp->getRuntimePath() . 'trace';
-        if (!is_dir($path)) {
-            mkdir($path, 0777, true);
+        $path = rtrim(Library::$sapp->getRuntimePath(), '\/') . DIRECTORY_SEPARATOR . 'trace';
+        if (!is_dir($path) && !mkdir($path, 0777, true) && !is_dir($path)) {
+            return false;
         }
-        $name = substr($exception->getFile(), strlen(syspath()));
+
+        $root = strtr(rtrim(syspath(), '\/'), '\\', '/');
+        $source = strtr($exception->getFile(), '\\', '/');
+        $name = basename($source);
+        if ($root !== '' && str_starts_with(strtolower($source), strtolower($root . '/'))) {
+            $name = ltrim(substr($source, strlen($root)), '/');
+        }
+
         $file = $path . DIRECTORY_SEPARATOR . date('Ymd_His_') . strtr($name, ['/' => '.', '\\' => '.']);
-        $json = json_encode($exception instanceof Exception ? $exception->getData() : [], 64 | 128 | 256);
+        $json = json_encode(
+            $exception instanceof Exception ? $exception->getData() : [],
+            JSON_UNESCAPED_SLASHES | JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE
+        ) ?: '[]';
         $class = get_class($exception);
+
         return file_put_contents(
             $file,
             "[CODE] {$exception->getCode()}" . PHP_EOL
-                . "[INFO] {$exception->getMessage()}" . PHP_EOL
-                . ($exception instanceof Exception ? "[DATA] {$json}" . PHP_EOL : '')
-                . "[FILE] {$class} in {$name} line {$exception->getLine()}" . PHP_EOL
-                . '[TIME] ' . date('Y-m-d H:i:s') . PHP_EOL . PHP_EOL
-                . '[TRACE]' . PHP_EOL . $exception->getTraceAsString()
+            . "[INFO] {$exception->getMessage()}" . PHP_EOL
+            . ($exception instanceof Exception ? "[DATA] {$json}" . PHP_EOL : '')
+            . "[FILE] {$class} in {$name} line {$exception->getLine()}" . PHP_EOL
+            . '[TIME] ' . date('Y-m-d H:i:s') . PHP_EOL . PHP_EOL
+            . '[TRACE]' . PHP_EOL . $exception->getTraceAsString()
         ) !== false;
     }
 }
+
 if (!function_exists('format_bytes')) {
     /**
-     * 文件字节单位转换.
-     * @param int|string $size
+     * 将字节数格式化为可读单位。
+     *
+     * @param float|int|string $size 原始字节值
      */
     function format_bytes($size): string
     {
         if (is_numeric($size)) {
+            $size = (float)$size;
             $units = ['B', 'KB', 'MB', 'GB', 'TB', 'PB', 'EB', 'ZB', 'YB'];
-            for ($i = 0; $size >= 1024 && $i < 4; ++$i) {
+            for ($i = 0; $size >= 1024 && $i < count($units) - 1; ++$i) {
                 $size /= 1024;
             }
+
             return round($size, 2) . ' ' . $units[$i];
         }
-        return $size;
+
+        return is_string($size) ? $size : strval($size);
     }
 }

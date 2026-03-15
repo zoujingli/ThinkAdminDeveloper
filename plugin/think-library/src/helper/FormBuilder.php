@@ -102,6 +102,12 @@ class FormBuilder
     private $buttonItems = [];
 
     /**
+     * 附加脚本.
+     * @var array
+     */
+    private $scripts = [];
+
+    /**
      * _vali 兼容规则.
      * @var array
      */
@@ -208,6 +214,19 @@ class FormBuilder
             'buttons' => $this->buttonItems,
             'rules' => $this->getValidateRules(),
         ];
+    }
+
+    /**
+     * 添加页面脚本.
+     * @return $this
+     */
+    public function addScript(string $script): self
+    {
+        $script = trim($script);
+        if ($script !== '') {
+            $this->scripts[] = $script;
+        }
+        return $this;
     }
 
     /**
@@ -459,6 +478,33 @@ class FormBuilder
     }
 
     /**
+     * 添加下拉选择字段.
+     * @param string $name 字段名称
+     * @param string $title 字段标题
+     * @param string $substr 字段子标题
+     * @param bool $required 是否必填
+     * @param string $remark 字段备注
+     * @param array $options 静态选项
+     * @param string $vname 变量名称
+     * @param array $attrs 附加属性
+     * @return $this
+     */
+    public function addSelectInput(string $name, string $title, string $substr = '', bool $required = false, string $remark = '', array $options = [], string $vname = '', array $attrs = []): self
+    {
+        return $this->addField([
+            'type' => 'select',
+            'name' => $name,
+            'title' => $title,
+            'subtitle' => $substr,
+            'required' => $required,
+            'remark' => $remark,
+            'options' => $options,
+            'vname' => $vname,
+            'attrs' => $attrs,
+        ]);
+    }
+
+    /**
      * 显示模板内容.
      * @return mixed
      */
@@ -559,6 +605,7 @@ class FormBuilder
             'attrs' => [],
             'rules' => [],
             'vname' => '',
+            'options' => [],
         ], $field);
         if ($field['subtitle'] === '' && $field['substr'] !== '') {
             $field['subtitle'] = (string)$field['substr'];
@@ -573,6 +620,7 @@ class FormBuilder
         $field['attrs'] = is_array($field['attrs']) ? $field['attrs'] : [];
         $field['rules'] = is_array($field['rules']) ? $field['rules'] : [];
         $field['vname'] = trim((string)$field['vname']);
+        $field['options'] = is_array($field['options']) ? $field['options'] : [];
         if ($field['name'] === '' || $field['title'] === '') {
             throw new \InvalidArgumentException('FormBuilder 字段 name 与 title 不能为空');
         }
@@ -625,6 +673,7 @@ class FormBuilder
             'pattern' => $field['pattern'],
             'attrs' => $field['attrs'],
             'vname' => $field['vname'],
+            'options' => $field['options'],
             'validate' => $field['validate'],
         ];
     }
@@ -646,6 +695,9 @@ class FormBuilder
         if ($field['type'] === 'images') {
             return $this->renderUploadMultiple($field);
         }
+        if ($field['type'] === 'select') {
+            return $this->renderSelect($field);
+        }
         if ($field['type'] === 'checkbox' || $field['type'] === 'radio') {
             return $this->renderCheckInput($field);
         }
@@ -662,7 +714,7 @@ class FormBuilder
             $attrs['type'] = $field['type'];
         }
         $attrs['placeholder'] = $attrs['placeholder'] ?? "请输入{$field['title']}";
-        $html = "\n\t\t" . '<label class="layui-form-item block relative">';
+        $html = "\n\t\t" . sprintf('<label class="layui-form-item block relative" data-field-name="%s">', htmlspecialchars($field['name'], ENT_QUOTES, 'UTF-8'));
         $html .= "\n\t\t\t" . $this->renderLabel($field['title'], $field['subtitle'], !empty($attrs['required']));
         $html .= "\n\t\t\t" . sprintf('<input name="%s" %s value="%s">', $field['name'], $this->_attrs($attrs), $this->valueExpression($field['name']));
         if ($field['remark'] !== '') {
@@ -678,7 +730,7 @@ class FormBuilder
     {
         $attrs = $this->mergeClass($field['attrs'], 'layui-textarea');
         $attrs['placeholder'] = $attrs['placeholder'] ?? "请输入{$field['title']}";
-        $html = "\n\t\t" . '<label class="layui-form-item block relative">';
+        $html = "\n\t\t" . sprintf('<label class="layui-form-item block relative" data-field-name="%s">', htmlspecialchars($field['name'], ENT_QUOTES, 'UTF-8'));
         $html .= "\n\t\t\t" . $this->renderLabel($field['title'], $field['subtitle'], !empty($attrs['required']));
         $html .= "\n\t\t\t" . sprintf('<textarea name="%s" %s>%s</textarea>', $field['name'], $this->_attrs($attrs), $this->valueExpression($field['name']));
         if ($field['remark'] !== '') {
@@ -695,7 +747,7 @@ class FormBuilder
         $attrs = $this->mergeClass($field['attrs'], 'layui-input layui-bg-gray');
         $attrs['type'] = 'text';
         $attrs['placeholder'] = $attrs['placeholder'] ?? "请上传{$field['title']}";
-        $html = "\n\t\t" . '<div class="layui-form-item">';
+        $html = "\n\t\t" . sprintf('<div class="layui-form-item" data-field-name="%s">', htmlspecialchars($field['name'], ENT_QUOTES, 'UTF-8'));
         $html .= "\n\t\t\t" . $this->renderLabel($field['title'], $field['subtitle'], !empty($attrs['required']));
         $html .= "\n\t\t\t" . '<div class="relative block label-required-null">';
         $html .= "\n\t\t\t\t" . sprintf('<input name="%s" %s value="%s">', $field['name'], $this->_attrs($attrs), $this->valueExpression($field['name']));
@@ -704,7 +756,11 @@ class FormBuilder
         } else {
             $html .= "\n\t\t\t\t" . sprintf('<a class="layui-icon layui-icon-upload input-right-icon" data-file data-field="%s" data-type="mp4"></a>', $field['name']);
         }
-        $html .= "\n\t\t\t</div>\n\t\t</div>";
+        $html .= "\n\t\t\t" . '</div>';
+        if ($field['remark'] !== '') {
+            $html .= "\n\t\t\t" . sprintf('<span class="help-block">%s</span>', $field['remark']);
+        }
+        $html .= "\n\t\t" . '</div>';
         if ($type === 'image') {
             $html .= "\n\t\t" . sprintf('<script>$("input[name=%s]").uploadOneImage()</script>', $field['name']);
         } else {
@@ -721,13 +777,36 @@ class FormBuilder
         $attrs = $field['attrs'];
         $attrs['type'] = 'hidden';
         $attrs['placeholder'] = $attrs['placeholder'] ?? "请上传{$field['title']} ( 多图 )";
-        $html = "\n\t\t" . '<div class="layui-form-item">';
+        $html = "\n\t\t" . sprintf('<div class="layui-form-item" data-field-name="%s">', htmlspecialchars($field['name'], ENT_QUOTES, 'UTF-8'));
         $html .= "\n\t\t\t" . $this->renderLabel($field['title'], $field['subtitle'], !empty($attrs['required']));
         $html .= "\n\t\t\t" . '<div class="layui-textarea help-images layui-bg-gray">';
         $html .= "\n\t\t\t\t" . sprintf('<input name="%s" %s value="%s">', $field['name'], $this->_attrs($attrs), $this->valueExpression($field['name']));
-        $html .= "\n\t\t\t" . '</div>' . "\n\t\t" . '</div>';
+        $html .= "\n\t\t\t" . '</div>';
+        if ($field['remark'] !== '') {
+            $html .= "\n\t\t\t" . sprintf('<span class="help-block">%s</span>', $field['remark']);
+        }
+        $html .= "\n\t\t" . '</div>';
         $html .= "\n\t\t" . sprintf('<script>$("input[name=%s]").uploadMultipleImage()</script>', $field['name']);
         return $html;
+    }
+
+    /**
+     * 渲染下拉选择.
+     */
+    private function renderSelect(array $field): string
+    {
+        $attrs = $this->mergeClass($field['attrs'], 'layui-select');
+        $attrs['name'] = $field['name'];
+        $html = "\n\t\t" . sprintf('<label class="layui-form-item block relative" data-field-name="%s">', htmlspecialchars($field['name'], ENT_QUOTES, 'UTF-8'));
+        $html .= "\n\t\t\t" . $this->renderLabel($field['title'], $field['subtitle'], !empty($attrs['required']));
+        $html .= "\n\t\t\t" . sprintf('<select %s>', $this->_attrs($attrs));
+        $html .= "\n\t\t\t\t" . '<option value="">-- 请选择 --</option>';
+        $html .= "\n\t\t\t\t" . $this->renderSelectOptions($field);
+        $html .= "\n\t\t\t" . '</select>';
+        if ($field['remark'] !== '') {
+            $html .= "\n\t\t\t" . sprintf('<span class="help-block">%s</span>', $field['remark']);
+        }
+        return "{$html}\n\t\t</label>";
     }
 
     /**
@@ -735,27 +814,43 @@ class FormBuilder
      */
     private function renderCheckInput(array $field): string
     {
-        if ($field['vname'] === '') {
-            throw new \InvalidArgumentException('FormBuilder 复选或单选字段需要提供 vname');
+        if ($field['vname'] === '' && count($field['options']) < 1) {
+            throw new \InvalidArgumentException('FormBuilder 复选或单选字段需要提供 vname 或 options');
         }
         $type = $field['type'];
         $attrs = $field['attrs'];
         $attrs['type'] = $type;
         $attrs['lay-ignore'] = null;
         $attrs['name'] = $field['name'] . ($type === 'checkbox' ? '[]' : '');
-        $html = "\n\t\t" . '<div class="layui-form-item">';
+        $html = "\n\t\t" . sprintf('<div class="layui-form-item" data-field-name="%s">', htmlspecialchars($field['name'], ENT_QUOTES, 'UTF-8'));
         $html .= "\n\t\t\t" . $this->renderLabel($field['title'], $field['subtitle'], !empty($attrs['required']));
         $html .= "\n\t\t\t" . '<div class="layui-textarea help-checks layui-bg-gray">';
-        $html .= "\n\t\t\t\t" . sprintf('<!--{foreach $%s as $k=>$v}item-->', $field['vname']);
-        $html .= "\n\t\t\t\t" . sprintf('<label class="think-%s label-required-null">', $type);
-        $html .= "\n\t\t\t\t\t" . $this->renderCheckCondition($field['name'], $type);
-        $html .= "\n\t\t\t\t\t" . sprintf('<input value="{$k|default=\'\'}" %s checked> {$v|default=\'\'}', $this->_attrs($attrs));
-        $html .= "\n\t\t\t\t\t" . '<!--{else}else-->';
-        $html .= "\n\t\t\t\t\t" . sprintf('<input value="{$k|default=\'\'}" %s> {$v|default=\'\'}', $this->_attrs($attrs));
-        $html .= "\n\t\t\t\t\t" . '<!--{/if}if-->';
-        $html .= "\n\t\t\t\t" . '</label>';
-        $html .= "\n\t\t\t\t" . '<!--{/foreach}end-->';
-        return $html . "\n\t\t\t</div>\n\t\t</div>";
+        if ($field['vname'] !== '') {
+            $html .= "\n\t\t\t\t" . sprintf('<!--{foreach $%s as $k=>$v}item-->', $field['vname']);
+            $html .= "\n\t\t\t\t" . sprintf('<label class="think-%s label-required-null">', $type);
+            $html .= "\n\t\t\t\t\t" . $this->renderCheckCondition($field['name'], $type);
+            $html .= "\n\t\t\t\t\t" . sprintf('<input value="{$k|default=\'\'}" %s checked> {$v|default=\'\'}', $this->_attrs($attrs));
+            $html .= "\n\t\t\t\t\t" . '<!--{else}else-->';
+            $html .= "\n\t\t\t\t\t" . sprintf('<input value="{$k|default=\'\'}" %s> {$v|default=\'\'}', $this->_attrs($attrs));
+            $html .= "\n\t\t\t\t\t" . '<!--{/if}if-->';
+            $html .= "\n\t\t\t\t" . '</label>';
+            $html .= "\n\t\t\t\t" . '<!--{/foreach}end-->';
+        } else {
+            foreach ($field['options'] as $value => $label) {
+                $html .= "\n\t\t\t\t" . sprintf('<label class="think-%s label-required-null">', $type);
+                $html .= "\n\t\t\t\t\t" . $this->renderCheckStaticCondition($field['name'], $type, (string)$value);
+                $html .= "\n\t\t\t\t\t" . sprintf('<input value="%s" %s checked> %s', htmlspecialchars((string)$value, ENT_QUOTES, 'UTF-8'), $this->_attrs($attrs), htmlspecialchars((string)$label, ENT_QUOTES, 'UTF-8'));
+                $html .= "\n\t\t\t\t\t" . '<!--{else}else-->';
+                $html .= "\n\t\t\t\t\t" . sprintf('<input value="%s" %s> %s', htmlspecialchars((string)$value, ENT_QUOTES, 'UTF-8'), $this->_attrs($attrs), htmlspecialchars((string)$label, ENT_QUOTES, 'UTF-8'));
+                $html .= "\n\t\t\t\t\t" . '<!--{/if}if-->';
+                $html .= "\n\t\t\t\t" . '</label>';
+            }
+        }
+        $html .= "\n\t\t\t" . '</div>';
+        if ($field['remark'] !== '') {
+            $html .= "\n\t\t\t" . sprintf('<span class="help-block">%s</span>', $field['remark']);
+        }
+        return $html . "\n\t\t</div>";
     }
 
     /**
@@ -776,6 +871,40 @@ class FormBuilder
             return sprintf('<!--if{if isset(%s.%s) and is_array(%s.%s) and in_array($k,%s.%s)}-->', $variable, $name, $variable, $name, $variable, $name);
         }
         return sprintf('<!--if{if isset(%s.%s) and strval($k)==strval(%s.%s)}-->', $variable, $name, $variable, $name);
+    }
+
+    /**
+     * 渲染静态单选或复选选中条件.
+     */
+    private function renderCheckStaticCondition(string $name, string $type, string $value): string
+    {
+        $variable = $this->variable;
+        $value = addslashes($value);
+        if ($type === 'checkbox') {
+            return sprintf('<!--if{if isset(%s.%s) and is_array(%s.%s) and in_array(\'%s\',%s.%s)}-->', $variable, $name, $variable, $name, $value, $variable, $name);
+        }
+        return sprintf('<!--if{if isset(%s.%s) and strval(\'%s\')==strval(%s.%s)}-->', $variable, $name, $value, $variable, $name);
+    }
+
+    /**
+     * 渲染下拉选项.
+     */
+    private function renderSelectOptions(array $field): string
+    {
+        if ($field['vname'] !== '') {
+            $html = sprintf('{foreach $%s as $k=>$v}', $field['vname']);
+            $html .= sprintf('{if isset(%s.%s) and strval(%s.%s) eq strval($k)}<option selected value="{$k|default=\'\'}">{$v|default=\'\'}</option>{else}<option value="{$k|default=\'\'}">{$v|default=\'\'}</option>{/if}', $this->variable, $field['name'], $this->variable, $field['name']);
+            $html .= '{/foreach}';
+            return $html;
+        }
+
+        $html = '';
+        foreach ($field['options'] as $value => $label) {
+            $value = htmlspecialchars((string)$value, ENT_QUOTES, 'UTF-8');
+            $label = htmlspecialchars((string)$label, ENT_QUOTES, 'UTF-8');
+            $html .= sprintf('{if isset(%s.%s) and strval(%s.%s) eq \'%s\'}<option selected value="%s">%s</option>{else}<option value="%s">%s</option>{/if}', $this->variable, $field['name'], $this->variable, $field['name'], addslashes($value), $value, $label, $value, $label);
+        }
+        return $html;
     }
 
     /**
@@ -841,7 +970,19 @@ class FormBuilder
         if (isset(self::PATTERN_RULES[$pattern])) {
             return self::PATTERN_RULES[$pattern];
         }
-        return str_contains($pattern, '|') ? null : "regex:{$pattern}";
+        if (str_contains($pattern, '|')) {
+            return null;
+        }
+
+        $regex = preg_replace('~(?<!\\\)/~', '\/', $pattern) ?? $pattern;
+        if (!str_starts_with($regex, '^')) {
+            $regex = '^' . $regex;
+        }
+        if (!str_ends_with($regex, '$')) {
+            $regex .= '$';
+        }
+
+        return "regex:/{$regex}/";
     }
 
     /**
@@ -867,6 +1008,23 @@ class FormBuilder
     {
         $json = json_encode($this->toArray(), JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES | JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_AMP | JSON_HEX_QUOT);
         return $json ? sprintf('<script type="application/json" class="form-builder-schema">%s</script>', $json) : '';
+    }
+
+    /**
+     * 渲染附加脚本.
+     */
+    private function renderScripts(): string
+    {
+        if (count($this->scripts) < 1) {
+            return '';
+        }
+
+        $html = '';
+        foreach ($this->scripts as $script) {
+            $html .= "\n<script>\n{$script}\n</script>";
+        }
+
+        return $html;
     }
 
     /**
@@ -897,7 +1055,7 @@ class FormBuilder
         }
         $html .= "\n\t\t" . $this->renderSchemaScript();
         $html .= "\n\t" . '</div>';
-        return $html . "\n</form>";
+        return $html . "\n</form>" . $this->renderScripts();
     }
 
     /**

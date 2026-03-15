@@ -177,6 +177,12 @@ class PageBuilder
     private $contentClass = 'think-box-shadow';
 
     /**
+     * 渲染时附带变量.
+     * @var array
+     */
+    private $renderVars = [];
+
+    /**
      * 构造函数.
      */
     public function __construct(Controller $class)
@@ -614,6 +620,7 @@ class PageBuilder
         foreach ($this->class as $k => $v) {
             $vars[$k] = $v;
         }
+        $this->renderVars = $vars;
         throw new HttpResponseException(display($this->render(), $vars));
     }
 
@@ -636,9 +643,13 @@ class PageBuilder
         $html .= "\n\t" . '<div class="layui-card-line"></div>';
         $html .= "\n\t" . '<div class="layui-card-body">';
         $html .= "\n\t\t" . '<div class="layui-card-table">';
-        $html .= "\n\t\t\t{notempty name='showErrorMessage'}";
-        $html .= "\n\t\t\t\t" . '<div class="think-box-notify" type="error"><b>{:lang(\'系统提示：\')}</b><span>{$showErrorMessage|raw}</span></div>';
-        $html .= "\n\t\t\t" . '{/notempty}';
+        if (($message = strval($this->renderVars['showErrorMessage'] ?? '')) !== '') {
+            $html .= "\n\t\t\t\t" . sprintf(
+                '<div class="think-box-notify" type="error"><b>%s</b><span>%s</span></div>',
+                htmlspecialchars('系统提示：', ENT_QUOTES, 'UTF-8'),
+                $message
+            );
+        }
         if ($this->contentClass !== '') {
             $html .= "\n\t\t\t" . sprintf('<div class="%s">', htmlspecialchars($this->contentClass, ENT_QUOTES, 'UTF-8'));
         }
@@ -691,7 +702,7 @@ class PageBuilder
         }
         $html = '';
         if ($this->searchLegendEnabled) {
-            $html .= '<fieldset><legend>{:lang(\'' . addslashes($this->searchLegend) . '\')}</legend>';
+            $html .= '<fieldset><legend>' . htmlspecialchars($this->searchLegend, ENT_QUOTES, 'UTF-8') . '</legend>';
         }
         $html .= sprintf('<form %s>', $this->attrs($attrs));
         $html .= "\n\t" . join("\n\t", array_filter($fields));
@@ -723,7 +734,7 @@ class PageBuilder
         if ($type === 'hidden') {
             $attrs['type'] = 'hidden';
             $attrs['name'] = $field['name'];
-            $attrs['value'] = $attrs['value'] ?? $this->searchValueExpression($field['name']);
+            $attrs['value'] = $attrs['value'] ?? $this->searchValue($field['name']);
             return sprintf('<input %s>', $this->attrs($attrs));
         }
         if ($type === 'submit') {
@@ -748,7 +759,7 @@ class PageBuilder
             return $html;
         }
         $attrs['name'] = $field['name'];
-        $attrs['value'] = $attrs['value'] ?? $this->searchValueExpression($field['name']);
+        $attrs['value'] = $attrs['value'] ?? $this->searchValue($field['name']);
         $attrs['placeholder'] = $field['placeholder'] ?: ($label === '' ? '' : "请输入{$label}");
         $attrs['class'] = trim(($attrs['class'] ?? '') . ' layui-input');
         $html = '<div class="' . $wrapClass . '">';
@@ -765,18 +776,13 @@ class PageBuilder
     private function renderSearchOptions(array $field): string
     {
         $name = $field['name'];
-        if ($field['source'] !== '') {
-            $source = addslashes($field['source']);
-            $html = "{foreach \${$source} as \$k=>\$v}";
-            $html .= "{if isset(\$get.{$name}) and \$get.{$name} eq \$k}<option selected value=\"{\$k}\">{\$v}</option>{else}<option value=\"{\$k}\">{\$v}</option>{/if}";
-            $html .= '{/foreach}';
-            return $html;
-        }
         $html = '';
-        foreach ($field['options'] as $value => $label) {
+        $current = $this->searchValue($name);
+        foreach ($this->resolveSearchOptions($field) as $value => $label) {
             $value = htmlspecialchars((string)$value, ENT_QUOTES, 'UTF-8');
             $label = htmlspecialchars((string)$label, ENT_QUOTES, 'UTF-8');
-            $html .= sprintf('{if isset($get.%s) and $get.%s eq \'%s\'}<option selected value="%s">%s</option>{else}<option value="%s">%s</option>{/if}', $name, $name, addslashes($value), $value, $label, $value, $label);
+            $selected = strval($current) !== '' && strval($current) === html_entity_decode($value, ENT_QUOTES, 'UTF-8') ? ' selected' : '';
+            $html .= sprintf('<option%s value="%s">%s</option>', $selected, $value, $label);
         }
         return $html;
     }
@@ -914,15 +920,41 @@ class PageBuilder
         if (empty($auth)) {
             return $html;
         }
-        return sprintf("<!--{if auth('%s')}-->\n%s\n<!--{/if}-->", addslashes($auth), $html);
+        if (function_exists('auth')) {
+            try {
+                return auth($auth) ? $html : '';
+            } catch (\Throwable) {
+            }
+        }
+        return $html;
     }
 
     /**
-     * 搜索值表达式.
+     * 获取搜索值.
      */
-    private function searchValueExpression(string $name): string
+    private function searchValue(string $name): string
     {
-        return sprintf('{$get.%s|default=\'\'}', $name);
+        if (isset($this->class->get) && is_array($this->class->get) && array_key_exists($name, $this->class->get)) {
+            return strval($this->class->get[$name]);
+        }
+        if (isset($this->renderVars['get']) && is_array($this->renderVars['get']) && array_key_exists($name, $this->renderVars['get'])) {
+            return strval($this->renderVars['get'][$name]);
+        }
+        if (isset($this->class->request)) {
+            return strval($this->class->request->get($name, ''));
+        }
+        return '';
+    }
+
+    /**
+     * 获取搜索选项.
+     */
+    private function resolveSearchOptions(array $field): array
+    {
+        if (!empty($field['source']) && isset($this->renderVars[$field['source']]) && is_array($this->renderVars[$field['source']])) {
+            return $this->renderVars[$field['source']];
+        }
+        return is_array($field['options'] ?? null) ? $field['options'] : [];
     }
 
     /**

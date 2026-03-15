@@ -27,7 +27,7 @@
 ## 组件边界
 
 - 提供 `think\admin\Controller`、`Model`、`Plugin`、`Command` 等基础类型
-- 提供插件优先、单应用兜底的运行时路由能力
+- 提供插件优先、本地多应用兼容、默认本地应用回退的运行时路由能力
 - 提供基础 JWT、会话、RPC、运行控制、存储等门面能力
 - 提供 `Storage` 门面、契约和公共 Trait
 - 基础库只定义框架级标准与通用实现，具体业务能力由其他插件承载
@@ -112,21 +112,33 @@ composer require zoujingli/think-library
 
 当前运行时约定为：
 
-- `app` 只保留一个 `single_app`
+- `app/*` 使用本地多应用目录结构，默认本地应用为 `app/index`
 - 插件通过 URL 前缀注册访问入口
-- Web 页面入口统一使用 `/{plugin}/...`
-- API 接口入口统一使用 `/api/{plugin}/{controller}/{action}`
+- 本地应用显式入口使用 `/{app}/{controller}/{action}`
+- 默认本地应用生成 URL 时可以省略首段 `index`
+- 插件页面入口统一使用 `/{plugin}/...`
+- 插件 API 接口入口统一使用 `/api/{plugin}/{controller}/{action}`
 - API 入口会自动映射到现有 `controller/api/*`，例如 `/api/storage/upload/file` -> `controller/api/Upload::file`
-- 请求首段命中已注册前缀时切换到对应插件
-- 未命中插件前缀时回退到单应用
-- 旧式插件接口路径 `/{plugin}/api.xxx/...` 继续兼容，便于平滑迁移
+- 请求调度优先级为：插件前缀 -> 本地应用前缀 -> 根路由目标声明 -> 动态插件切换 -> 默认本地应用
+- 根目录 `route/*.php` 的全局路由应通过 `Route::bindApp()`、`Route::bindPlugin()`、`Route::appGroup()`、`Route::pluginGroup()` 显式声明目标
+- 根路由里 `$route` 必须写成目标应用内部相对地址，例如 `dashboard/index`、`api.upload/file`
+- 旧式三段路由 `system/login/index`、`index/demo/index` 仍保留目标推断兼容，但新代码不再推荐
 - 动态插件切换默认关闭，需要显式开启 `app.plugin.switch.enabled`
 - 统一 URL 生成规则为：页面用 `sysuri()`，标准接口用 `apiuri()`
 
 配置示例：
 
 ```php
+// config/route.php
 return [
+    'default_app' => 'index',
+];
+```
+
+```php
+// config/app.php
+return [
+    // single_app 仅保留兼容回退，建议优先使用 route.default_app
     'single_app' => 'index',
     'plugin' => [
         'bindings' => [
@@ -145,11 +157,31 @@ return [
 
 标准示例：
 
+- 本地应用：`/index/index/index`
+- 本地应用：`/member/center/index`
 - 页面：`/system/config/index`
 - 页面：`/storage/config/index`
 - 接口：`/api/system/plugs/script`
 - 接口：`/api/storage/upload/file`
 - 接口：`/api/wechat/view/news?id=1`
+
+根路由目标声明示例：
+
+```php
+use think\admin\runtime\RequestContext;
+use think\facade\Route;
+
+Route::bindApp('portal', 'home/index', 'index');
+Route::bindPlugin('open-upload', 'api.upload/file', 'system', RequestContext::ENTRY_API);
+
+Route::appGroup('member', function () {
+    Route::get('member-center', 'center/index');
+});
+
+Route::pluginGroup('system', function () {
+    Route::get('quick-upload', 'api.upload/file');
+}, RequestContext::ENTRY_API);
+```
 
 ## 前端脚本变量
 

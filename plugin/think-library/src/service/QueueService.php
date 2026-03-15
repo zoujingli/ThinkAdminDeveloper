@@ -36,9 +36,9 @@ class QueueService
         return static::provider($var, $new);
     }
 
-    public static function register(string $title, string $command, int $later = 0, array $data = [], int $rscript = 0, int $loops = 0): QueueManagerInterface
+    public static function register(string $title, string $command, int $later = 0, array $data = [], int $loops = 0, ?int $legacyLoops = null): QueueManagerInterface
     {
-        return static::provider([], true)->registerTask($title, $command, $later, $data, $rscript, $loops);
+        return static::provider([], true)->registerTask($title, $command, $later, $data, $loops, $legacyLoops);
     }
 
     public static function currentCode(): string

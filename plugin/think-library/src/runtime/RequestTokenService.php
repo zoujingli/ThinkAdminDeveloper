@@ -21,6 +21,7 @@ declare(strict_types=1);
 namespace think\admin\runtime;
 
 use plugin\account\service\Account;
+use think\admin\extend\CodeToolkit;
 use think\admin\service\JwtToken;
 use think\admin\Library;
 use think\Request;
@@ -33,6 +34,11 @@ use think\Request;
  */
 class RequestTokenService
 {
+    /**
+     * 加密 Cookie 令牌前缀。
+     */
+    private const COOKIE_TOKEN_PREFIX = 'enc:';
+
     /**
      * 账号默认认证 Cookie 名称。
      */
@@ -50,8 +56,8 @@ class RequestTokenService
 
         $request = $request ?: Library::$sapp->request;
         $authorization = static::parseHeaderToken(strval($request->header(SystemContext::getTokenHeader(), '')));
-        $systemCookie = static::normalizeToken(strval($request->cookie(SystemContext::getTokenCookie(), '')));
-        $accountCookie = static::normalizeToken(strval($request->cookie(static::getAccountTokenCookie(), '')));
+        $systemCookie = static::decodeCookieToken(strval($request->cookie(SystemContext::getTokenCookie(), '')));
+        $accountCookie = static::decodeCookieToken(strval($request->cookie(static::getAccountTokenCookie(), '')));
         $system = '';
         $account = '';
 
@@ -137,8 +143,63 @@ class RequestTokenService
     }
 
     /**
+     * 编码要写入 Cookie 的认证令牌。
+     * Header 仍保持标准 Bearer 原文，只有 Cookie 分支做对称加密。
+     */
+    public static function encodeCookieToken(string $token): string
+    {
+        $token = static::normalizeToken($token);
+        if ($token === '') {
+            return '';
+        }
+        if (!static::cookieTokenEncryptionEnabled()) {
+            return $token;
+        }
+
+        return self::COOKIE_TOKEN_PREFIX . CodeToolkit::encrypt($token, static::cookieTokenSecret());
+    }
+
+    /**
+     * 解码 Cookie 中的认证令牌。
+     * 新版本优先解析加密前缀，旧明文 Cookie 继续兼容。
+     */
+    public static function decodeCookieToken(string $token): string
+    {
+        $token = trim($token);
+        if ($token === '') {
+            return '';
+        }
+
+        if (stripos($token, self::COOKIE_TOKEN_PREFIX) === 0) {
+            try {
+                return static::normalizeToken(strval(CodeToolkit::decrypt(substr($token, strlen(self::COOKIE_TOKEN_PREFIX)), static::cookieTokenSecret())));
+            } catch (\Throwable) {
+                return '';
+            }
+        }
+
+        return static::normalizeToken($token);
+    }
+
+    /**
      * 标准化令牌内容。
      */
+    public static function isEncryptedCookieToken(string $token): bool
+    {
+        return stripos(trim($token), self::COOKIE_TOKEN_PREFIX) === 0;
+    }
+
+    public static function shouldUpgradeCookieToken(string $rawToken, ?string $decodedToken = null): bool
+    {
+        $rawToken = trim($rawToken);
+        if ($rawToken === '' || !static::cookieTokenEncryptionEnabled() || static::isEncryptedCookieToken($rawToken)) {
+            return false;
+        }
+
+        $decodedToken = static::normalizeToken(strval($decodedToken));
+        return $decodedToken !== '' && static::normalizeToken($rawToken) === $decodedToken;
+    }
+
     public static function normalizeToken(string $token): string
     {
         $token = trim($token);
@@ -188,5 +249,22 @@ class RequestTokenService
         } catch (\Throwable) {
             return false;
         }
+    }
+
+    /**
+     * 是否启用 Cookie 令牌加密。
+     */
+    private static function cookieTokenEncryptionEnabled(): bool
+    {
+        return boolval(config('app.token_cookie_encrypt', true));
+    }
+
+    /**
+     * 获取 Cookie 令牌加密密钥。
+     */
+    private static function cookieTokenSecret(): string
+    {
+        $secret = trim(strval(config('app.token_cookie_secret', '')));
+        return $secret !== '' ? $secret : JwtToken::jwtkey();
     }
 }
