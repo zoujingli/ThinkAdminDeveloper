@@ -238,7 +238,9 @@ class SystemAuthService extends Service
      */
     public static function requestToken(?Request $request = null): string
     {
-        return RequestTokenService::systemToken($request);
+        $token = RequestTokenService::systemToken($request);
+        static::upgradeLegacyCookieToken($request);
+        return $token;
     }
 
     /**
@@ -295,7 +297,7 @@ class SystemAuthService extends Service
             return '';
         }
 
-        return RequestTokenService::normalizeToken(strval($request->cookie($cookie, '')));
+        return RequestTokenService::decodeCookieToken(strval($request->cookie($cookie, '')));
     }
 
     /**
@@ -318,7 +320,7 @@ class SystemAuthService extends Service
             return '';
         }
 
-        cookie(static::getTokenCookie(), $token, ['expire' => static::getTokenExpire()]);
+        cookie(static::getTokenCookie(), RequestTokenService::encodeCookieToken($token), ['expire' => static::getTokenExpire()]);
         return $token;
     }
 
@@ -685,6 +687,16 @@ class SystemAuthService extends Service
     /**
      * 获取用户令牌最近失效时间.
      */
+    private static function upgradeLegacyCookieToken(?Request $request = null): void
+    {
+        $request = $request ?: Library::$sapp->request;
+        $rawToken = strval($request->cookie(static::getTokenCookie(), ''));
+        $decodedToken = RequestTokenService::capture($request)->systemCookieToken();
+        if (RequestTokenService::shouldUpgradeCookieToken($rawToken, $decodedToken)) {
+            static::syncTokenCookie($decodedToken);
+        }
+    }
+
     private static function getTokenInvalidAt(int $uid): int
     {
         if ($uid < 1) {

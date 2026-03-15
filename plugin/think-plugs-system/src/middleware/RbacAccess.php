@@ -18,8 +18,9 @@ declare(strict_types=1);
  * +----------------------------------------------------------------------
  */
 
-namespace plugin\system\service;
+namespace plugin\system\middleware;
 
+use plugin\system\service\SystemAuthService;
 use think\App;
 use think\exception\HttpResponseException;
 use think\Request;

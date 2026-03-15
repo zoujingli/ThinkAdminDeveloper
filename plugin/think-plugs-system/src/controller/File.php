@@ -23,6 +23,7 @@ namespace plugin\system\controller;
 use plugin\storage\model\SystemFile;
 use plugin\system\service\SystemAuthService;
 use think\admin\Controller;
+use think\admin\helper\FormBuilder;
 use think\admin\helper\QueryHelper;
 use think\admin\service\Storage;
 use think\db\exception\DataNotFoundException;
@@ -74,7 +75,18 @@ class File extends Controller
         if ($id < 1 || SystemFile::mk()->where(['id' => $id])->where($where)->findOrEmpty()->isEmpty()) {
             $this->error('文件记录不存在！');
         }
-        SystemFile::mForm('form', '', $where);
+        $builder = $this->buildEditForm();
+        $file = $this->loadEditableFile($id, $where);
+        if ($this->request->isGet()) {
+            $builder->fetch(['vo' => $file]);
+        }
+
+        $data = $builder->validate();
+        $data = [
+            'id' => intval($this->request->post('id', 0)),
+            'name' => strval($data['name'] ?? ''),
+        ];
+        $this->_save(SystemFile::mk(), $data, '', $where);
     }
 
     /**
@@ -122,5 +134,41 @@ class File extends Controller
         foreach ($data as &$vo) {
             $vo['ctype'] = $this->types[$vo['type']] ?? $vo['type'];
         }
+    }
+
+    private function buildEditForm(): FormBuilder
+    {
+        return FormBuilder::mk()
+            ->addTextInput('name', '文件名称', 'Name', true, '', null, [
+                'maxlength' => 100,
+                'required-error' => '文件名称不能为空！',
+            ])
+            ->addTextInput('size_display', '文件大小', 'Size', false, '', null, [
+                'readonly' => null,
+                'class' => 'layui-bg-gray',
+            ])
+            ->addTextInput('type_display', '存储方式', 'Type', false, '', null, [
+                'readonly' => null,
+                'class' => 'layui-bg-gray',
+            ])
+            ->addTextInput('hash', '文件哈希', 'Hash', false, '', null, [
+                'readonly' => null,
+                'class' => 'layui-bg-gray',
+            ])
+            ->addTextInput('xurl', '文件链接', 'Link', false, '', null, [
+                'readonly' => null,
+                'class' => 'layui-bg-gray',
+            ])
+            ->addSubmitButton()
+            ->addCancelButton();
+    }
+
+    private function loadEditableFile(int $id, array $where): array
+    {
+        $file = SystemFile::mk()->where(['id' => $id])->where($where)->findOrEmpty();
+        $data = $file->toArray();
+        $data['size_display'] = format_bytes(intval($data['size'] ?? 0));
+        $data['type_display'] = $this->types[$data['type'] ?? ''] ?? strval($data['type'] ?? '');
+        return $data;
     }
 }

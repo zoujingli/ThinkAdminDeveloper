@@ -87,7 +87,7 @@ class Queue extends Controller
      */
     public function clean()
     {
-        $this->_queue('定时清理系统运行数据', 'xadmin:queue clean', 0, [], 0, 3600);
+        $this->_queue('定时清理系统运行数据', 'xadmin:queue clean', 0, [], 3600);
     }
 
     /**

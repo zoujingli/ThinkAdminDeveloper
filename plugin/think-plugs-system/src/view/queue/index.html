@@ -7,7 +7,7 @@
 <a data-table-id="QueueTable" class="layui-btn layui-btn-sm layui-btn-primary" data-queue="{:apiuri('system/plugs/optimize')}">{:lang('优化数据库')}</a>
 
 {if isset($iswin) and ($iswin or php_sapi_name() eq 'cli')}
-<button data-load='{:apiuri("system/queue/start")}' class='layui-btn layui-btn-sm layui-btn-primary'>{:lang('开启服务')}</button>
+<button data-load='{:apiuri("system/queue/start")}' class='layui-btn layui-btn-sm layui-btn-primary'>{:lang('启动服务')}</button>
 <button data-load='{:apiuri("system/queue/stop")}' class='layui-btn layui-btn-sm layui-btn-primary'>{:lang('关闭服务')}</button>
 {/if}
 
@@ -50,10 +50,32 @@
 {block name='script'}
 <script>
     $(function () {
+        const formatQueueTime = function (value, emptyHtml) {
+            const num = Number(value || 0);
+            if (!isFinite(num) || num <= 0) return emptyHtml || '<span class="color-desc">未执行</span>';
+            return layui.util.toDateString(Math.round(num * 1000), 'yyyy-MM-dd HH:mm:ss');
+        };
+        const formatQueueCost = function (start, finish, status) {
+            const begin = Number(start || 0);
+            const end = Number(finish || 0);
+            if (!isFinite(begin) || begin <= 0) return '';
+            let cost = 0;
+            let suffix = '';
+            if (isFinite(end) && end > begin) {
+                cost = end - begin;
+            } else if (Number(status) === 2) {
+                cost = Date.now() / 1000 - begin;
+                suffix = '，执行中';
+            }
+            if (cost <= 0) return suffix;
+            if (cost >= 60) return '，耗时 ' + (cost / 60).toFixed(2) + ' 分钟' + suffix;
+            if (cost >= 1) return '，耗时 ' + cost.toFixed(2) + ' 秒' + suffix;
+            return '，耗时 ' + Math.round(cost * 1000) + ' ms' + suffix;
+        };
         $('#QueueTable').layTable({
-            even: true, height: 'full',
+            even: true,
+            height: 'full',
             sort: {field: 'loops_time desc,id', type: 'desc'},
-            // 扩展数据处理，需要返回原 items 数据
             filter: function (items, result) {
                 return result && result.extra && $('[data-extra]').map(function () {
                     this.innerHTML = result.extra[this.dataset.extra] || 0;
@@ -64,21 +86,16 @@
                 {
                     field: 'id', title: '{:lang("任务名称")}', width: '25%', sort: true, templet: function (d) {
                         if (d.loops_time > 0) {
-                            d.one = '<span class="layui-badge think-bg-blue">循</span>';
+                            d.one = '<span class="layui-badge think-bg-blue">循环</span>';
                         } else {
-                            d.one = '<span class="layui-badge think-bg-red">次</span>';
+                            d.one = '<span class="layui-badge think-bg-red">单次</span>';
                         }
-                        if (parseInt(d.rscript) === 1) {
-                            d.two = '<span class="layui-badge layui-bg-green">复</span>';
-                        } else {
-                            d.two = '<span class="layui-badge think-bg-violet">单</span>';
-                        }
-                        return laytpl('{{-d.one}}任务编号：<b>{{d.code}}</b><br>{{-d.two}}任务名称：{{d.title}}').render(d);
+                        return laytpl('{{-d.one}}任务编号：<b>{{d.code}}</b><br>任务名称：{{d.title}}').render(d);
                     }
                 },
                 {
                     field: 'exec_time', title: '{:lang("任务计划")}', width: '25%', templet: function (d) {
-                        d.html = '执行指令：' + d.command + '<br>计划执行：' + d.exec_time;
+                        d.html = '执行指令：' + d.command + '<br>计划执行：' + formatQueueTime(d.exec_time, '<span class="color-desc">未计划</span>');
                         if (d.loops_time > 0) {
                             return d.html + ' ( 每 <b class="color-blue">' + d.loops_time + '</b> 秒 ) ';
                         } else {
@@ -93,15 +110,13 @@
                             '<span class="pull-left layui-badge layui-badge-middle layui-bg-black">等待</span>',
                             '<span class="pull-left layui-badge layui-badge-middle layui-bg-blue">执行</span>',
                             '<span class="pull-left layui-badge layui-badge-middle layui-bg-green">完成</span>',
-                            '<span class="pull-left layui-badge layui-badge-middle layui-bg-red">失败</span>',
+                            '<span class="pull-left layui-badge layui-badge-middle layui-bg-red">失败</span>'
                         ][d.status] || '') + '执行时间：';
-                        d.enter_time = d.enter_time || '';
-                        d.outer_time = d.outer_time || '0.0000';
-                        if (String(d.enter_time) !== '' && String(d.enter_time) !== '0' && String(d.enter_time) !== '0.0000') {
-                            d.html += String(d.enter_time) + '<span class="color-desc"> ( ' + d.outer_time + ' ) </span>';
+                        if (String(d.enter_time || '') !== '' && String(d.enter_time) !== '0' && String(d.enter_time) !== '0.0000') {
+                            d.html += formatQueueTime(d.enter_time) + '<span class="color-desc">' + formatQueueCost(d.enter_time, d.outer_time, d.status) + '</span>';
                             d.html += ' 已执行 <b class="color-blue">' + (d.attempts || 0) + '</b> 次';
                         } else {
-                            d.html += '<span class="color-desc">任务未执行</span>'
+                            d.html += '<span class="color-desc">任务未执行</span>';
                         }
                         return d.html + '<br>执行结果：<span class="color-blue">' + (d.exec_desc || '<span class="color-desc">未获取到执行结果</span>') + '</span>';
                     }
@@ -116,16 +131,16 @@
 
     <!--{if auth('redo')}-->
     {{# if(d.status===4||d.status===3){ }}
-    <a class="layui-btn layui-btn-sm" data-confirm="确定要重置该任务吗？" data-queue="{:url('redo')}?code={{d.code}}">{:lang('重 置')}</a>
+    <a class="layui-btn layui-btn-sm" data-confirm="确定要重置该任务吗？" data-queue="{:url('redo')}?code={{d.code}}">{:lang('重置')}</a>
     {{# }else{ }}
-    <a class="layui-btn layui-btn-sm layui-btn-disabled">{:lang('重 置')}</a>
+    <a class="layui-btn layui-btn-sm layui-btn-disabled">{:lang('重置')}</a>
     {{# } }}
     <!--{/if}-->
 
     <!--{if auth('remove')}-->
-    <a class='layui-btn layui-btn-sm layui-btn-danger' data-confirm="{:lang('确定要删除该记录吗？')}" data-action='{:url("remove")}' data-value="id#{{d.id}}">{:lang('删 除')}</a>
+    <a class='layui-btn layui-btn-sm layui-btn-danger' data-confirm="{:lang('确定要删除该记录吗？')}" data-action='{:url("remove")}' data-value="id#{{d.id}}">{:lang('删除')}</a>
     <!--{/if}-->
 
-    <a class='layui-btn layui-btn-sm layui-btn-normal' onclick="$.loadQueue('{{d.code}}',false,this)">{:lang('日 志')}</a>
+    <a class='layui-btn layui-btn-sm layui-btn-normal' onclick="$.loadQueue('{{d.code}}',false,this)">{:lang('日志')}</a>
 </script>
 {/block}

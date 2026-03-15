@@ -18,8 +18,9 @@ declare(strict_types=1);
  * +----------------------------------------------------------------------
  */
 
-namespace plugin\system\service;
+namespace plugin\system\middleware;
 
+use plugin\system\service\SystemAuthService;
 use think\admin\runtime\RequestTokenService;
 use think\App;
 use think\Request;

@@ -272,10 +272,10 @@ class SystemBase extends Model
 
     /**
      * 格式化创建时间.
-     * @param mixed $value
+     * @param mixed $plugins
      */
 
-/**
+    /**
      * 标准化插件编码列表.
      * @param mixed $plugins
      * @return string[]

@@ -22,7 +22,11 @@ namespace plugin\system\model;
 
 use think\admin\Model;
 
-class SystemOplog extends Model
+class SystemBuilder extends Model
 {
-    protected $updateTime = false;
+    protected $name = 'system_data';
+
+    protected $oplogType = '动态页面构建';
+
+    protected $oplogName = '动态页面配置';
 }

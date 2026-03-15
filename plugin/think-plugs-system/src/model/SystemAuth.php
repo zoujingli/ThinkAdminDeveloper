@@ -173,7 +173,7 @@ class SystemAuth extends Model
         sysoplog($this->oplogType, lang('删除%s[%s]及授权配置', [lang($this->oplogName), $ids]));
     }
 
-/**
+    /**
      * 解析节点所属插件或应用.
      */
     private static function resolveNodePlugin(string $node): string

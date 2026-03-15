@@ -54,7 +54,7 @@
         <div class="layui-form-item layui-inline">
             <label class="layui-form-label">{:lang('创建时间')}</label>
             <label class="layui-input-inline">
-                <input data-date-range name="create_at" value="{$get.create_at|default=''}" placeholder="{:lang('请选择创建时间')}" class="layui-input">
+                <input data-date-range name="create_time" value="{$get.create_time|default=''}" placeholder="{:lang('请选择创建时间')}" class="layui-input">
             </label>
         </div>
 
@@ -73,7 +73,7 @@
 
             // 设置表格内容
             data.forEach(function (item, index) {
-                data[index] = [item.id, item.username, item.node, item.geoip, item.geoisp, item.action, item.content, item.create_at];
+                data[index] = [item.id, item.username, item.node, item.geoip, item.geoisp, item.action, item.content, item.create_time];
             });
 
             // 设置表头内容
