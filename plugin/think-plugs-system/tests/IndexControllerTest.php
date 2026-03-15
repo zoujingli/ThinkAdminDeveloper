@@ -129,6 +129,24 @@ class IndexControllerTest extends SqliteIntegrationTestCase
         $this->assertSame('tester', $oplog->getData('username'));
     }
 
+    public function testPassGetRendersFormBuilderMarkup(): void
+    {
+        $this->createSystemUserFixture([
+            'id' => 9101,
+            'username' => 'tester',
+            'password' => md5('old-password'),
+        ]);
+
+        $this->bindAdminUser(9101, 'tester', md5('old-password'));
+
+        $html = $this->callActionHtml('pass', ['id' => 9101]);
+
+        $this->assertStringContainsString('form-builder-schema', $html);
+        $this->assertStringContainsString('name="oldpassword"', $html);
+        $this->assertStringContainsString('name="password"', $html);
+        $this->assertStringContainsString('name="repassword"', $html);
+    }
+
     public function testPassRejectsChangingOtherUserPassword(): void
     {
         $this->bindAdminUser(9101, 'tester', md5('changed-password'));
@@ -176,6 +194,26 @@ class IndexControllerTest extends SqliteIntegrationTestCase
             self::fail("Expected IndexController::{$action} to throw HttpResponseException.");
         } catch (HttpResponseException $exception) {
             return json_decode($exception->getResponse()->getContent(), true) ?: [];
+        }
+    }
+
+    private function callActionHtml(string $action, array $query = []): string
+    {
+        $request = (new Request())
+            ->withGet($query)
+            ->setMethod('GET')
+            ->setController('index')
+            ->setAction($action);
+
+        $this->setRequestPayload($request, $query);
+        $this->app->instance('request', $request);
+
+        try {
+            $controller = new IndexController($this->app);
+            $controller->{$action}();
+            self::fail("Expected IndexController::{$action} to throw HttpResponseException.");
+        } catch (HttpResponseException $exception) {
+            return $exception->getResponse()->getContent();
         }
     }
 

@@ -27,6 +27,7 @@ use plugin\system\service\SystemAuthService;
 use plugin\system\service\SystemContext as PluginSystemContext;
 use think\admin\contract\SystemContextInterface;
 use think\admin\runtime\RequestContext;
+use think\admin\runtime\RequestTokenService;
 use think\admin\service\CacheSession;
 use think\admin\service\JwtToken;
 use think\admin\tests\Support\SqliteIntegrationTestCase;
@@ -112,6 +113,7 @@ class LoginControllerTest extends SqliteIntegrationTestCase
         $payload = JwtToken::verify(strval($result['token'] ?? ''));
         $oplog = SystemOplog::mk()->order('id desc')->findOrEmpty();
         $sessionId = RequestContext::instance()->sessionId();
+        $queuedCookie = strval($this->app->cookie->getCookie()[SystemAuthService::getTokenCookie()][0] ?? '');
 
         $this->assertSame(1, intval($result['code'] ?? 0));
         $this->assertSame('登录成功', $result['info'] ?? '');
@@ -129,6 +131,9 @@ class LoginControllerTest extends SqliteIntegrationTestCase
         $this->assertSame('登录系统后台成功', $oplog->getData('content'));
         $this->assertSame('tester', $oplog->getData('username'));
         $this->assertFalse($this->app->cache->has($this->captchaMapKey(strval($captcha['data']['uniqid'] ?? ''))));
+        $this->assertStringStartsWith('enc:', $queuedCookie);
+        $this->assertNotSame(strval($result['token'] ?? ''), $queuedCookie);
+        $this->assertSame(strval($result['token'] ?? ''), RequestTokenService::decodeCookieToken($queuedCookie));
     }
 
     public function testOutClearsCurrentSessionAndReturnsLoginRedirect(): void
@@ -154,6 +159,52 @@ class LoginControllerTest extends SqliteIntegrationTestCase
         $this->assertSame('', RequestContext::instance()->sessionId());
         $this->assertFalse(CacheSession::exists("sid:{$sessionId}"));
         $this->assertFalse(SystemAuthService::isLogin());
+    }
+
+    public function testRequestTokenCanDecryptEncryptedCookie(): void
+    {
+        $user = $this->createSystemUserFixture([
+            'id' => 9251,
+            'username' => 'cookie-user',
+            'password' => md5('cookie-pass'),
+            'status' => 1,
+        ])->toArray();
+        $token = SystemAuthService::buildToken($user);
+        $encodedCookie = RequestTokenService::encodeCookieToken($token);
+        $request = (new Request())->withCookie([
+            SystemAuthService::getTokenCookie() => $encodedCookie,
+        ]);
+
+        RequestContext::clear();
+        $this->app->instance('request', $request);
+
+        $this->assertNotSame($token, $encodedCookie);
+        $this->assertSame($token, SystemAuthService::requestCookieToken($request));
+        $this->assertSame($token, SystemAuthService::requestToken($request));
+    }
+
+    public function testRequestTokenUpgradesLegacyPlainCookie(): void
+    {
+        $user = $this->createSystemUserFixture([
+            'id' => 9261,
+            'username' => 'legacy-cookie-user',
+            'password' => md5('legacy-cookie-pass'),
+            'status' => 1,
+        ])->toArray();
+        $token = SystemAuthService::buildToken($user);
+        $request = (new Request())->withCookie([
+            SystemAuthService::getTokenCookie() => $token,
+        ]);
+
+        RequestContext::clear();
+        $this->app->instance('request', $request);
+
+        $this->assertSame($token, SystemAuthService::requestToken($request));
+
+        $queuedCookie = strval($this->app->cookie->getCookie()[SystemAuthService::getTokenCookie()][0] ?? '');
+        $this->assertStringStartsWith('enc:', $queuedCookie);
+        $this->assertNotSame($token, $queuedCookie);
+        $this->assertSame($token, RequestTokenService::decodeCookieToken($queuedCookie));
     }
 
     public function testGetIndexRedirectsLoggedInUsersToAdminHome(): void

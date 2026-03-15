@@ -248,6 +248,24 @@ class FileControllerTest extends SqliteIntegrationTestCase
         $this->assertSame('after-edit.png', $record->getAttr('name'));
     }
 
+    public function testEditGetRendersFormBuilderMarkup(): void
+    {
+        $owned = $this->createSystemFileFixture([
+            'uuid' => 9001,
+            'type' => 'local',
+            'name' => 'builder-edit.png',
+            'hash' => 'hash-builder-edit',
+        ]);
+
+        $html = $this->callEditHtml([
+            'id' => intval($owned->getAttr('id')),
+        ]);
+
+        $this->assertStringContainsString('form-builder-schema', $html);
+        $this->assertStringContainsString('name="name"', $html);
+        $this->assertStringContainsString('name="size_display"', $html);
+    }
+
     public function testEditRejectsFilesOwnedByOtherAdmin(): void
     {
         $other = $this->createSystemFileFixture([
@@ -322,6 +340,27 @@ class FileControllerTest extends SqliteIntegrationTestCase
     private function callEditSave(array $post): array
     {
         return $this->callEditJson('POST', $post);
+    }
+
+    private function callEditHtml(array $query): string
+    {
+        $request = (new Request())
+            ->withGet($query)
+            ->setMethod('GET')
+            ->setController('file')
+            ->setAction('edit');
+
+        $this->bindAdminUser();
+        $this->setRequestPayload($request, $query);
+        $this->app->instance('request', $request);
+
+        try {
+            $controller = new FileController($this->app);
+            $controller->edit();
+            self::fail('Expected FileController::edit to throw HttpResponseException.');
+        } catch (HttpResponseException $exception) {
+            return $exception->getResponse()->getContent();
+        }
     }
 
     private function callEditJson(string $method, array $data): array

@@ -185,6 +185,22 @@ class UserControllerTest extends SqliteIntegrationTestCase
         $this->assertSame(md5('new-password'), $updated->getData('password'));
     }
 
+    public function testPassGetRendersFormBuilderMarkup(): void
+    {
+        $user = $this->createSystemUserFixture([
+            'username' => 'pass-view-user',
+            'password' => md5('old-password'),
+        ]);
+
+        $html = $this->callActionHtml('pass', [
+            'id' => intval($user->getAttr('id')),
+        ]);
+
+        $this->assertStringContainsString('form-builder-schema', $html);
+        $this->assertStringContainsString('name="password"', $html);
+        $this->assertStringContainsString('name="repassword"', $html);
+    }
+
     public function testStateAndRemoveUpdateUserLifecycle(): void
     {
         $user = $this->createSystemUserFixture([
@@ -260,6 +276,27 @@ class UserControllerTest extends SqliteIntegrationTestCase
     private function callFormController(string $action, array $post): array
     {
         return $this->callActionController($action, $post);
+    }
+
+    private function callActionHtml(string $action, array $query = []): string
+    {
+        $request = (new Request())
+            ->withGet($query)
+            ->setMethod('GET')
+            ->setController('user')
+            ->setAction($action);
+
+        $this->bindAdminUser();
+        $this->setRequestPayload($request, $query);
+        $this->app->instance('request', $request);
+
+        try {
+            $controller = new UserController($this->app);
+            $controller->{$action}();
+            self::fail("Expected UserController::{$action} to throw HttpResponseException.");
+        } catch (HttpResponseException $exception) {
+            return $exception->getResponse()->getContent();
+        }
     }
 
     private function callActionController(string $action, array $post = []): array

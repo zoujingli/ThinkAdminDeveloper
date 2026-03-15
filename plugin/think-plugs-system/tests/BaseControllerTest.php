@@ -32,6 +32,27 @@ use think\Request;
  */
 class BaseControllerTest extends SqliteIntegrationTestCase
 {
+    public function testIndexAndAddRenderBuilderPages(): void
+    {
+        $this->createSystemBaseFixture([
+            'type' => 'identity',
+            'code' => 'base-render',
+            'name' => '渲染字典',
+            'content' => SystemBase::packContent('渲染内容', 'index'),
+        ]);
+
+        $indexHtml = $this->callActionHtml('index', [
+            'type' => 'identity',
+        ], 'GET');
+        $formHtml = $this->callActionHtml('add', [
+            'type' => 'identity',
+        ], 'GET');
+
+        $this->assertStringContainsString('page-builder-schema', $indexHtml);
+        $this->assertStringContainsString('name="type_select"', $formHtml);
+        $this->assertStringContainsString('form-builder-schema', $formHtml);
+    }
+
     public function testIndexFiltersByTypePluginGroupAndDateRange(): void
     {
         $this->createSystemBaseFixture([
@@ -102,7 +123,9 @@ class BaseControllerTest extends SqliteIntegrationTestCase
         $this->assertSame(1, intval($add['code'] ?? 0));
         $this->assertSame('数据保存成功！', $add['info'] ?? '');
         $this->assertTrue($created->isExists());
-        $this->assertSame(SystemBase::packContent('创建内容', 'index'), $created->getAttr('content'));
+        $createdMeta = SystemBase::parseContent(strval($created->getAttr('content')));
+        $this->assertSame('创建内容', $createdMeta['text'] ?? '');
+        $this->assertContains('index', (array)($createdMeta['plugin'] ?? []));
 
         $edit = $this->callFormController('edit', [
             'id' => intval($created->getAttr('id')),
@@ -120,7 +143,8 @@ class BaseControllerTest extends SqliteIntegrationTestCase
         $this->assertSame(1, intval($edit['code'] ?? 0));
         $this->assertSame('数据保存成功！', $edit['info'] ?? '');
         $this->assertSame('更新字典', $updated->getAttr('name'));
-        $this->assertSame('更新内容', $updated->getAttr('content'));
+        $updatedMeta = SystemBase::parseContent(strval($updated->getAttr('content')));
+        $this->assertSame('更新内容', $updatedMeta['text'] ?? ($updated->getAttr('content') ?? ''));
         $this->assertSame(30, intval($updated->getAttr('sort')));
         $this->assertSame(0, intval($updated->getAttr('status')));
     }
@@ -207,6 +231,27 @@ class BaseControllerTest extends SqliteIntegrationTestCase
     private function callFormController(string $action, array $post): array
     {
         return $this->callActionController($action, $post);
+    }
+
+    private function callActionHtml(string $action, array $data = [], string $method = 'GET'): string
+    {
+        $request = (new Request())
+            ->withGet($data)
+            ->withPost($data)
+            ->setMethod($method)
+            ->setController('base')
+            ->setAction($action);
+
+        $this->setRequestPayload($request, $data);
+        $this->app->instance('request', $request);
+
+        try {
+            $controller = new BaseController($this->app);
+            $controller->{$action}();
+            self::fail("Expected BaseController::{$action} to throw HttpResponseException.");
+        } catch (HttpResponseException $exception) {
+            return $exception->getResponse()->getContent();
+        }
     }
 
     private function callActionController(string $action, array $post): array
