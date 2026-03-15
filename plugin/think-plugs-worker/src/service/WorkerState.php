@@ -33,20 +33,22 @@ class WorkerState
     public function describe(): array
     {
         $pid = $this->pid();
-        if ($pid < 1) {
-            return ['running' => false, 'pid' => 0, 'processes' => []];
+        if (!$this->isWindows() && $pid > 0) {
+            $processes = $this->queryUnixProcesses($pid);
+            if ($processes !== []) {
+                return ['running' => true, 'pid' => $pid, 'processes' => $processes];
+            }
+
+            $this->clearPidFile();
         }
 
-        $processes = ProcessService::isWin()
-            ? $this->queryWindowsProcesses($pid)
-            : $this->queryUnixProcesses($pid);
+        $processes = $this->queryServiceProcesses();
 
         if ($processes === []) {
-            $this->clearPidFile();
             return ['running' => false, 'pid' => 0, 'processes' => []];
         }
 
-        return ['running' => true, 'pid' => $pid, 'processes' => $processes];
+        return ['running' => true, 'pid' => $this->resolveProcessPid($processes), 'processes' => $processes];
     }
 
     /**
@@ -67,22 +69,35 @@ class WorkerState
      */
     public function stop(int $timeout = 5): bool
     {
-        $pid = $this->pid();
-        if ($pid < 1) {
-            return true;
-        }
+        if ($this->isWindows()) {
+            $pids = $this->normalizeProcessIds($this->queryServiceProcesses());
+            if ($pids === []) {
+                $this->clearPidFile();
+                return true;
+            }
 
-        if (ProcessService::isWin()) {
-            ProcessService::exec("taskkill /PID {$pid} /T /F");
+            foreach ($pids as $pid) {
+                $this->closeProcess($pid);
+            }
             return $this->waitStopped($timeout);
         }
 
-        ProcessService::exec("kill {$pid}");
-        if ($this->waitStopped($timeout)) {
+        $info = $this->describe();
+        if (!$info['running']) {
             return true;
         }
 
-        ProcessService::exec('kill -' . \SIGKILL . " {$pid}");
+        if ($info['pid'] > 0) {
+            $this->stopProcess($info['pid']);
+            if ($this->waitStopped($timeout)) {
+                return true;
+            }
+        }
+
+        foreach ($this->normalizeProcessIds($this->queryServiceProcesses()) as $pid) {
+            $this->killProcess($pid);
+        }
+
         return $this->waitStopped(1);
     }
 
@@ -91,12 +106,19 @@ class WorkerState
      */
     public function reload(): bool
     {
-        $pid = $this->pid();
-        if ($pid < 1 || ProcessService::isWin()) {
+        if ($this->isWindows()) {
             return false;
         }
 
-        ProcessService::exec('kill -' . \SIGUSR2 . " {$pid}");
+        $pid = $this->pid();
+        if ($pid < 1) {
+            $pid = $this->resolveProcessPid($this->queryServiceProcesses());
+        }
+        if ($pid < 1) {
+            return false;
+        }
+
+        $this->reloadProcess($pid);
         return true;
     }
 
@@ -149,6 +171,91 @@ class WorkerState
     }
 
     /**
+     * Determine whether the runtime is running on Windows.
+     */
+    protected function isWindows(): bool
+    {
+        return ProcessService::isWin();
+    }
+
+    /**
+     * Query service processes using the worker serve command signature.
+     *
+     * @return array<int, array{pid:string,cmd:string}>
+     */
+    protected function queryServiceProcesses(): array
+    {
+        return ProcessService::workerQuery((string)($this->service['name'] ?? ''));
+    }
+
+    /**
+     * Terminate a single process.
+     */
+    protected function closeProcess(int $pid): bool
+    {
+        return ProcessService::close($pid);
+    }
+
+    /**
+     * Gracefully stop a Unix process.
+     */
+    protected function stopProcess(int $pid): void
+    {
+        ProcessService::exec("kill {$pid}");
+    }
+
+    /**
+     * Force kill a Unix process.
+     */
+    protected function killProcess(int $pid): void
+    {
+        ProcessService::exec('kill -' . \SIGKILL . " {$pid}");
+    }
+
+    /**
+     * Reload a Unix process.
+     */
+    protected function reloadProcess(int $pid): void
+    {
+        ProcessService::exec('kill -' . \SIGUSR2 . " {$pid}");
+    }
+
+    /**
+     * Extract unique numeric PIDs from a process list.
+     *
+     * @param array<int, array{pid:string,cmd:string}> $processes
+     * @return int[]
+     */
+    protected function normalizeProcessIds(array $processes): array
+    {
+        $items = [];
+        foreach ($processes as $process) {
+            $pid = intval($process['pid'] ?? 0);
+            if ($pid > 0) {
+                $items[$pid] = $pid;
+            }
+        }
+
+        return array_values($items);
+    }
+
+    /**
+     * Resolve the most likely master PID from a process list.
+     *
+     * @param array<int, array{pid:string,cmd:string}> $processes
+     */
+    protected function resolveProcessPid(array $processes): int
+    {
+        $pids = $this->normalizeProcessIds($processes);
+        if ($pids === []) {
+            return 0;
+        }
+
+        sort($pids, \SORT_NUMERIC);
+        return $pids[0];
+    }
+
+    /**
      * Query a Unix master process and its worker children.
      *
      * @return array<int, array{pid:string,cmd:string}>
@@ -177,20 +284,6 @@ class WorkerState
         }
 
         return $items;
-    }
-
-    /**
-     * Query a Windows runtime command line.
-     *
-     * @return array<int, array{pid:string,cmd:string}>
-     */
-    protected function queryWindowsProcesses(int $pid): array
-    {
-        if ($item = ProcessService::queryPid($pid)) {
-            return [$item];
-        }
-
-        return [];
     }
 
     /**

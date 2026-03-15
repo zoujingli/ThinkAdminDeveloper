@@ -22,6 +22,12 @@ $projectRoot = is_file($packageRoot . '/vendor/autoload.php') ? $packageRoot : d
 
 require $projectRoot . '/vendor/autoload.php';
 require $projectRoot . '/vendor/topthink/framework/src/helper.php';
+if (is_file($projectRoot . '/tests/support/TestSystemContext.php')) {
+    require_once $projectRoot . '/tests/support/TestSystemContext.php';
+}
+if (is_file($projectRoot . '/tests/support/SqliteIntegrationTestCase.php')) {
+    require_once $projectRoot . '/tests/support/SqliteIntegrationTestCase.php';
+}
 
 defined('WORKER_TEST_PACKAGE_ROOT') || define('WORKER_TEST_PACKAGE_ROOT', $packageRoot);
 defined('WORKER_TEST_PROJECT_ROOT') || define('WORKER_TEST_PROJECT_ROOT', $projectRoot);

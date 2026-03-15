@@ -33,23 +33,18 @@ use Workerman\Worker;
  */
 class HttpServer extends Server
 {
-    /** @var ThinkApp */
-    protected $app;
+    protected ThinkApp $app;
 
-    /** @var string */
-    protected $root;
+    protected string $root;
 
-    /** @var string */
-    protected $public;
+    protected string $public;
 
     /** @var null|callable */
     protected $callable;
 
-    /** @var array */
-    protected $config = [];
+    protected array $config = [];
 
-    /** @var null|WorkerMonitor */
-    protected $monitor;
+    protected ?WorkerMonitor $monitor;
 
     public function __construct(
         string $host = '127.0.0.1',

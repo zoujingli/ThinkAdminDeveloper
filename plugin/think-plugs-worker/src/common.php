@@ -27,12 +27,12 @@ if (!function_exists('sysqueue')) {
      * @param string $command 执行内容
      * @param int $later 延时执行时间
      * @param array $data 任务附加数据
-     * @param int $rscript 任务类型(0单例,1多例)
      * @param int $loops 循环等待时间
+     * @param ?int $legacyLoops 兼容旧调用的循环等待时间参数
      * @throws Exception
      */
-    function sysqueue(string $title, string $command, int $later = 0, array $data = [], int $rscript = 1, int $loops = 0): string
+    function sysqueue(string $title, string $command, int $later = 0, array $data = [], int $loops = 0, ?int $legacyLoops = null): string
     {
-        return QueueService::register($title, $command, $later, $data, $rscript, $loops)->getCode();
+        return QueueService::register($title, $command, $later, $data, $loops, $legacyLoops)->getCode();
     }
 }

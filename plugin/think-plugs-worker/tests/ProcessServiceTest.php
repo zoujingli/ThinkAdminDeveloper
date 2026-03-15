@@ -43,6 +43,11 @@ class ProcessServiceTest extends TestCase
         $this->assertSame('xadmin:worker start queue -d --host 0.0.0.0 --port 2360', $command);
     }
 
+    public function testWorkerSignatureUsesCanonicalServeCommand(): void
+    {
+        $this->assertSame('xadmin:worker serve queue', ProcessService::workerSignature('queue'));
+    }
+
     public function testQueryPidCanDescribeCurrentProcess(): void
     {
         $process = ProcessService::queryPid(getmypid());

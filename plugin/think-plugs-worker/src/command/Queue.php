@@ -43,17 +43,14 @@ class Queue extends Command
 
     public const STATE_ERROR = QueueService::STATE_ERROR;
 
-    /**
-     * 当前任务编号.
-     */
     protected string $code = '';
 
     public function configure(): void
     {
         $this->setName('xadmin:queue');
         $this->addArgument('action', Argument::OPTIONAL, 'clean|dorun');
-        $this->addArgument('code', Argument::OPTIONAL, 'Taskcode');
-        $this->setDescription('Execute and clean queue tasks for ThinkPlugsWorker');
+        $this->addArgument('code', Argument::OPTIONAL, '任务编号');
+        $this->setDescription('执行或清理系统队列任务');
     }
 
     protected function execute(Input $input, Output $output): int
@@ -63,47 +60,71 @@ class Queue extends Command
             return $this->{$method}();
         }
 
-        $this->output->error('Wrong operation, allow clean|dorun');
+        $this->output->error('错误的操作类型，仅支持 clean|dorun');
         return 1;
     }
 
     /**
-     * 清理所有任务.
-     *
      * @throws Exception
      * @throws DbException
      */
     protected function cleanAction(): void
     {
-        $days = function_exists('sysconf') ? intval(sysconf('base.queue_clean_days|raw') ?: 7) : 7;
-        $clean = SystemQueue::mk()->where('exec_time', '<', time() - $days * 24 * 3600)->delete();
-        $map1 = [['loops_time', '>', 0], ['status', '=', static::STATE_ERROR]];
-        $map2 = [['exec_time', '<', time() - 3600], ['status', '=', static::STATE_LOCK]];
-        [$timeout, $loops, $total] = [0, 0, SystemQueue::mk()->whereOr([$map1, $map2])->count()];
-        foreach (SystemQueue::mk()->whereOr([$map1, $map2])->cursor() as $queue) {
-            $queue['loops_time'] > 0 ? $loops++ : $timeout++;
-            if ($queue['loops_time'] > 0) {
-                $this->queue->message($total, $timeout + $loops, "正在重置任务 {$queue['code']} 为运行");
-                [$status, $message] = [static::STATE_WAIT, $queue['status'] === static::STATE_ERROR ? '任务执行失败，已自动重置任务！' : '任务执行超时，已自动重置任务！'];
-            } else {
-                $this->queue->message($total, $timeout + $loops, "正在标记任务 {$queue['code']} 为超时");
-                [$status, $message] = [static::STATE_ERROR, '任务执行超时，已自动标识为失败！'];
+        $retainDays = function_exists('sysconf')
+            ? intval(sysconf('base.queue_clean_days|raw') ?: $this->queueConfig('retain_days', 7))
+            : intval($this->queueConfig('retain_days', 7));
+        $retainDays = max(1, $retainDays);
+        $lockTimeout = max(60, intval($this->queueConfig('lock_timeout', 3600)));
+
+        $historyCutoff = microtime(true) - $retainDays * 86400;
+        $clean = SystemQueue::mk()->where([
+            ['loops_time', '=', 0],
+            ['status', 'in', [static::STATE_DONE, static::STATE_ERROR]],
+            ['outer_time', '>', 0],
+            ['outer_time', '<', $historyCutoff],
+        ])->delete();
+
+        $loopMap = [['loops_time', '>', 0], ['status', '=', static::STATE_ERROR]];
+        $lockMap = [['status', '=', static::STATE_LOCK], ['enter_time', '>', 0], ['enter_time', '<', microtime(true) - $lockTimeout]];
+        $items = SystemQueue::mk()->whereOr([$loopMap, $lockMap])->order('id asc')->select();
+
+        [$timeout, $loops, $total] = [0, 0, count($items)];
+        $runtime = QueueService::instance([], true);
+
+        foreach ($items as $queue) {
+            $code = strval($queue['code']);
+            $count = $timeout + $loops + 1;
+
+            if (intval($queue['loops_time']) > 0) {
+                ++$loops;
+                $this->queue->message($total, $count, "正在重置任务 {$code} 为下次执行");
+                $runtime->initialize($code)->reset(intval($queue['loops_time']));
+                continue;
             }
-            $queue->save(['status' => $status, 'exec_desc' => $message]);
+
+            ++$timeout;
+            $this->queue->message($total, $count, "正在标记任务 {$code} 为超时");
+            $message = '任务执行超时，已自动标记为失败！';
+            $queue->save([
+                'status' => static::STATE_ERROR,
+                'exec_pid' => 0,
+                'outer_time' => microtime(true),
+                'exec_desc' => $message,
+            ]);
+            $runtime->initialize($code)->progress(static::STATE_ERROR, $message, '0.00');
         }
+
         $this->setQueueSuccess("清理 {$clean} 条历史任务，关闭 {$timeout} 条超时任务，重置 {$loops} 条循环任务");
     }
 
     /**
-     * 执行指定任务.
-     *
      * @throws Exception
      */
     protected function doRunAction(): void
     {
         $this->code = trim((string)$this->input->getArgument('code'));
         if ($this->code === '') {
-            $this->output->error('Task number needs to be specified for task execution');
+            $this->output->error('执行任务需要指定任务编号');
             return;
         }
 
@@ -111,5 +132,10 @@ class Queue extends Command
         if (!in_array($result['status'], [static::STATE_DONE, static::STATE_ERROR], true)) {
             $this->output->warning($result['message']);
         }
+    }
+
+    private function queueConfig(string $name, mixed $default = null): mixed
+    {
+        return $this->app->config->get("worker.services.queue.queue.{$name}", $default);
     }
 }

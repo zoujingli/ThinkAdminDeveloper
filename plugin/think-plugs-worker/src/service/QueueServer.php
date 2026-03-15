@@ -30,7 +30,6 @@ use Workerman\Worker;
 
 /**
  * Workerman-based queue server.
- * Replaces the legacy while-true queue listener with timer-driven polling.
  */
 class QueueServer
 {
@@ -45,13 +44,16 @@ class QueueServer
 
     protected string $root;
 
+    /** @var array<string, mixed> */
     protected array $config = [];
 
     protected bool $running = false;
 
     public function __construct(array $config = [], ?string $root = null)
     {
-        $this->root = $root ? rtrim($root, \DIRECTORY_SEPARATOR) . \DIRECTORY_SEPARATOR : dirname(__DIR__, 4) . \DIRECTORY_SEPARATOR;
+        $this->root = $root
+            ? rtrim($root, \DIRECTORY_SEPARATOR) . \DIRECTORY_SEPARATOR
+            : dirname(__DIR__, 4) . \DIRECTORY_SEPARATOR;
         $this->config = $config;
         $this->worker = new Worker();
         $this->worker->onWorkerStart = [$this, 'onWorkerStart'];
@@ -60,9 +62,6 @@ class QueueServer
         $this->applyWorkerOptions();
     }
 
-    /**
-     * Run the queue server in the current console process.
-     */
     public static function runConsole(array $config = [], ?string $root = null): void
     {
         global $argv;
@@ -76,9 +75,6 @@ class QueueServer
         Worker::runAll();
     }
 
-    /**
-     * Boot the queue server application and timers.
-     */
     public function onWorkerStart(Worker $worker): void
     {
         $this->app = new App($this->root);
@@ -91,26 +87,17 @@ class QueueServer
         $this->monitor->start();
     }
 
-    /**
-     * Release timers when the worker is stopping.
-     */
     public function onWorkerStop(): void
     {
         $this->stopTimers();
         $this->monitor?->stop();
     }
 
-    /**
-     * Release timers before the worker reloads.
-     */
     public function onWorkerReload(): void
     {
         $this->onWorkerStop();
     }
 
-    /**
-     * Apply per-worker options from config/worker.php.
-     */
     protected function applyWorkerOptions(): void
     {
         $options = (array)($this->config['process'] ?? []);
@@ -134,6 +121,7 @@ class QueueServer
             ], true)) {
                 continue;
             }
+
             $this->worker->{$name} = $value;
         }
 
@@ -141,9 +129,6 @@ class QueueServer
         $this->worker->count = max(1, intval($this->worker->count ?: 1));
     }
 
-    /**
-     * Start timer-based queue dispatching.
-     */
     protected function bootDispatchTimer(): void
     {
         $interval = max(1, intval($this->config['queue']['scan_interval'] ?? 1));
@@ -152,9 +137,6 @@ class QueueServer
         });
     }
 
-    /**
-     * Claim and execute due queue records inside Worker processes.
-     */
     protected function dispatchQueues(): void
     {
         if ($this->app === null || $this->running) {
@@ -164,7 +146,8 @@ class QueueServer
         @file_put_contents(syspath('runtime/cache/time.queue'), strval(time()));
 
         $limit = max(1, intval($this->config['queue']['batch_limit'] ?? 20));
-        if (!$queue = $this->claimQueue($limit)) {
+        $queue = $this->claimQueue($limit);
+        if ($queue === null) {
             function_exists('sysvar') && sysvar('', '');
             return;
         }
@@ -172,22 +155,12 @@ class QueueServer
         $this->running = true;
 
         try {
-            Worker::log("># Worker {$this->worker->id} claimed queue -> [{$queue['code']}] {$queue['title']}");
-            $result = QueueExecutor::instance()->run($queue['code'], true);
-            $extra = $result['message'] === '' ? '' : " {$result['message']}";
-            $state = match ($result['status']) {
-                QueueService::STATE_DONE => 'Completed',
-                QueueService::STATE_ERROR => 'Failed',
-                default => 'Skipped',
-            };
-            Worker::log("># {$state} queue -> [{$queue['code']}] {$queue['title']}{$extra}");
-        } catch (\Throwable $exception) {
-            SystemQueue::mk()->where(['code' => $queue['code']])->update([
-                'status' => QueueService::STATE_ERROR,
-                'outer_time' => microtime(true),
-                'exec_desc' => $exception->getMessage(),
-            ]);
-            Worker::log("># Execution failed -> [{$queue['code']}] {$queue['title']}，{$exception->getMessage()}");
+            $processed = 0;
+            while ($queue !== null && $processed < $limit) {
+                ++$processed;
+                $this->executeClaimedQueue($queue);
+                $queue = $processed < $limit ? $this->claimQueue($limit) : null;
+            }
         } finally {
             $this->running = false;
             RequestContext::clear();
@@ -196,8 +169,34 @@ class QueueServer
     }
 
     /**
-     * Atomically claim the next due queue task.
-     *
+     * @param array{code:string,title:string} $queue
+     */
+    protected function executeClaimedQueue(array $queue): void
+    {
+        try {
+            Worker::log("># 工作进程 {$this->worker->id} 获取任务 -> [{$queue['code']}] {$queue['title']}");
+            $result = QueueExecutor::instance()->run($queue['code'], true);
+            $extra = $result['message'] === '' ? '' : " {$result['message']}";
+            $state = match ($result['status']) {
+                QueueService::STATE_DONE => '完成',
+                QueueService::STATE_ERROR => '失败',
+                default => '跳过',
+            };
+            Worker::log("># {$state}任务 -> [{$queue['code']}] {$queue['title']}{$extra}");
+        } catch (\Throwable $exception) {
+            SystemQueue::mk()->strict(false)->where(['code' => $queue['code']])->update([
+                'status' => QueueService::STATE_ERROR,
+                'outer_time' => microtime(true),
+                'exec_desc' => $exception->getMessage(),
+            ]);
+            Worker::log("># 执行失败 -> [{$queue['code']}] {$queue['title']} {$exception->getMessage()}");
+        } finally {
+            RequestContext::clear();
+            function_exists('sysvar') && sysvar('', '');
+        }
+    }
+
+    /**
      * @return null|array{code:string,title:string}
      */
     protected function claimQueue(int $limit): ?array
@@ -205,7 +204,7 @@ class QueueServer
         $items = SystemQueue::mk()->where([
             ['status', '=', QueueService::STATE_WAIT],
             ['exec_time', '<=', time()],
-        ])->order('exec_time asc')->limit($limit)->select();
+        ])->order('exec_time asc,id asc')->limit($limit)->select();
 
         foreach ($items as $queue) {
             $code = (string)$queue['code'];
@@ -229,9 +228,6 @@ class QueueServer
         return null;
     }
 
-    /**
-     * Stop all timer registrations.
-     */
     protected function stopTimers(): void
     {
         foreach ($this->timers as $timerId) {

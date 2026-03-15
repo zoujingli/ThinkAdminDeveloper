@@ -88,6 +88,32 @@ class ProcessService extends Service
     }
 
     /**
+     * Build the canonical worker serve command signature.
+     */
+    public static function workerSignature(string $target): string
+    {
+        return "xadmin:worker serve {$target}";
+    }
+
+    /**
+     * Query running worker service processes by their serve command.
+     *
+     * @return array<int, array{pid:string,cmd:string}>
+     */
+    public static function workerQuery(string $target, array $options = []): array
+    {
+        $command = static::workerSignature($target);
+        if (!empty($options['host']) && is_string($options['host'])) {
+            $command .= " --host {$options['host']}";
+        }
+        if (!empty($options['port']) && is_numeric($options['port'])) {
+            $command .= ' --port ' . intval($options['port']);
+        }
+
+        return static::query($command);
+    }
+
+    /**
      * 创建异步进程.
      */
     public static function create(string $command, int $usleep = 0): void
@@ -366,8 +392,8 @@ class ProcessService extends Service
         $items = [];
         $script = '$needle = ' . static::powershellLiteral($cmd) . ";\n"
             . '$name = ' . static::powershellLiteral($name) . ";\n"
-            . "\$items = Get-CimInstance Win32_Process -Filter (\"Name = ''{0}''\" -f (\$name -replace \"'\", \"''\"));\n"
-            . 'foreach ($item in $items) { if ($item.CommandLine -and $item.CommandLine.Contains($needle)) { "{0}`t{1}" -f $item.ProcessId, $item.CommandLine } }';
+            . "\$items = Get-CimInstance Win32_Process -Filter (\"Name = '{0}'\" -f (\$name -replace \"'\", \"''\"));\n"
+            . 'foreach ($item in $items) { if ($item.CommandLine -and $item.CommandLine.IndexOf($needle, [System.StringComparison]::OrdinalIgnoreCase) -ge 0) { "{0}`t{1}" -f $item.ProcessId, $item.CommandLine } }';
 
         foreach (static::powershell($script, true) as $line) {
             if ($item = static::parseWindowsProcessLine($line)) {
@@ -404,7 +430,7 @@ class ProcessService extends Service
      */
     protected static function powershellLiteral(string $value): string
     {
-        return "@'\n{$value}\n'@";
+        return "'" . str_replace("'", "''", $value) . "'";
     }
 
     /**

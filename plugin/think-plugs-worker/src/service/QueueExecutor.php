@@ -47,7 +47,7 @@ class QueueExecutor extends Service
 
             if (!$locked) {
                 if ($queue->getRecord()->isEmpty() || intval($queue->getRecord()->getAttr('status')) !== QueueService::STATE_WAIT) {
-                    return ['code' => $code, 'status' => intval($queue->getRecord()->getAttr('status') ?: 0), 'message' => "The or status of task {$code} is abnormal"];
+                    return ['code' => $code, 'status' => intval($queue->getRecord()->getAttr('status') ?: 0), 'message' => "Queue {$code} is not in a runnable state"];
                 }
 
                 if (!$this->lock($code)) {
@@ -58,13 +58,13 @@ class QueueExecutor extends Service
             }
 
             QueueService::enterContext($code);
-            $queue->progress(QueueService::STATE_LOCK, '>>> 任务处理开始 <<<', '0');
+            $queue->progress(QueueService::STATE_LOCK, '>>> 任务处理开始 <<<', '0.00');
 
             $command = (string)$queue->getRecord()->getAttr('command');
             if (class_exists($command)) {
                 $class = $this->app->make($command, [], true);
                 if (!$class instanceof QueueHandlerInterface) {
-                    throw new Exception("自定义 {$command} 未实现 think\\admin\\contract\\QueueHandlerInterface");
+                    throw new Exception("Custom queue handler {$command} must implement think\\admin\\contract\\QueueHandlerInterface");
                 }
 
                 return $this->finish($queue, QueueService::STATE_DONE, strval($class->handle($queue) ?: ''));

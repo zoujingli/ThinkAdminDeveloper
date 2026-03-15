@@ -266,7 +266,7 @@ class Worker extends Command
         $title = 'Smoke Queue ' . date('YmdHis') . mt_rand(100, 999);
 
         try {
-            $queue = QueueRuntime::register($title, 'version', 0, [], 1, 0);
+            $queue = QueueRuntime::register($title, 'version');
             $code = $queue->getCode();
         } catch (\Throwable $exception) {
             $this->output->writeln("># Worker [queue] failed to create smoke task: {$exception->getMessage()}");

@@ -31,13 +31,13 @@ class ThinkResponseFile extends Response
 {
     protected $name;
 
-    protected $mimeType;
+    protected string $mimeType;
 
-    protected $force = true;
+    protected bool $force = true;
 
-    protected $expire = 360;
+    protected int $expire = 360;
 
-    protected $isContent = false;
+    protected bool $isContent = false;
 
     public function __construct($data = '', int $code = 200)
     {

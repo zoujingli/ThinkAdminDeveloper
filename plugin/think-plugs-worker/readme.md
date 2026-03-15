@@ -39,6 +39,19 @@
 - 标准 `ProcessService` 由 `ThinkLibrary` 暴露门面，具体 shell 与 Worker 控制实现都由 `ThinkPlugsWorker` 提供
 - 全局辅助函数 `sysqueue` 由 `ThinkPlugsWorker` 提供
 
+## 进程管理标准
+
+- `ThinkPlugsWorker` 采用“固定命令签名 + 进程扫描 + 健康检查”的纯 PHP 进程控制模型，统一通过 `php think xadmin:worker` 对外提供管理入口。
+- 每个标准服务都对应唯一命令签名：`http` 使用 `xadmin:worker serve http`，`queue` 使用 `xadmin:worker serve queue`。`start / stop / status / query / restart / check` 都围绕这个签名工作，而不是围绕临时 pid 文件工作。
+- `pidFile / statusFile / logFile / stdoutFile` 仍然保留，用于 Workerman 运行时输出、调试与辅助诊断；但 `pidFile` 不再是唯一状态源。即使 runtime 文件被误删、清理脚本移除，或者服务异常退出后遗留脏文件，`status`、`query`、`stop`、`reload` 仍会优先回退到进程扫描。
+- `ProcessService` 负责构建标准命令、启动后台进程、查询命令行、关闭匹配进程；`WorkerState` 负责把 pid、命令签名扫描结果与运行期检查统一折叠为标准状态对象，确保 CLI、后台页面和接口层拿到同一套判断结果。
+- Linux / macOS 下优先使用 Workerman 的常规守护化与信号机制：有有效 `pidFile` 时按主进程控制，没有有效 `pidFile` 时自动回退到命令签名扫描，再执行停止、重启或重载操作。
+- Windows 下后台启动统一通过 `src/service/bin/console.exe` 拉起独立 PHP 进程，不依赖 POSIX 信号，也不依赖 `pidFile` 存活。Windows 的 `status / query / stop / restart` 均通过固定命令签名扫描 `php.exe` 进程，再执行受控操作。
+- `query` 会返回当前所有命中命令签名的进程，便于排查重复拉起、孤儿进程或旧版本残留进程；`stop` 会针对匹配到的服务进程执行统一清理，而不是假设系统中只存在一个 pid。
+- `reload` 的语义统一为“尽可能平滑更新服务”：在 Linux / macOS 下优先发送 Workerman reload 信号，在 Windows 下自动退化为受控 `restart`，保证管理入口一致。
+- `check` 属于运行健康检查而不是简单进程探测：`http` 会发起本地 HTTP 探针，`queue` 会创建并等待一个轻量 smoke task 完成。这样即使进程存在但业务循环已经失效，也能被识别出来。
+- 这套标准的目标是把“进程身份”和“业务健康”分离：命令签名解决服务是谁的问题，健康检查解决服务是否真的可用的问题，最终避免因 pid 文件不可靠而导致的后台管理失真。
+
 ## 安装
 
 ```bash
@@ -184,6 +197,7 @@ php think xadmin:worker reload queue
 
 - `start -d` 会通过 Workerman 守护化运行
 - 支持 `reload`
+- 优先通过主进程与信号控制服务，`pidFile` 缺失时会自动回退到命令签名扫描
 - 推荐配合 `systemd`、Supervisor、Docker 使用
 
 ### Windows
@@ -191,6 +205,8 @@ php think xadmin:worker reload queue
 - `start -d` 通过独立后台进程启动，不依赖 POSIX 信号
 - 支持 `start / stop / status / query / restart`
 - `reload` 会自动退化为 `restart`
+- 统一通过 `console.exe + php think xadmin:worker serve <service>` 运行后台服务
+- 运行状态以命令签名扫描为主，不再要求 `pidFile` 必须存在
 - 文件变化监控会通过独立控制进程触发重启，不再只输出手工重启提示
 - 建议优先用 `services.<name>.server.host/port` 管理监听地址，避免依赖 shell 包装脚本
 
