@@ -17,12 +17,12 @@
   ],
   "autoload": {
     "psr-4": {
-      "app\\index\\": "app/index/",
+      "app\\": "app/",
       "plugin\\system\\": "plugin/think-plugs-system/src/"
     }
   },
   "require": {
-    "php": "^8.0",
+    "php": "^8.1",
     "ext-gd": "*",
     "ext-json": "*",
     "ext-openssl": "*",

@@ -18,7 +18,6 @@ declare(strict_types=1);
  * +----------------------------------------------------------------------
  */
 return [
-    // Shared defaults. Each service can override its own runtime and monitor options.
     'defaults' => [
         'runtime' => [
             // 'stdout_file' => syspath('safefile/worker/shared.stdout.log'),
@@ -40,8 +39,6 @@ return [
             ],
         ],
     ],
-
-    // Runtime service definitions.
     'services' => [
         'http' => [
             'enabled' => true,
@@ -68,6 +65,8 @@ return [
             'queue' => [
                 'scan_interval' => 1,
                 'batch_limit' => 20,
+                'lock_timeout' => 3600,
+                'retain_days' => 7,
             ],
         ],
     ],

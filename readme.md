@@ -54,7 +54,7 @@ flowchart TD
 - **ThinkPlugsSystem**
   系统后台组件，负责登录、权限、菜单、用户和 `system_*` 核心能力。
 - **ThinkPlugsWorker**
-  Workerman 运行时组件，负责 `http` 和 `queue` 常驻服务。
+  Workerman 运行时组件，负责 `http` 和 `queue` 常驻服务，并提供基于固定命令签名的跨平台进程控制能力。Linux / macOS 优先走 Workerman 守护化与信号控制，Windows 通过 `console.exe` 启动后台 PHP 进程，`status / query / stop / restart / check` 不再只依赖 `pidFile`。
 - **ThinkPlugsHelper**
   开发辅助组件，负责迁移导出、发布、安装包和注释生成。
 - **ThinkPlugsStorage**
@@ -122,6 +122,9 @@ flowchart TD
 - `http` 负责托管系统 HTTP 服务
 - `queue` 负责长耗时任务和延时任务调度
 - `ThinkLibrary` 只定义队列契约与调用门面，队列记录由 `ThinkPlugsWorker` 维护
+- 运行时进程统一以 `xadmin:worker serve <service>` 作为命令签名，CLI 与后台状态管理都围绕该签名进行进程识别
+- `pidFile` 只保留为 Workerman 辅助运行文件，不再作为唯一状态来源；当 pid 文件缺失、脏数据残留或被误删时，会自动回退到进程扫描与健康检查
+- Windows 后台服务统一通过 `plugin/think-plugs-worker/src/service/bin/console.exe` 启动，Linux / macOS 仍保留 Workerman 守护化与 reload 语义
 
 ### 前端
 

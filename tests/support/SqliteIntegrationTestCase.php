@@ -189,14 +189,12 @@ CREATE TABLE plugin_payment_balance (
     amount_prev NUMERIC DEFAULT 0.00,
     amount_next NUMERIC DEFAULT 0.00,
     cancel INTEGER DEFAULT 0,
-    deleted INTEGER DEFAULT 0,
     unlock INTEGER DEFAULT 0,
     create_by INTEGER DEFAULT 0,
     cancel_time TEXT DEFAULT NULL,
     unlock_time TEXT DEFAULT NULL,
     create_time TEXT DEFAULT NULL,
     update_time TEXT DEFAULT NULL,
-    deleted_time TEXT DEFAULT NULL,
     delete_time TEXT DEFAULT NULL
 )
 SQL,
@@ -219,14 +217,12 @@ CREATE TABLE plugin_payment_integral (
     amount_prev NUMERIC DEFAULT 0.00,
     amount_next NUMERIC DEFAULT 0.00,
     cancel INTEGER DEFAULT 0,
-    deleted INTEGER DEFAULT 0,
     unlock INTEGER DEFAULT 0,
     create_by INTEGER DEFAULT 0,
     cancel_time TEXT DEFAULT NULL,
     unlock_time TEXT DEFAULT NULL,
     create_time TEXT DEFAULT NULL,
     update_time TEXT DEFAULT NULL,
-    deleted_time TEXT DEFAULT NULL,
     delete_time TEXT DEFAULT NULL
 )
 SQL,
@@ -454,6 +450,7 @@ SQL,
 CREATE TABLE system_queue (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     code TEXT DEFAULT '',
+    exec_hash TEXT DEFAULT '',
     title TEXT DEFAULT '',
     command TEXT DEFAULT '',
     exec_pid INTEGER DEFAULT 0,
@@ -465,7 +462,6 @@ CREATE TABLE system_queue (
     loops_time INTEGER DEFAULT 0,
     attempts INTEGER DEFAULT 0,
     message TEXT DEFAULT '',
-    rscript INTEGER DEFAULT 1,
     status INTEGER DEFAULT 1,
     create_time TEXT DEFAULT NULL
 )
@@ -481,7 +477,6 @@ CREATE TABLE plugin_payment_address (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     unid INTEGER DEFAULT 0,
     type INTEGER DEFAULT 0,
-    deleted INTEGER DEFAULT 0,
     user_name TEXT DEFAULT '',
     user_phone TEXT DEFAULT '',
     idcode TEXT DEFAULT '',
@@ -560,7 +555,6 @@ CREATE TABLE plugin_wemall_order (
     level_agent INTEGER DEFAULT 0,
     level_member INTEGER DEFAULT 0,
     payment_time TEXT DEFAULT NULL,
-    deleted_time TEXT DEFAULT NULL,
     deleted_remark TEXT DEFAULT '',
     create_time TEXT DEFAULT NULL,
     update_time TEXT DEFAULT NULL,
@@ -579,7 +573,6 @@ CREATE TABLE plugin_wemall_order_item (
     unid INTEGER DEFAULT 0,
     ssid INTEGER DEFAULT 0,
     status INTEGER DEFAULT 1,
-    deleted INTEGER DEFAULT 0,
     level_code INTEGER DEFAULT 0,
     level_agent INTEGER DEFAULT 0,
     level_upgrade INTEGER DEFAULT 0,
@@ -626,7 +619,6 @@ CREATE TABLE plugin_wemall_order_sender (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     unid INTEGER DEFAULT 0,
     ssid INTEGER DEFAULT 0,
-    deleted INTEGER DEFAULT 0,
     status INTEGER DEFAULT 1,
     delivery_count INTEGER DEFAULT 0,
     address_id TEXT DEFAULT '',
@@ -667,7 +659,6 @@ CREATE TABLE plugin_wemall_user_rebate (
     order_unid INTEGER DEFAULT 0,
     layer INTEGER DEFAULT 1,
     status INTEGER DEFAULT 0,
-    deleted INTEGER DEFAULT 0,
     code TEXT DEFAULT '',
     hash TEXT DEFAULT '',
     name TEXT DEFAULT '',
@@ -698,7 +689,8 @@ CREATE TABLE plugin_wemall_user_transfer (
     type TEXT DEFAULT '',
     amount NUMERIC DEFAULT 0.00,
     create_time TEXT DEFAULT NULL,
-    update_time TEXT DEFAULT NULL
+    update_time TEXT DEFAULT NULL,
+    delete_time TEXT DEFAULT NULL
 )
 SQL,
         ]);
@@ -720,6 +712,7 @@ CREATE TABLE plugin_wemall_config_level (
     cardbg TEXT DEFAULT '',
     cover TEXT DEFAULT '',
     extra TEXT DEFAULT '',
+    delete_time TEXT DEFAULT NULL,
     create_time TEXT DEFAULT NULL,
     update_time TEXT DEFAULT NULL
 )
@@ -742,6 +735,7 @@ CREATE TABLE plugin_wemall_config_agent (
     cardbg TEXT DEFAULT '',
     cover TEXT DEFAULT '',
     extra TEXT DEFAULT '',
+    delete_time TEXT DEFAULT NULL,
     create_time TEXT DEFAULT NULL,
     update_time TEXT DEFAULT NULL
 )
@@ -757,7 +751,6 @@ CREATE TABLE plugin_wemall_user_create (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     unid INTEGER DEFAULT 0,
     status INTEGER DEFAULT 1,
-    deleted INTEGER DEFAULT 0,
     agent_entry INTEGER DEFAULT 0,
     phone TEXT DEFAULT '',
     name TEXT DEFAULT '',
@@ -929,7 +922,7 @@ SQL,
         $address->save(array_merge([
             'unid' => $unid,
             'type' => 1,
-            'deleted' => 0,
+            'delete_time' => null,
             'user_name' => '测试收货人',
             'user_phone' => $this->randomPhone('1380013'),
             'idcode' => '110101199001010011',
@@ -1115,7 +1108,6 @@ SQL,
             'loops_time' => 0,
             'attempts' => 0,
             'message' => '',
-            'rscript' => 0,
             'status' => 1,
             'create_time' => date('Y-m-d H:i:s'),
         ], $overrides));
@@ -1129,7 +1121,7 @@ SQL,
         $item->save(array_merge([
             'unid' => $account->getUnid(),
             'status' => 1,
-            'deleted' => 0,
+            'delete_time' => null,
             'order_no' => $orderNo,
             'delivery_count' => 1,
             'delivery_code' => 'NONE',

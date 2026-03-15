@@ -29,9 +29,6 @@ window.jQuery = window.$ = window.jQuery || window.$ || layui.$;
 window.jQuery.fn.size || (window.jQuery.fn.size = () => this.length);
 window.jQuery.auth = window.jQuery.auth || new function () {
     this.storage = 'ta-system-token';
-    this.bootstrap = function () {
-        return window.taTokenBootstrap || 'access_key';
-    };
     this.header = function () {
         return window.taTokenHeader || 'Authorization';
     };
@@ -81,21 +78,8 @@ window.jQuery.auth = window.jQuery.auth || new function () {
         this.delStorage();
         return '';
     };
-    this.clearBootstrap = function () {
-        let key = this.bootstrap();
-        if (!key || !window.history || typeof window.history.replaceState !== 'function') return;
-        try {
-            let target = new URL(window.location.href);
-            if (!target.searchParams.has(key)) return;
-            target.searchParams.delete(key);
-            let query = target.searchParams.toString();
-            window.history.replaceState({}, document.title, target.pathname + (query ? '?' + query : '') + target.hash);
-        } catch (e) {
-        }
-    };
     this.apply = function () {
         let token = this.getSeed() || this.get();
-        this.clearBootstrap();
         return token ? this.set(token) : this.clear();
     };
     this.value = function () {
@@ -536,9 +520,6 @@ $(function () {
             // 如果主页面 loader 显示中，绝对不显示 loading 图标
             loading = $('.layui-page-loader').is(':visible') ? false : loading;
             let defer = jQuery.Deferred(), loadidx = loading !== false ? $.msg.loading(tips) : 0;
-            if (typeof data === 'object' && typeof data['_token_'] === 'string') {
-                headers = headers || {}, headers['User-Form-Token'] = data['_token_'], delete data['_token_'];
-            }
             $.ajax({
                 data: data || {}, type: method || 'GET', url: $.menu.parseUri(url), beforeSend: function (xhr, i) {
                     if (typeof Pace === 'object' && loading !== false) Pace.restart();
@@ -1134,7 +1115,7 @@ $(function () {
 
     /*! 表单元素失焦时提交 */
     $.base.onEvent('blur', '[data-action-blur],[data-blur-action]', function () {
-        let that = $(this), dset = this.dataset, data = {'_token_': dset.token || dset.csrf || '--'};
+        let that = $(this), dset = this.dataset, data = {};
         let attrs = (dset.value || '').replace('{value}', that.val()).split(';');
         for (let i in attrs) data[attrs[i].split('#')[0]] = attrs[i].split('#')[1];
         $.base.onConfirm(dset.confirm, function () {
@@ -1169,7 +1150,6 @@ $(function () {
     /*! 注册 data-action 事件行为 */
     $.base.onEvent('click', '[data-action]', function () {
         $.base.applyRuleValue(this, {}, function (data, elem, dset) {
-            Object.assign(data, {'_token_': dset.token || dset.csrf || '--'})
             let load = dset.loading !== 'false', tips = typeof load === 'string' ? load : undefined;
             $.form.load(dset.action, data, dset.method || 'post', $.base.onConfirm.getLoadCallable(dset.tableId), load, tips, dset.time)
         });
