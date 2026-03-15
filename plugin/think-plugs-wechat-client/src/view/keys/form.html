@@ -184,9 +184,9 @@
         /*! 刷新预览显示 */
         function showReview(params, location) {
             if (params['type'] === 'news') {
-                location = '{:apiuri("wechat/view/news")}?id=_id_'.replace('_id_', params.content);
+        location = '{:apiuri("plugin-wechat-client/view/news")}?id=_id_'.replace('_id_', params.content);
             } else {
-                location = '{:apiuri("wechat/view/_type_")}?'.replace('_type_', params.type) + $.param(params || {});
+        location = '{:apiuri("plugin-wechat-client/view/_type_")}?'.replace('_type_', params.type) + $.param(params || {});
             }
             var iframe = '<iframe id="phone-preview" frameborder="0" marginheight="0" marginwidth="0"></iframe>';
             $('[data-iframe-box]').empty().append($(iframe).attr('src', location));

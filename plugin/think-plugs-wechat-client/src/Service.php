@@ -38,12 +38,12 @@ class Service extends Plugin
     /**
      * 定义插件入口.
      */
-    protected string $appCode = 'wechat';
+    protected string $appCode = 'plugin-wechat-client';
 
     /**
      * 定义插件访问前缀.
      */
-    protected string $appPrefix = 'wechat';
+    protected string $appPrefix = 'plugin-wechat-client';
 
     /**
      * 定义插件名称.
@@ -69,14 +69,16 @@ class Service extends Plugin
         });
 
         // 注册支付通知路由
-        $this->app->route->any('/plugin-wxpay-notify/:vars', static function (Request $request) {
+        $notify = static function (Request $request) {
             try {
                 $data = json_decode(CodeToolkit::deSafe64($request->param('vars')), true);
                 return PaymentService::notify($data);
             } catch (\Error|\Exception $exception) {
                 return "Error: {$exception->getMessage()}";
             }
-        });
+        };
+        $this->app->route->any('/api/plugin-wechat-client/payment/notify/:vars', $notify)->name('plugin-wechat-client-payment-notify');
+        $this->app->route->any('/plugin-wxpay-notify/:vars', $notify)->name('plugin-wxpay-notify');
     }
 
     /**

@@ -8,7 +8,7 @@
     <h2>{$info.title|default=''}</h2>
     <h3>
         <span style="color:#666">{$info.author}</span>
-        <span style="margin-left:0.4rem">{$info.create_at}</span>
+        <span style="margin-left:0.4rem">{$info.create_time}</span>
     </h3>
     {if $info.show_cover_pic and $info.local_url}<img src="{$info.local_url}" style="width:100%" alt="img">{/if}
     <div class='content-text'>{$info.content|raw}</div>

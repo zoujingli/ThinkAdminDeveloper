@@ -12,7 +12,7 @@
     }
   ],
   "require": {
-    "php": "^8.0",
+    "php": "^8.1",
     "ext-json": "*",
     "ext-openssl": "*",
     "ext-mbstring": "*",
@@ -43,9 +43,9 @@
     },
     "xadmin": {
       "service": {
-        "code": "wechat",
-        "prefix": "wechat",
-        "type": "plugin",
+        "code": "plugin-wechat-client",
+        "prefix": "plugin-wechat-client",
+        "type": "module",
         "name": "公众号标准平台"
       },
       "menu": {
@@ -54,7 +54,7 @@
           "sort": 200
         },
         "exists": {
-          "url|node": "wechat/fans/index"
+          "url|node": "plugin-wechat-client/fans/index"
         }
       },
       "migrate": {

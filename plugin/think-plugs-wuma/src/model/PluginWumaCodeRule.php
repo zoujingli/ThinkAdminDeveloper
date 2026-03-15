@@ -73,7 +73,7 @@ class PluginWumaCodeRule extends AbstractPrivate
      */
     public static function lists($map = []): array
     {
-        $list = static::mk()->withoutField('deleted')->with(['rules' => function ($query) {
+        $list = static::mk()->withoutField('delete_time')->with(['rules' => function ($query) {
             $query->field('type,batch,code_type,code_length,range_number,range_start,range_after');
         }])->where($map)->order('id desc')->select()->toArray();
         if (count($list) > 0) {
@@ -97,7 +97,7 @@ class PluginWumaCodeRule extends AbstractPrivate
         $model = static::mk()->with(['rules' => function ($query) {
             $query->field('type,batch,code_type,range_number,range_start,range_after');
         }]);
-        $model->where(['status' => 1, 'deleted' => 0])->where($where);
+        $model->where(['status' => 1])->where($where);
         $model->field('type,batch,real_max_mid max_mid,real_mid_min mid_min,number');
         return static::applyRangeRule($model->order('id desc')->select()->toArray());
     }

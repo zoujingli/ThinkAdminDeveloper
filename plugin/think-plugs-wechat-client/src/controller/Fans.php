@@ -122,7 +122,7 @@ class Fans extends Controller
         }
     }
 
-    /**
+    /*
      * 列表数据处理.
      */
 }

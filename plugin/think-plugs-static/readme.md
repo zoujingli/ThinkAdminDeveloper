@@ -26,7 +26,7 @@
 
 - 发布 `public/static` 前端资源
 - 发布 `public/index.php`、`public/router.php` 等入口文件
-- 发布基础配置模板与单应用骨架
+- 发布基础配置模板与本地多应用骨架（默认 `index` 应用）
 - 后台前端统一使用 `LayUI + $.module.use(...)`
 - 不再使用 `RequireJS`
 

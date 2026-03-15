@@ -90,7 +90,7 @@ class PluginWumaSourceProduce extends AbstractPrivate
      */
     public function template(): HasOne
     {
-        return $this->hasOne(PluginWumaSourceTemplate::class, 'code', 'tcode')->where(['deleted' => 0]);
+        return $this->hasOne(PluginWumaSourceTemplate::class, 'code', 'tcode');
     }
 
     /**

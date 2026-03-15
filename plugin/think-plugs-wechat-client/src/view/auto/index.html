@@ -53,7 +53,7 @@
                 {field: 'type', title: '消息类型', align: "center", minWidth: 100},
                 {field: 'code', title: '在线预览', align: "center", minWidth: 100, templet: '#PreViewTpl'},
                 {field: 'status', title: '使用状态', align: 'center', minWidth: 110, templet: '#StatusSwitchTpl'},
-                {field: 'create_at', title: '添加时间', align: 'center', minWidth: 170},
+                {field: 'create_time', title: '添加时间', align: 'center', minWidth: 170},
                 {toolbar: '#toolbar', title: '操作面板', align: 'center', fixed: 'right'}
             ]]
         });
@@ -75,17 +75,17 @@
 
 <script type="text/html" id="PreViewTpl">
     {{# if(d.type==='音乐'){ }}
-    <a data-phone-view='{:apiuri("wechat/view/music")}?title={{d.music_title}}&desc={{d.music_desc}}'>预览</a>
+                    <a data-phone-view='{:apiuri("plugin-wechat-client/view/music")}?title={{d.music_title}}&desc={{d.music_desc}}'>预览</a>
     {{# }else if(d.type==='图片'){ }}
-    <a data-phone-view='{:apiuri("wechat/view/image")}?content={{d.image_url}}'>预览</a>
+                    <a data-phone-view='{:apiuri("plugin-wechat-client/view/image")}?content={{d.image_url}}'>预览</a>
     {{# }else if(d.type==='图文'){ }}
-    <a data-phone-view='{:apiuri("wechat/view/news")}?id={{d.news_id}}'>预览</a>
+                    <a data-phone-view='{:apiuri("plugin-wechat-client/view/news")}?id={{d.news_id}}'>预览</a>
     {{# }else if(d.type==='视频'){ }}
-    <a data-phone-view='{:apiuri("wechat/view/video")}?title={{d.video_title}}&desc={{d.video_desc}}&url={{d.video_url}}'>预览</a>
+                    <a data-phone-view='{:apiuri("plugin-wechat-client/view/video")}?title={{d.video_title}}&desc={{d.video_desc}}&url={{d.video_url}}'>预览</a>
     {{# }else if(d.type==='语音'){ }}
-    <a data-phone-view='{:apiuri("wechat/view/voice")}?content={{d.voice_url}}'>预览</a>
+                    <a data-phone-view='{:apiuri("plugin-wechat-client/view/voice")}?content={{d.voice_url}}'>预览</a>
     {{# }else if(d.type==='文字'||d.type==='转客服'){ }}
-    <a data-phone-view='{:apiuri("wechat/view/text")}?content={{d.content}}'>预览</a>
+                    <a data-phone-view='{:apiuri("plugin-wechat-client/view/text")}?content={{d.content}}'>预览</a>
     {{# }else{ }}
     {{d.content}}
     {{# } }}

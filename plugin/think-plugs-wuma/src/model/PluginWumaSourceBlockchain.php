@@ -49,6 +49,6 @@ class PluginWumaSourceBlockchain extends AbstractPrivate
     public function cert(): HasOne
     {
         $one = $this->hasOne(PluginWumaSourceCertificate::class, 'id', 'scid');
-        return $one->where(['status' => 1, 'deleted' => 0]);
+        return $one->where(['status' => 1]);
     }
 }

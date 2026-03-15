@@ -355,7 +355,7 @@ class PaymentService
     {
         $data = ['scen' => $scene, 'order' => $order];
         $vars = CodeToolkit::enSafe64(json_encode($extra + $data, 64 | 256));
-        return sysuri('@plugin-wxpay-notify', [], false, true) . "/{$vars}";
+        return sysuri('@plugin-wechat-client-payment-notify', [], false, true) . "/{$vars}";
     }
 
     /**

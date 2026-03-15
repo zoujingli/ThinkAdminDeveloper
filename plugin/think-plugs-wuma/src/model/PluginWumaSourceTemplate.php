@@ -64,7 +64,7 @@ class PluginWumaSourceTemplate extends AbstractPrivate
      */
     public static function lists($map = []): array
     {
-        $query = static::mk()->where(['deleted' => 0])->where($map);
+        $query = static::mk()->where($map);
         return $query->order('sort desc,id desc')->column('*', 'code');
     }
 }

@@ -45,7 +45,7 @@ class Test extends Controller
      */
     public function jsapiQrc(): Response
     {
-        $this->url = apiuri('wechat/test/jsapi', [], false, true);
+        $this->url = apiuri('plugin-wechat-client/test/jsapi', [], false, true);
         return $this->_buildQrcResponse($this->url);
     }
 
@@ -55,7 +55,7 @@ class Test extends Controller
      */
     public function oauthQrc(): Response
     {
-        $this->url = apiuri('wechat/test/oauth', [], false, true);
+        $this->url = apiuri('plugin-wechat-client/test/oauth', [], false, true);
         return $this->_buildQrcResponse($this->url);
     }
 
@@ -65,7 +65,7 @@ class Test extends Controller
      */
     public function jssdkQrc(): Response
     {
-        $this->url = apiuri('wechat/test/jssdk', [], false, true);
+        $this->url = apiuri('plugin-wechat-client/test/jssdk', [], false, true);
         return $this->_buildQrcResponse($this->url);
     }
 
@@ -93,7 +93,7 @@ class Test extends Controller
         //        'body'             => '测试商品',
         //        'total_fee'        => '1',
         //        'trade_type'       => 'NATIVE',
-        //        'notify_url'       => apiuri('wechat/test/notify', [], false, true),
+        //        'notify_url'       => apiuri('plugin-wechat-client/test/notify', [], false, true),
         //        'out_trade_no'     => CodeToolkit::uniqidNumber(18),
         //        'spbill_create_ip' => $this->request->ip(),
         //    ]);
@@ -142,7 +142,7 @@ class Test extends Controller
             'body' => "测试商品，商品ID：{$notify['product_id']}",
             'total_fee' => '1',
             'trade_type' => 'NATIVE',
-            'notify_url' => apiuri('wechat/test/notify', [], false, true),
+            'notify_url' => apiuri('plugin-wechat-client/test/notify', [], false, true),
             'out_trade_no' => CodeToolkit::uniqidDate(18),
             'spbill_create_ip' => $this->request->ip(),
         ];

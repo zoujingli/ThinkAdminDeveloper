@@ -38,7 +38,7 @@ use think\model\relation\HasOne;
  * @property int $vir_used 虚拟完成
  * @property string $code 操作单号
  * @property string $create_time 创建时间
- * @property string $deleted_time 删除时间
+ * @property string $delete_time 删除时间
  * @property string $ghash 绑定产品
  * @property string $update_time 更新时间
  * @property string $wcode 仓库编号

@@ -20,7 +20,7 @@ declare(strict_types=1);
 return [
     // 应用命名空间
     'app_namespace' => '',
-    // 本地单应用（未命中插件前缀时使用）
+    // 默认本地应用兼容回退（建议优先使用 route.default_app）
     'single_app' => 'index',
     // 插件机制配置
     'plugin' => [
@@ -55,6 +55,10 @@ return [
     'token_session_gc_interval' => 300,
     // Token 会话指定缓存仓库，留空使用默认仓库
     'token_session_store' => '',
+    // 认证 Cookie 中的 Token 是否加密存储（Header 中仍使用原始 Bearer Token）
+    'token_cookie_encrypt' => true,
+    // 认证 Cookie Token 加密密钥，留空默认复用 jwtkey
+    'token_cookie_secret' => '',
     // 终端账号 JWT 认证 Cookie 名称（Authorization 优先，其次读取此 Cookie）
     'account_token_cookie' => 'account_access_token',
     // CORS 启用状态（默认开启跨域）

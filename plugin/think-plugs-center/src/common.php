@@ -19,7 +19,7 @@ declare(strict_types=1);
  */
 use think\admin\service\PluginService;
 
-/**
+/*
  * +----------------------------------------------------------------------
  * | ThinkAdmin Plugin for ThinkAdmin
  * +----------------------------------------------------------------------

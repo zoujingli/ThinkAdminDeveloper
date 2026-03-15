@@ -46,7 +46,7 @@ return [
     'request_cache_expire' => null,
     // 全局请求缓存排除规则
     'request_cache_except' => [],
-    // 默认应用
+    // 默认本地应用
     'default_app' => 'index',
     // 默认控制器名
     'default_controller' => 'Index',

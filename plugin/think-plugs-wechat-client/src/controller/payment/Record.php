@@ -91,6 +91,6 @@ class Record extends Controller
     public function clear()
     {
         sysoplog('微信支付清理', '创建粉丝未支付数据清理任务');
-        $this->_queue('清理微信未支付数据', 'xadmin:fanspay', 0, [], 0, 600);
+        $this->_queue('清理微信未支付数据', 'xadmin:fanspay', 0, [], 600);
     }
 }
