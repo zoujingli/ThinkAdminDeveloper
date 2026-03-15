@@ -3,6 +3,7 @@
 ## 相关文档
 
 - [插件标准](./plugin-standard.md)
+- [路由调度标准](./route-dispatch-standard.md)
 - [软删除标准](./soft-delete-standard.md)
 
 ## 目标
@@ -10,23 +11,25 @@
 项目已经切换到 ThinkPHP 8.1 的插件优先架构，当前运行原则为：
 
 - `plugin/*` 是主模块形态
-- `app/*` 不再作为默认多应用集合
-- `app` 只保留单应用兜底入口
+- `app/*` 保留本地多应用形态
+- 默认本地应用是 `app/index`
 - 当 `/x/...` 命中已注册插件前缀时进入插件
+- 当 `/x/...` 命中本地应用首段时进入对应本地应用
 - Web 页面标准入口为 `/{plugin}/...`
 - API 标准入口为 `/api/{plugin}/{controller}/{action}`
-- 当 `/x/...` 未命中插件时回退到单应用控制器解析
+- 根目录全局路由可以显式声明目标本地应用或插件
+- 当 `/x/...` 未命中显式规则时回退到默认本地应用
 - `_plugin / X-Plugin-App` 只保留为可选调试开关，默认关闭
 
 ## 组件边界
 
-当前总图见：[plugin-boundaries.md](/Users/anyon/Runtime/ThinkAdminDeveloper/docs/architecture/plugin-boundaries.md)
+当前总图见：[plugin-boundaries.md](./plugin-boundaries.md)
 
 ### ThinkLibrary
 
 负责核心运行时与基础设施：
 
-- 插件发现、插件元数据解析、URL 前缀绑定、单应用兜底
+- 插件发现、插件元数据解析、URL 前缀绑定、本地多应用回退
 - `Controller`、`Model`、`QueryHelper`、`Storage` 门面和公共工具
 - JWT 认证、任务协议契约、基础命令
 - 不再承载后台守护进程和数据库脚本导出
@@ -85,8 +88,8 @@
 ## 当前已落地
 
 - 插件元数据统一收敛到 `extra.think.services / extra.xadmin.service / extra.xadmin.menu / extra.xadmin.migrate`
-- `MultAccess` 改为插件前缀优先，再回退单应用
-- 本地 `app/*` 不再作为多应用集合，只保留单应用入口
+- `MultAccess` 改为插件前缀优先、本地应用兼容、默认本地应用回退
+- 根目录全局路由支持显式声明目标本地应用或插件
 - `ThinkPlugsSystem` 与 `ThinkPlugsWechatClient` 改为插件直载
 - `ThinkPlugsStorage` 已独立成完整插件，包含驱动、配置页和上传入口
 - 后台认证已切换为纯 JWT / Token
@@ -112,15 +115,20 @@
 
 ### 双入口标准
 
+- 本地应用入口使用 `/{app}/{controller}/{action}`
+- 默认本地应用生成 URL 时可省略 `index`
 - 页面入口统一使用 `/{plugin}/...`
 - 接口入口统一使用 `/api/{plugin}/{controller}/{action}`
 - 页面链接优先使用 `sysuri()`
 - 接口链接优先使用 `apiuri()`
+- 根目录全局路由优先使用 `Route::bindApp()` / `Route::bindPlugin()`
 - 系统后台脚本会统一下发 `taSystem / taSystemApi / taStorage / taStorageApi / taApiPrefix`
 - 插件模板、静态脚本、上传脚本和公开预览页都应优先消费这组变量或 `apiuri()`
 
 示例：
 
+- `/index/index/index`
+- `/member/center/index`
 - `/system/index/index`
 - `/storage/config/index`
 - `/api/system/plugs/script`
