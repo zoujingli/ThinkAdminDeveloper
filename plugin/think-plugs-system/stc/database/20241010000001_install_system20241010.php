@@ -229,7 +229,7 @@ class InstallSystem20241010 extends Migrator
         PhinxExtend::upgrade($table, [
             ['usertype', 'string', ['limit' => 20, 'default' => '', 'null' => true, 'comment' => '用户类型']],
             ['username', 'string', ['limit' => 50, 'default' => '', 'null' => true, 'comment' => '用户账号']],
-            ['password', 'string', ['limit' => 32, 'default' => '', 'null' => true, 'comment' => '用户密码']],
+            ['password', 'string', ['limit' => 255, 'default' => '', 'null' => true, 'comment' => '用户密码']],
             ['nickname', 'string', ['limit' => 50, 'default' => '', 'null' => true, 'comment' => '用户昵称']],
             ['headimg', 'string', ['limit' => 255, 'default' => '', 'null' => true, 'comment' => '头像地址']],
             ['authorize', 'string', ['limit' => 255, 'default' => '', 'null' => true, 'comment' => '权限授权']],
@@ -262,7 +262,7 @@ class InstallSystem20241010 extends Migrator
             'id' => 10000,
             'username' => 'admin',
             'nickname' => '超级管理员',
-            'password' => '21232f297a57a5a743894a0e4a801fc3',
+            'password' => password_hash('admin', PASSWORD_DEFAULT),
             'headimg' => 'https://thinkadmin.top/static/img/head.png',
         ]])->saveData();
     }

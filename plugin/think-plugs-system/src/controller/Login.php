@@ -91,7 +91,15 @@ class Login extends Controller
                 $this->markCaptchaError($data['uniqid']);
                 $this->error('账号已经被禁用，请联系管理员!');
             }
-            if (md5("{$user['password']}{$data['uniqid']}") !== $data['password']) {
+            // 验证密码：支持 password_hash 格式和旧版 MD5 格式（兼容升级）
+            $passwordVerified = false;
+            if (password_verify($data['password'], $user['password'])) {
+                $passwordVerified = true;
+            } elseif (strlen($user['password']) === 32 && md5("{$user['password']}{$data['uniqid']}") === $data['password']) {
+                // 兼容旧版 MD5 密码格式
+                $passwordVerified = true;
+            }
+            if (!$passwordVerified) {
                 $this->markCaptchaError($data['uniqid']);
                 $this->error('登录账号或密码错误，请重新输入!');
             }
