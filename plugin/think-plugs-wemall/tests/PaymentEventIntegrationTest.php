@@ -72,7 +72,7 @@ class PaymentEventIntegrationTest extends SqliteIntegrationTestCase
             '商城成功支付'
         );
 
-        $order = $order->refresh();
+        $order = PluginWemallOrder::mk()->withTrashed()->findOrEmpty($order->getKey());
         $record = PluginPaymentRecord::mk()->where(['code' => $response->record['code']])->findOrEmpty();
 
         $this->assertTrue($response->status);
@@ -108,7 +108,7 @@ class PaymentEventIntegrationTest extends SqliteIntegrationTestCase
             'https://example.com/wemall-voucher.png'
         );
 
-        $order = $order->refresh();
+        $order = PluginWemallOrder::mk()->withTrashed()->findOrEmpty($order->getKey());
         $record = PluginPaymentRecord::mk()->where(['code' => $response->record['code']])->findOrEmpty();
 
         $this->assertSame(3, intval($order->getAttr('status')));
@@ -211,7 +211,7 @@ class PaymentEventIntegrationTest extends SqliteIntegrationTestCase
             'order_unid' => $account->getUnid(),
             'layer' => 1,
             'status' => 0,
-            'deleted' => 0,
+            'delete_time' => null,
             'code' => 'REBATE-LOCK-001',
             'hash' => 'hash-rebate-001',
             'name' => '一级返佣',
@@ -258,7 +258,7 @@ class PaymentEventIntegrationTest extends SqliteIntegrationTestCase
             'order_unid' => $account->getUnid(),
             'layer' => 1,
             'status' => 0,
-            'deleted' => 0,
+            'delete_time' => null,
             'code' => 'REBATE-LOCK-002',
             'hash' => 'hash-rebate-002',
             'name' => '支付确认返佣',
@@ -351,7 +351,7 @@ class PaymentEventIntegrationTest extends SqliteIntegrationTestCase
         PluginWemallUserCreate::mk()->save([
             'unid' => $user->getAttr('id'),
             'status' => 1,
-            'deleted' => 0,
+            'delete_time' => null,
             'agent_entry' => 1,
             'phone' => $user->getAttr('phone'),
             'name' => $user->getAttr('nickname'),
@@ -462,7 +462,7 @@ class PaymentEventIntegrationTest extends SqliteIntegrationTestCase
             'order_no' => $order->getAttr('order_no'),
         ], strval($login['token'] ?? ''));
 
-        $order = $order->refresh();
+        $order = PluginWemallOrder::mk()->withTrashed()->findOrEmpty($order->getKey());
 
         $this->assertSame(1, intval($response['code'] ?? 0));
         $this->assertSame('删除成功！', $response['info'] ?? '');
@@ -470,7 +470,7 @@ class PaymentEventIntegrationTest extends SqliteIntegrationTestCase
         $this->assertSame(0, intval($order->getAttr('status')));
         $this->assertSame(1, intval($order->getAttr('deleted_status')));
         $this->assertSame('用户主动删除订单！', $order->getAttr('deleted_remark'));
-        $this->assertNotEmpty($order->getAttr('deleted_time'));
+        $this->assertNotEmpty($order->getAttr('delete_time'));
     }
 
     protected function defineSchema(): void

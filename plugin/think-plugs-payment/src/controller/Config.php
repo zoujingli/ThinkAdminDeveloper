@@ -53,7 +53,7 @@ class Config extends Controller
             $this->types = Payment::types(1);
         }, function (QueryHelper $query) {
             $query->withoutField('content');
-            $query->where(['status' => intval($this->type === 'index'), 'deleted' => 0]);
+            $query->where(['status' => intval($this->type === 'index')]);
             $query->like('name,code')->equal('status,type#ptype')->dateBetween('create_time');
         });
     }

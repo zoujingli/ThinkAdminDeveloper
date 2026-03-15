@@ -63,7 +63,7 @@ class Integral extends Controller
         $this->type = $this->get['type'] ?? 'index';
         PluginPaymentIntegral::mQuery()->layTable(function () {
             $this->title = '积分明细管理';
-            $map = ['cancel' => 0, 'deleted' => 0];
+            $map = ['cancel' => 0];
             $this->integralTotal = PluginPaymentIntegral::mk()->where($map)->whereRaw('amount>0')->sum('amount');
             $this->integralCount = PluginPaymentIntegral::mk()->where($map)->whereRaw('amount<0')->sum('amount');
         }, function (QueryHelper $query) {
@@ -72,7 +72,7 @@ class Integral extends Controller
                 $query->whereRaw("unid in {$db->field('id')->buildSql()}");
             }
             $query->with(['user'])->like('code,remark')->dateBetween('create_time');
-            $query->where(['deleted' => 0, 'cancel' => intval($this->type !== 'index')]);
+            $query->where(['cancel' => intval($this->type !== 'index')]);
         });
     }
 

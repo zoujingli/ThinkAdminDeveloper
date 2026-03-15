@@ -103,7 +103,7 @@ class PluginWemallGoods extends Abs
      */
     public function discount(): HasOne
     {
-        return $this->hasOne(PluginWemallConfigDiscount::class, 'id', 'discount_id')->where(['status' => 1, 'deleted' => 0])->field('id,name,items');
+        return $this->hasOne(PluginWemallConfigDiscount::class, 'id', 'discount_id')->where(['status' => 1])->field('id,name,items');
     }
 
     /**
@@ -115,7 +115,7 @@ class PluginWemallGoods extends Abs
     public static function lists(): array
     {
         $model = static::mk()->with('items')->withoutField('specs');
-        return $model->order('sort desc,id desc')->where(['deleted' => 0])->select()->toArray();
+        return $model->order('sort desc,id desc')->select()->toArray();
     }
 
     /**

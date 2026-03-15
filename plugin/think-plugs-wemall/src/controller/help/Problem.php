@@ -48,7 +48,7 @@ class Problem extends Controller
             $this->title = '常见问题管理';
         }, function (QueryHelper $query) {
             $query->like('name,content')->dateBetween('create_time');
-            $query->where(['status' => intval($this->type === 'index'), 'deleted' => 0]);
+            $query->where(['status' => intval($this->type === 'index')]);
         });
     }
 

@@ -53,7 +53,7 @@ class Create extends Controller
         }, function (QueryHelper $query) {
             $query->equal('agent_entry')->dateBetween('create_time');
             $query->with(['agent', 'user'])->like('name|phone#user')->dateBetween('create_time');
-            $query->where(['status' => intval($this->type === 'index'), 'deleted' => 0]);
+            $query->where(['status' => intval($this->type === 'index')]);
         });
     }
 
@@ -125,7 +125,7 @@ class Create extends Controller
             }
             // 代理用户检查
             if (!empty($data['agent_phone'])) {
-                $map = ['phone' => $data['agent_phone'], 'deleted' => 0];
+                $map = ['phone' => $data['agent_phone']];
                 $user = PluginAccountUser::mk()->where($map)->findOrEmpty();
                 if ($user->isEmpty()) {
                     $this->error('无效推荐人');

@@ -156,7 +156,7 @@ abstract class UserOrder
         $enterMember = intval((is_numeric($entry['member']) ? $entry['member'] : -1) > -1);
         // 代理权限还需要检查后台创建的用户表
         if (empty($enterAgent)) {
-            $map = ['unid' => $unid, 'agent_entry' => 1, 'status' => 1, 'deleted' => 0];
+            $map = ['unid' => $unid, 'agent_entry' => 1, 'status' => 1];
             if (PluginWemallUserCreate::mk()->where($map)->findOrEmpty()->isExists()) {
                 $enterAgent = 1;
             }
@@ -179,7 +179,7 @@ abstract class UserOrder
     public static function discount(int $disId, int $levelCode, float $disRate = 100.00): array
     {
         if ($disId > 0) {
-            $where = ['id' => $disId, 'status' => 1, 'deleted' => 0];
+            $where = ['id' => $disId, 'status' => 1];
             $discount = PluginWemallConfigDiscount::mk()->where($where)->findOrEmpty();
             if ($discount->isExists()) {
                 foreach ($discount['items'] as $vo) {
@@ -201,7 +201,7 @@ abstract class UserOrder
         $unid = $order->getAttr('unid');
         $orderNo = $order->getAttr('order_no');
         // 根据地址计算运费
-        $map1 = ['order_no' => $orderNo, 'status' => 1, 'deleted' => 0];
+        $map1 = ['order_no' => $orderNo, 'status' => 1];
         $map2 = ['order_no' => $order->getAttr('order_no'), 'unid' => $unid];
         [$amount, $tCount, $tCode, $remark] = ExpressService::amount(
             PluginWemallOrderItem::mk()->where($map1)->column('delivery_code'),

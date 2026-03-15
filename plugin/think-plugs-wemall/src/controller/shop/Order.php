@@ -161,7 +161,7 @@ class Order extends Controller
      */
     public function clean()
     {
-        $this->_queue('定时清理无效订单数据', 'xdata:mall:clear', 0, [], 0, 60);
+        $this->_queue('定时清理无效订单数据', 'xdata:mall:clear', 0, [], 60);
     }
 
     /**

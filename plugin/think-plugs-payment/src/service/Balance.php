@@ -62,7 +62,7 @@ abstract class Balance
         }
 
         // 扣减余额检查
-        $map = ['unid' => $unid, 'cancel' => 0, 'deleted' => 0];
+        $map = ['unid' => $unid, 'cancel' => 0];
         $usable = PluginPaymentBalance::mk()->where($map)->sum('amount');
         $amountValue = strval($amount);
         $isDecrease = bccomp($amountValue, '0', 2) < 0;
@@ -85,7 +85,7 @@ abstract class Balance
         $data['amount_next'] = bcadd(strval($usable), $amountValue, 2);
 
         // 检查编号是否重复
-        $map = ['unid' => $unid, 'code' => $code, 'deleted' => 0];
+        $map = ['unid' => $unid, 'code' => $code];
         $model = PluginPaymentBalance::mk()->where($map)->findOrEmpty();
 
         // 更新或写入余额变更
@@ -124,7 +124,12 @@ abstract class Balance
      */
     public static function remove(string $code): PluginPaymentBalance
     {
-        return self::set($code, ['deleted' => 1, 'deleted_time' => date('Y-m-d H:i:s')]);
+        $model = self::get($code);
+        $unid = intval($model->getAttr('unid'));
+        $key = $model->getKey();
+        $model->delete();
+        self::recount($unid);
+        return PluginPaymentBalance::mk()->withTrashed()->findOrEmpty($key);
     }
 
     /**
@@ -149,7 +154,7 @@ abstract class Balance
         }
 
         // 统计用户余额数据
-        $map = ['unid' => $unid, 'cancel' => 0, 'deleted' => 0];
+        $map = ['unid' => $unid, 'cancel' => 0];
         $lock = PluginPaymentBalance::mk()->where($map)->where('unlock', '=', '0')->sum('amount');
         $used = PluginPaymentBalance::mk()->where($map)->where('amount', '<', '0')->sum('amount');
         $total = PluginPaymentBalance::mk()->where($map)->where('amount', '>', '0')->sum('amount');
@@ -171,7 +176,7 @@ abstract class Balance
      */
     public static function get(string $code): PluginPaymentBalance
     {
-        $map = ['code' => $code, 'deleted' => 0];
+        $map = ['code' => $code];
         $model = PluginPaymentBalance::mk()->where($map)->findOrEmpty();
         if ($model->isEmpty()) {
             throw new Exception('无效的操作编号！');

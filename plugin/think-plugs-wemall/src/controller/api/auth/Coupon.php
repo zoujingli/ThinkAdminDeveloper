@@ -43,7 +43,7 @@ class Coupon extends Auth
     public function get()
     {
         PluginWemallConfigCoupon::mQuery(null, function (QueryHelper $query) {
-            $query->equal('type,id#coid')->where(['status' => 1, 'deleted' => 0]);
+            $query->equal('type,id#coid')->where(['status' => 1]);
             $this->success('获取卡券', $query->order('sort desc,id desc')->page(intval(input('page')), false, false, 20));
         });
     }
@@ -70,7 +70,7 @@ class Coupon extends Auth
     public function mine()
     {
         PluginWemallUserCoupon::mQuery(null, function (QueryHelper $query) {
-            $query->with('coupon')->equal('type,coid,status')->where(['deleted' => 0]);
+            $query->with('coupon')->equal('type,coid,status');
             $this->success('我的卡券', $query->order('id desc')->page(intval(input('page')), false, false, 20));
         });
     }
@@ -90,7 +90,7 @@ class Coupon extends Auth
             $this->error('商品编号为空！');
         }
         PluginWemallConfigCoupon::mQuery(null, function (QueryHelper $query) use ($data, $gcodes) {
-            $query->where(['status' => 1, 'deleted' => 0]);
+            $query->where(['status' => 1]);
             if (bccomp(strval($data['amount']), '0.00', 2) > 0) {
                 $query->where('limit_amount', '<=', $amount);
             }
@@ -107,10 +107,10 @@ class Coupon extends Auth
             }
             // 检索自己可用卡券
             if (!empty($data['usable'])) {
-                $db = PluginWemallUserCoupon::mk()->where(['unid' => $this->unid, 'status' => 1, 'deleted' => 0]);
+                $db = PluginWemallUserCoupon::mk()->where(['unid' => $this->unid, 'status' => 1]);
                 $query->whereRaw("id in {$db->field('id')->buildSql()}");
                 $query->with('usable')->withCount(['usable' => function (Query $query) {
-                    $query->where(['status' => 1, 'deleted' => 0]);
+                    $query->where(['status' => 1]);
                 }]);
             }
             $this->success('查询卡券！', $query->order('amount desc')->page(intval(input('page')), false, false, 30));
@@ -125,7 +125,7 @@ class Coupon extends Auth
      */
     protected function _get_page_filter(array &$data)
     {
-        $where = ['coid' => array_column($data, 'id'), 'unid' => $this->unid, 'deleted' => 0];
+        $where = ['coid' => array_column($data, 'id'), 'unid' => $this->unid];
         $query = PluginWemallUserCoupon::mk()->field(['count(1)' => 'c', 'coid' => 'd']);
         $total = $query->where($where)->group('coid')->select()->column('c', 'd');
         foreach ($data as &$vo) {

@@ -1,19 +1,5 @@
 <?php
 
-// +----------------------------------------------------------------------
-// | Payment Plugin for ThinkAdmin
-// +----------------------------------------------------------------------
-// | 版权所有 2014~2025 ThinkAdmin [ thinkadmin.top ]
-// +----------------------------------------------------------------------
-// | 官方网站: https://thinkadmin.top
-// +----------------------------------------------------------------------
-// | 免责声明 ( https://thinkadmin.top/disclaimer )
-// | 会员特权 ( https://thinkadmin.top/vip-introduce )
-// +----------------------------------------------------------------------
-// | gitee 代码仓库：https://gitee.com/zoujingli/think-plugs-account
-// | github 代码仓库：https://github.com/zoujingli/think-plugs-account
-// +----------------------------------------------------------------------
-
 declare(strict_types=1);
 /**
  * +----------------------------------------------------------------------
@@ -40,6 +26,7 @@ use plugin\payment\service\Payment;
 use plugin\system\service\SystemAuthService;
 use think\admin\Controller;
 use think\admin\extend\CodeToolkit;
+use think\admin\helper\FormBuilder;
 use think\admin\helper\QueryHelper;
 use think\db\exception\DataNotFoundException;
 use think\db\exception\DbException;
@@ -84,52 +71,50 @@ class Record extends Controller
     public function audit()
     {
         if ($this->request->isGet()) {
-            PluginPaymentRecord::mForm('audit');
-        } else {
-            $data = $this->_vali([
-                'id.require' => '支付号不能为空！',
-                'status.in:0,1,2' => '审核状态数值异常！',
-                'status.require' => '审核状态不能为空！',
-                'remark.default' => '',
+            $this->buildAuditForm()->fetch([
+                'vo' => $this->loadAuditRecord(intval($this->request->param('id', 0))),
             ]);
-            if (intval($data['status']) === 1) {
-                $this->error('请选择通过或驳回！');
-            }
-            $action = PluginPaymentRecord::mk()->findOrEmpty($data['id']);
-            if ($action->isEmpty()) {
-                $this->error('支付记录不存在！');
-            }
-            if ($action->getAttr('channel_type') !== Payment::VOUCHER) {
-                $this->error('无需审核操作！');
-            }
-            if ($action->getAttr('payment_status') === 1) {
-                $this->success('该凭证已审核！');
-            }
-            $data['audit_user'] = SystemAuthService::getUserId();
-            $data['audit_time'] = date('Y-m-d H:i:s');
-            $data['audit_remark'] = $data['remark'];
-            $data['payment_time'] = date('Y-m-d H:i:s');
-            $data['payment_trade'] = CodeToolkit::uniqidNumber(18, 'AU');
+        }
+
+        $data = $this->buildAuditForm()->validate();
+        $data['id'] = intval($this->request->param('id', 0));
+        if (intval($data['status']) === 1) {
+            $this->error('请选择通过或驳回！');
+        }
+        $action = PluginPaymentRecord::mk()->findOrEmpty($data['id']);
+        if ($action->isEmpty()) {
+            $this->error('支付记录不存在！');
+        }
+        if ($action->getAttr('channel_type') !== Payment::VOUCHER) {
+            $this->error('无需审核操作！');
+        }
+        if ($action->getAttr('payment_status') === 1) {
+            $this->success('该凭证已审核！');
+        }
+        $data['audit_user'] = SystemAuthService::getUserId();
+        $data['audit_time'] = date('Y-m-d H:i:s');
+        $data['audit_remark'] = $data['remark'];
+        $data['payment_time'] = date('Y-m-d H:i:s');
+        $data['payment_trade'] = CodeToolkit::uniqidNumber(18, 'AU');
+        if (empty($data['status'])) {
+            $data['audit_status'] = 0;
+            $data['payment_status'] = 0;
+            $data['payment_remark'] = $data['remark'] ?: '后台支付凭证被驳回';
+        } else {
+            $data['audit_status'] = 2;
+            $data['payment_status'] = 1;
+            $data['payment_remark'] = $data['remark'] ?: '后台支付凭证已通过';
+        }
+        if ($action->save($data)) {
             if (empty($data['status'])) {
-                $data['audit_status'] = 0;
-                $data['payment_status'] = 0;
-                $data['payment_remark'] = $data['remark'] ?: '后台支付凭证被驳回';
+                $this->app->event->trigger('PluginPaymentRefuse', $action->refresh());
+                $this->success('凭证审核驳回！');
             } else {
-                $data['audit_status'] = 2;
-                $data['payment_status'] = 1;
-                $data['payment_remark'] = $data['remark'] ?: '后台支付凭证已通过';
+                $this->app->event->trigger('PluginPaymentSuccess', $action->refresh());
+                $this->success('凭证审核通过！');
             }
-            if ($action->save($data)) {
-                if (empty($data['status'])) {
-                    $this->app->event->trigger('PluginPaymentRefuse', $action->refresh());
-                    $this->success('凭证审核驳回！');
-                } else {
-                    $this->app->event->trigger('PluginPaymentSuccess', $action->refresh());
-                    $this->success('凭证审核通过！');
-                }
-            } else {
-                $this->error('凭证审核失败！');
-            }
+        } else {
+            $this->error('凭证审核失败！');
         }
     }
 
@@ -172,5 +157,64 @@ class Record extends Controller
         }
         $this->app->event->trigger('PluginPaymentSuccess', $record);
         $this->success('重新触发支付行为！');
+    }
+
+    private function buildAuditForm(): FormBuilder
+    {
+        $id = intval($this->request->param('id', 0));
+        $voucherRemark = <<<'HTML'
+<div class="layui-textarea"><img alt="img" data-tips-image src="{$vo.payment_images|default=''}" style="width:auto;height:220px"></div>
+HTML;
+
+        return FormBuilder::mk()
+            ->setAction(url('audit', array_filter(['id' => $id ?: null]))->build())
+            ->addTextInput('order_no_display', '业务单号', 'Order No.', false, '', null, [
+                'readonly' => null,
+                'class' => 'layui-bg-gray',
+            ])
+            ->addTextInput('code_display', '交易单号', 'Payment No.', false, '', null, [
+                'readonly' => null,
+                'class' => 'layui-bg-gray',
+            ])
+            ->addTextInput('payment_amount_display', '交易金额', 'Payment Amount', false, '', null, [
+                'readonly' => null,
+                'class' => 'layui-bg-gray',
+            ])
+            ->addTextInput('payment_images_display', '支付单据凭证', 'Payment Voucher', false, $voucherRemark, null, [
+                'readonly' => null,
+                'class' => 'layui-bg-gray',
+            ])
+            ->addField([
+                'type' => 'radio',
+                'name' => 'status',
+                'title' => '审核操作类型',
+                'subtitle' => 'Audit Status',
+                'required' => true,
+                'options' => [0 => '驳回凭证', 1 => '等待审核', 2 => '审核通过'],
+            ])
+            ->addTextArea('remark', '订单审核描述', 'Audit Remark', false, '', [
+                'placeholder' => '请输入订单审核描述',
+            ])
+            ->addSubmitButton()
+            ->addCancelButton('取消操作', '确定要取消吗？');
+    }
+
+    private function loadAuditRecord(int $id): array
+    {
+        if ($id < 1) {
+            $this->error('支付号不能为空！');
+        }
+        $record = PluginPaymentRecord::mk()->findOrEmpty($id);
+        if ($record->isEmpty()) {
+            $this->error('支付记录不存在！');
+        }
+        $data = $record->toArray();
+        $data['order_no_display'] = strval($data['order_no'] ?? '');
+        $data['code_display'] = strval($data['code'] ?? '');
+        $data['payment_amount_display'] = strval(($data['payment_amount'] ?? '0') + 0) . ' 元';
+        $data['payment_images_display'] = strval($data['payment_images'] ?? '');
+        $data['remark'] = strval($data['remark'] ?? ($data['audit_remark'] ?? '支付凭证已查验'));
+        $data['status'] = intval($data['audit_status'] ?? 1);
+        return $data;
     }
 }

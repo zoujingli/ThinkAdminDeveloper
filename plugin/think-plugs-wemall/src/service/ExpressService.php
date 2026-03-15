@@ -49,7 +49,7 @@ abstract class ExpressService
         if (empty($codes)) {
             throw new Exception('邮费模板为空');
         }
-        $where = [['status', '=', 1], ['deleted', '=', 0], ['code', 'in', $codes]];
+        $where = [['status', '=', 1], ['code', 'in', $codes]];
         $template = PluginWemallExpressTemplate::mk()->where($where)->order('sort desc,id desc')->findOrEmpty();
         if ($template->isEmpty()) {
             throw new Exception('邮费模板无效');

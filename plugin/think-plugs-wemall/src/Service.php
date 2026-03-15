@@ -65,7 +65,7 @@ class Service extends Plugin
                 $showError = static function ($message, array $data = []) {
                     throw new HttpResponseException(json(['code' => 0, 'info' => lang($message), 'data' => $data]));
                 };
-                $where = ['deleted' => 0];
+                $where = [];
                 if (preg_match('/^1\d{10}$/', $input['fphone'])) {
                     $where['phone'] = $input['fphone'];
                 } else {
@@ -87,7 +87,7 @@ class Service extends Plugin
                     $showError('无邀请权限！');
                 }
                 // 检查自己是否已绑定
-                $where = ['phone' => $input['phone'], 'deleted' => 0];
+                $where = ['phone' => $input['phone']];
                 if (($user = PluginAccountUser::mk()->where($where)->findOrEmpty())->isExists()) {
                     [$rela] = PluginWemallUserRelation::withRelation($user->getAttr('id'));
                     if (!empty($rela['puid1']) && $rela['puid1'] != $from->getAttr('id')) {
@@ -107,7 +107,7 @@ class Service extends Plugin
             $input = $this->app->request->post(['from', 'phone', 'fphone']);
             if (!empty($input['fphone'])) {
                 try {
-                    $map = ['deleted' => 0];
+                    $map = [];
                     if (preg_match('/^1\d{10}$/', $input['fphone'])) {
                         $map['phone'] = $input['fphone'];
                     } else {

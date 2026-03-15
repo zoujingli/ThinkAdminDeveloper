@@ -60,7 +60,7 @@ class Reply extends Controller
                 $query->whereRaw("gcode in {$db->field('code')->buildSql()}");
             }
             // 数据过滤
-            $query->like('order_no')->where(['status' => intval($this->type === 'index'), 'deleted' => 0]);
+            $query->like('order_no')->where(['status' => intval($this->type === 'index')]);
             $query->with(['bindUser', 'bindGoods'])->dateBetween('create_time');
         });
     }

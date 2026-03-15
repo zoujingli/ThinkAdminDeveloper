@@ -44,7 +44,7 @@ class History extends Auth
             'unid.value' => $this->unid,
             'gcode.require' => '商品不能为空！',
         ]);
-        $map = ['code' => $data['gcode'], 'deleted' => 0];
+        $map = ['code' => $data['gcode']];
         if (PluginWemallGoods::mk()->where($map)->findOrEmpty()->isExists()) {
             UserAction::set($this->unid, $data['gcode'], 'history');
             $this->success('添加成功！');
@@ -64,7 +64,7 @@ class History extends Auth
             $query->whereRaw("gcode in {$db->field('code')->buildSql()}");
             // 关联商品信息
             $query->order('sort desc')->with(['goods' => function (Query $query) {
-                $query->field('code,name,cover,stock_sales,stock_virtual,price_selling,status,deleted');
+                $query->field('code,name,cover,stock_sales,stock_virtual,price_selling,status');
             }]);
             $query->where(['unid' => $this->unid])->like('gcode');
             [$page, $limit] = [intval(input('page', 1)), intval(input('limit', 10))];

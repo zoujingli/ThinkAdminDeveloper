@@ -60,14 +60,14 @@ class PluginWemallConfigPoster extends Abs
         // 指定会员等级查看终端授权
         $query = self::mk()->where(static function (Query $query) use ($level) {
             $query->whereOr([['levels', 'like', "%,{$level},%"], ['levels', 'like', '%,-,%']]);
-        })->where(['status' => 1, 'deleted' => 0])->order('sort desc,id desc');
+        })->where(['status' => 1])->order('sort desc,id desc');
         // 指定设备终端授权数据筛选
         if ($device !== '') {
             $query->where(static function (Query $query) use ($device) {
                 $query->whereOr([['devices', 'like', "%,{$device},%"], ['devices', 'like', '%,-,%']]);
             });
         }
-        return $query->withoutField('sort,status,deleted')->select()->toArray();
+        return $query->withoutField('sort,status,delete_time')->select()->toArray();
     }
 
     /**

@@ -48,7 +48,7 @@ class Discount extends Controller
         PluginWemallConfigDiscount::mQuery()->layTable(function () {
             $this->title = '折扣方案管理';
         }, function (QueryHelper $query) {
-            $query->where(['status' => intval($this->type === 'index'), 'deleted' => 0]);
+            $query->where(['status' => intval($this->type === 'index')]);
         });
     }
 

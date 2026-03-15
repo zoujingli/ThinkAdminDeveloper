@@ -77,7 +77,7 @@ abstract class Integral
         }
 
         // 扣减积分检查
-        $map = ['unid' => $unid, 'cancel' => 0, 'deleted' => 0];
+        $map = ['unid' => $unid, 'cancel' => 0];
         $usable = PluginPaymentIntegral::mk()->where($map)->sum('amount');
         $amountValue = strval($amount);
         $isDecrease = bccomp($amountValue, '0', 2) < 0;
@@ -100,7 +100,7 @@ abstract class Integral
         }
 
         // 检查编号是否重复
-        $map = ['unid' => $unid, 'code' => $code, 'deleted' => 0];
+        $map = ['unid' => $unid, 'code' => $code];
         $model = PluginPaymentIntegral::mk()->where($map)->findOrEmpty();
 
         // 更新或写入积分变更
@@ -139,7 +139,12 @@ abstract class Integral
      */
     public static function remove(string $code): PluginPaymentIntegral
     {
-        return self::set($code, ['deleted' => 1, 'deleted_time' => date('Y-m-d H:i:s')]);
+        $model = self::get($code);
+        $unid = intval($model->getAttr('unid'));
+        $key = $model->getKey();
+        $model->delete();
+        self::recount($unid);
+        return PluginPaymentIntegral::mk()->withTrashed()->findOrEmpty($key);
     }
 
     /**
@@ -162,7 +167,7 @@ abstract class Integral
             }
         }
         // 统计用户积分数据
-        $map = ['unid' => $unid, 'cancel' => 0, 'deleted' => 0];
+        $map = ['unid' => $unid, 'cancel' => 0];
         $lock = PluginPaymentIntegral::mk()->where($map)->where('unlock', '=', '0')->sum('amount');
         $used = PluginPaymentIntegral::mk()->where($map)->where('amount', '<', '0')->sum('amount');
         $total = PluginPaymentIntegral::mk()->where($map)->where('amount', '>', '0')->sum('amount');
@@ -184,7 +189,7 @@ abstract class Integral
      */
     public static function get(string $code): PluginPaymentIntegral
     {
-        $map = ['code' => $code, 'deleted' => 0];
+        $map = ['code' => $code];
         $model = PluginPaymentIntegral::mk()->where($map)->findOrEmpty();
         if ($model->isEmpty()) {
             throw new Exception('无效的操作编号！');

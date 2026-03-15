@@ -173,7 +173,7 @@ abstract class UserRebate
         }
 
         // 批量查询规则并发放奖励
-        $where = ['status' => 1, 'deleted' => 0];
+        $where = ['status' => 1];
         PluginWemallConfigRebate::mk()->where($where)->order('sort desc,id desc')->select()->map(function (PluginWemallConfigRebate $item) {
             self::$config = $item->toArray();
             // 返利结算时间
@@ -237,7 +237,7 @@ abstract class UserRebate
             throw new Exception('订单状态异常！');
         }
         /** @var PluginWemallUserRebate $item */
-        $map = [['status', '=', 0], ['deleted', '=', 0], ['order_no', 'like', "{$order->getAttr('order_no')}%"]];
+        $map = [['status', '=', 0], ['order_no', 'like', "{$order->getAttr('order_no')}%"]];
         foreach (PluginWemallUserRebate::mk()->where($map)->cursor() as $item) {
             $item->save(['status' => 1, 'remark' => '订单已确认收货！', 'confirm_time' => date('Y-m-d H:i:s')]);
             UserRebate::recount($item->getAttr('unid'));
@@ -260,9 +260,10 @@ abstract class UserRebate
             throw new Exception('订单状态异常！');
         }
         // 更新返佣记录
-        $map = [['deleted', '=', 0], ['order_no', 'like', "{$order->getAttr('order_no')}%"]];
+        $map = [['order_no', 'like', "{$order->getAttr('order_no')}%"]];
         foreach (PluginWemallUserRebate::mk()->where($map)->cursor() as $item) {
-            $item->save(['status' => 0, 'deleted' => 1, 'remark' => '订单已取消退回返佣！']);
+            $item->save(['status' => 0, 'remark' => '订单已取消退回返佣！']);
+            $item->delete();
             UserRebate::recount($item->getAttr('unid'));
         }
         return true;
@@ -281,18 +282,18 @@ abstract class UserRebate
             $data = [];
         }
         if ($unid > 0) {
-            $total = PluginWemallUserRebate::mk()->where($where)->whereRaw("unid='{$unid}' and deleted=0")->sum('amount');
-            $count = PluginWemallUserTransfer::mk()->where($where)->whereRaw("unid='{$unid}' and status>0")->sum('amount');
-            $locks = PluginWemallUserRebate::mk()->where($where)->whereRaw("unid='{$unid}' and status=0 and deleted=0")->sum('amount');
+            $total = PluginWemallUserRebate::mk()->where($where)->where(['unid' => $unid])->sum('amount');
+            $count = PluginWemallUserTransfer::mk()->where($where)->where(['unid' => $unid])->where('status', '>', 0)->sum('amount');
+            $locks = PluginWemallUserRebate::mk()->where($where)->where(['unid' => $unid, 'status' => 0])->sum('amount');
             $usable = bcsub(bcsub(strval($total), strval($count), 2), strval($locks), 2);
             [$data['rebate_total'], $data['rebate_used'], $data['rebate_lock'], $data['rebate_usable']] = [$total, $count, $locks, $usable];
             if ($isUpdate && ($user = PluginAccountUser::mk()->findOrEmpty($unid))->isExists()) {
                 $user->save(['extra' => array_merge($user->getAttr('extra'), $data)]);
             }
         } else {
-            $total = PluginWemallUserRebate::mk()->where($where)->whereRaw('deleted=0')->sum('amount');
-            $count = PluginWemallUserTransfer::mk()->where($where)->whereRaw('status>0')->sum('amount');
-            $locks = PluginWemallUserRebate::mk()->where($where)->whereRaw('status=0 and deleted=0')->sum('amount');
+            $total = PluginWemallUserRebate::mk()->where($where)->sum('amount');
+            $count = PluginWemallUserTransfer::mk()->where($where)->where('status', '>', 0)->sum('amount');
+            $locks = PluginWemallUserRebate::mk()->where($where)->where(['status' => 0])->sum('amount');
             $usable = bcsub(bcsub(strval($total), strval($count), 2), strval($locks), 2);
             [$data['rebate_total'], $data['rebate_used'], $data['rebate_lock'], $data['rebate_usable']] = [$total, $count, $locks, $usable];
         }

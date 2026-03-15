@@ -50,7 +50,6 @@ class Config extends Controller
             $this->prizes = UserRebate::prizes;
         }, function (QueryHelper $query) {
             $query->equal('type#mtype')->like('name')->dateBetween('create_time');
-            $query->where(['deleted' => 0]);
         });
     }
 

@@ -24,6 +24,7 @@ use plugin\account\service\contract\AccountAccess;
 use plugin\account\service\contract\AccountInterface;
 use think\admin\Exception;
 use think\admin\extend\CodeToolkit;
+use think\admin\Library;
 use think\admin\runtime\RequestTokenService;
 use think\admin\service\CacheSession;
 use think\admin\service\JwtToken;
@@ -204,7 +205,9 @@ abstract class Account
      */
     public static function requestToken(?Request $request = null): string
     {
-        return RequestTokenService::accountToken($request);
+        $token = RequestTokenService::accountToken($request);
+        static::upgradeLegacyCookieToken($request);
+        return $token;
     }
 
     /**
@@ -278,13 +281,13 @@ abstract class Account
      */
     public static function syncTokenCookie(string $token): string
     {
-        $token = trim($token);
+        $token = RequestTokenService::normalizeToken($token);
         if ($token === '') {
             static::forgetTokenCookie();
             return '';
         }
 
-        cookie(static::getTokenCookie(), $token, ['expire' => static::expire()]);
+        cookie(static::getTokenCookie(), RequestTokenService::encodeCookieToken($token), ['expire' => static::expire()]);
         return $token;
     }
 
@@ -401,6 +404,16 @@ abstract class Account
      * 校验账号 JWT 载荷类型。
      * @throws Exception
      */
+    private static function upgradeLegacyCookieToken(?Request $request = null): void
+    {
+        $request = $request ?: Library::$sapp->request;
+        $rawToken = strval($request->cookie(static::getTokenCookie(), ''));
+        $decodedToken = RequestTokenService::capture($request)->accountCookieToken();
+        if (RequestTokenService::shouldUpgradeCookieToken($rawToken, $decodedToken)) {
+            static::syncTokenCookie($decodedToken);
+        }
+    }
+
     private static function verifyJwtPayload(array $data): void
     {
         if (strval($data['typ'] ?? '') !== self::TOKEN_TYPE) {

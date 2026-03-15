@@ -50,7 +50,7 @@ class Notify extends Controller
             $this->title = '系统通知管理';
         }, function (QueryHelper $query) {
             $query->like('name,code')->equal('status')->dateBetween('create_time');
-            $query->where(['deleted' => 0, 'status' => intval($this->type === 'index')]);
+            $query->where(['status' => intval($this->type === 'index')]);
         });
     }
 

@@ -47,7 +47,7 @@ abstract class UserCoupon
     {
         [$rela, $unid] = PluginWemallUserRelation::withRelation($unid);
         // 检查卡券
-        $where = ['id' => $coid, 'status' => 1, 'deleted' => 0];
+        $where = ['id' => $coid, 'status' => 1];
         $coupon = PluginWemallConfigCoupon::mk()->where($where)->findOrEmpty();
         if ($coupon->isEmpty()) {
             throw new Exception('无效卡券');
@@ -62,7 +62,7 @@ abstract class UserCoupon
         }
         // 领取数量检查
         if (($limitTimes = $coupon->getAttr('limit_times')) > 0) {
-            $map = ['deleted' => 0, 'unid' => $unid, 'coid' => $coupon->getAttr('id')];
+            $map = ['unid' => $unid, 'coid' => $coupon->getAttr('id')];
             if (PluginWemallUserCoupon::mk()->where($map)->count() > $limitTimes) {
                 throw new Exception('已超出领取数量！');
             }
@@ -91,7 +91,7 @@ abstract class UserCoupon
     public static function recount($coid): bool
     {
         $model = self::withModel($coid);
-        $where = ['coid' => $model->getAttr('id'), 'deleted' => 0];
+        $where = ['coid' => $model->getAttr('id')];
         $field = ['sum(used)' => 'total_used', 'count(1)' => 'total_sales'];
         $total = PluginWemallUserCoupon::mk()->field($field)->where($where)->findOrEmpty()->toArray();
         return $model->save($total);

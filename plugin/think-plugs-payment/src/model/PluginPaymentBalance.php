@@ -49,7 +49,7 @@ namespace plugin\payment\model;
  * @property string $cancel_time 作废时间
  * @property string $code 操作编号
  * @property string $create_time 创建时间
- * @property string $deleted_time 删除时间
+ * @property string $delete_time 删除时间
  * @property string $name 操作名称
  * @property string $remark 操作备注
  * @property string $unlock_time 解锁时间

@@ -50,7 +50,7 @@ class Question extends Controller
             $this->title = '工单提问管理';
             $this->types = PluginWemallHelpQuestion::tStatus;
         }, function (QueryHelper $helper) {
-            $helper->with(['bindUser'])->where(['deleted' => 0]);
+            $helper->with(['bindUser']);
             $helper->like('name,content')->equal('status')->dateBetween('create_time');
             // 提交用户搜索
             $db = PluginAccountUser::mQuery()->like('username')->field('id')->db();

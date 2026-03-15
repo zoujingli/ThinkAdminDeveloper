@@ -59,7 +59,7 @@ class PluginWemallConfigCoupon extends Abs
      */
     public function usable(): HasMany
     {
-        return $this->hasMany(PluginWemallUserCoupon::class, 'coid', 'id')->where(['deleted' => 0]);
+        return $this->hasMany(PluginWemallUserCoupon::class, 'coid', 'id');
     }
 
     /**

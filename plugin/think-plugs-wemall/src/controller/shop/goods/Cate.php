@@ -52,7 +52,6 @@ class Cate extends Controller
         PluginWemallGoodsCate::mQuery($this->get)->layTable(function () {
             $this->title = '商品分类管理';
         }, static function (QueryHelper $query) {
-            $query->where(['deleted' => 0]);
             $query->like('name')->equal('status')->dateBetween('create_time');
         });
     }

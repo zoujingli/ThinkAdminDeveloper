@@ -138,7 +138,7 @@ class Transfer extends Controller
      */
     public function sync()
     {
-        $this->_queue('提现到微信余额定时处理', 'xdata:mall:trans', 0, [], 0, 50);
+        $this->_queue('提现到微信余额定时处理', 'xdata:mall:trans', 0, [], 50);
     }
 
     /**

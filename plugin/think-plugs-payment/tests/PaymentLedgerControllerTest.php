@@ -67,7 +67,7 @@ class PaymentLedgerControllerTest extends SqliteIntegrationTestCase
         $this->assertSame(1, intval($model->getAttr('deleted')));
         $this->assertNotEmpty($model->getAttr('unlock_time'));
         $this->assertNotEmpty($model->getAttr('cancel_time'));
-        $this->assertNotEmpty($model->getAttr('deleted_time'));
+        $this->assertNotEmpty($model->getAttr('delete_time'));
         $this->assertSame('0.00', $this->decimal($extra['balance_lock'] ?? 0));
         $this->assertSame('0.00', $this->decimal($extra['balance_total'] ?? 0));
         $this->assertSame('0.00', $this->decimal($extra['balance_usable'] ?? 0));
@@ -103,7 +103,7 @@ class PaymentLedgerControllerTest extends SqliteIntegrationTestCase
         $this->assertSame(1, intval($model->getAttr('deleted')));
         $this->assertNotEmpty($model->getAttr('unlock_time'));
         $this->assertNotEmpty($model->getAttr('cancel_time'));
-        $this->assertNotEmpty($model->getAttr('deleted_time'));
+        $this->assertNotEmpty($model->getAttr('delete_time'));
         $this->assertSame('0.00', $this->decimal($extra['integral_lock'] ?? 0));
         $this->assertSame('0.00', $this->decimal($extra['integral_total'] ?? 0));
         $this->assertSame('0.00', $this->decimal($extra['integral_usable'] ?? 0));

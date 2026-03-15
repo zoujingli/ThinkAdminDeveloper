@@ -53,7 +53,7 @@ class Poster extends Controller
             $this->title = '推广海报管理';
         }, function (QueryHelper $query) {
             $query->like('name,code')->equal('status')->dateBetween('create_time');
-            $query->where(['deleted' => 0, 'status' => intval($this->type === 'index')]);
+            $query->where(['status' => intval($this->type === 'index')]);
         });
     }
 

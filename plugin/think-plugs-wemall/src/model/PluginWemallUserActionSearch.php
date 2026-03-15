@@ -31,7 +31,4 @@ namespace plugin\wemall\model;
  * @property string $keys 鍏抽敭璇? * @property string $update_time 鏇存柊鏃堕棿
  * @class PluginWemallUserActionSearch
  */
-class PluginWemallUserActionSearch extends AbsUser
-{
-    protected $deleteTime = false;
-}
+class PluginWemallUserActionSearch extends AbsUser {}

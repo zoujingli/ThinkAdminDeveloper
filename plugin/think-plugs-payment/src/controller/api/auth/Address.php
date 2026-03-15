@@ -71,7 +71,7 @@ class Address extends Auth
 
         if (empty($data['id'])) {
             unset($data['id']);
-            $map = ['unid' => $this->unid, 'deleted' => 0];
+            $map = ['unid' => $this->unid];
             if (PluginPaymentAddress::mk()->where($map)->count() >= 10) {
                 $this->error('最多10个地址！');
             }
@@ -129,7 +129,7 @@ class Address extends Auth
         $model = $this->withModel($map)->findOrEmpty();
         if ($model->isEmpty()) {
             $this->error('地址不存在！');
-        } elseif ($model->save(['deleted' => 1]) !== false) {
+        } elseif ($model->delete() !== false) {
             $this->success('删除成功！');
         } else {
             $this->error('删除失败！');
@@ -152,8 +152,8 @@ class Address extends Auth
      */
     private function withModel($map = [])
     {
-        $model = PluginPaymentAddress::mk()->withoutField('deleted');
-        return $model->where($map)->where(['unid' => $this->unid, 'deleted' => 0]);
+        $model = PluginPaymentAddress::mk()->withoutField('delete_time');
+        return $model->where($map)->where(['unid' => $this->unid]);
     }
 
     /**

@@ -45,8 +45,6 @@ use think\model\relation\HasOne;
  */
 class PluginWemallOrderRefund extends AbsUser
 {
-    protected $deleteTime = false;
-
     /**
      * 鑾峰彇璁㈠崟淇℃伅.
      */

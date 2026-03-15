@@ -65,7 +65,7 @@ class Admin extends Controller
             // 用户内容查询
             $user = PluginAccountUser::mQuery()->dateBetween('create_time');
             $user->equal('entry_agent')->like('code|phone|username|nickname#user');
-            $user->where(['status' => intval($this->type === 'index'), 'deleted' => 0]);
+            $user->where(['status' => intval($this->type === 'index')]);
             $query->whereRaw("unid in {$user->db()->field('id')->buildSql()}");
         });
     }

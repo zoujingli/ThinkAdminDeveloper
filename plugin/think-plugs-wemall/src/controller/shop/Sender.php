@@ -144,7 +144,7 @@ class Sender extends Controller
     protected function _delivery_form_filter(array &$vo)
     {
         if ($this->request->isGet()) {
-            $map = ['code' => $vo['delivery_code'], 'status' => 1, 'deleted' => 0];
+            $map = ['code' => $vo['delivery_code'], 'status' => 1];
             $delivery = PluginWemallExpressTemplate::mk()->where($map)->findOrEmpty();
             if ($delivery->isEmpty() || empty($this->items = $delivery->getAttr('company'))) {
                 $this->items = PluginWemallExpressCompany::items();

@@ -58,7 +58,7 @@ class Collect extends Auth
             'unid.value' => $this->unid,
             'gcode.require' => '商品不能为空！',
         ]);
-        $map = ['code' => $data['gcode'], 'deleted' => 0];
+        $map = ['code' => $data['gcode']];
         $goods = PluginWemallGoods::mk()->where($map)->findOrEmpty();
         if ($goods->isExists()) {
             UserAction::set($this->unid, $data['gcode'], 'collect');
@@ -76,7 +76,7 @@ class Collect extends Auth
         PluginWemallUserActionCollect::mQuery(null, function (QueryHelper $query) {
             // 关联商品信息
             $query->order('sort desc')->with(['goods' => function (Query $query) {
-                $query->field('code,name,cover,stock_sales,stock_virtual,price_selling,status,deleted');
+                $query->field('code,name,cover,stock_sales,stock_virtual,price_selling,status');
             }]);
             // 搜索商品信息
             $db = PluginWemallGoods::mQuery()->like('name#keys');

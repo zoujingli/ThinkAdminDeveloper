@@ -92,6 +92,32 @@ class PaymentRecordControllerTest extends SqliteIntegrationTestCase
         $this->assertSame('15.00', $this->decimal($order->getAttr('payment_amount')));
     }
 
+    public function testAuditGetRendersBuilderForm(): void
+    {
+        $record = PluginPaymentRecord::mk();
+        $record->save([
+            'unid' => 1,
+            'usid' => 1,
+            'code' => 'PAYAUDITHTML001',
+            'order_no' => 'PAY-AUDIT-HTML-001',
+            'order_name' => '后台审核表单',
+            'order_amount' => '5.00',
+            'channel_type' => Payment::VOUCHER,
+            'channel_code' => Payment::VOUCHER,
+            'payment_images' => 'https://example.com/payment-audit.png',
+            'payment_status' => 0,
+            'payment_amount' => '5.00',
+            'used_payment' => '5.00',
+            'audit_status' => 1,
+        ]);
+
+        $html = $this->callRecordHtml('audit', ['id' => intval($record->getAttr('id'))], 'GET');
+
+        $this->assertStringContainsString('form-builder-schema', $html);
+        $this->assertStringContainsString('name="status"', $html);
+        $this->assertStringContainsString('data-tips-image', $html);
+    }
+
     public function testAuditControllerRefusesVoucherAndReturnsWemallOrderToPayable(): void
     {
         $account = $this->createBoundAccountFixture();
@@ -272,6 +298,32 @@ class PaymentRecordControllerTest extends SqliteIntegrationTestCase
     private function callAuditController(array $post): array
     {
         return $this->callRecordController('audit', $post, 'POST');
+    }
+
+    private function callRecordHtml(string $action, array $data, string $method = 'GET'): string
+    {
+        RequestContext::instance()->setAuth([
+            'id' => 9001,
+            'username' => 'admin',
+            'password' => 'test-admin-password',
+        ], '', true);
+
+        $request = $this->app->request
+            ->withGet($data)
+            ->withPost($data)
+            ->setMethod($method)
+            ->setController('record')
+            ->setAction($action);
+
+        $this->app->instance('request', $request);
+
+        try {
+            $controller = new PaymentRecordController($this->app);
+            $controller->{$action}();
+            self::fail("Expected {$action} to throw HttpResponseException.");
+        } catch (HttpResponseException $exception) {
+            return $exception->getResponse()->getContent();
+        }
     }
 
     private function callRecordController(string $action, array $data, string $method = 'POST'): array

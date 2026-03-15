@@ -38,8 +38,6 @@ use think\model\relation\HasOne;
  */
 class PluginWemallOrderCart extends AbsUser
 {
-    protected $deleteTime = false;
-
     /**
      * 鍏宠仈浜у搧鏁版嵁.
      */

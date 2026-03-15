@@ -43,7 +43,7 @@ class PluginWemallExpressCompany extends Abs
      */
     public static function items(): array
     {
-        $map = ['status' => 1, 'deleted' => 0];
+        $map = ['status' => 1];
         return self::mk()->where($map)->order('sort desc,id desc')->column('name', 'code');
     }
 }

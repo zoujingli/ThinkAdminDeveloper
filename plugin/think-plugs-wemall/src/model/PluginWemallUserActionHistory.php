@@ -37,8 +37,6 @@ use think\model\relation\HasOne;
  */
 class PluginWemallUserActionHistory extends AbsUser
 {
-    protected $deleteTime = false;
-
     /**
      * 鍏宠仈鍟嗗搧淇℃伅.
      */

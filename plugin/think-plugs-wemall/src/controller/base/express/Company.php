@@ -50,7 +50,7 @@ class Company extends Controller
             $this->title = '快递公司管理';
         }, function (QueryHelper $query) {
             $query->like('name,code')->equal('status')->dateBetween('create_time');
-            $query->where(['deleted' => 0, 'status' => intval($this->type === 'index')]);
+            $query->where(['status' => intval($this->type === 'index')]);
         });
     }
 
@@ -108,7 +108,7 @@ class Company extends Controller
             }
             foreach ($result['data'] as $vo) {
                 PluginWemallExpressCompany::mUpdate([
-                    'name' => $vo['title'], 'code' => $vo['code_2'], 'deleted' => 0,
+                    'name' => $vo['title'], 'code' => $vo['code_2'], 'delete_time' => null,
                 ], 'code');
             }
             $this->success('同步快递公司成功！');

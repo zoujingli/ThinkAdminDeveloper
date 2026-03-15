@@ -50,7 +50,7 @@ class Recharge extends Controller
     {
         PluginWemallUserRecharge::mQuery()->layTable(function () {
             $this->title = '会员充值管理';
-            $this->total = PluginWemallUserRecharge::mk()->where(['deleted' => 0])->sum('amount');
+            $this->total = PluginWemallUserRecharge::mk()->sum('amount');
         }, function (QueryHelper $query) {
             // 按会员资料搜索
             $user = PluginAccountUser::mQuery()->like('nickname|phone#user');
@@ -58,7 +58,7 @@ class Recharge extends Controller
                 $query->whereRaw("unid in {$user->field('id')->buildSql()}");
             }
             // 搜索数据表字段搜索
-            $query->where(['deleted' => 0])->with('user');
+            $query->with('user');
             $query->like('name|remark#text')->dateBetween('create_time');
         });
     }
@@ -85,11 +85,8 @@ class Recharge extends Controller
                 $this->error('待删除记录不存在！');
             }
             $this->app->db->transaction(function () use ($recharge) {
-                $recharge->save([
-                    'deleted' => 1,
-                    'deleted_by' => SystemAuthService::getUserId(),
-                    'deleted_time' => date('Y-m-d H:i:s'),
-                ]);
+                $recharge->save(['deleted_by' => SystemAuthService::getUserId()]);
+                $recharge->delete();
                 Balance::cancel($recharge->getAttr('code'));
             });
             $this->success('取消充值成功！');

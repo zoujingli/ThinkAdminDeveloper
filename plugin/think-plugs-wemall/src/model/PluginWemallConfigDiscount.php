@@ -50,7 +50,7 @@ class PluginWemallConfigDiscount extends Abs
      */
     public static function items(bool $allow = false): array
     {
-        $query = self::mk()->where(['status' => 1, 'deleted' => 0]);
+        $query = self::mk()->where(['status' => 1]);
         $items = $query->order('sort desc,id desc')->field('id,name,items')->select()->toArray();
         if ($allow) {
             array_unshift($items, ['id' => '0', 'name' => '无折扣']);

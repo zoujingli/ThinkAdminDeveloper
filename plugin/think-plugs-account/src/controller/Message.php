@@ -25,6 +25,7 @@ use plugin\account\service\message\Alisms;
 use plugin\account\service\Message as AccountMessage;
 use think\admin\Controller;
 use think\admin\Exception;
+use think\admin\helper\FormBuilder;
 use think\admin\helper\PageBuilder;
 use think\admin\helper\QueryHelper;
 use think\db\exception\DataNotFoundException;
@@ -67,15 +68,24 @@ class Message extends Controller
      */
     public function config()
     {
+        $builder = $this->buildConfigForm();
         if ($this->request->isGet()) {
-            $this->vo = sysdata($this->smskey);
-            $this->scenes = AccountMessage::$scenes;
-            $this->regions = Alisms::regions();
-            $this->fetch();
-        } else {
-            sysdata($this->smskey, $this->request->post());
-            $this->success('修改配置成功！');
+            $builder->fetch(['vo' => $this->loadConfigData()]);
         }
+
+        $data = $builder->validate();
+        $payload = [
+            'alisms_region' => strval($data['alisms_region'] ?? ''),
+            'alisms_keyid' => strval($data['alisms_keyid'] ?? ''),
+            'alisms_secret' => strval($data['alisms_secret'] ?? ''),
+            'alisms_signtx' => strval($data['alisms_signtx'] ?? ''),
+            'alisms_scenes' => [],
+        ];
+        foreach (AccountMessage::$scenes as $code => $name) {
+            $payload['alisms_scenes'][$code] = strval($data[$this->sceneFieldName((string)$code)] ?? '');
+        }
+        sysdata($this->smskey, $payload);
+        $this->success('修改配置成功！');
     }
 
     /**
@@ -132,5 +142,40 @@ class Message extends Controller
                 'templet' => PageBuilder::raw("function(d){ return ['<b class=\"color-red\">失败</b>', '<b class=\"color-green\">成功</b>'][d.status]; }"),
             ])
             ->addColumn(['field' => 'create_time', 'title' => '发送时间', 'width' => 170, 'align' => 'center', 'sort' => true]);
+    }
+
+    private function buildConfigForm(): FormBuilder
+    {
+        $regionOptions = [];
+        foreach (Alisms::regions() as $code => $region) {
+            $regionOptions[$code] = sprintf('[ %s ] %s', $code, strval($region['name'] ?? $code));
+        }
+
+        $builder = FormBuilder::mk()
+            ->setAction(url('config')->build())
+            ->addSelectInput('alisms_region', '服务区域', 'Region', true, '', $regionOptions)
+            ->addTextInput('alisms_keyid', '阿里云账号', 'AccessKeyId', true)
+            ->addTextInput('alisms_secret', '阿里云密钥', 'AccessKeySecret', true)
+            ->addTextInput('alisms_signtx', '短信签名', 'SignName', true);
+
+        foreach (AccountMessage::$scenes as $code => $name) {
+            $builder->addTextInput($this->sceneFieldName((string)$code), (string)$name, ucfirst(strtolower((string)$code)) . ' Code', true);
+        }
+
+        return $builder->addSubmitButton('保存配置')->addCancelButton('取消修改', '确定要取消修改吗？');
+    }
+
+    private function loadConfigData(): array
+    {
+        $data = (array)sysdata($this->smskey);
+        foreach (AccountMessage::$scenes as $code => $name) {
+            $data[$this->sceneFieldName((string)$code)] = strval($data['alisms_scenes'][$code] ?? '');
+        }
+        return $data;
+    }
+
+    private function sceneFieldName(string $code): string
+    {
+        return 'scene_' . strtolower($code);
     }
 }

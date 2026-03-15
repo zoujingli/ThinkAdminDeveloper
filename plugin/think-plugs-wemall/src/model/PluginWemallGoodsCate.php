@@ -54,7 +54,7 @@ class PluginWemallGoodsCate extends Abs
      */
     public static function pdata(int $max, array &$data, array $parent = []): array
     {
-        $items = static::mk()->where(['deleted' => 0])->order('sort desc,id asc')->select()->toArray();
+        $items = static::mk()->order('sort desc,id asc')->select()->toArray();
         $cates = ArrayTree::arr2table(empty($parent) ? $items : array_merge([$parent], $items));
         if (isset($data['id'])) {
             foreach ($cates as $cate) {
@@ -80,8 +80,8 @@ class PluginWemallGoodsCate extends Abs
      */
     public static function dtree(): array
     {
-        $query = static::mk()->where(['status' => 1, 'deleted' => 0])->order('sort desc,id desc');
-        return ArrayTree::arr2tree($query->withoutField('sort,status,deleted,create_time')->select()->toArray());
+        $query = static::mk()->where(['status' => 1])->order('sort desc,id desc');
+        return ArrayTree::arr2tree($query->withoutField('sort,status,delete_time,create_time')->select()->toArray());
     }
 
     /**
@@ -90,7 +90,7 @@ class PluginWemallGoodsCate extends Abs
      */
     public static function items(bool $simple = false): array
     {
-        $query = static::mk()->where(['status' => 1, 'deleted' => 0])->order('sort desc,id asc');
+        $query = static::mk()->where(['status' => 1])->order('sort desc,id asc');
         $cates = array_column(ArrayTree::arr2table($query->column('id,pid,name', 'id')), null, 'id');
         foreach ($cates as $cate) {
             isset($cates[$cate['pid']]) && $cates[$cate['id']]['parent'] = &$cates[$cate['pid']];

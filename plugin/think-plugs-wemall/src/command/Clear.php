@@ -166,15 +166,20 @@ class Clear extends Command
                         $this->queue->message($total, ++$count, "订单 {$order->getAttr('order_no')} 存在支付记录");
                     } else {
                         $this->queue->message($total, ++$count, "开始清理订单 {$order->getAttr('order_no')}");
-                        $order->save([
-                            'status' => 0,
-                            'deleted_time' => date('Y-m-d H:i:s'),
-                            'deleted_status' => 1,
-                            'deleted_remark' => $remark,
-                        ]);
+                        $orderId = intval($order->getKey());
+                        $this->app->db->transaction(function () use ($order, $remark) {
+                            if ($order->save([
+                                'status' => 0,
+                                'deleted_status' => 1,
+                                'deleted_remark' => $remark,
+                            ]) === false || $order->delete() === false) {
+                                throw new \RuntimeException(sprintf('Failed to soft delete order %s', $order->getAttr('order_no')));
+                            }
+                        });
+                        $deleted = PluginWemallOrder::mk()->withTrashed()->findOrEmpty($orderId);
                         // 触发订单删除事件
-                        $this->app->event->trigger('PluginWemallOrderRemove', $order);
-                        $this->queue->message($total, $count, "完成清理订单 {$order->getAttr('order_no')}", 1);
+                        $this->app->event->trigger('PluginWemallOrderRemove', $deleted);
+                        $this->queue->message($total, $count, "完成清理订单 {$deleted->getAttr('order_no')}", 1);
                     }
                 });
             } catch (\Exception $exception) {

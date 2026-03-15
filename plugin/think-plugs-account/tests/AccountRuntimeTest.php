@@ -25,6 +25,7 @@ use plugin\account\service\Account;
 use think\admin\contract\SystemContextInterface;
 use think\admin\runtime\NullSystemContext;
 use think\admin\runtime\RequestContext;
+use think\admin\runtime\RequestTokenService;
 use think\admin\service\CacheSession;
 use think\admin\service\JwtToken;
 use think\admin\service\RuntimeService;
@@ -38,21 +39,23 @@ use think\Request;
  */
 class AccountRuntimeTest extends TestCase
 {
+    private App $app;
+
     private array $defaultTypes;
 
     private AccountRuntimeSystemContextStub $context;
 
     protected function setUp(): void
     {
-        $app = new App(dirname(__DIR__, 3));
-        RuntimeService::init($app);
-        $app->config->set([
+        $this->app = new App(dirname(__DIR__, 3));
+        RuntimeService::init($this->app);
+        $this->app->config->set([
             'default' => 'file',
             'stores' => [
                 'file' => ['type' => 'File', 'path' => sys_get_temp_dir() . '/thinkadmin-account-test-cache'],
             ],
         ], 'cache');
-        $app->config->set(['jwtkey' => 'account-test-jwt'], 'app');
+        $this->app->config->set(['jwtkey' => 'account-test-jwt'], 'app');
 
         $this->context = new AccountRuntimeSystemContextStub();
         Container::getInstance()->instance(SystemContextInterface::class, $this->context);
@@ -114,12 +117,48 @@ class AccountRuntimeTest extends TestCase
             'type' => Account::WAP,
             'token' => 'cookie-token',
         ], 'account-test-jwt');
+        $encodedCookie = RequestTokenService::encodeCookieToken($cookieToken);
 
         $request = (new Request())
             ->withHeader(['authorization' => "Bearer {$headerToken}"])
-            ->withCookie([Account::getTokenCookie() => $cookieToken]);
+            ->withCookie([Account::getTokenCookie() => $encodedCookie]);
 
         $this->assertSame($headerToken, Account::requestToken($request));
+    }
+
+    public function testRequestTokenCanDecryptEncryptedCookie(): void
+    {
+        RequestContext::clear();
+        $cookieToken = JwtToken::token([
+            'typ' => Account::getTokenType(),
+            'type' => Account::WAP,
+            'token' => 'cookie-only-token',
+        ], 'account-test-jwt');
+        $encodedCookie = RequestTokenService::encodeCookieToken($cookieToken);
+        $request = (new Request())->withCookie([Account::getTokenCookie() => $encodedCookie]);
+
+        $this->assertNotSame($cookieToken, $encodedCookie);
+        $this->assertSame($cookieToken, Account::requestToken($request));
+    }
+
+    public function testRequestTokenUpgradesLegacyPlainCookie(): void
+    {
+        RequestContext::clear();
+        $cookieToken = JwtToken::token([
+            'typ' => Account::getTokenType(),
+            'type' => Account::WAP,
+            'token' => 'legacy-cookie-token',
+        ], 'account-test-jwt');
+        $request = (new Request())->withCookie([Account::getTokenCookie() => $cookieToken]);
+
+        $this->app->instance('request', $request);
+
+        $this->assertSame($cookieToken, Account::requestToken($request));
+
+        $queuedCookie = strval($this->app->cookie->getCookie()[Account::getTokenCookie()][0] ?? '');
+        $this->assertStringStartsWith('enc:', $queuedCookie);
+        $this->assertNotSame($cookieToken, $queuedCookie);
+        $this->assertSame($cookieToken, RequestTokenService::decodeCookieToken($queuedCookie));
     }
 
     public function testAccountTokenCookieCanBeConfigured(): void

@@ -204,7 +204,7 @@ class Order extends Auth
                 $model->save($order) && PluginWemallOrderItem::mk()->saveAll($items);
                 // 设置收货地址
                 if ($order['delivery_type']) {
-                    $where = ['unid' => $this->unid, 'deleted' => 0];
+                    $where = ['unid' => $this->unid];
                     $address = PluginPaymentAddress::mk()->where($where)->order('type desc,id desc')->findOrEmpty();
                     $address->isExists() && UserOrder::perfect($model->refresh(), $address);
                 }
@@ -259,7 +259,7 @@ class Order extends Auth
         $tCount = intval(PluginWemallOrderItem::mk()->where($map)->sum('delivery_count'));
 
         // 根据地址计算运费
-        $map = ['status' => 1, 'deleted' => 0, 'order_no' => $data['order_no']];
+        $map = ['status' => 1, 'order_no' => $data['order_no']];
         $tCode = PluginWemallOrderItem::mk()->where($map)->column('delivery_code');
         [$amount, , , $remark] = ExpressService::amount($tCode, $addr['region_prov'], $addr['region_city'], $tCount);
         $this->success('计算运费！', ['amount' => $amount, 'remark' => $remark]);
@@ -278,7 +278,7 @@ class Order extends Auth
         ]);
 
         // 用户收货地址
-        $where = ['id' => $data['address_id'], 'unid' => $this->unid, 'deleted' => 0];
+        $where = ['id' => $data['address_id'], 'unid' => $this->unid];
         $address = PluginPaymentAddress::mk()->where($where)->findOrEmpty();
         if ($address->isEmpty()) {
             $this->error('地址异常！');
@@ -357,7 +357,7 @@ class Order extends Auth
             if (!empty($data['coupon_code']) && $data['coupon_code'] !== $order->getAttr('coupon_code')) {
                 try {
                     // 检查优惠券是否有效
-                    $where = ['unid' => $this->unid, 'status' => 1, 'deleted' => 0];
+                    $where = ['unid' => $this->unid, 'status' => 1];
                     $coupon = PluginWemallUserCoupon::mk()->where($where)->with('bindCoupon')->findOrEmpty();
                     if ($coupon->isEmpty() || empty($coupon->getAttr('coupon_status')) || $coupon->getAttr('coupon_deleted') > 0) {
                         $this->error('无限优惠券！');
@@ -482,14 +482,22 @@ class Order extends Auth
             $this->error('读取订单失败！');
         }
         if ($order->getAttr('status') == 0) {
-            if ($order->save([
-                'status' => 0,
-                'deleted_time' => date('Y-m-d H:i:s'),
-                'deleted_status' => 1,
-                'deleted_remark' => '用户主动删除订单！',
-            ])) {
+            $orderId = intval($order->getKey());
+            $saved = $this->app->db->transaction(function () use ($order) {
+                if ($order->save([
+                    'status' => 0,
+                    'deleted_status' => 1,
+                    'deleted_remark' => '用户主动删除订单！',
+                ]) === false) {
+                    return false;
+                }
+
+                return $order->delete() !== false;
+            });
+            if ($saved) {
+                $deleted = PluginWemallOrder::mk()->withTrashed()->findOrEmpty($orderId);
                 // 触发订单删除事件
-                $this->app->event->trigger('PluginWemallOrderRemove', $order);
+                $this->app->event->trigger('PluginWemallOrderRemove', $deleted);
                 // 返回处理成功数据
                 $this->success('删除成功！');
             } else {

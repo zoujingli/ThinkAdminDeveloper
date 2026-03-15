@@ -101,8 +101,8 @@ abstract class GoodsService
             $field = ['ghash' => 'ghash', 'gcode' => 'gcode', 'gspec' => 'gspec', 'number' => 'count'];
             PluginWemallOrderCart::mk()->field($field)->where($where)->with([
                 'goods' => function ($query) {
-                    $query->where(['status' => 1, 'deleted' => 0]);
-                    $query->withoutField(['specs', 'content', 'status', 'deleted', 'create_time', 'update_time']);
+                    $query->where(['status' => 1]);
+                    $query->withoutField(['specs', 'content', 'status', 'delete_time', 'create_time', 'update_time']);
                 },
                 'specs' => function ($query) {
                     $query->where(['status' => 1]);
@@ -134,7 +134,7 @@ abstract class GoodsService
                 }
             }
             // 读取商品数据
-            $map2 = [['status', '=', 1], ['deleted', '=', 0], ['code', 'in', array_unique(array_column($lines, 'gcode'))]];
+            $map2 = [['status', '=', 1], ['code', 'in', array_unique(array_column($lines, 'gcode'))]];
             foreach (PluginWemallGoods::mk()->where($map2)->withoutField(['specs', 'content'])->select()->toArray() as $goods) {
                 foreach ($lines as &$line) {
                     if ($line['gcode'] === $goods['code']) {

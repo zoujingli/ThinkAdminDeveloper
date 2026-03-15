@@ -50,7 +50,7 @@ class Config extends Controller
             $this->types = PluginWemallConfigCoupon::types;
         }, function (QueryHelper $query) {
             $query->like('name')->equal('status,type#mtype')->dateBetween('create_time');
-            $query->where(['deleted' => 0, 'status' => intval($this->type === 'index')]);
+            $query->where(['status' => intval($this->type === 'index')]);
         });
     }
 

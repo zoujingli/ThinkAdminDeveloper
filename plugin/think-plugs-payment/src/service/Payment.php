@@ -259,7 +259,7 @@ abstract class Payment
     {
         try {
             if (empty($config)) {
-                $map = ['code' => $code, 'status' => 1, 'deleted' => 0];
+                $map = ['code' => $code, 'status' => 1];
                 $config = PluginPaymentConfig::mk()->where($map)->findOrEmpty()->toArray();
             }
             if (empty($config)) {
@@ -361,7 +361,7 @@ abstract class Payment
         if ($getfull) {
             $items = [];
             $query = PluginPaymentConfig::mk()->field('type,code,name,cover,content');
-            $query->where(['status' => 1, 'deleted' => 0])->whereIn('type', array_keys($types));
+            $query->where(['status' => 1])->whereIn('type', array_keys($types));
             foreach ($query->order('sort desc,id desc')->cursor() as $item) {
                 $item['qrcode'] = $item['content']['voucher_qrcode'] ?? '';
                 unset($item['content']);
@@ -377,7 +377,7 @@ abstract class Payment
      */
     public static function items(): array
     {
-        $map = ['status' => 1, 'deleted' => 0];
+        $map = ['status' => 1];
         return PluginPaymentConfig::mk()->where($map)->order('sort desc,id desc')->column('type,code,name', 'code');
     }
 

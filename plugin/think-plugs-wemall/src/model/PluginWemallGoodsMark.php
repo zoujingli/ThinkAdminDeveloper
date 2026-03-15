@@ -36,8 +36,6 @@ use plugin\account\model\Abs;
  */
 class PluginWemallGoodsMark extends Abs
 {
-    protected $deleteTime = false;
-
     /**
      * 鑾峰彇鎵€鏈夋爣绛?
      */

@@ -45,7 +45,7 @@ class Report extends Controller
     public function index()
     {
         $this->usersTotal = PluginWemallUserRelation::mk()->cache(true, 60)->count();
-        $this->goodsTotal = PluginWemallGoods::mk()->cache(true, 60)->where(['deleted' => 0])->count();
+        $this->goodsTotal = PluginWemallGoods::mk()->cache(true, 60)->count();
         $this->orderTotal = PluginWemallOrder::mk()->cache(true, 60)->whereRaw('status >= 4')->count();
         $this->amountTotal = PluginWemallOrder::mk()->cache(true, 60)->whereRaw('status >= 4')->sum('amount_total');
 
@@ -63,7 +63,7 @@ class Report extends Controller
             $rebates = $model->whereTime('create_time', '-10 days')->group('mday')->select()->column(null, 'mday');
             // 统计余额数据
             $model = PluginPaymentBalance::mk()->field($field + ['sum(case when amount>0 then amount else 0 end)' => 'amount1', 'sum(case when amount<0 then amount else 0 end)' => 'amount2']);
-            $balances = $model->whereTime('create_time', '-10 days')->where(['deleted' => 0])->group('mday')->select()->column(null, 'mday');
+            $balances = $model->whereTime('create_time', '-10 days')->group('mday')->select()->column(null, 'mday');
             // 数据格式转换
             foreach ($users as &$user) {
                 $user = $user instanceof Model ? $user->toArray() : $user;
@@ -86,7 +86,7 @@ class Report extends Controller
                     '订单数量' => ($orders[$date] ?? [])['count'] ?? 0,
                     '订单金额' => ($orders[$date] ?? [])['amount'] ?? 0,
                     '返佣金额' => ($rebates[$date] ?? [])['amount'] ?? 0,
-                    '剩余余额' => PluginPaymentBalance::mk()->whereRaw("create_time<='{$date} 23:59:59' and deleted=0")->sum('amount'),
+                    '剩余余额' => PluginPaymentBalance::mk()->where('create_time', '<=', "{$date} 23:59:59")->sum('amount'),
                     '充值余额' => ($balances[$date] ?? [])['amount1'] ?? 0,
                     '消费余额' => ($balances[$date] ?? [])['amount2'] ?? 0,
                 ];

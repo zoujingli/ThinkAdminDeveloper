@@ -52,13 +52,13 @@ class Goods extends Controller
         PluginWemallGoods::mQuery(null, function (QueryHelper $query) {
             // 根据优惠券展示商品
             if ($couponCode = input('coupon')) {
-                $where = ['code' => $couponCode, 'deleted' => 0];
+                $where = ['code' => $couponCode];
                 $userCoupon = PluginWemallUserCoupon::mk()->where($where)->findOrEmpty();
                 if ($userCoupon->isEmpty()) {
                     $this->error('无效优惠券！');
                 }
                 // 追加卡券信息到商品信息
-                $map = ['status' => 1, 'deleted' => 0];
+                $map = ['status' => 1];
                 $this->coupon = $userCoupon->coupon()->where($map)->field('type,name,extra,amount,limit_amount,limit_times')->findOrEmpty()->toArray();
                 if (empty($this->coupon)) {
                     $this->error('优惠券已停用！');
@@ -90,9 +90,9 @@ class Goods extends Controller
             if (!empty($code = input('code'))) {
                 // 查询单个商品详情
                 $query->with(['discount', 'items', 'comments' => function (Query $query) {
-                    $query->limit(2)->where(['status' => 1, 'deleted' => 0]);
+                    $query->limit(2)->where(['status' => 1]);
                 }])->withCount(['comments' => function (Query $query) {
-                    $query->where(['status' => 1, 'deleted' => 0]);
+                    $query->where(['status' => 1]);
                 }]);
                 PluginWemallGoods::mk()->where(['code' => $code])->inc('num_read')->update([]);
             } else {
@@ -108,7 +108,7 @@ class Goods extends Controller
             } else {
                 $query->order("sort {$type},id {$type}");
             }
-            $query->where(['status' => 1, 'deleted' => 0]);
+            $query->where(['status' => 1]);
             // 查询数据分页
             $page = intval(input('page', 1));
             $limit = max(min(intval(input('limit', 20)), 60), 1);
@@ -158,7 +158,7 @@ class Goods extends Controller
      */
     public function express()
     {
-        $query = PluginWemallExpressCompany::mk()->where(['status' => 1, 'deleted' => 0]);
+        $query = PluginWemallExpressCompany::mk()->where(['status' => 1]);
         $query->field(['name' => 'text', 'code' => 'value'])->order('sort desc,id desc');
         $this->success('获取快递公司', $query->select()->toArray());
     }

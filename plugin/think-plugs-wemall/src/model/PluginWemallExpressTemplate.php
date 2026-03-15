@@ -55,7 +55,7 @@ class PluginWemallExpressTemplate extends Abs
             'NONE' => ['code' => 'NONE', 'name' => '无需发货', 'normal' => '', 'content' => '[]', 'company' => ['_' => '虚拟产品']],
             'FREE' => ['code' => 'FREE', 'name' => '免费包邮', 'normal' => '', 'content' => '[]', 'company' => ['ALL' => '发货时选快递公司']],
         ] : [];
-        $query = self::mk()->where(['status' => 1, 'deleted' => 0])->order('sort desc,id desc');
+        $query = self::mk()->where(['status' => 1])->order('sort desc,id desc');
         foreach ($query->field('code,name,normal,content,company')->cursor() as $tmpl) {
             $items[$tmpl->getAttr('code')] = $tmpl->toArray();
         }

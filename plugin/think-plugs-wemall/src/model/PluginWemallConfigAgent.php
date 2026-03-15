@@ -42,8 +42,6 @@ use think\db\exception\DbException;
  */
 class PluginWemallConfigAgent extends Abs
 {
-    protected $deleteTime = false;
-
     /**
      * 鑾峰彇浠ｇ悊绛夌骇.
      * @param ?string $first 澧炲姞棣栭」鍐呭

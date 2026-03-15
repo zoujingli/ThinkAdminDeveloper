@@ -49,7 +49,7 @@ abstract class UserCreate
                 Library::$sapp->db->transaction(function () use ($user, $data) {
                     // 检查代理权限
                     if (!empty($data['agent_phone'])) {
-                        $where = ['phone' => $data['agent_phone'], 'deleted' => 0];
+                        $where = ['phone' => $data['agent_phone']];
                         $parent = PluginAccountUser::mk()->where($where)->findOrEmpty();
                         $relation = PluginWemallUserRelation::mk()->where(['unid' => $parent->getAttr('id')])->findOrEmpty();
                         if ($parent->isEmpty() || $relation->isEmpty()) {
@@ -60,7 +60,7 @@ abstract class UserCreate
                         }
                     }
                     // 检查并创建账号
-                    $inset = ['phone' => $data['phone'], 'headimg' => $data['headimg'], 'nickname' => $data['name'], 'deleted' => 0];
+                    $inset = ['phone' => $data['phone'], 'headimg' => $data['headimg'], 'nickname' => $data['name']];
                     ($account = Account::mk(Account::WAP, $inset))->isNull() && $account->set($inset);
                     $account->isBind() || $account->bind($inset, $data) && $account->pwdModify($data['password']);
                     // 绑定上级代理身份

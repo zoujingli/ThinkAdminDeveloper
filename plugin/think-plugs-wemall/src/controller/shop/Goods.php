@@ -68,7 +68,7 @@ class Goods extends Controller
         }, function (QueryHelper $query) {
             $query->withoutField('specs,content')->like('code|name#name')->like('marks,cates', ',');
             $query->equal('status,level_upgrade,delivery_code,rebate_type')->dateBetween('create_time');
-            $query->where(['status' => intval($this->type === 'index'), 'deleted' => 0]);
+            $query->where(['status' => intval($this->type === 'index')]);
         });
     }
 
@@ -82,7 +82,6 @@ class Goods extends Controller
     public function select()
     {
         $this->get['status'] = 1;
-        $this->get['deleted'] = 0;
         $this->index();
     }
 

@@ -53,7 +53,7 @@ class Feedback extends Controller
         }, function (QueryHelper $query) {
             $query->with(['bindUser']);
             $query->like('name,phone,content')->dateBetween('create_time');
-            $query->where(['status' => intval($this->type === 'index'), 'deleted' => 0]);
+            $query->where(['status' => intval($this->type === 'index')]);
             // 提交用户搜索
             $db = PluginAccountUser::mQuery()->like('username')->field('id')->db();
             if (!empty($db->getOptions()['where'] ?? [])) {

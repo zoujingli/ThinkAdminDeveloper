@@ -53,7 +53,7 @@ class Data extends Controller
     public function spread()
     {
         $data = $this->_vali(['from.require' => '推荐人不能为空！']);
-        $where = ['id' => $data['from'], 'deleted' => 0];
+        $where = ['id' => $data['from']];
         $user = PluginAccountUser::mk()->where($where)->findOrEmpty();
         if ($user->isEmpty()) {
             $this->error('无效推荐人！');
