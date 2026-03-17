@@ -20,6 +20,7 @@ declare(strict_types=1);
 
 namespace plugin\helper\command;
 
+use plugin\helper\service\IndexNameService;
 use plugin\system\service\SystemService;
 use think\admin\service\RuntimeService;
 use think\console\Command;
@@ -28,17 +29,16 @@ use think\facade\Db;
 class DbIndexStruct extends Command
 {
     /**
-     * 配置命令参数。
+     * 配置索引同步命令。
      */
     public function configure(): void
     {
         $this->setName('xadmin:helper:index');
-        $this->setDescription('刷新数据库的结构索引');
+        $this->setDescription('同步数据库索引命名规范');
     }
 
     /**
-     * 检查是否允许执行任务
-     * @return bool 返回true表示允许执行
+     * 仅在调试模式下允许执行。
      */
     public function isEnabled(): bool
     {
@@ -46,41 +46,50 @@ class DbIndexStruct extends Command
     }
 
     /**
-     * 命令执行入口
-     * 遍历数据库表并重命名索引.
+     * 遍历全部数据表并规范索引名称，支持复合索引。
      */
     public function handle(): void
     {
+        if (strtolower(strval($this->app->db->connect()->getConfig('type', ''))) !== 'mysql') {
+            $this->output->writeln('Skip index sync: current database driver does not support SHOW INDEX rename flow.');
+            return;
+        }
+
         [$tables, $total, $count] = SystemService::getTables();
         foreach ($tables as $table) {
-            $this->output->writeln(sprintf("[%s/%s] 开始处理表 {$table}", $count++, $total));
+            $this->output->writeln(sprintf('[%s/%s] 开始处理表 %s', $count++, $total, $table));
+
+            $indexes = [];
             foreach (Db::query(sprintf('SHOW INDEX FROM `%s`', $table)) as $index) {
-                $keyName = $index['Key_name'] ?? '';
-                if ($keyName === 'PRIMARY') {
+                $keyName = strval($index['Key_name'] ?? '');
+                if ($keyName === '' || $keyName === 'PRIMARY') {
                     continue;
                 }
-                $newName = $this->genIndexName($table, (array)$index);
-                if ($keyName === $newName) {
+
+                $indexes[$keyName]['non_unique'] = intval($index['Non_unique'] ?? 1);
+                $indexes[$keyName]['columns'][intval($index['Seq_in_index'] ?? 0)] = strval($index['Column_name'] ?? '');
+            }
+
+            $existingNames = array_fill_keys(array_keys($indexes), true);
+            foreach ($indexes as $keyName => $data) {
+                $columns = $data['columns'] ?? [];
+                ksort($columns);
+                $columns = array_values(array_filter($columns, 'strlen'));
+                if ($columns === []) {
                     continue;
                 }
+
+                $newName = IndexNameService::generate($table, $columns, intval($data['non_unique'] ?? 1) === 0);
+                if ($keyName === $newName || isset($existingNames[$newName])) {
+                    continue;
+                }
+
                 Db::execute(sprintf('ALTER TABLE `%s` RENAME INDEX `%s` TO `%s`', $table, $keyName, $newName));
+                $existingNames[$newName] = true;
                 ++$count;
             }
         }
-        $this->output->writeln("✅ 完成 {$count} 个索引重命名");
-    }
 
-    /**
-     * 生成索引名称.
-     * @param string $table 表名
-     * @param array $index 索引信息
-     * @return string 生成的索引名称
-     */
-    private function genIndexName(string $table, array $index): string
-    {
-        $abbr = implode('', array_map(function ($word) {
-            return $word[0];
-        }, explode('_', $table)));
-        return ($index['Non_unique'] ? 'idx_' : 'uni_') . $abbr . '_' . substr(md5($table), -4) . '_' . $index['Column_name'];
+        $this->output->writeln("完成索引处理，共计 {$count} 项。");
     }
 }

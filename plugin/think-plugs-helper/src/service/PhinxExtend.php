@@ -397,14 +397,7 @@ class PhinxExtend
      */
     private static function genIndexName(string $table, array|string $name, bool $unique = false): string
     {
-        $getInitials = function (string $str): string {
-            return implode('', array_map(function ($part) {
-                return $part[0] ?? '';
-            }, explode('_', $str)));
-        };
-        $suffix = is_array($name) ? implode('_', $name) : $name;
-        $prefix = $unique ? 'uni' : 'idx';
-        return sprintf('%s_%s_%s_%s', $prefix, substr(md5($table), -4), $getInitials($table), $suffix);
+        return IndexNameService::generate($table, $name, $unique);
     }
 
     /**
@@ -537,16 +530,25 @@ CODE;
             $_fieldString .= "\t\t]";
             $_indexs = [];
             foreach (Library::$sapp->db->connect()->query("show index from {$table}") as $index) {
-                $index['Key_name'] !== 'PRIMARY' && $_indexs[] = $index['Column_name'];
+                $keyName = strval($index['Key_name'] ?? '');
+                if ($keyName === '' || $keyName === 'PRIMARY') {
+                    continue;
+                }
+
+                $_indexs[$keyName]['columns'][intval($index['Seq_in_index'] ?? 0)] = strval($index['Column_name'] ?? '');
+                $_indexs[$keyName]['unique'] = intval($index['Non_unique'] ?? 1) === 0;
             }
-            usort($_indexs, function ($a, $b) {
-                return strlen($a) <=> strlen($b);
-            });
-            $_indexString = '[' . PHP_EOL . "\t\t\t";
+            $_indexString = '[' . PHP_EOL;
             foreach ($_indexs as $index) {
-                $_indexString .= "'{$index}', ";
+                $columns = $index['columns'] ?? [];
+                ksort($columns);
+                $spec = ['columns' => array_values(array_filter($columns, 'strlen'))];
+                if (!empty($index['unique'])) {
+                    $spec['unique'] = true;
+                }
+                $_indexString .= "\t\t\t" . self::_arr2str($spec) . ',' . PHP_EOL;
             }
-            $_indexString .= PHP_EOL . "\t\t]";
+            $_indexString .= "\t\t]";
             $content = str_replace(['_FIELDS_', '_INDEXS_', '__FORCE__'], [$_fieldString, $_indexString, $force ? 'true' : 'false'], $content) . PHP_EOL . PHP_EOL;
         }
         return $rehtml ? $content : highlight_string($content, true);
