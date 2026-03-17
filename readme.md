@@ -154,12 +154,25 @@ flowchart TD
 # 安装依赖
 composer update --optimize-autoloader
 
-# 发布配置、静态资源和迁移脚本
+# 发布配置、静态资源和迁移脚本（不执行建表）
+php think xadmin:publish
+
+# 执行安装迁移，自动创建或更新数据表
 php think xadmin:publish --migrate
+
+# 可选：检查迁移执行状态
+php think migrate:status
 
 # 启动 HTTP 服务
 php think xadmin:worker start http -d
 ```
+
+说明：
+
+- `composer update` 只会执行服务发现，不会自动创建数据表。
+- `php think xadmin:publish` 只负责发布配置、静态资源并同步各插件 `stc/database` 到根目录 `database/migrations`。
+- `php think xadmin:publish --migrate` 会在发布完成后自动执行 `migrate:run`，这是安装阶段真正创建或更新数据表的步骤。
+- 如果是全新环境，必须至少执行一次 `php think xadmin:publish --migrate`。
 
 默认访问地址：
 
@@ -196,6 +209,12 @@ php think xadmin:package
 - 发布 `ThinkPlugsWorker` 的 `config/worker.php`
 - 同步各插件 `stc/database` 到根目录 `database/migrations`
 - 通过 `database/migrations/.xadmin-published.json` 清理历史失效或冲突迁移
+
+执行规则：
+
+- `php think xadmin:publish` 只同步资源和迁移脚本，不执行数据库安装。
+- `php think xadmin:publish --migrate` 会在同步完成后自动调用 `migrate:run`，安装或升级数据库表结构。
+- 根目录 `database/migrations` 是发布产物，真正执行的也是这里的迁移脚本。
 
 当前约定为：
 
