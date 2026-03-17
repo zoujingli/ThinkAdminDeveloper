@@ -26,12 +26,12 @@ use Workerman\Protocols\Http\Request as WorkerRequest;
 use Workerman\Worker;
 
 /**
- * ThinkPHP request bridge for Workerman.
+ * Workerman 到 ThinkPHP 的请求桥接对象。
  */
 class ThinkRequest extends Request
 {
     /**
-     * Reset request state before reusing the same instance.
+     * 复用实例前重置请求状态。
      */
     public function reset(): void
     {
@@ -46,7 +46,7 @@ class ThinkRequest extends Request
     }
 
     /**
-     * Convert a Workerman request into a ThinkPHP request.
+     * 将 Workerman 请求转换为 ThinkPHP 请求对象。
      */
     public function withWorkerRequest(TcpConnection $connection, WorkerRequest $request): ThinkRequest
     {
@@ -150,7 +150,9 @@ class ThinkRequest extends Request
 
     private function buildServer(WorkerRequest $request, TcpConnection $connection, string $scheme, int $port): array
     {
-        $root = dirname(__DIR__, 4);
+        $root = defined('THINK_PLUGS_INSTALL_ROOT') && is_string(THINK_PLUGS_INSTALL_ROOT) && THINK_PLUGS_INSTALL_ROOT !== ''
+            ? rtrim(THINK_PLUGS_INSTALL_ROOT, \DIRECTORY_SEPARATOR)
+            : dirname(__DIR__, 4);
         $pathInfo = '/' . ltrim($this->pathinfo, '/');
         $server = [
             'DOCUMENT_ROOT' => $root . \DIRECTORY_SEPARATOR . 'public',

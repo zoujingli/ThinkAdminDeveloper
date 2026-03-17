@@ -376,6 +376,12 @@ if (!function_exists('syspath')) {
     {
         if ($root === null) {
             $root = Library::$sapp->getRootPath();
+            if (defined('THINK_PLUGS_INSTALL_ROOT') && is_string(THINK_PLUGS_INSTALL_ROOT) && THINK_PLUGS_INSTALL_ROOT !== '') {
+                $prefix = strtolower(strtok(str_replace('\\', '/', ltrim($name, '\\/')), '/'));
+                if (in_array($prefix, ['database', 'public', 'runtime', 'safefile'], true)) {
+                    $root = THINK_PLUGS_INSTALL_ROOT;
+                }
+            }
         }
 
         $attr = ['/' => DIRECTORY_SEPARATOR, '\\' => DIRECTORY_SEPARATOR];

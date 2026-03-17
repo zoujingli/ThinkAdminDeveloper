@@ -27,8 +27,7 @@ use think\admin\service\ModuleService;
 use think\admin\service\Service;
 
 /**
- * Worker-backed process runtime.
- * Provides shell operations and worker lifecycle controls.
+ * 基于 Worker 的进程运行时服务。
  */
 class ProcessService extends Service
 {
@@ -52,7 +51,8 @@ class ProcessService extends Service
      */
     public static function think(string $args = '', bool $simple = false): string
     {
-        $command = syspath('think') . ' ' . $args;
+        $entry = static::entryScript();
+        $command = "\"{$entry}\"" . ($args === '' ? '' : " {$args}");
         return $simple ? $command : static::php($command);
     }
 
@@ -66,7 +66,7 @@ class ProcessService extends Service
             $comExec = ModuleService::getRunVar('com');
             $comExec = static::isFile($comExec) ? static::php($comExec) : 'composer';
         }
-        $root = Library::$sapp->getRootPath();
+        $root = static::workingDirectory();
         return "{$comExec} -d {$root} {$args}";
     }
 
@@ -88,7 +88,7 @@ class ProcessService extends Service
     }
 
     /**
-     * Build the canonical worker serve command signature.
+     * 构建统一的 Worker 服务启动命令签名。
      */
     public static function workerSignature(string $target): string
     {
@@ -96,7 +96,7 @@ class ProcessService extends Service
     }
 
     /**
-     * Query running worker service processes by their serve command.
+     * 根据启动签名查询正在运行的 Worker 进程。
      *
      * @return array<int, array{pid:string,cmd:string}>
      */
@@ -166,7 +166,7 @@ class ProcessService extends Service
     }
 
     /**
-     * Query one process by PID.
+     * 通过 PID 查询单个进程信息。
      *
      * @return null|array{pid:string,cmd:string}
      */
@@ -213,7 +213,7 @@ class ProcessService extends Service
      */
     public static function exec(string $command, bool $outarr = false, ?callable $callable = null)
     {
-        $process = Process::fromShellCommandline($command)->setWorkingDirectory(Library::$sapp->getRootPath());
+        $process = Process::fromShellCommandline($command)->setWorkingDirectory(static::workingDirectory());
         $process->run(is_callable($callable) ? static function ($type, $text) use ($callable, $process) {
             call_user_func($callable, $process, $type, trim(CodeToolkit::text2utf8($text))) === true && $process->stop();
         } : null);
@@ -265,6 +265,34 @@ class ProcessService extends Service
                 return false;
             }
         }
+    }
+
+    /**
+     * 获取当前运行环境下的工作目录。
+     */
+    public static function workingDirectory(): string
+    {
+        if (defined('THINK_PLUGS_INSTALL_ROOT') && is_string(THINK_PLUGS_INSTALL_ROOT) && THINK_PLUGS_INSTALL_ROOT !== '') {
+            return rtrim(THINK_PLUGS_INSTALL_ROOT, '\\/');
+        }
+
+        return rtrim(Library::$sapp->getRootPath(), '\\/');
+    }
+
+    /**
+     * 获取当前运行环境下的控制台入口文件。
+     */
+    public static function entryScript(): string
+    {
+        if (defined('THINK_PLUGS_PHAR_ENTRY') && is_string(THINK_PLUGS_PHAR_ENTRY) && THINK_PLUGS_PHAR_ENTRY !== '') {
+            return THINK_PLUGS_PHAR_ENTRY;
+        }
+
+        if (($running = \Phar::running(false)) !== '') {
+            return $running;
+        }
+
+        return syspath('think');
     }
 
     /**
@@ -329,7 +357,7 @@ class ProcessService extends Service
     }
 
     /**
-     * Reload on POSIX and degrade to restart on Windows.
+     * 在 POSIX 平台执行 reload，在 Windows 平台退化为 restart。
      *
      * @param array<string, mixed>|string $service
      * @return 'reload'|'restart'|false
@@ -350,7 +378,7 @@ class ProcessService extends Service
     }
 
     /**
-     * Spawn a detached worker control command.
+     * 拉起一个新的 Worker 控制进程。
      *
      * @param array<string, mixed>|string $service
      */
@@ -360,7 +388,7 @@ class ProcessService extends Service
     }
 
     /**
-     * Build a public worker control command.
+     * 构建对外可见的 Worker 控制命令。
      */
     public static function workerCommand(string $action, string $target, bool $daemon = true, array $options = []): string
     {
@@ -383,7 +411,7 @@ class ProcessService extends Service
     }
 
     /**
-     * Query Windows processes by image name and command substring.
+     * 在 Windows 平台按镜像名和命令片段查询进程。
      *
      * @return array<int, array{pid:string,cmd:string}>
      */
@@ -405,7 +433,7 @@ class ProcessService extends Service
     }
 
     /**
-     * Execute a PowerShell script and return its normalized output.
+     * 执行 PowerShell 脚本并返回标准化输出。
      *
      * @return array<int, string>|string
      */
@@ -419,14 +447,14 @@ class ProcessService extends Service
             'Bypass',
             '-Command',
             $script,
-        ], Library::$sapp->getRootPath());
+        ], static::workingDirectory());
         $process->run();
         $output = str_replace("\r\n", "\n", CodeToolkit::text2utf8($process->getOutput()));
         return $outarr ? explode("\n", trim($output)) : trim($output);
     }
 
     /**
-     * Build a PowerShell here-string literal.
+     * 构造 PowerShell 字面量字符串。
      */
     protected static function powershellLiteral(string $value): string
     {
@@ -434,7 +462,7 @@ class ProcessService extends Service
     }
 
     /**
-     * Parse a PowerShell process output line.
+     * 解析一行 PowerShell 进程输出。
      *
      * @return null|array{pid:string,cmd:string}
      */

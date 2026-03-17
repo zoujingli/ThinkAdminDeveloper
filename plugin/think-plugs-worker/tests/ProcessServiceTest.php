@@ -48,6 +48,16 @@ class ProcessServiceTest extends TestCase
         $this->assertSame('xadmin:worker serve queue', ProcessService::workerSignature('queue'));
     }
 
+    public function testEntryScriptPrefersThinkInProjectMode(): void
+    {
+        $this->assertSame(WORKER_TEST_PROJECT_ROOT . DIRECTORY_SEPARATOR . 'think', ProcessService::entryScript());
+    }
+
+    public function testWorkingDirectoryPrefersProjectRootInProjectMode(): void
+    {
+        $this->assertSame(WORKER_TEST_PROJECT_ROOT, ProcessService::workingDirectory());
+    }
+
     public function testQueryPidCanDescribeCurrentProcess(): void
     {
         $process = ProcessService::queryPid(getmypid());

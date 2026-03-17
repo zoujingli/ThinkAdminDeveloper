@@ -29,7 +29,7 @@ use Workerman\Timer;
 use Workerman\Worker;
 
 /**
- * Custom Http server for ThinkAdmin.
+ * ThinkAdmin 的 Workerman HTTP 服务实现。
  */
 class HttpServer extends Server
 {
@@ -56,7 +56,7 @@ class HttpServer extends Server
         $this->port = $port;
         $this->host = $host;
         $this->root = dirname(__DIR__, 4) . \DIRECTORY_SEPARATOR;
-        $this->public = $this->root . 'public' . \DIRECTORY_SEPARATOR;
+        $this->public = $this->resolvePublicRoot();
         $this->context = $context;
         $this->protocol = 'http';
         $this->callable = $callable;
@@ -65,7 +65,7 @@ class HttpServer extends Server
     }
 
     /**
-     * onWorkerStart.
+     * Worker 启动时初始化应用容器。
      */
     public function onWorkerStart(Worker $worker): void
     {
@@ -102,7 +102,7 @@ class HttpServer extends Server
     }
 
     /**
-     * onMessage.
+     * 处理 HTTP 请求与静态资源响应。
      */
     public function onMessage(TcpConnection $connection, WorkerRequest $request): void
     {
@@ -135,7 +135,7 @@ class HttpServer extends Server
     }
 
     /**
-     * onWorkerReload.
+     * Worker 重载时释放监控资源。
      */
     public function onWorkerReload(Worker $worker): void
     {
@@ -143,15 +143,26 @@ class HttpServer extends Server
     }
 
     /**
-     * Set application root path.
+     * 设置应用根目录。
      */
     public function setRoot(string $path): void
     {
         $this->root = rtrim($path, \DIRECTORY_SEPARATOR) . \DIRECTORY_SEPARATOR;
-        $this->public = $this->root . 'public' . \DIRECTORY_SEPARATOR;
+        if (!defined('THINK_PLUGS_PUBLIC_ROOT')) {
+            $this->public = $this->root . 'public' . \DIRECTORY_SEPARATOR;
+        }
     }
 
     protected function init(): void {}
+
+    private function resolvePublicRoot(): string
+    {
+        if (defined('THINK_PLUGS_PUBLIC_ROOT') && is_string(THINK_PLUGS_PUBLIC_ROOT) && THINK_PLUGS_PUBLIC_ROOT !== '') {
+            return rtrim(THINK_PLUGS_PUBLIC_ROOT, \DIRECTORY_SEPARATOR) . \DIRECTORY_SEPARATOR;
+        }
+
+        return $this->root . 'public' . \DIRECTORY_SEPARATOR;
+    }
 
     private function resolvePublicFile(string $path): ?string
     {
