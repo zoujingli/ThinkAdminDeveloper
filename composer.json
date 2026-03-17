@@ -30,6 +30,7 @@
     "topthink/think-orm": "^4.0",
     "workerman/workerman": "^5.1.9",
     "zoujingli/think-plugs-account": "^8.0",
+    "zoujingli/think-plugs-builder": "^8.0",
     "zoujingli/think-plugs-center": "^8.0",
     "zoujingli/think-plugs-helper": "^8.0",
     "zoujingli/think-plugs-payment": "^8.0",
@@ -56,6 +57,13 @@
       "@php think xadmin:helper:model --reset",
       "php-cs-fixer fix"
     ],
+    "database:sync": [
+      "@php database/sync.php"
+    ],
+    "build:phar": [
+      "@database:sync",
+      "@php -d phar.readonly=0 think xadmin:builder --name=admin.phar"
+    ],
     "test:smoke": [
       "php tests/smoke/plugin_refactor_smoke.php"
     ],
@@ -75,6 +83,10 @@
     {
       "type": "path",
       "url": "plugin/think-plugs-helper"
+    },
+    {
+      "type": "path",
+      "url": "plugin/think-plugs-builder"
     },
     {
       "type": "path",

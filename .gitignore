@@ -11,6 +11,8 @@
 /vendor
 /runtime
 /safefile
+/build
+/admin.phar
 /nbproject
 /composer.lock
 !composer.json
