@@ -20,13 +20,14 @@ declare(strict_types=1);
 
 namespace think\admin\service;
 
+use think\admin\Service;
 use think\Container;
 
 /**
  * Standard process facade.
  * The concrete runtime implementation is provided by ThinkPlugsWorker.
  */
-class ProcessService extends Service
+final class ProcessService extends Service
 {
     public const BIND_NAME = 'think.admin.runtime.process';
 
@@ -35,7 +36,7 @@ class ProcessService extends Service
      */
     public static function php(string $args = ''): string
     {
-        $provider = static::providerClass();
+        $provider = self::providerClass();
         return $provider::php($args);
     }
 
@@ -44,7 +45,7 @@ class ProcessService extends Service
      */
     public static function think(string $args = '', bool $simple = false): string
     {
-        $provider = static::providerClass();
+        $provider = self::providerClass();
         return $provider::think($args, $simple);
     }
 
@@ -53,7 +54,7 @@ class ProcessService extends Service
      */
     public static function composer(string $args = ''): string
     {
-        $provider = static::providerClass();
+        $provider = self::providerClass();
         return $provider::composer($args);
     }
 
@@ -62,7 +63,7 @@ class ProcessService extends Service
      */
     public static function thinkExec(string $args, int $usleep = 0, bool $doQuery = false): array
     {
-        $provider = static::providerClass();
+        $provider = self::providerClass();
         return $provider::thinkExec($args, $usleep, $doQuery);
     }
 
@@ -71,7 +72,7 @@ class ProcessService extends Service
      */
     public static function thinkQuery(string $args): array
     {
-        $provider = static::providerClass();
+        $provider = self::providerClass();
         return $provider::thinkQuery($args);
     }
 
@@ -80,7 +81,7 @@ class ProcessService extends Service
      */
     public static function create(string $command, int $usleep = 0): void
     {
-        $provider = static::providerClass();
+        $provider = self::providerClass();
         $provider::create($command, $usleep);
     }
 
@@ -91,7 +92,7 @@ class ProcessService extends Service
      */
     public static function query(string $cmd, string $name = 'php.exe'): array
     {
-        $provider = static::providerClass();
+        $provider = self::providerClass();
         return $provider::query($cmd, $name);
     }
 
@@ -100,7 +101,7 @@ class ProcessService extends Service
      */
     public static function close(int $pid): bool
     {
-        $provider = static::providerClass();
+        $provider = self::providerClass();
         return $provider::close($pid);
     }
 
@@ -111,7 +112,7 @@ class ProcessService extends Service
      */
     public static function exec(string $command, bool $outarr = false, ?callable $callable = null)
     {
-        $provider = static::providerClass();
+        $provider = self::providerClass();
         return $provider::exec($command, $outarr, $callable);
     }
 
@@ -121,7 +122,7 @@ class ProcessService extends Service
     public static function message(string $message, int $backline = 0): void
     {
         $container = Container::getInstance();
-        if (!$container->bound(static::BIND_NAME)) {
+        if (!$container->bound(self::BIND_NAME)) {
             while ($backline-- > 0) {
                 $message = "\033[1A\r\033[K{$message}";
             }
@@ -129,7 +130,7 @@ class ProcessService extends Service
             return;
         }
 
-        $provider = static::providerClass();
+        $provider = self::providerClass();
         $provider::message($message, $backline);
     }
 
@@ -138,7 +139,7 @@ class ProcessService extends Service
      */
     public static function isWin(): bool
     {
-        $provider = static::providerClass();
+        $provider = self::providerClass();
         return $provider::isWin();
     }
 
@@ -147,7 +148,7 @@ class ProcessService extends Service
      */
     public static function isUnix(): bool
     {
-        $provider = static::providerClass();
+        $provider = self::providerClass();
         return $provider::isUnix();
     }
 
@@ -156,7 +157,7 @@ class ProcessService extends Service
      */
     public static function isFile(string $file): bool
     {
-        $provider = static::providerClass();
+        $provider = self::providerClass();
         return $provider::isFile($file);
     }
 
@@ -165,7 +166,7 @@ class ProcessService extends Service
      */
     public static function workerCommand(string $action, string $target, bool $daemon = true, array $options = []): string
     {
-        $provider = static::providerClass();
+        $provider = self::providerClass();
         return $provider::workerCommand($action, $target, $daemon, $options);
     }
 
@@ -175,10 +176,10 @@ class ProcessService extends Service
     protected static function providerClass(): string
     {
         $container = Container::getInstance();
-        if (!$container->bound(static::BIND_NAME)) {
+        if (!$container->bound(self::BIND_NAME)) {
             throw new \RuntimeException('ThinkPlugsWorker is required for process runtime operations.');
         }
 
-        return $container->getAlias(static::BIND_NAME);
+        return $container->getAlias(self::BIND_NAME);
     }
 }

@@ -59,7 +59,7 @@ class Config extends Controller
     public function storage()
     {
         $this->authorizeManage();
-        $this->_applyFormToken();
+
         if ($this->request->isGet()) {
             StorageConfig::initialize();
             $this->type = input('type', array_key_first(Storage::types()) ?: 'local');

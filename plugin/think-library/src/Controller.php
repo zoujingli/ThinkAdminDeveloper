@@ -20,22 +20,13 @@ declare(strict_types=1);
 
 namespace think\admin;
 
-use think\admin\helper\DeleteHelper;
-use think\admin\helper\FormHelper;
-use think\admin\helper\QueryHelper;
-use think\admin\helper\SaveHelper;
 use think\admin\helper\ValidateHelper;
 use think\admin\runtime\SystemContext;
 use think\admin\service\JwtToken;
 use think\admin\service\NodeService;
 use think\admin\service\QueueService;
 use think\App;
-use think\db\BaseQuery;
-use think\db\exception\DataNotFoundException;
-use think\db\exception\DbException;
-use think\db\exception\ModelNotFoundException;
 use think\exception\HttpResponseException;
-use think\Model;
 use think\Request;
 
 /**
@@ -85,7 +76,7 @@ class Controller extends \stdClass
      * @param mixed $data 返回数据
      * @param mixed $code 返回代码
      */
-    public function error($info, $data = '{-null-}', $code = 0): void
+    public function error(mixed $info, mixed $data = '{-null-}', mixed $code = 0): void
     {
         $this->success($info, $data, $code);
     }
@@ -96,7 +87,7 @@ class Controller extends \stdClass
      * @param mixed $data 返回数据
      * @param mixed $code 返回代码
      */
-    public function success($info, $data = '{-null-}', $code = 1): void
+    public function success(mixed $info, mixed $data = '{-null-}', mixed $code = 1): void
     {
         if ($data === '{-null-}') {
             $data = new \stdClass();
@@ -104,9 +95,9 @@ class Controller extends \stdClass
         $result = ['code' => $code, 'info' => is_string($info) ? lang($info) : $info, 'data' => $data];
         if (JwtToken::isRejwt()) {
             $result['token'] = JwtToken::token();
-        } elseif ($token = SystemContext::buildToken()) {
+        } elseif ($token = SystemContext::instance()->buildToken()) {
             $result['token'] = $token;
-            SystemContext::syncTokenCookie($token);
+            SystemContext::instance()->syncTokenCookie($token);
         }
         throw new HttpResponseException(json($result));
     }
@@ -141,7 +132,7 @@ class Controller extends \stdClass
      * @param mixed $value 变量的值
      * @return $this
      */
-    public function assign($name, $value = ''): static
+    public function assign(mixed $name, mixed $value = ''): static
     {
         if (is_string($name)) {
             $this->{$name} = $value;
@@ -162,7 +153,7 @@ class Controller extends \stdClass
      * @param mixed $two 回调引用参数2
      * @param mixed $thr 回调引用参数3
      */
-    public function callback(string $name, &$one = [], &$two = [], &$thr = []): bool
+    public function callback(string $name, mixed &$one = [], mixed &$two = [], mixed &$thr = []): bool
     {
         if (is_callable($name)) {
             return call_user_func($name, $this, $one, $two, $thr);
@@ -181,93 +172,14 @@ class Controller extends \stdClass
     protected function initialize() {}
 
     /**
-     * 快捷查询逻辑器.
-     * @param BaseQuery|Model|string $dbQuery
-     * @param null|array|string $input
-     * @throws DbException
-     */
-    protected function _query($dbQuery, $input = null): QueryHelper
-    {
-        return QueryHelper::instance()->init($dbQuery, $input);
-    }
-
-    /**
-     * 快捷分页逻辑器.
-     * @param BaseQuery|Model|string $dbQuery
-     * @param bool|int $page 是否分页或指定分页
-     * @param bool $display 是否渲染模板
-     * @param bool|int $total 集合分页记录数
-     * @param int $limit 集合每页记录数
-     * @param string $template 模板文件名称
-     * @throws DataNotFoundException
-     * @throws DbException
-     * @throws ModelNotFoundException
-     */
-    protected function _page($dbQuery, $page = true, bool $display = true, $total = false, int $limit = 0, string $template = ''): array
-    {
-        return QueryHelper::instance()->init($dbQuery)->page($page, $display, $total, $limit, $template);
-    }
-
-    /**
-     * 快捷表单逻辑器.
-     * @param BaseQuery|Model|string $dbQuery
-     * @param string $template 模板名称
-     * @param string $field 指定数据主键
-     * @param mixed $where 额外更新条件
-     * @param array $data 表单扩展数据
-     * @throws Exception
-     * @throws DataNotFoundException
-     * @throws DbException
-     * @throws ModelNotFoundException
-     */
-    protected function _form($dbQuery, string $template = '', string $field = '', $where = [], array $data = []): array|bool
-    {
-        return FormHelper::instance()->init($dbQuery, $template, $field, $where, $data);
-    }
-
-    /**
      * 快捷输入并验证（ 支持 规则 # 别名 ）.
      * @param array $rules 验证规则（ 验证信息数组 ）
      * @param array|string $type 输入方式 ( post. 或 get. )
      * @param null|callable $callable 异常处理操作
      */
-    protected function _vali(array $rules, $type = '', ?callable $callable = null): array
+    protected function _vali(array $rules, array|string $type = '', ?callable $callable = null): array
     {
         return ValidateHelper::instance()->init($rules, $type, $callable);
-    }
-
-    /**
-     * 快捷更新逻辑器.
-     * @param BaseQuery|Model|string $dbQuery
-     * @param array $data 表单扩展数据
-     * @param string $field 数据对象主键
-     * @param mixed $where 额外更新条件
-     * @throws DbException
-     */
-    protected function _save($dbQuery, array $data = [], string $field = '', $where = []): bool
-    {
-        return SaveHelper::instance()->init($dbQuery, $data, $field, $where);
-    }
-
-    /**
-     * 快捷删除逻辑器.
-     * @param BaseQuery|Model|string $dbQuery
-     * @param string $field 数据对象主键
-     * @param mixed $where 额外更新条件
-     * @throws DbException
-     */
-    protected function _delete($dbQuery, string $field = '', $where = []): bool
-    {
-        return DeleteHelper::instance()->init($dbQuery, $field, $where);
-    }
-
-    /**
-     * 兼容旧表单令牌调用。
-     * @param bool $return 是否返回结果
-     */
-    protected function _applyFormToken(bool $return = false): bool
-    {
-        return true;
     }
 
     /**

@@ -27,12 +27,12 @@ use think\exception\HttpResponseException;
 /**
  * 标准 JSON-RPC 服务端工具。
  */
-class JsonRpcHttpServer
+final class JsonRpcHttpServer
 {
     /**
      * 当前 App 对象。
      */
-    protected App $app;
+    private App $app;
 
     public function __construct(App $app)
     {
@@ -44,7 +44,7 @@ class JsonRpcHttpServer
      */
     public static function instance(...$args): static
     {
-        return Container::getInstance()->make(static::class, $args);
+        return Container::getInstance()->make(self::class, $args);
     }
 
     /**
@@ -74,7 +74,7 @@ class JsonRpcHttpServer
      *
      * @param mixed $object
      */
-    protected function printMethod($object): void
+    private function printMethod($object): void
     {
         try {
             $object = new \ReflectionClass($object);
@@ -104,7 +104,7 @@ class JsonRpcHttpServer
      * 执行 RPC 方法调用。
      * @param mixed $object
      */
-    protected function dispatchRequest($object, array $request): array
+    private function dispatchRequest($object, array $request): array
     {
         try {
             if ($object instanceof \Exception) {

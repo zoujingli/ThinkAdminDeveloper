@@ -20,8 +20,6 @@ declare(strict_types=1);
 
 namespace plugin\helper\service;
 
-use think\admin\service\PluginService;
-
 final class PluginRegistry
 {
     /**

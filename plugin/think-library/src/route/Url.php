@@ -46,7 +46,6 @@ namespace think\admin\route;
 
 use think\admin\service\AppService;
 use think\admin\service\NodeService;
-use think\admin\service\PluginService;
 use think\route\Url as ThinkUrl;
 
 /**
@@ -198,7 +197,7 @@ class Url extends ThinkUrl
             $module = empty($attrs) ? $this->app->http->getName() : array_pop($attrs);
             // 拼装新的链接地址
             $url = NodeService::nameTolower($contrl) . '/' . $action;
-            if ($plugin = AppService::resolve($module)) {
+            if ($plugin = AppService::resolvePlugin($module)) {
                 $prefix = AppService::pluginPrefix($plugin['code']);
                 $url = ($prefix ?: $plugin['code']) . '/' . $url;
             } elseif ($module !== AppService::singleCode()) {

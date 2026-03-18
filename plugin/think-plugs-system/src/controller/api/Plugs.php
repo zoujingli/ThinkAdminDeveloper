@@ -23,7 +23,6 @@ namespace plugin\system\controller\api;
 use plugin\system\service\SystemAuthService;
 use think\admin\Controller;
 use think\admin\Exception;
-use think\admin\service\PluginService;
 use think\Response;
 
 /**

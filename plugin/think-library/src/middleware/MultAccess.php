@@ -26,8 +26,6 @@ use think\admin\route\Route as AdminRoute;
 use think\admin\runtime\RequestContext;
 use think\admin\service\AppService;
 use think\admin\service\NodeService;
-use think\admin\service\PluginService;
-use think\admin\service\RuntimeTools;
 use think\App;
 use think\Request;
 use think\Response;
@@ -101,7 +99,7 @@ class MultAccess
         }
 
         $switch = AppService::detectPluginSwitch($request);
-        if ($switch && ($plugin = AppService::resolve($switch))) {
+        if ($switch && ($plugin = AppService::resolvePlugin($switch))) {
             $plugin['entry'] = RequestContext::ENTRY_WEB;
             $plugin['matched_prefix'] = '';
             $plugin['pathinfo'] = $pathinfo;

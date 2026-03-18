@@ -26,7 +26,6 @@ use plugin\system\service\SystemAuthService;
 use think\admin\Controller;
 use think\admin\helper\QueryHelper;
 use think\admin\service\AppService;
-use think\admin\service\PluginService;
 use think\db\exception\DataNotFoundException;
 use think\db\exception\DbException;
 use think\db\exception\ModelNotFoundException;

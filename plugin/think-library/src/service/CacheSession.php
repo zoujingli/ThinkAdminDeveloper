@@ -20,16 +20,18 @@ declare(strict_types=1);
 
 namespace think\admin\service;
 
+use Psr\SimpleCache\InvalidArgumentException;
 use think\admin\Exception;
 use think\admin\Library;
 use think\admin\runtime\RequestContext;
+use think\admin\Service;
 
 /**
  * 基于 Token SID 的缓存会话服务。
  * 用于替代原先基于标准 Session 的临时用户态数据读写。
  * @class CacheSession
  */
-class CacheSession extends Service
+final class CacheSession extends Service
 {
     /**
      * 会话缓存前缀。
@@ -64,7 +66,7 @@ class CacheSession extends Service
      */
     public static function read(string $name, $default = null, ?string $scope = null, ?bool $touch = null)
     {
-        return static::get($name, $default, $scope, $touch);
+        return self::get($name, $default, $scope, $touch);
     }
 
     /**
@@ -75,32 +77,32 @@ class CacheSession extends Service
      */
     public static function get(string $name, $default = null, ?string $scope = null, ?bool $touch = null)
     {
-        $data = static::all($scope, $touch);
+        $data = self::all($scope, $touch);
         return $data[$name] ?? $default;
     }
 
     /**
      * 读取全部会话数据。
      * @return array<string, mixed>
-     * @throws Exception
+     * @throws Exception|InvalidArgumentException
      */
     public static function all(?string $scope = null, ?bool $touch = null): array
     {
-        static::sweep();
-        $scope = static::scope($scope);
-        $cache = static::store();
-        $key = static::sessionKey($scope);
+        self::sweep();
+        $scope = self::scope($scope);
+        $cache = self::store();
+        $key = self::sessionKey($scope);
         $payload = $cache->get($key, []);
         if (!is_array($payload) || !array_key_exists('data', $payload) || !is_array($payload['data'])) {
-            static::dropIndex($key);
+            self::dropIndex($key);
             return [];
         }
 
-        $touch = is_null($touch) ? static::autoTouch() : $touch;
+        $touch = is_null($touch) ? self::autoTouch() : $touch;
         if ($touch && intval($payload['expire'] ?? 0) > 0) {
             $payload['updated_at'] = time();
             $cache->set($key, $payload, intval($payload['expire']));
-            static::saveIndex($key, intval($payload['expire']));
+            self::saveIndex($key, intval($payload['expire']));
         }
 
         return $payload['data'];
@@ -111,8 +113,8 @@ class CacheSession extends Service
      */
     public static function sweep(bool $force = false): int
     {
-        $cache = static::store();
-        $interval = static::gcInterval();
+        $cache = self::store();
+        $interval = self::gcInterval();
         $now = time();
         if (!$force && $interval > 0 && intval($cache->get(self::GC_KEY, 0)) > $now) {
             return 0;
@@ -146,11 +148,11 @@ class CacheSession extends Service
      */
     public static function delete(string $name, ?string $scope = null): bool
     {
-        static::sweep();
-        $scope = static::scope($scope);
-        $cache = static::store();
-        $key = static::sessionKey($scope);
-        $payload = static::payload($scope, $cache->get($key, []));
+        self::sweep();
+        $scope = self::scope($scope);
+        $cache = self::store();
+        $key = self::sessionKey($scope);
+        $payload = self::payload($scope, $cache->get($key, []));
         if (!array_key_exists($name, $payload['data'])) {
             return true;
         }
@@ -161,7 +163,7 @@ class CacheSession extends Service
             return false;
         }
 
-        static::saveIndex($key, intval($payload['expire']));
+        self::saveIndex($key, intval($payload['expire']));
         return true;
     }
 
@@ -176,7 +178,7 @@ class CacheSession extends Service
             return $scope;
         }
 
-        if (($sessionId = static::currentSessionId()) !== '') {
+        if (($sessionId = self::currentSessionId()) !== '') {
             return "sid:{$sessionId}";
         }
 
@@ -189,7 +191,7 @@ class CacheSession extends Service
      */
     public static function sessionKey(?string $scope = null): string
     {
-        return self::CACHE_PREFIX . md5(static::scope($scope));
+        return self::CACHE_PREFIX . md5(self::scope($scope));
     }
 
     /**
@@ -199,7 +201,7 @@ class CacheSession extends Service
      */
     public static function set(string $name, $value, ?int $expire = null, ?string $scope = null): bool
     {
-        return static::put([$name => $value], $expire, $scope);
+        return self::put([$name => $value], $expire, $scope);
     }
 
     /**
@@ -209,19 +211,19 @@ class CacheSession extends Service
      */
     public static function put(array $data, ?int $expire = null, ?string $scope = null, bool $replace = false): bool
     {
-        static::sweep();
-        $scope = static::scope($scope);
-        $cache = static::store();
-        $key = static::sessionKey($scope);
-        $payload = static::payload($scope, $cache->get($key, []));
-        $payload['expire'] = static::ttl(is_null($expire) ? (intval($payload['expire'] ?? 0) ?: static::getExpire()) : $expire);
+        self::sweep();
+        $scope = self::scope($scope);
+        $cache = self::store();
+        $key = self::sessionKey($scope);
+        $payload = self::payload($scope, $cache->get($key, []));
+        $payload['expire'] = self::ttl(is_null($expire) ? (intval($payload['expire'] ?? 0) ?: self::getExpire()) : $expire);
         $payload['updated_at'] = time();
         $payload['data'] = $replace ? $data : array_merge($payload['data'], $data);
         if (!$cache->set($key, $payload, $payload['expire'])) {
             return false;
         }
 
-        static::saveIndex($key, $payload['expire']);
+        self::saveIndex($key, $payload['expire']);
         return true;
     }
 
@@ -230,7 +232,7 @@ class CacheSession extends Service
      */
     public static function has(string $name, ?string $scope = null): bool
     {
-        return array_key_exists($name, static::all($scope, false));
+        return array_key_exists($name, self::all($scope, false));
     }
 
     /**
@@ -240,7 +242,7 @@ class CacheSession extends Service
      */
     public static function write(string $name, $value, ?int $expire = null, ?string $scope = null): bool
     {
-        return static::set($name, $value, $expire, $scope);
+        return self::set($name, $value, $expire, $scope);
     }
 
     /**
@@ -251,8 +253,8 @@ class CacheSession extends Service
      */
     public static function pull(string $name, $default = null, ?string $scope = null)
     {
-        $value = static::get($name, $default, $scope, false);
-        static::delete($name, $scope);
+        $value = self::get($name, $default, $scope, false);
+        self::delete($name, $scope);
         return $value;
     }
 
@@ -262,12 +264,12 @@ class CacheSession extends Service
      */
     public static function clear(?string $scope = null): bool
     {
-        $scope = static::scope($scope);
-        $cache = static::store();
-        $key = static::sessionKey($scope);
-        $payload = static::payload($scope, $cache->get($key, []));
-        if (!static::exists($scope)) {
-            static::dropIndex($key);
+        $scope = self::scope($scope);
+        $cache = self::store();
+        $key = self::sessionKey($scope);
+        $payload = self::payload($scope, $cache->get($key, []));
+        if (!self::exists($scope)) {
+            self::dropIndex($key);
             return false;
         }
 
@@ -277,7 +279,7 @@ class CacheSession extends Service
             return false;
         }
 
-        static::saveIndex($key, intval($payload['expire']));
+        self::saveIndex($key, intval($payload['expire']));
         return true;
     }
 
@@ -287,8 +289,8 @@ class CacheSession extends Service
      */
     public static function exists(?string $scope = null): bool
     {
-        static::sweep();
-        $payload = static::store()->get(static::sessionKey($scope), null);
+        self::sweep();
+        $payload = self::store()->get(self::sessionKey($scope), null);
         return is_array($payload) && array_key_exists('data', $payload) && is_array($payload['data']);
     }
 
@@ -298,7 +300,7 @@ class CacheSession extends Service
      */
     public static function forget(?string $scope = null): bool
     {
-        return static::destroy($scope);
+        return self::destroy($scope);
     }
 
     /**
@@ -307,10 +309,10 @@ class CacheSession extends Service
      */
     public static function destroy(?string $scope = null): bool
     {
-        $scope = static::scope($scope);
-        $key = static::sessionKey($scope);
-        static::dropIndex($key);
-        static::store()->delete($key);
+        $scope = self::scope($scope);
+        $key = self::sessionKey($scope);
+        self::dropIndex($key);
+        self::store()->delete($key);
         return true;
     }
 
@@ -320,25 +322,25 @@ class CacheSession extends Service
      */
     public static function touch(?int $expire = null, ?string $scope = null): bool
     {
-        static::sweep();
-        $scope = static::scope($scope);
-        $cache = static::store();
-        $key = static::sessionKey($scope);
-        $payload = static::payload($scope, $cache->get($key, []));
+        self::sweep();
+        $scope = self::scope($scope);
+        $cache = self::store();
+        $key = self::sessionKey($scope);
+        $payload = self::payload($scope, $cache->get($key, []));
         if (empty($payload['data'])) {
-            if (!static::exists($scope)) {
-                static::dropIndex($key);
+            if (!self::exists($scope)) {
+                self::dropIndex($key);
                 return false;
             }
         }
 
-        $payload['expire'] = static::ttl(is_null($expire) ? intval($payload['expire'] ?? 0) : $expire);
+        $payload['expire'] = self::ttl(is_null($expire) ? intval($payload['expire'] ?? 0) : $expire);
         $payload['updated_at'] = time();
         if (!$cache->set($key, $payload, intval($payload['expire']))) {
             return false;
         }
 
-        static::saveIndex($key, intval($payload['expire']));
+        self::saveIndex($key, intval($payload['expire']));
         return true;
     }
 
@@ -347,7 +349,7 @@ class CacheSession extends Service
      */
     public static function gc(bool $force = false): int
     {
-        return static::sweep($force);
+        return self::sweep($force);
     }
 
     /**
@@ -355,7 +357,7 @@ class CacheSession extends Service
      */
     private static function store()
     {
-        $store = trim(strval(static::config('token_session_store', '')));
+        $store = trim(strval(self::config('token_session_store', '')));
         return $store === '' ? Library::$sapp->cache : Library::$sapp->cache->store($store);
     }
 
@@ -378,7 +380,7 @@ class CacheSession extends Service
      */
     private static function gcInterval(): int
     {
-        return max(60, intval(static::config('token_session_gc_interval', self::DEFAULT_GC_INTERVAL)));
+        return max(60, intval(self::config('token_session_gc_interval', self::DEFAULT_GC_INTERVAL)));
     }
 
     /**
@@ -404,7 +406,7 @@ class CacheSession extends Service
         $data = is_array($payload['data'] ?? null) ? $payload['data'] : [];
         return [
             'scope' => $scope,
-            'expire' => static::ttl(is_array($payload) ? intval($payload['expire'] ?? 0) : 0),
+            'expire' => self::ttl(is_array($payload) ? intval($payload['expire'] ?? 0) : 0),
             'updated_at' => is_array($payload) ? intval($payload['updated_at'] ?? time()) : time(),
             'data' => $data,
         ];
@@ -415,7 +417,7 @@ class CacheSession extends Service
      */
     private static function ttl(?int $expire = null): int
     {
-        $expire = is_null($expire) ? static::getExpire() : $expire;
+        $expire = is_null($expire) ? self::getExpire() : $expire;
         return max(0, intval($expire));
     }
 
@@ -424,7 +426,7 @@ class CacheSession extends Service
      */
     private static function getExpire(): int
     {
-        return max(0, intval(static::config('token_session_expire', self::DEFAULT_EXPIRE)));
+        return max(0, intval(self::config('token_session_expire', self::DEFAULT_EXPIRE)));
     }
 
     /**
@@ -432,7 +434,7 @@ class CacheSession extends Service
      */
     private static function saveIndex(string $key, int $expire): void
     {
-        $cache = static::store();
+        $cache = self::store();
         $index = $cache->get(self::INDEX_KEY, []);
         if (!is_array($index)) {
             $index = [];
@@ -447,7 +449,7 @@ class CacheSession extends Service
      */
     private static function dropIndex(string $key): void
     {
-        $cache = static::store();
+        $cache = self::store();
         $index = $cache->get(self::INDEX_KEY, []);
         if (!is_array($index) || !array_key_exists($key, $index)) {
             return;
@@ -462,6 +464,6 @@ class CacheSession extends Service
      */
     private static function autoTouch(): bool
     {
-        return boolval(static::config('token_session_touch', true));
+        return boolval(self::config('token_session_touch', true));
     }
 }

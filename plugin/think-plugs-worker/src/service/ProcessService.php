@@ -22,8 +22,8 @@ namespace plugin\worker\service;
 
 use Symfony\Component\Process\Process;
 use think\admin\extend\CodeToolkit;
-use think\admin\service\ModuleService;
 use think\admin\Service;
+use think\admin\service\AppService;
 
 /**
  * 基于 Worker 的进程运行时服务。
@@ -42,7 +42,7 @@ class ProcessService extends Service
      */
     public static function php(string $args = ''): string
     {
-        return PluginService::getPhpExec() . ' ' . $args;
+        return AppService::getPhpExec() . ' ' . $args;
     }
 
     /**
@@ -62,7 +62,7 @@ class ProcessService extends Service
     {
         static $comExec;
         if (empty($comExec)) {
-            $comExec = PluginService::getRunVar('com');
+            $comExec = AppService::getRunVar('com');
             $comExec = static::isFile($comExec) ? static::php($comExec) : 'composer';
         }
         $root = static::workingDirectory();

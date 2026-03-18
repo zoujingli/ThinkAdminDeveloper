@@ -217,9 +217,9 @@ final class RequestContext
      */
     public function setAuth(array $user = [], string $token = '', bool $ready = true): self
     {
+        $this->authReady = $ready;
         $this->currentUser = $user;
         $this->currentToken = $token;
-        $this->authReady = $ready;
         return $this;
     }
 

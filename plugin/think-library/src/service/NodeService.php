@@ -22,43 +22,53 @@ namespace think\admin\service;
 
 use think\admin\extend\FileTools;
 use think\admin\Library;
+use think\admin\Service;
 
 /**
  * 应用节点管理服务。
  * @class NodeService
  */
-class NodeService extends Service
+final class NodeService extends Service
 {
+    /**
+     * 获取应用命名空间.
+     */
     public static function space(string $suffix = ''): string
     {
         $default = Library::$sapp->config->get('app.app_namespace') ?: 'app';
         return empty($suffix) ? $default : trim($default . '\\' . trim($suffix, '\/'), '\\');
     }
 
+    /**
+     * 获取完整节点名称.
+     */
     public static function fullNode(?string $node = ''): string
     {
         if (empty($node)) {
-            return static::getCurrent();
+            return self::getCurrent();
         }
         switch (count($attrs = explode('/', $node))) {
             case 1:
-                return static::getCurrent('controller') . '/' . strtolower($node);
+                return self::getCurrent('controller') . '/' . strtolower($node);
             case 2:
-                $suffix = static::nameTolower($attrs[0]) . '/' . $attrs[1];
-                return static::getCurrent('module') . '/' . strtolower($suffix);
+                $suffix = self::nameTolower($attrs[0]) . '/' . $attrs[1];
+                return self::getCurrent('module') . '/' . strtolower($suffix);
             default:
-                $attrs[1] = static::nameTolower($attrs[1]);
+                $attrs[1] = self::nameTolower($attrs[1]);
                 return strtolower(join('/', $attrs));
         }
     }
 
+    /**
+     * 获取当前节点名称.
+     */
     public static function getCurrent(string $type = ''): string
     {
         $appname = strtolower(Library::$sapp->http->getName());
         if (in_array($type, ['app', 'module'])) {
             return $appname;
         }
-        $controller = static::nameTolower(Library::$sapp->request->controller());
+        $controller = self::nameTolower(Library::$sapp->request->controller());
         if ($type === 'controller') {
             return "{$appname}/{$controller}";
         }
@@ -66,6 +76,9 @@ class NodeService extends Service
         return "{$appname}/{$controller}/{$method}";
     }
 
+    /**
+     * 获取节点名称.
+     */
     public static function nameTolower(string $name): string
     {
         $dots = [];
@@ -75,6 +88,9 @@ class NodeService extends Service
         return strtolower(join('.', $dots));
     }
 
+    /**
+     * 获取应用节点列表.
+     */
     public static function getMethods(bool $force = false): array
     {
         $skey = 'think.admin.methods';
@@ -97,7 +113,7 @@ class NodeService extends Service
             }
             foreach (FileTools::scan($app['path'], null, 'php') as $name) {
                 if (preg_match('|^.*?controller/(.+)\.php$|i', strtr($name, '\\', '/'), $matches)) {
-                    static::parseClass($appName, $app['space'], $matches[1], $ignoreMethods, $data);
+                    self::parseClass($appName, $app['space'], $matches[1], $ignoreMethods, $data);
                 }
             }
         }
@@ -108,36 +124,27 @@ class NodeService extends Service
         return sysvar($skey, $data);
     }
 
-    public static function scanDirectory(string $path, ?int $depth = null, ?string $ext = null): array
-    {
-        return FileTools::scan($path, $depth, $ext);
-    }
-
-    public static function getModules(array $data = []): array
-    {
-        return AppService::getModules($data);
-    }
-
-    public static function getApps(array $data = []): array
-    {
-        return AppService::getApps($data);
-    }
-
+    /**
+     * 解析类文件中的方法注释.
+     */
     private static function parseClass(string $appName, string $appSpace, string $className, array $ignoreNode, array &$data): void
     {
         $classfull = strtr("{$appSpace}/controller/{$className}", '/', '\\');
         if (class_exists($classfull) && ($class = new \ReflectionClass($classfull))) {
-            $prefix = strtolower(strtr("{$appName}/" . static::nameTolower($className), '\\', '/'));
-            $data[$prefix] = static::parseComment($class->getDocComment() ?: '', $className);
+            $prefix = strtolower(strtr("{$appName}/" . self::nameTolower($className), '\\', '/'));
+            $data[$prefix] = self::parseComment($class->getDocComment() ?: '', $className);
             foreach ($class->getMethods(\ReflectionMethod::IS_PUBLIC) as $method) {
                 if (in_array($metname = $method->getName(), $ignoreNode)) {
                     continue;
                 }
-                $data[strtolower("{$prefix}/{$metname}")] = static::parseComment($method->getDocComment() ?: '', $metname);
+                $data[strtolower("{$prefix}/{$metname}")] = self::parseComment($method->getDocComment() ?: '', $metname);
             }
         }
     }
 
+    /**
+     * 解析方法注释信息.
+     */
     private static function parseComment(string $comment, string $default = ''): array
     {
         $text = strtr($comment, "\n", ' ');

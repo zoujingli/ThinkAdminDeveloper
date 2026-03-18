@@ -25,7 +25,7 @@ use plugin\center\service\Plugin;
 use plugin\system\service\SystemAuthService;
 use think\admin\Controller;
 use think\admin\Exception;
-use think\admin\service\PluginService;
+use think\admin\service\AppService;
 use think\db\exception\DataNotFoundException;
 use think\db\exception\DbException;
 use think\db\exception\ModelNotFoundException;
@@ -79,7 +79,7 @@ class Index extends Controller
         if (empty($code = decode($encode))) {
             $this->fetchError('应用插件不能为空！');
         }
-        PluginService::activate($code);
+        AppService::activatePlugin($code);
         $this->plugin = \think\admin\Plugin::get($code);
         if (empty($this->plugin)) {
             $this->fetchError('插件未安装！');

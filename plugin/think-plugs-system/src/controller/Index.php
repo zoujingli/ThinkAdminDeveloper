@@ -108,7 +108,6 @@ class Index extends Controller
             $this->error('禁止修改他人密码！');
         }
 
-        $this->_applyFormToken();
         $builder = UserService::buildPassForm(true);
         if ($this->request->isGet()) {
             $this->verify = true;

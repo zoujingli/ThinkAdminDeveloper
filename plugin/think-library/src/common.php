@@ -24,11 +24,10 @@ use think\admin\helper\QueryHelper;
 use think\admin\helper\ValidateHelper;
 use think\admin\Library;
 use think\admin\model\ModelFactory;
+use think\admin\runtime\RequestContext;
 use think\admin\service\AppService;
 use think\admin\service\CacheSession;
-use think\admin\service\PluginService;
 use think\admin\service\RuntimeService;
-use think\admin\service\RuntimeTools;
 use think\admin\Storage;
 use think\db\BaseQuery;
 use think\db\Query;
@@ -43,7 +42,7 @@ if (!function_exists('p')) {
      * @param bool $new 是否覆盖原文件
      * @param ?string $file 指定日志文件
      */
-    function p($data, bool $new = false, ?string $file = null): false|int
+    function p(mixed $data, bool $new = false, ?string $file = null): false|int
     {
         return AppService::putDebug($data, $new, $file);
     }
@@ -98,10 +97,10 @@ if (!function_exists('sysvar')) {
      * 传入空字符串 `('', '')` 时会清空全部缓存。
      *
      * @param ?string $name 变量名
-     * @param mixed $value 变量值
+     * @param null|mixed $value 变量值
      * @return mixed
      */
-    function sysvar(?string $name = null, $value = null)
+    function sysvar(?string $name = null, mixed $value = null)
     {
         static $swap = [];
 
@@ -306,7 +305,7 @@ if (!function_exists('str2arr')) {
                 }
                 continue;
             }
-            if (!is_scalar($item) || $item === false || $item === null) {
+            if (!is_scalar($item) || $item === false) {
                 continue;
             }
             if (is_string($item)) {
@@ -511,11 +510,10 @@ if (!function_exists('data_save')) {
      * @param Model|Query|string $dbQuery 查询对象或模型
      * @param array $data 保存数据
      * @param string $key 主键字段
-     * @param mixed $where 附加条件
-     * @return bool|int
+     * @param null|array $where 附加条件
      * @throws Exception
      */
-    function data_save($dbQuery, array $data, string $key = 'id', $where = [])
+    function data_save(Model|Query|string $dbQuery, array $data, string $key = 'id', ?array $where = []): bool|int
     {
         return AppService::save($dbQuery, $data, $key, $where);
     }
@@ -580,7 +578,7 @@ if (!function_exists('format_bytes')) {
      *
      * @param float|int|string $size 原始字节值
      */
-    function format_bytes($size): string
+    function format_bytes(float|int|string $size): string
     {
         if (is_numeric($size)) {
             $size = (float)$size;

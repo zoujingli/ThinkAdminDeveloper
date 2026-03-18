@@ -43,7 +43,7 @@ class ValidateHelper extends Helper
      *
      * 更多规则参照 ThinkPHP 官方的验证类
      */
-    public function init(array $rules, $input = '', ?callable $callable = null)
+    public function init(array $rules, array|string $input = '', ?callable $callable = null)
     {
         if (is_string($input)) {
             $type = trim($input, '.') ?: 'param';
@@ -54,7 +54,7 @@ class ValidateHelper extends Helper
             if (is_numeric($key)) {
                 [$key, $alias] = explode('#', "{$value}#");
                 $data[$key] = $input[$alias ?: $key] ?? null;
-            } elseif (strpos($key, '.') === false) {
+            } elseif (!str_contains($key, '.')) {
                 $data[$key] = $value;
             } elseif (preg_match('|^(.*?)\.(.*?)#(.*?)#?$|', "{$key}#", $matches)) {
                 [, $_key, $_rule, $alias] = $matches;

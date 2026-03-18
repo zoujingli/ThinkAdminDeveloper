@@ -23,7 +23,7 @@ namespace think\admin\helper;
 use think\admin\Library;
 use think\admin\model\QueryFactory;
 use think\admin\runtime\SystemContext;
-use think\admin\service\RuntimeTools;
+use think\admin\service\AppService;
 use think\Container;
 use think\db\BaseQuery;
 use think\db\exception\DataNotFoundException;
@@ -89,10 +89,9 @@ class QueryHelper extends Helper
 
     /**
      * 快捷助手调用勾子.
-     * @param Model|Query|string $model
      * @return false|int|mixed|QueryHelper
      */
-    public static function make($model, string $method = 'init', array $args = [], ?callable $nohook = null)
+    public static function make(Model|Query|string $model, string $method = 'init', array $args = [], ?callable $nohook = null): mixed
     {
         $hooks = [
             'mForm' => [FormHelper::class, 'init'],
@@ -118,12 +117,11 @@ class QueryHelper extends Helper
 
     /**
      * 逻辑器初始化.
-     * @param BaseQuery|Model|string $dbQuery
      * @param null|array|string $input 输入数据
      * @param null|callable $callable 初始回调
      * @return $this
      */
-    public function init($dbQuery, $input = null, ?callable $callable = null): QueryHelper
+    public function init(BaseQuery|Model|string $dbQuery, array|string|null $input = null, ?callable $callable = null): QueryHelper
     {
         $this->input = $this->getInputData($input);
         $this->query = $this->autoSortQuery($dbQuery);
@@ -133,14 +131,13 @@ class QueryHelper extends Helper
 
     /**
      * 绑定排序并返回操作对象。
-     * @param BaseQuery|Model|string $dbQuery
      * @param string $field 指定排序字段
      */
-    public function autoSortQuery($dbQuery, string $field = 'sort'): Query
+    public function autoSortQuery(BaseQuery|Model|string $dbQuery, string $field = 'sort'): Query
     {
         $query = QueryFactory::build($dbQuery);
         if ($this->app->request->isPost() && $this->app->request->post('action') === 'sort') {
-            SystemContext::isLogin() or $this->class->error('请重新登录！');
+            SystemContext::instance()->isLogin() or $this->class->error('请重新登录！');
             if (method_exists($query, 'getTableFields') && in_array($field, $query->getTableFields(), true)) {
                 if ($this->app->request->has($pk = $query->getPk() ?: 'id', 'post')) {
                     $map = [$pk => $this->app->request->post($pk, 0)];
@@ -166,7 +163,7 @@ class QueryHelper extends Helper
      * @param string $alias 别名分割符
      * @return $this
      */
-    public function like($fields, string $split = '', $input = null, string $alias = '#'): QueryHelper
+    public function like(array|string $fields, string $split = '', array|string|null $input = null, string $alias = '#'): QueryHelper
     {
         $data = $this->getInputData($input ?: $this->input);
         foreach (is_array($fields) ? $fields : explode(',', $fields) as $field) {
@@ -189,7 +186,7 @@ class QueryHelper extends Helper
      * @param string $alias 别名分割符
      * @return $this
      */
-    public function equal($fields, $input = null, string $alias = '#'): QueryHelper
+    public function equal(array|string $fields, array|string|null $input = null, string $alias = '#'): QueryHelper
     {
         $data = $this->getInputData($input ?: $this->input);
         foreach (is_array($fields) ? $fields : explode(',', $fields) as $field) {
@@ -213,7 +210,7 @@ class QueryHelper extends Helper
      * @param string $alias 别名分割符
      * @return $this
      */
-    public function in($fields, string $split = ',', $input = null, string $alias = '#'): QueryHelper
+    public function in(array|string $fields, string $split = ',', array|string|null $input = null, string $alias = '#'): QueryHelper
     {
         $data = $this->getInputData($input ?: $this->input);
         foreach (is_array($fields) ? $fields : explode(',', $fields) as $field) {
@@ -237,11 +234,11 @@ class QueryHelper extends Helper
      * @param string $alias 别名分割符
      * @return $this
      */
-    public function valueRange($fields, $input = null, string $alias = '#'): QueryHelper
+    public function valueRange(array|string $fields, array|string|null $input = null, string $alias = '#'): QueryHelper
     {
         $data = $this->getInputData($input ?: $this->input);
         foreach (is_array($fields) ? $fields : explode(',', $fields) as $field) {
-            if (strpos($field, ':') !== false) {
+            if (str_contains($field, ':')) {
                 if (stripos($field, $alias) !== false) {
                     [$dk0, $qk0] = explode($alias, $field);
                     [$dk1, $dk2] = explode(':', $dk0);
@@ -266,7 +263,7 @@ class QueryHelper extends Helper
      * @param string $alias 别名分割符
      * @return $this
      */
-    public function valueBetween($fields, string $split = ' ', $input = null, string $alias = '#'): QueryHelper
+    public function valueBetween(array|string $fields, string $split = ' ', array|string|null $input = null, string $alias = '#'): QueryHelper
     {
         return $this->setBetweenWhere($fields, $split, $input, $alias);
     }
@@ -279,7 +276,7 @@ class QueryHelper extends Helper
      * @param string $alias 别名分割符
      * @return $this
      */
-    public function dateBetween($fields, string $split = ' - ', $input = null, string $alias = '#'): QueryHelper
+    public function dateBetween(array|string $fields, string $split = ' - ', array|string|null $input = null, string $alias = '#'): QueryHelper
     {
         return $this->setBetweenWhere($fields, $split, $input, $alias, static function ($value, $type) {
             if (preg_match('#^\d{4}(-\d\d){2}\s+\d\d(:\d\d){2}$#', $value)) {
@@ -297,7 +294,7 @@ class QueryHelper extends Helper
      * @param string $alias 别名分割符
      * @return $this
      */
-    public function timeBetween($fields, string $split = ' - ', $input = null, string $alias = '#'): QueryHelper
+    public function timeBetween(array|string $fields, string $split = ' - ', array|string|null $input = null, string $alias = '#'): QueryHelper
     {
         return $this->setBetweenWhere($fields, $split, $input, $alias, static function ($value, $type) {
             if (preg_match('#^\d{4}(-\d\d){2}\s+\d\d(:\d\d){2}$#', $value)) {

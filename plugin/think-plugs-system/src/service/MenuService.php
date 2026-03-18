@@ -22,9 +22,9 @@ namespace plugin\system\service;
 
 use plugin\system\model\SystemMenu;
 use think\admin\extend\ArrayTree;
-use think\admin\service\NodeService;
-use think\admin\service\PluginService;
 use think\admin\Service;
+use think\admin\service\AppService;
+use think\admin\service\NodeService;
 use think\db\exception\DataNotFoundException;
 use think\db\exception\DbException;
 use think\db\exception\ModelNotFoundException;
@@ -84,8 +84,8 @@ class MenuService extends Service
     public static function getPlugins(bool $force = false): array
     {
         $items = [];
-        foreach (PluginService::all(true, $force) as $code => $plugin) {
-            if (empty(PluginService::menuRoot($plugin)) && empty(PluginService::menus($plugin))) {
+        foreach (AppService::all($force) as $code => $plugin) {
+            if (empty(AppService::menus($plugin))) {
                 continue;
             }
             $items[$code] = [
@@ -197,7 +197,7 @@ class MenuService extends Service
      */
     private static function pluginCode(?string $plugin): string
     {
-        $current = PluginService::resolve(trim(strval($plugin)), true);
+        $current = AppService::resolvePlugin(trim(strval($plugin)), true);
         return strval($current['code'] ?? '');
     }
 
@@ -219,7 +219,7 @@ class MenuService extends Service
             return '';
         }
         $prefix = explode('/', $node, 2)[0];
-        $plugin = PluginService::resolvePrefix($prefix, true) ?: PluginService::resolve($prefix, true);
+        $plugin = AppService::resolvePluginPrefix($prefix, true) ?: AppService::resolvePlugin($prefix, true);
         return strval($plugin['code'] ?? '');
     }
 

@@ -25,8 +25,7 @@ use plugin\system\service\SystemAuthService;
 use plugin\system\service\SystemService;
 use plugin\system\service\UserService;
 use think\admin\Controller;
-use think\admin\service\ModuleService;
-use think\admin\service\PluginService;
+use think\admin\service\AppService;
 use think\admin\Storage;
 
 /**

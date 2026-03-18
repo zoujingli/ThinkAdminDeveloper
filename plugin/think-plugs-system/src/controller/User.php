@@ -77,7 +77,6 @@ class User extends Controller
      */
     public function pass()
     {
-        $this->_applyFormToken();
         $builder = UserService::buildPassForm();
 
         if ($this->request->isGet()) {

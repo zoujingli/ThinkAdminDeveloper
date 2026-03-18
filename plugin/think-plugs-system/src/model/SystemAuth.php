@@ -22,7 +22,6 @@ namespace plugin\system\model;
 
 use think\admin\Model;
 use think\admin\service\AppService;
-use think\admin\service\PluginService;
 use think\db\exception\DataNotFoundException;
 use think\db\exception\DbException;
 use think\db\exception\ModelNotFoundException;
@@ -187,7 +186,7 @@ class SystemAuth extends Model
         }
 
         $prefix = explode('/', $node, 2)[0];
-        if ($plugin = AppService::resolvePluginPrefix($prefix, true) ?: AppService::resolve($prefix, true)) {
+        if ($plugin = AppService::resolvePluginPrefix($prefix, true) ?: AppService::resolvePlugin($prefix, true)) {
             return strval($plugin['code'] ?? '');
         }
         if ($app = AppService::get($prefix)) {

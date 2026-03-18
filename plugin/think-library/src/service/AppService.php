@@ -21,15 +21,19 @@ declare(strict_types=1);
 namespace think\admin\service;
 
 use think\admin\Library;
+use think\admin\model\QueryFactory;
 use think\admin\Plugin;
 use think\admin\runtime\RequestContext;
+use think\admin\Service;
+use think\db\Query;
+use think\Model;
 use think\Request;
 
 /**
  * 应用注册与插件管理中心服务
  * @class AppService
  */
-class AppService extends Service
+final class AppService extends Service
 {
     /**
      * 应用缓存键名.
@@ -82,7 +86,6 @@ class AppService extends Service
     /**
      * 获取本地模块列表。
      * @param array $data 额外数据
-     * @return array
      */
     public static function getModules(array $data = []): array
     {
@@ -92,7 +95,6 @@ class AppService extends Service
     /**
      * 获取全部应用列表。
      * @param array $data 额外数据
-     * @return array
      */
     public static function getApps(array $data = []): array
     {
@@ -220,53 +222,6 @@ class AppService extends Service
     {
         $apps = self::local($force);
         return is_null($code) ? null : ($apps[$code] ?? null);
-    }
-
-    /**
-     * 扫描 app/* 本地应用目录.
-     *
-     * @return array<string, array<string, string>>
-     */
-    private static function discoverLocalApps(): array
-    {
-        $apps = [];
-        $basePath = rtrim(Library::$sapp->getBasePath(), '\/') . DIRECTORY_SEPARATOR;
-        foreach (scandir($basePath) ?: [] as $code) {
-            if ($code === '.' || $code === '..' || in_array($code, self::IGNORE_LOCAL_APPS, true)) {
-                continue;
-            }
-            if (!preg_match('/^[A-Za-z][A-Za-z0-9_]*$/', $code)) {
-                continue;
-            }
-
-            $path = $basePath . $code . DIRECTORY_SEPARATOR;
-            if (!is_dir($path) || !self::isLocalAppPath($path)) {
-                continue;
-            }
-
-            $apps[$code] = self::normalize($code, [
-                'type' => 'local',
-                'name' => ucfirst($code),
-                'path' => $path,
-                'space' => NodeService::space($code),
-            ]);
-        }
-
-        return $apps;
-    }
-
-    /**
-     * 判断是否为本地应用目录.
-     */
-    private static function isLocalAppPath(string $path): bool
-    {
-        foreach (['controller', 'route', 'view', 'config'] as $name) {
-            if (is_dir($path . $name)) {
-                return true;
-            }
-        }
-
-        return is_file($path . 'Service.php');
     }
 
     /**
@@ -612,8 +567,6 @@ class AppService extends Service
         return RequestContext::instance()->pluginCode();
     }
 
-
-
     /**
      * 获取插件菜单定义。
      * @param null|array|string $plugin 插件编码或定义
@@ -629,6 +582,213 @@ class AppService extends Service
 
         $menus = (array)$current['service']::menu();
         return ($check || $normalize) ? self::normalizeMenus($menus, $check) : $menus;
+    }
+
+    /**
+     * 获取版本信息。
+     */
+    public static function getVersion(): string
+    {
+        $library = self::getPluginLibrarys('zoujingli/think-library');
+        return trim($library['version'] ?? 'v8.0.0', 'v');
+    }
+
+    /**
+     * 获取 PHP 可执行文件路径。
+     */
+    public static function getPhpExec(): string
+    {
+        if ($phpExec = sysvar($keys = 'phpBinary')) {
+            return $phpExec;
+        }
+        if (ProcessService::isFile($phpExec = self::getRunVar('php'))) {
+            return sysvar($keys, $phpExec);
+        }
+        $phpExec = str_replace('/sbin/php-fpm', '/bin/php', PHP_BINARY);
+        $phpExec = preg_replace('#-(cgi|fpm)(\.exe)?$#', '$2', $phpExec);
+        return sysvar($keys, ProcessService::isFile($phpExec) ? $phpExec : 'php');
+    }
+
+    /**
+     * 获取运行时二进制文件。
+     * @param string $field 字段名
+     */
+    public static function getRunVar(string $field): string
+    {
+        $file = syspath('vendor/binarys.php');
+        if (is_file($file) && is_array($binarys = include $file)) {
+            return $binarys[$field] ?? '';
+        }
+        return '';
+    }
+
+    /**
+     * 获取插件包版本信息。
+     * @param ?string $package 包名
+     * @param bool $force 强制刷新
+     * @return array|mixed
+     */
+    public static function getPluginLibrarys(?string $package = null, bool $force = false)
+    {
+        $plugs = sysvar($keys = 'think.admin.version');
+        if ((empty($plugs) || $force) && is_file($file = syspath('vendor/versions.php'))) {
+            $plugs = sysvar($keys, include $file);
+        }
+        return empty($package) ? $plugs : ($plugs[$package] ?? null);
+    }
+
+    /**
+     * 生成全部静态路径。
+     * @param string $path 后缀路径
+     * @return string[]
+     */
+    public static function uris(string $path = ''): array
+    {
+        return self::uri($path, null);
+    }
+
+    /**
+     * 生成静态路径链接。
+     * @param string $path 后缀路径
+     * @param ?string $type 路径类型
+     * @param mixed $default 默认数据
+     * @return array|string
+     */
+    public static function uri(string $path = '', ?string $type = '__ROOT__', $default = '')
+    {
+        $plugin = Library::$sapp->http->getName();
+        if (strlen($path)) {
+            $path = '/' . ltrim($path, '/');
+        }
+        $prefix = rtrim(dirname(Library::$sapp->request->basefile()), '\/');
+        $data = [
+            '__APP__' => rtrim(url('@')->build(), '\/') . $path,
+            '__ROOT__' => $prefix . $path,
+            '__PLUG__' => "{$prefix}/static/extra/{$plugin}{$path}",
+            '__FULL__' => Library::$sapp->request->domain() . $prefix . $path,
+        ];
+        return is_null($type) ? $data : ($data[$type] ?? $default);
+    }
+
+    /**
+     * 打印调试数据到文件。
+     * @param mixed $data 输出的数据
+     * @param bool $new 强制替换文件
+     * @param null|string $file 文件名称
+     * @return false|int
+     */
+    public static function putDebug($data, bool $new = false, ?string $file = null)
+    {
+        ob_start();
+        var_dump($data);
+        $output = preg_replace('/]=>\n(\s+)/m', '] => ', ob_get_clean());
+        if (is_null($file)) {
+            $file = runpath('runtime/' . date('Ymd') . '.log');
+        } elseif (!preg_match('#[/\\\]+#', $file)) {
+            $file = runpath("runtime/{$file}.log");
+        }
+        is_dir($dir = dirname($file)) or mkdir($dir, 0777, true);
+        return $new ? file_put_contents($file, $output) : file_put_contents($file, $output, FILE_APPEND);
+    }
+
+    /**
+     * 批量更新保存数据。
+     * @param Model|Query|string $query 数据查询对象
+     * @param array $data 需要保存的数据
+     * @param string $key 更新条件查询主键
+     * @param mixed $map 额外更新查询条件
+     * @return bool|int
+     * @throws \think\admin\Exception
+     */
+    public static function update($query, array $data, string $key = 'id', $map = [])
+    {
+        try {
+            $query = QueryFactory::build($query)->master()->where($map);
+            if (empty($map[$key])) {
+                $query->where([$key => $data[$key] ?? null]);
+            }
+            return (clone $query)->count() > 1 ? $query->strict(false)->update($data) : $query->findOrEmpty()->save($data);
+        } catch (\Exception|\Throwable $exception) {
+            throw new \think\admin\Exception($exception->getMessage(), $exception->getCode());
+        }
+    }
+
+    /**
+     * 数据增量保存。
+     * @param Model|Query|string $query 数据查询对象
+     * @param array $data 需要保存的数据
+     * @param string $key 更新条件查询主键
+     * @param mixed $map 额外更新查询条件
+     * @return bool|int
+     * @throws \think\admin\Exception
+     */
+    public static function save($query, array &$data, string $key = 'id', $map = [])
+    {
+        try {
+            $query = QueryFactory::build($query)->master()->strict(false);
+            if (empty($map[$key])) {
+                $query->where([$key => $data[$key] ?? null]);
+            }
+            $model = $query->where($map)->findOrEmpty();
+            $action = $model->isExists() ? 'onAdminUpdate' : 'onAdminInsert';
+            if ($model->save($data) === false) {
+                return false;
+            }
+            if ($model instanceof \think\admin\Model) {
+                $model->{$action}(strval($model->getAttr($key)));
+            }
+            $data = $model->toArray();
+            return $model[$key] ?? true;
+        } catch (\Exception $exception) {
+            throw new \think\admin\Exception($exception->getMessage(), $exception->getCode());
+        }
+    }
+
+    /**
+     * 扫描 app/* 本地应用目录.
+     *
+     * @return array<string, array<string, string>>
+     */
+    private static function discoverLocalApps(): array
+    {
+        $apps = [];
+        $basePath = rtrim(Library::$sapp->getBasePath(), '\/') . DIRECTORY_SEPARATOR;
+        foreach (scandir($basePath) ?: [] as $code) {
+            if ($code === '.' || $code === '..' || in_array($code, self::IGNORE_LOCAL_APPS, true)) {
+                continue;
+            }
+            if (!preg_match('/^[A-Za-z][A-Za-z0-9_]*$/', $code)) {
+                continue;
+            }
+
+            $path = $basePath . $code . DIRECTORY_SEPARATOR;
+            if (!is_dir($path) || !self::isLocalAppPath($path)) {
+                continue;
+            }
+
+            $apps[$code] = self::normalize($code, [
+                'type' => 'local',
+                'name' => ucfirst($code),
+                'path' => $path,
+                'space' => NodeService::space($code),
+            ]);
+        }
+
+        return $apps;
+    }
+
+    /**
+     * 判断是否为本地应用目录.
+     */
+    private static function isLocalAppPath(string $path): bool
+    {
+        foreach (['controller', 'route', 'view', 'config'] as $name) {
+            if (is_dir($path . $name)) {
+                return true;
+            }
+        }
+
+        return is_file($path . 'Service.php');
     }
 
     /**
@@ -657,7 +817,7 @@ class AppService extends Service
     {
         foreach ($menus as $k1 => &$one) {
             $one['title'] = lang($one['title'] ?? ($one['name'] ?? ''));
-            $one['url'] = $one['url'] ?? static::buildMenuUrl(strval($one['node'] ?? ''));
+            $one['url'] = $one['url'] ?? self::buildMenuUrl(strval($one['node'] ?? ''));
             if (!empty($one['subs'])) {
                 foreach ($one['subs'] as $k2 => &$two) {
                     if ($check && isset($two['node']) && !auth($two['node'])) {
@@ -665,7 +825,7 @@ class AppService extends Service
                         continue;
                     }
                     $two['title'] = lang($two['title'] ?? ($two['name'] ?? ''));
-                    $two['url'] = $two['url'] ?? static::buildMenuUrl(strval($two['node'] ?? ''));
+                    $two['url'] = $two['url'] ?? self::buildMenuUrl(strval($two['node'] ?? ''));
                 }
                 $one['subs'] = array_values($one['subs']);
             }
@@ -697,49 +857,6 @@ class AppService extends Service
 
         return sysuri($node);
     }
-
-    /**
-     * 获取版本信息。
-     * @return string
-     */
-    public static function getVersion(): string
-    {
-        $library = self::getPluginLibrarys('zoujingli/think-library');
-        return trim($library['version'] ?? 'v8.0.0', 'v');
-    }
-
-    /**
-     * 获取 PHP 可执行文件路径。
-     * @return string
-     */
-    public static function getPhpExec(): string
-    {
-        if ($phpExec = sysvar($keys = 'phpBinary')) {
-            return $phpExec;
-        }
-        if (ProcessService::isFile($phpExec = self::getRunVar('php'))) {
-            return sysvar($keys, $phpExec);
-        }
-        $phpExec = str_replace('/sbin/php-fpm', '/bin/php', PHP_BINARY);
-        $phpExec = preg_replace('#-(cgi|fpm)(\.exe)?$#', '$2', $phpExec);
-        return sysvar($keys, ProcessService::isFile($phpExec) ? $phpExec : 'php');
-    }
-
-    /**
-     * 获取运行时二进制文件。
-     * @param string $field 字段名
-     * @return string
-     */
-    public static function getRunVar(string $field): string
-    {
-        $file = syspath('vendor/binarys.php');
-        if (is_file($file) && is_array($binarys = include $file)) {
-            return $binarys[$field] ?? '';
-        }
-        return '';
-    }
-
-
 
     /**
      * 标准化应用定义.
@@ -893,21 +1010,6 @@ class AppService extends Service
     }
 
     /**
-     * 获取插件包版本信息。
-     * @param ?string $package 包名
-     * @param bool $force 强制刷新
-     * @return array|mixed
-     */
-    private static function getPluginLibrarys(?string $package = null, bool $force = false)
-    {
-        $plugs = sysvar($keys = 'think.admin.version');
-        if ((empty($plugs) || $force) && is_file($file = syspath('vendor/versions.php'))) {
-            $plugs = sysvar($keys, include $file);
-        }
-        return empty($package) ? $plugs : ($plugs[$package] ?? null);
-    }
-
-    /**
      * 获取插件切换配置。
      * @return array{enabled:bool,query:string,header:string}
      */
@@ -937,112 +1039,5 @@ class AppService extends Service
         [$controller, $action] = array_pad(explode('/', $pathinfo, 2), 2, 'index');
         $controller = trim(strtr($controller, '/', '.'), '.');
         return 'api.' . $controller . '/' . trim($action, '\/');
-    }
-
-    /**
-     * 生成全部静态路径。
-     * @param string $path 后缀路径
-     * @return string[]
-     */
-    public static function uris(string $path = ''): array
-    {
-        return static::uri($path, null);
-    }
-
-    /**
-     * 生成静态路径链接。
-     * @param string $path 后缀路径
-     * @param ?string $type 路径类型
-     * @param mixed $default 默认数据
-     * @return array|string
-     */
-    public static function uri(string $path = '', ?string $type = '__ROOT__', $default = '')
-    {
-        $plugin = Library::$sapp->http->getName();
-        if (strlen($path)) {
-            $path = '/' . ltrim($path, '/');
-        }
-        $prefix = rtrim(dirname(Library::$sapp->request->basefile()), '\/');
-        $data = [
-            '__APP__' => rtrim(url('@')->build(), '\/') . $path,
-            '__ROOT__' => $prefix . $path,
-            '__PLUG__' => "{$prefix}/static/extra/{$plugin}{$path}",
-            '__FULL__' => Library::$sapp->request->domain() . $prefix . $path,
-        ];
-        return is_null($type) ? $data : ($data[$type] ?? $default);
-    }
-
-    /**
-     * 打印调试数据到文件。
-     * @param mixed $data 输出的数据
-     * @param bool $new 强制替换文件
-     * @param null|string $file 文件名称
-     * @return false|int
-     */
-    public static function putDebug($data, bool $new = false, ?string $file = null)
-    {
-        ob_start();
-        var_dump($data);
-        $output = preg_replace('/]=>\n(\s+)/m', '] => ', ob_get_clean());
-        if (is_null($file)) {
-            $file = runpath('runtime/' . date('Ymd') . '.log');
-        } elseif (!preg_match('#[/\\\]+#', $file)) {
-            $file = runpath("runtime/{$file}.log");
-        }
-        is_dir($dir = dirname($file)) or mkdir($dir, 0777, true);
-        return $new ? file_put_contents($file, $output) : file_put_contents($file, $output, FILE_APPEND);
-    }
-
-    /**
-     * 批量更新保存数据。
-     * @param \think\Model|\think\db\Query|string $query 数据查询对象
-     * @param array $data 需要保存的数据
-     * @param string $key 更新条件查询主键
-     * @param mixed $map 额外更新查询条件
-     * @return bool|int
-     * @throws \think\admin\Exception
-     */
-    public static function update($query, array $data, string $key = 'id', $map = [])
-    {
-        try {
-            $query = \think\admin\model\QueryFactory::build($query)->master()->where($map);
-            if (empty($map[$key])) {
-                $query->where([$key => $data[$key] ?? null]);
-            }
-            return (clone $query)->count() > 1 ? $query->strict(false)->update($data) : $query->findOrEmpty()->save($data);
-        } catch (\Exception|\Throwable $exception) {
-            throw new \think\admin\Exception($exception->getMessage(), $exception->getCode());
-        }
-    }
-
-    /**
-     * 数据增量保存。
-     * @param \think\Model|\think\db\Query|string $query 数据查询对象
-     * @param array $data 需要保存的数据
-     * @param string $key 更新条件查询主键
-     * @param mixed $map 额外更新查询条件
-     * @return bool|int
-     * @throws \think\admin\Exception
-     */
-    public static function save($query, array &$data, string $key = 'id', $map = [])
-    {
-        try {
-            $query = \think\admin\model\QueryFactory::build($query)->master()->strict(false);
-            if (empty($map[$key])) {
-                $query->where([$key => $data[$key] ?? null]);
-            }
-            $model = $query->where($map)->findOrEmpty();
-            $action = $model->isExists() ? 'onAdminUpdate' : 'onAdminInsert';
-            if ($model->save($data) === false) {
-                return false;
-            }
-            if ($model instanceof \think\admin\Model) {
-                $model->{$action}(strval($model->getAttr($key)));
-            }
-            $data = $model->toArray();
-            return $model[$key] ?? true;
-        } catch (\Exception $exception) {
-            throw new \think\admin\Exception($exception->getMessage(), $exception->getCode());
-        }
     }
 }

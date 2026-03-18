@@ -27,7 +27,7 @@ use think\admin\Library;
 /**
  * 标准滑块验证码工具。
  */
-class ImageSliderVerify
+final class ImageSliderVerify
 {
     /**
      * 浮层圆半径。
@@ -73,7 +73,7 @@ class ImageSliderVerify
      */
     public static function render(string $image, int $time = 1800, int $diff = 10, int $retry = 3): array
     {
-        $data = (new static($image))->create();
+        $data = (new self($image))->create();
         $range = [$data['point'] - $diff, $data['point'] + $diff];
         $result = ['retry' => $retry, 'error' => 0, 'expire' => time() + $time, 'range' => $range];
         Library::$sapp->cache->set($code = CodeToolkit::uniqidNumber(16, 'V'), $result, $time);

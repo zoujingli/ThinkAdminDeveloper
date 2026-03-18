@@ -26,7 +26,7 @@ use think\admin\extend\HttpClient;
 /**
  * 标准 JSON-RPC 客户端工具。
  */
-class JsonRpcHttpClient
+final class JsonRpcHttpClient
 {
     /**
      * 请求 ID。

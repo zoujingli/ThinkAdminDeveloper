@@ -17,8 +17,6 @@ declare(strict_types=1);
  * | github 代码仓库：https://github.com/zoujingli/ThinkAdmin
  * +----------------------------------------------------------------------
  */
-use think\admin\service\PluginService;
-
 /*
  * +----------------------------------------------------------------------
  * | ThinkAdmin Plugin for ThinkAdmin

@@ -37,8 +37,7 @@ use think\Service;
  */
 class Library extends Service
 {
-    /** @var App */
-    public static $sapp;
+    public static App $sapp;
 
     /**
      * 启动服务
@@ -89,7 +88,7 @@ class Library extends Service
     /**
      * 初始化服务
      */
-    public function register()
+    public function register(): void
     {
         // 动态加载全局配置
         [$dir, $ext] = [$this->app->getBasePath(), $this->app->getConfigExt()];

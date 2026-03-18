@@ -28,7 +28,7 @@ use think\admin\extend\CodeToolkit;
  * 标准 JWT 工具。
  * 这里仅保留令牌编码、签名和校验能力，具体认证策略由 `auth` 组合使用。
  */
-class JwtToken
+final class JwtToken
 {
     /**
      * JWT 头部参数。

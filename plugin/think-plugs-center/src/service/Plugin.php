@@ -20,7 +20,7 @@ declare(strict_types=1);
 
 namespace plugin\center\service;
 
-use think\admin\service\PluginService;
+use think\admin\service\AppService;
 
 /**
  * 插件数据服务

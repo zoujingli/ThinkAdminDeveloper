@@ -24,7 +24,6 @@ use PHPUnit\Framework\TestCase;
 use think\admin\middleware\MultAccess;
 use think\admin\runtime\RequestContext;
 use think\admin\service\AppService;
-use think\admin\service\PluginService;
 use think\admin\service\RuntimeService;
 use think\App;
 use think\Request;

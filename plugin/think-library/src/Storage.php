@@ -22,7 +22,6 @@ namespace think\admin;
 
 use plugin\storage\service\LocalStorage;
 use think\admin\contract\StorageInterface;
-use think\admin\Exception;
 use think\Container;
 
 /**

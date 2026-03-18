@@ -86,7 +86,7 @@ class File extends Controller
             'id' => intval($this->request->post('id', 0)),
             'name' => strval($data['name'] ?? ''),
         ];
-        $this->_save(SystemFile::mk(), $data, '', $where);
+        SystemFile::mSave($data, '', $where);
     }
 
     /**

@@ -27,41 +27,55 @@ use think\Container;
  * Standard queue facade.
  * The concrete runtime implementation is provided by ThinkPlugsWorker.
  */
-class QueueService
+final class QueueService
 {
     public const BIND_NAME = 'think.admin.runtime.queue';
 
+    public const STATE_LOCK = 2;
+
+    /**
+     * QueueService constructor.
+     */
     public static function instance(array $var = [], bool $new = false): QueueManagerInterface
     {
-        return static::provider($var, $new);
+        return self::provider($var, $new);
     }
 
+    /**
+     * Register a new queue task.
+     */
     public static function register(string $title, string $command, int $later = 0, array $data = [], int $loops = 0, ?int $legacyLoops = null): QueueManagerInterface
     {
-        return static::provider([], true)->registerTask($title, $command, $later, $data, $loops, $legacyLoops);
+        return self::provider([], true)->registerTask($title, $command, $later, $data, $loops, $legacyLoops);
     }
 
+    /**
+     * Get the current queue task code.
+     */
     public static function currentCode(): string
     {
-        return static::provider()->getCurrentCode();
+        return self::provider()->getCurrentCode();
     }
 
+    /**
+     * Check if the current request is in the queue context.
+     */
     public static function inContext(?string $code = null): bool
     {
-        return static::provider()->isInContext($code);
+        return self::provider()->isInContext($code);
     }
 
     /**
      * Resolve the concrete queue provider.
      */
-    protected static function provider(array $vars = [], bool $newInstance = false): QueueManagerInterface
+    private static function provider(array $vars = [], bool $newInstance = false): QueueManagerInterface
     {
         $container = Container::getInstance();
-        if (!$container->bound(static::BIND_NAME)) {
+        if (!$container->bound(self::BIND_NAME)) {
             throw new \RuntimeException('ThinkPlugsWorker is required for queue runtime operations.');
         }
 
-        $provider = $container->make($container->getAlias(static::BIND_NAME), $vars, $newInstance);
+        $provider = $container->make($container->getAlias(self::BIND_NAME), $vars, $newInstance);
         if (!$provider instanceof QueueManagerInterface) {
             throw new \RuntimeException('Queue runtime provider must implement think\admin\contract\QueueManagerInterface.');
         }

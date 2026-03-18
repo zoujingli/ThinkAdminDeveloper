@@ -25,7 +25,7 @@ use think\admin\Exception;
 /**
  * 标准 favicon 构建工具。
  */
-class FaviconBuilder
+final class FaviconBuilder
 {
     /**
      * 转换后的 BMP 图像。

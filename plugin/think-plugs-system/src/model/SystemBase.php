@@ -22,7 +22,6 @@ namespace plugin\system\model;
 
 use think\admin\Model;
 use think\admin\service\AppService;
-use think\admin\service\PluginService;
 use think\model\concern\SoftDelete;
 
 /**
@@ -288,7 +287,7 @@ class SystemBase extends Model
             if ($plugin === '') {
                 continue;
             }
-            if ($resolved = AppService::resolve($plugin, true)) {
+            if ($resolved = AppService::resolvePlugin($plugin, true)) {
                 $plugin = strval($resolved['code'] ?? $plugin);
             } elseif ($app = AppService::get($plugin)) {
                 $plugin = strval($app['code'] ?? $plugin);

@@ -33,7 +33,7 @@ use think\Response;
  * 系统运行服务
  * @class RuntimeService
  */
-class RuntimeService
+final class RuntimeService
 {
     /**
      * 开发运行模式.
@@ -55,20 +55,18 @@ class RuntimeService
 
     /**
      * 环境配置文件位置.
-     * @var string
      */
-    private static $envFile = './runtime/.env';
+    private static string $envFile = './runtime/.env';
 
     /**
      * 初始化文件哈希值
-     * @var string
      */
-    private static $envHash = '';
+    private static string $envHash = '';
 
     /**
      * 同步运行配置.
      */
-    public static function sync()
+    public static function sync(): void
     {
         clearstatcache(true, self::$envFile);
         is_file(self::$envFile) && md5_file(self::$envFile) !== self::$envHash && self::apply();
@@ -81,7 +79,7 @@ class RuntimeService
      */
     public static function apply(array $data = []): bool
     {
-        $data = array_merge(static::get(), $data);
+        $data = array_merge(self::get(), $data);
         is_file(self::$envFile) && self::$envHash = md5_file(self::$envFile);
         return Library::$sapp->debug($data['mode'] !== 'product')->isDebug();
     }
@@ -90,9 +88,8 @@ class RuntimeService
      * 获取动态配置.
      * @param null|string $name 配置名称
      * @param array $default 配置内容
-     * @return array|string
      */
-    public static function get(?string $name = null, array $default = [])
+    public static function get(?string $name = null, array $default = []): array|string
     {
         $keys = 'think.admin.runtime';
         if (empty($envs = sysvar($keys) ?: [])) {
@@ -113,7 +110,7 @@ class RuntimeService
      */
     public static function isDebug(): bool
     {
-        return static::get('mode') !== 'product';
+        return self::get('mode') !== 'product';
     }
 
     /**
@@ -153,7 +150,7 @@ class RuntimeService
         sysvar('think.admin.runtime', $envs);
 
         //  应用当前的配置文件
-        return static::apply($envs);
+        return self::apply($envs);
     }
 
     /**
@@ -165,13 +162,13 @@ class RuntimeService
         $domain = Library::$sapp->request->host(true);
         $isDemo = boolval(preg_match('|v\d+\.thinkadmin\.top|', $domain));
         $isLocal = $domain === '127.0.0.1' || is_numeric(stripos($domain, 'local'));
-        if ($type === static::MODE_DEV) {
+        if ($type === self::MODE_DEV) {
             return $isLocal || $isDemo;
         }
-        if ($type === static::MODE_DEMO) {
+        if ($type === self::MODE_DEMO) {
             return $isDemo;
         }
-        if ($type === static::MODE_LOCAL) {
+        if ($type === self::MODE_LOCAL) {
             return $isLocal;
         }
         return true;
@@ -183,10 +180,10 @@ class RuntimeService
      */
     public static function clear(bool $force = true): bool
     {
-        $data = static::get();
-        SystemContext::clearAuth() && Library::$sapp->cache->clear();
+        $data = self::get();
+        SystemContext::instance()->clearAuth() && Library::$sapp->cache->clear();
         $force && Library::$sapp->console->call('clear', ['--dir']);
-        static::set($data['mode']);
+        self::set($data['mode']);
         return true;
     }
 
@@ -195,7 +192,7 @@ class RuntimeService
      */
     public static function isOnline(): bool
     {
-        return static::get('mode') === 'product';
+        return self::get('mode') === 'product';
     }
 
     /**
@@ -203,7 +200,7 @@ class RuntimeService
      */
     public static function doWebsiteInit(?App $app = null, ?Request $request = null): Response
     {
-        $http = static::init($app)->http;
+        $http = self::init($app)->http;
         $request = $request ?: Library::$sapp->make(Request::class);
         Library::$sapp->instance('request', $request);
         ($response = $http->run($request))->send();
@@ -223,7 +220,7 @@ class RuntimeService
         // 初始化运行配置位置
         // 运行配置固定落在可写目录（Phar 环境为安装目录，普通环境为项目根目录）
         self::$envFile = runpath('runtime/.env');
-        return Library::$sapp->debug(static::isDebug());
+        return Library::$sapp->debug(self::isDebug());
     }
 
     /**
@@ -232,7 +229,7 @@ class RuntimeService
     public static function doConsoleInit(?App $app = null): int
     {
         try {
-            return static::init($app)->console->run();
+            return self::init($app)->console->run();
         } catch (\Exception $exception) {
             ProcessService::message($exception->getMessage());
             return 0;

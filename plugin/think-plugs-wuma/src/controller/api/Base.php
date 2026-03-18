@@ -48,10 +48,10 @@ abstract class Base extends Controller
     /**
      * 返回失败的操作.
      * @param mixed $info 消息内容
-     * @param mixed $data 返回数据
-     * @param mixed $code 返回代码
+     * @param mixed|string $data 返回数据
+     * @param int|mixed $code 返回代码
      */
-    public function error($info, $data = '{-null-}', $code = 0): void
+    public function error(mixed $info, mixed $data = '{-null-}', mixed $code = 0): void
     {
         if ($data === '{-null-}') {
             $data = new \stdClass();
@@ -64,10 +64,10 @@ abstract class Base extends Controller
     /**
      * 返回成功的操作.
      * @param mixed $info 消息内容
-     * @param mixed $data 返回数据
+     * @param mixed|string $data 返回数据
      * @param mixed $code 返回代码
      */
-    public function success($info, $data = '{-null-}', $code = 1): void
+    public function success(mixed $info, mixed $data = '{-null-}', mixed $code = 1): void
     {
         if ($data === '{-null-}') {
             $data = new \stdClass();

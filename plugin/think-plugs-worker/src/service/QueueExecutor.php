@@ -24,8 +24,8 @@ use plugin\worker\model\SystemQueue;
 use think\admin\contract\QueueHandlerInterface;
 use think\admin\Exception;
 use think\admin\runtime\RequestContext;
-use think\admin\service\ProcessService;
 use think\admin\Service;
+use think\admin\service\ProcessService;
 
 /**
  * Shared queue executor for CLI and Worker runtimes.

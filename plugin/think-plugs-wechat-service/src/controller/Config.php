@@ -47,7 +47,6 @@ class Config extends Controller
      */
     public function edit()
     {
-        $this->_applyFormToken();
         $builder = $this->buildConfigForm();
 
         if ($this->request->isGet()) {

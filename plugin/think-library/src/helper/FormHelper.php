@@ -22,7 +22,7 @@ namespace think\admin\helper;
 
 use think\admin\Exception;
 use think\admin\model\QueryFactory;
-use think\admin\service\RuntimeTools;
+use think\admin\service\AppService;
 use think\db\BaseQuery;
 use think\db\exception\DataNotFoundException;
 use think\db\exception\DbException;

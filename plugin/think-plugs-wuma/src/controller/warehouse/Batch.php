@@ -81,21 +81,17 @@ class Batch extends Controller
     /**
      * 按批次分区出库.
      * @auth true
-     * @throws Exception
-     * @throws DataNotFoundException
-     * @throws DbException
-     * @throws ModelNotFoundException
      */
     public function edit()
     {
         $this->title = '按批次分区出库';
-        $this->_form(PluginWumaSourceAssign::mk()->with([
+        PluginWumaSourceAssign::mQuery()->with([
             'coder' => function ($relation) {
                 $relation->with(['rules']);
             }, 'range' => function ($relation) {
                 $relation->with(['bindProduce']);
             },
-        ]), 'form');
+        ])->mForm('form');
     }
 
     /**

@@ -48,7 +48,6 @@ abstract class Command extends \think\console\Command
      * @param int $count 当前记录
      * @param string $message 文字描述
      * @param int $backline 回退行数
-     * @throws Exception
      */
     public function setQueueMessage(int $total, int $count, string $message = '', int $backline = 0): static
     {
@@ -59,7 +58,6 @@ abstract class Command extends \think\console\Command
     /**
      * 初始化指令变量.
      * @return $this
-     * @throws Exception
      */
     protected function initialize(Input $input, Output $output): static
     {
@@ -74,7 +72,6 @@ abstract class Command extends \think\console\Command
     /**
      * 设置失败消息并结束进程.
      * @param string $message 消息内容
-     * @throws Exception
      */
     protected function setQueueError(string $message): void
     {
@@ -89,7 +86,6 @@ abstract class Command extends \think\console\Command
     /**
      * 设置成功消息并结束进程.
      * @param string $message 消息内容
-     * @throws Exception
      */
     protected function setQueueSuccess(string $message): void
     {
@@ -106,7 +102,6 @@ abstract class Command extends \think\console\Command
      * @param null|string $message 进度消息
      * @param null|string $progress 进度数值
      * @param int $backline 回退行数
-     * @throws Exception
      */
     protected function setQueueProgress(?string $message = null, ?string $progress = null, int $backline = 0): static
     {

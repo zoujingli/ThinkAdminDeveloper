@@ -61,7 +61,6 @@ class Menu extends Controller
      */
     public function add()
     {
-        $this->_applyFormToken();
         SystemMenu::mForm('form');
     }
 
@@ -71,7 +70,6 @@ class Menu extends Controller
      */
     public function edit()
     {
-        $this->_applyFormToken();
         SystemMenu::mForm('form');
     }
 

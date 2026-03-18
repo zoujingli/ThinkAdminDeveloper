@@ -33,14 +33,13 @@ class SaveHelper extends Helper
 {
     /**
      * 逻辑器初始化.
-     * @param BaseQuery|Model|string $dbQuery
      * @param array $edata 表单扩展数据
      * @param string $field 数据对象主键
      * @param mixed $where 额外更新条件
      * @return bool|void
      * @throws DbException
      */
-    public function init($dbQuery, array $edata = [], string $field = '', $where = [])
+    public function init(BaseQuery|Model|string $dbQuery, array $edata = [], string $field = '', $where = [])
     {
         $query = QueryFactory::build($dbQuery);
         $field = $field ?: ($query->getPk() ?: 'id');

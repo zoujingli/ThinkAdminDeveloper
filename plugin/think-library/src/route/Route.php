@@ -20,10 +20,8 @@ declare(strict_types=1);
 
 namespace think\admin\route;
 
-use Closure;
 use think\admin\runtime\RequestContext;
 use think\admin\service\AppService;
-use think\admin\service\PluginService;
 use think\exception\RouteNotFoundException;
 use think\Request;
 use think\Route as ThinkRoute;
@@ -69,9 +67,8 @@ class Route extends ThinkRoute
 
     /**
      * 注册绑定到本地 app 的根路由。
-     * @param mixed $route
      */
-    public function bindApp(string $rule, $route, string $app, string $method = '*'): RuleItem
+    public function bindApp(string $rule, mixed $route, string $app, string $method = '*'): RuleItem
     {
         return $this->bindTarget($rule, $route, [self::OPTION_APP => $app], $method);
     }
@@ -85,7 +82,7 @@ class Route extends ThinkRoute
      * @param array<string, mixed> $target 目标声明
      * @param string $method 请求方法
      */
-    public function bindTarget(string $rule, $route, array $target, string $method = '*'): RuleItem
+    public function bindTarget(string $rule, mixed $route, array $target, string $method = '*'): RuleItem
     {
         $item = $this->rule($rule, $route, $method);
         $option = $this->normalizeTargetOptions($target);
@@ -94,11 +91,10 @@ class Route extends ThinkRoute
 
     /**
      * 注册绑定到插件的根路由。
-     * @param mixed $route
      */
     public function bindPlugin(
         string $rule,
-        $route,
+        mixed $route,
         string $plugin,
         string $entry = RequestContext::ENTRY_WEB,
         string $method = '*'
@@ -134,15 +130,14 @@ class Route extends ThinkRoute
     /**
      * 注册绑定到插件的根路由分组。
      * 当第二个参数是 Closure 时，第三个参数可直接传 api/web 入口类型。
-     * @param null|mixed $route
      */
     public function pluginGroup(
         string $plugin,
         \Closure|string $name,
-        $route = null,
+        mixed $route = null,
         string $entry = RequestContext::ENTRY_WEB
     ): RuleGroup {
-        if ($name instanceof \Closure && is_string($route) && in_array($route, [RequestContext::ENTRY_WEB, RequestContext::ENTRY_API], true)) {
+        if ($name instanceof \Closure && in_array($route, [RequestContext::ENTRY_WEB, RequestContext::ENTRY_API], true)) {
             $entry = $route;
             $route = null;
         }
@@ -264,7 +259,7 @@ class Route extends ThinkRoute
         $target = trim($this->dispatchTarget($dispatch), '\/');
 
         $pluginCode = trim(strval($option[self::OPTION_PLUGIN] ?? $option['plugin'] ?? ''));
-        if ($pluginCode !== '' && ($plugin = AppService::resolve($pluginCode))) {
+        if ($pluginCode !== '' && ($plugin = AppService::resolvePlugin($pluginCode))) {
             $plugin['type'] = 'plugin';
             $plugin['entry'] = $this->detectPluginEntry($dispatch, $option, $target);
             $plugin['matched_prefix'] = '';
@@ -287,7 +282,7 @@ class Route extends ThinkRoute
             $code = trim(strval($parts[0]));
             $inner = join('/', array_slice($parts, 1));
 
-            if ($code !== '' && ($plugin = AppService::resolve($code))) {
+            if ($code !== '' && ($plugin = AppService::resolvePlugin($code))) {
                 $plugin['type'] = 'plugin';
                 $plugin['entry'] = $this->detectPluginEntry($dispatch, $option, $inner);
                 $plugin['matched_prefix'] = '';

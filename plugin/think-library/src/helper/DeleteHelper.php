@@ -33,11 +33,10 @@ use think\model\concern\SoftDelete;
 class DeleteHelper extends Helper
 {
     /**
-     * @param BaseQuery|Model|string $dbQuery
-     * @param mixed $where
+     * @param array|mixed $where
      * @throws DbException
      */
-    public function init($dbQuery, string $field = '', $where = [])
+    public function init(BaseQuery|Model|string $dbQuery, string $field = '', mixed $where = [])
     {
         $query = QueryFactory::build($dbQuery);
         $field = $field ?: ($query->getPk() ?: 'id');

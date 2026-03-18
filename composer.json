@@ -50,7 +50,7 @@
     "post-autoload-dump": [
       "@php think service:discover"
     ],
-    "check": [
+    "sync": [
       "php-cs-fixer fix",
       "@composer analyse"
     ],

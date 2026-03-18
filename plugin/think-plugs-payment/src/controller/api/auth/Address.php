@@ -96,7 +96,7 @@ class Address extends Auth
      */
     public function get()
     {
-        $query = $this->_query($this->withModel());
+        $query = $this->withModel()->mQuery();
         $query->equal('id')->order('type desc,id desc');
         $this->success('获取地址数据！', $query->page(false, false));
     }
