@@ -26,18 +26,6 @@ namespace think\admin\extend;
 class ArrayTree
 {
     /**
-     * 二维数组转多维数据树。
-     */
-    public static function arr2tree(array $list, string $ckey = 'id', string $pkey = 'pid', string $chil = 'sub'): array
-    {
-        [$tree, $list] = [[], array_column($list, null, $ckey)];
-        foreach ($list as $it) {
-            isset($list[$it[$pkey]]) ? $list[$it[$pkey]][$chil][] = &$list[$it[$ckey]] : $tree[] = &$list[$it[$ckey]];
-        }
-        return $tree;
-    }
-
-    /**
      * 二维数组转带层级标识的数据表。
      * 这里继续输出历史字段 `spc/spt/spl/sps/spp`，避免影响后台树表展示。
      */
@@ -66,6 +54,18 @@ class ArrayTree
             return $data;
         };
         return $build(static::arr2tree($list, $ckey, $pkey), $build);
+    }
+
+    /**
+     * 二维数组转多维数据树。
+     */
+    public static function arr2tree(array $list, string $ckey = 'id', string $pkey = 'pid', string $chil = 'sub'): array
+    {
+        [$tree, $list] = [[], array_column($list, null, $ckey)];
+        foreach ($list as $it) {
+            isset($list[$it[$pkey]]) ? $list[$it[$pkey]][$chil][] = &$list[$it[$ckey]] : $tree[] = &$list[$it[$ckey]];
+        }
+        return $tree;
     }
 
     /**

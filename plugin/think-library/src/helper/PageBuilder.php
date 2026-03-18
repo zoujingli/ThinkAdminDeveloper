@@ -290,37 +290,6 @@ class PageBuilder
     }
 
     /**
-     * 获取页面配置.
-     */
-    public function toArray(): array
-    {
-        return [
-            'title' => $this->title,
-            'buttons' => $this->buttonItems,
-            'searchFields' => $this->normalizeSchemaValue($this->searchFields),
-            'table' => [
-                'id' => $this->tableId,
-                'url' => $this->tableUrl ?? '',
-                'attrs' => $this->tableAttrs,
-                'options' => $this->normalizeSchemaValue($this->buildTableOptions()),
-                'columns' => $this->normalizeSchemaValue($this->columns),
-            ],
-            'templates' => array_keys($this->templates),
-        ];
-    }
-
-    /**
-     * 添加头部按钮 HTML.
-     * @return $this
-     */
-    public function addButtonHtml(string $html, array $schema = []): self
-    {
-        $this->buttons[] = $html;
-        $this->buttonItems[] = array_merge(['html' => $html], $schema);
-        return $this;
-    }
-
-    /**
      * 添加弹窗按钮.
      * @return $this
      */
@@ -340,6 +309,17 @@ class PageBuilder
             'auth' => $auth,
             'attrs' => $attrs,
         ]);
+    }
+
+    /**
+     * 添加头部按钮 HTML.
+     * @return $this
+     */
+    public function addButtonHtml(string $html, array $schema = []): self
+    {
+        $this->buttons[] = $html;
+        $this->buttonItems[] = array_merge(['html' => $html], $schema);
+        return $this;
     }
 
     /**
@@ -364,6 +344,21 @@ class PageBuilder
             'rule' => $rule,
             'confirm' => $confirm,
             'auth' => $auth,
+            'attrs' => $attrs,
+        ]);
+    }
+
+    /**
+     * 添加搜索输入框.
+     * @return $this
+     */
+    public function addSearchInput(string $name, string $label, string $placeholder = '', array $attrs = []): self
+    {
+        return $this->addSearchField([
+            'type' => 'input',
+            'name' => $name,
+            'label' => $label,
+            'placeholder' => $placeholder,
             'attrs' => $attrs,
         ]);
     }
@@ -396,21 +391,6 @@ class PageBuilder
         $field['wrapClass'] = trim((string)$field['wrapClass']);
         $this->searchFields[] = $field;
         return $this;
-    }
-
-    /**
-     * 添加搜索输入框.
-     * @return $this
-     */
-    public function addSearchInput(string $name, string $label, string $placeholder = '', array $attrs = []): self
-    {
-        return $this->addSearchField([
-            'type' => 'input',
-            'name' => $name,
-            'label' => $label,
-            'placeholder' => $placeholder,
-            'attrs' => $attrs,
-        ]);
     }
 
     /**
@@ -472,6 +452,15 @@ class PageBuilder
     }
 
     /**
+     * 添加勾选列.
+     * @return $this
+     */
+    public function addCheckboxColumn(array $options = []): self
+    {
+        return $this->addColumn(array_merge(['checkbox' => true, 'fixed' => true], $options));
+    }
+
+    /**
      * 添加表格列.
      * @return $this
      */
@@ -479,15 +468,6 @@ class PageBuilder
     {
         $this->columns[] = $column;
         return $this;
-    }
-
-    /**
-     * 添加勾选列.
-     * @return $this
-     */
-    public function addCheckboxColumn(array $options = []): self
-    {
-        return $this->addColumn(array_merge(['checkbox' => true, 'fixed' => true], $options));
     }
 
     /**
@@ -506,16 +486,6 @@ class PageBuilder
     }
 
     /**
-     * 添加行工具按钮 HTML.
-     * @return $this
-     */
-    public function addRowActionHtml(string $html): self
-    {
-        $this->rowActions[] = $html;
-        return $this;
-    }
-
-    /**
      * 添加行弹窗按钮.
      * @return $this
      */
@@ -529,6 +499,16 @@ class PageBuilder
             $attrs['data-title'] = $title;
         }
         return $this->addRowActionHtml($this->wrapAuth(sprintf('<a %s>%s</a>', $this->attrs($attrs), $label), $auth));
+    }
+
+    /**
+     * 添加行工具按钮 HTML.
+     * @return $this
+     */
+    public function addRowActionHtml(string $html): self
+    {
+        $this->rowActions[] = $html;
+        return $this;
     }
 
     /**
@@ -625,6 +605,102 @@ class PageBuilder
     }
 
     /**
+     * 获取页面配置.
+     */
+    public function toArray(): array
+    {
+        return [
+            'title' => $this->title,
+            'buttons' => $this->buttonItems,
+            'searchFields' => $this->normalizeSchemaValue($this->searchFields),
+            'table' => [
+                'id' => $this->tableId,
+                'url' => $this->tableUrl ?? '',
+                'attrs' => $this->tableAttrs,
+                'options' => $this->normalizeSchemaValue($this->buildTableOptions()),
+                'columns' => $this->normalizeSchemaValue($this->columns),
+            ],
+            'templates' => array_keys($this->templates),
+        ];
+    }
+
+    /**
+     * 合并数组配置.
+     */
+    private function mergeAssoc(array $origin, array $append): array
+    {
+        foreach ($append as $key => $value) {
+            if (isset($origin[$key]) && is_array($origin[$key]) && is_array($value) && !array_is_list($origin[$key]) && !array_is_list($value)) {
+                $origin[$key] = $this->mergeAssoc($origin[$key], $value);
+            } else {
+                $origin[$key] = $value;
+            }
+        }
+        return $origin;
+    }
+
+    /**
+     * 包装权限节点.
+     */
+    private function wrapAuth(string $html, ?string $auth): string
+    {
+        if (empty($auth)) {
+            return $html;
+        }
+        if (function_exists('auth')) {
+            try {
+                return auth($auth) ? $html : '';
+            } catch (\Throwable) {
+            }
+        }
+        return $html;
+    }
+
+    /**
+     * 属性转换.
+     */
+    private function attrs(array $attrs): string
+    {
+        $html = '';
+        foreach ($attrs as $key => $value) {
+            $name = htmlspecialchars((string)$key, ENT_QUOTES, 'UTF-8');
+            $html .= is_null($value) ? " {$name}" : sprintf(' %s="%s"', $name, htmlspecialchars((string)$value, ENT_QUOTES, 'UTF-8'));
+        }
+        return ltrim($html);
+    }
+
+    /**
+     * Schema 值标准化.
+     * @param mixed $value
+     */
+    private function normalizeSchemaValue($value)
+    {
+        if ($value instanceof PageBuilderRaw) {
+            return ['type' => 'js', 'code' => $value->value];
+        }
+        if (is_array($value)) {
+            $result = [];
+            foreach ($value as $key => $item) {
+                $result[$key] = $this->normalizeSchemaValue($item);
+            }
+            return $result;
+        }
+        return $value;
+    }
+
+    /**
+     * 构建表格参数.
+     */
+    private function buildTableOptions(): array
+    {
+        $options = $this->tableOptions;
+        if (count($this->columns) > 0) {
+            $options['cols'] = [$this->columns];
+        }
+        return $options;
+    }
+
+    /**
      * 渲染页面.
      */
     private function render(): string
@@ -714,6 +790,14 @@ class PageBuilder
     }
 
     /**
+     * 解析当前 URL.
+     */
+    private function resolveCurrentUrl(): string
+    {
+        return url()->build();
+    }
+
+    /**
      * 渲染搜索字段.
      */
     private function renderSearchField(array $field): string
@@ -771,6 +855,23 @@ class PageBuilder
     }
 
     /**
+     * 获取搜索值.
+     */
+    private function searchValue(string $name): string
+    {
+        if (isset($this->class->get) && is_array($this->class->get) && array_key_exists($name, $this->class->get)) {
+            return strval($this->class->get[$name]);
+        }
+        if (isset($this->renderVars['get']) && is_array($this->renderVars['get']) && array_key_exists($name, $this->renderVars['get'])) {
+            return strval($this->renderVars['get'][$name]);
+        }
+        if (isset($this->class->request)) {
+            return strval($this->class->request->get($name, ''));
+        }
+        return '';
+    }
+
+    /**
      * 渲染搜索下拉选项.
      */
     private function renderSearchOptions(array $field): string
@@ -785,6 +886,17 @@ class PageBuilder
             $html .= sprintf('<option%s value="%s">%s</option>', $selected, $value, $label);
         }
         return $html;
+    }
+
+    /**
+     * 获取搜索选项.
+     */
+    private function resolveSearchOptions(array $field): array
+    {
+        if (!empty($field['source']) && isset($this->renderVars[$field['source']]) && is_array($this->renderVars[$field['source']])) {
+            return $this->renderVars[$field['source']];
+        }
+        return is_array($field['options'] ?? null) ? $field['options'] : [];
     }
 
     /**
@@ -839,27 +951,6 @@ class PageBuilder
     }
 
     /**
-     * 构建表格参数.
-     */
-    private function buildTableOptions(): array
-    {
-        $options = $this->tableOptions;
-        if (count($this->columns) > 0) {
-            $options['cols'] = [$this->columns];
-        }
-        return $options;
-    }
-
-    /**
-     * 渲染页面配置 JSON.
-     */
-    private function renderSchemaScript(): string
-    {
-        $json = json_encode($this->toArray(), JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES | JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_AMP | JSON_HEX_QUOT);
-        return $json ? sprintf('<script type="application/json" class="page-builder-schema">%s</script>', $json) : '';
-    }
-
-    /**
      * JS 值编码.
      * @param mixed $value
      */
@@ -894,102 +985,11 @@ class PageBuilder
     }
 
     /**
-     * Schema 值标准化.
-     * @param mixed $value
+     * 渲染页面配置 JSON.
      */
-    private function normalizeSchemaValue($value)
+    private function renderSchemaScript(): string
     {
-        if ($value instanceof PageBuilderRaw) {
-            return ['type' => 'js', 'code' => $value->value];
-        }
-        if (is_array($value)) {
-            $result = [];
-            foreach ($value as $key => $item) {
-                $result[$key] = $this->normalizeSchemaValue($item);
-            }
-            return $result;
-        }
-        return $value;
-    }
-
-    /**
-     * 包装权限节点.
-     */
-    private function wrapAuth(string $html, ?string $auth): string
-    {
-        if (empty($auth)) {
-            return $html;
-        }
-        if (function_exists('auth')) {
-            try {
-                return auth($auth) ? $html : '';
-            } catch (\Throwable) {
-            }
-        }
-        return $html;
-    }
-
-    /**
-     * 获取搜索值.
-     */
-    private function searchValue(string $name): string
-    {
-        if (isset($this->class->get) && is_array($this->class->get) && array_key_exists($name, $this->class->get)) {
-            return strval($this->class->get[$name]);
-        }
-        if (isset($this->renderVars['get']) && is_array($this->renderVars['get']) && array_key_exists($name, $this->renderVars['get'])) {
-            return strval($this->renderVars['get'][$name]);
-        }
-        if (isset($this->class->request)) {
-            return strval($this->class->request->get($name, ''));
-        }
-        return '';
-    }
-
-    /**
-     * 获取搜索选项.
-     */
-    private function resolveSearchOptions(array $field): array
-    {
-        if (!empty($field['source']) && isset($this->renderVars[$field['source']]) && is_array($this->renderVars[$field['source']])) {
-            return $this->renderVars[$field['source']];
-        }
-        return is_array($field['options'] ?? null) ? $field['options'] : [];
-    }
-
-    /**
-     * 属性转换.
-     */
-    private function attrs(array $attrs): string
-    {
-        $html = '';
-        foreach ($attrs as $key => $value) {
-            $name = htmlspecialchars((string)$key, ENT_QUOTES, 'UTF-8');
-            $html .= is_null($value) ? " {$name}" : sprintf(' %s="%s"', $name, htmlspecialchars((string)$value, ENT_QUOTES, 'UTF-8'));
-        }
-        return ltrim($html);
-    }
-
-    /**
-     * 解析当前 URL.
-     */
-    private function resolveCurrentUrl(): string
-    {
-        return url()->build();
-    }
-
-    /**
-     * 合并数组配置.
-     */
-    private function mergeAssoc(array $origin, array $append): array
-    {
-        foreach ($append as $key => $value) {
-            if (isset($origin[$key]) && is_array($origin[$key]) && is_array($value) && !array_is_list($origin[$key]) && !array_is_list($value)) {
-                $origin[$key] = $this->mergeAssoc($origin[$key], $value);
-            } else {
-                $origin[$key] = $value;
-            }
-        }
-        return $origin;
+        $json = json_encode($this->toArray(), JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES | JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_AMP | JSON_HEX_QUOT);
+        return $json ? sprintf('<script type="application/json" class="page-builder-schema">%s</script>', $json) : '';
     }
 }

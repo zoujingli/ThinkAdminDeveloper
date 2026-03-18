@@ -31,6 +31,15 @@ use think\Container;
 class SystemContext
 {
     /**
+     * 代理上下文调用.
+     * @return mixed
+     */
+    public static function __callStatic(string $name, array $arguments)
+    {
+        return static::instance()->{$name}(...$arguments);
+    }
+
+    /**
      * 获取系统上下文实例.
      */
     public static function instance(): SystemContextInterface
@@ -40,14 +49,5 @@ class SystemContext
             $container->bind(SystemContextInterface::class, NullSystemContext::class);
         }
         return $container->make(SystemContextInterface::class);
-    }
-
-    /**
-     * 代理上下文调用.
-     * @return mixed
-     */
-    public static function __callStatic(string $name, array $arguments)
-    {
-        return static::instance()->{$name}(...$arguments);
     }
 }

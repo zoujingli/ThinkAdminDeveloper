@@ -57,17 +57,6 @@ class CacheSession extends Service
     private const DEFAULT_GC_INTERVAL = 300;
 
     /**
-     * 判断当前会话是否存在。
-     * @throws Exception
-     */
-    public static function exists(?string $scope = null): bool
-    {
-        static::sweep();
-        $payload = static::store()->get(static::sessionKey($scope), null);
-        return is_array($payload) && array_key_exists('data', $payload) && is_array($payload['data']);
-    }
-
-    /**
      * 读取指定会话数据别名。
      * @param mixed $default
      * @return mixed
@@ -79,11 +68,15 @@ class CacheSession extends Service
     }
 
     /**
-     * 判断指定键是否存在。
+     * 读取指定会话数据。
+     * @param mixed $default
+     * @return mixed
+     * @throws Exception
      */
-    public static function has(string $name, ?string $scope = null): bool
+    public static function get(string $name, $default = null, ?string $scope = null, ?bool $touch = null)
     {
-        return array_key_exists($name, static::all($scope, false));
+        $data = static::all($scope, $touch);
+        return $data[$name] ?? $default;
     }
 
     /**
@@ -114,15 +107,89 @@ class CacheSession extends Service
     }
 
     /**
-     * 读取指定会话数据。
-     * @param mixed $default
-     * @return mixed
+     * 惰性清理已过期会话。
+     */
+    public static function sweep(bool $force = false): int
+    {
+        $cache = static::store();
+        $interval = static::gcInterval();
+        $now = time();
+        if (!$force && $interval > 0 && intval($cache->get(self::GC_KEY, 0)) > $now) {
+            return 0;
+        }
+
+        $index = $cache->get(self::INDEX_KEY, []);
+        if (!is_array($index)) {
+            $index = [];
+        }
+
+        $count = 0;
+        foreach ($index as $key => $expireAt) {
+            $expireAt = intval($expireAt);
+            if ($expireAt > 0 && $expireAt <= $now) {
+                $cache->delete($key);
+                unset($index[$key]);
+                ++$count;
+            } elseif ($expireAt <= 0 && !$cache->has($key)) {
+                unset($index[$key]);
+            }
+        }
+
+        $cache->set(self::INDEX_KEY, $index);
+        $cache->set(self::GC_KEY, $now + $interval, max(60, $interval));
+        return $count;
+    }
+
+    /**
+     * 删除指定会话字段。
      * @throws Exception
      */
-    public static function get(string $name, $default = null, ?string $scope = null, ?bool $touch = null)
+    public static function delete(string $name, ?string $scope = null): bool
     {
-        $data = static::all($scope, $touch);
-        return $data[$name] ?? $default;
+        static::sweep();
+        $scope = static::scope($scope);
+        $cache = static::store();
+        $key = static::sessionKey($scope);
+        $payload = static::payload($scope, $cache->get($key, []));
+        if (!array_key_exists($name, $payload['data'])) {
+            return true;
+        }
+
+        unset($payload['data'][$name]);
+        $payload['updated_at'] = time();
+        if (!$cache->set($key, $payload, intval($payload['expire']))) {
+            return false;
+        }
+
+        static::saveIndex($key, intval($payload['expire']));
+        return true;
+    }
+
+    /**
+     * 获取当前会话作用域。
+     * @throws Exception
+     */
+    public static function scope(?string $scope = null): string
+    {
+        $scope = trim(strval($scope));
+        if ($scope !== '') {
+            return $scope;
+        }
+
+        if (($sessionId = static::currentSessionId()) !== '') {
+            return "sid:{$sessionId}";
+        }
+
+        throw new Exception('令牌会话未初始化，请先完成 Token 鉴权或显式传入作用域标识！', 401);
+    }
+
+    /**
+     * 获取缓存会话键名。
+     * @throws Exception
+     */
+    public static function sessionKey(?string $scope = null): string
+    {
+        return self::CACHE_PREFIX . md5(static::scope($scope));
     }
 
     /**
@@ -133,16 +200,6 @@ class CacheSession extends Service
     public static function set(string $name, $value, ?int $expire = null, ?string $scope = null): bool
     {
         return static::put([$name => $value], $expire, $scope);
-    }
-
-    /**
-     * 写入指定会话数据别名。
-     * @param mixed $value
-     * @throws Exception
-     */
-    public static function write(string $name, $value, ?int $expire = null, ?string $scope = null): bool
-    {
-        return static::set($name, $value, $expire, $scope);
     }
 
     /**
@@ -169,28 +226,21 @@ class CacheSession extends Service
     }
 
     /**
-     * 删除指定会话字段。
+     * 判断指定键是否存在。
+     */
+    public static function has(string $name, ?string $scope = null): bool
+    {
+        return array_key_exists($name, static::all($scope, false));
+    }
+
+    /**
+     * 写入指定会话数据别名。
+     * @param mixed $value
      * @throws Exception
      */
-    public static function delete(string $name, ?string $scope = null): bool
+    public static function write(string $name, $value, ?int $expire = null, ?string $scope = null): bool
     {
-        static::sweep();
-        $scope = static::scope($scope);
-        $cache = static::store();
-        $key = static::sessionKey($scope);
-        $payload = static::payload($scope, $cache->get($key, []));
-        if (!array_key_exists($name, $payload['data'])) {
-            return true;
-        }
-
-        unset($payload['data'][$name]);
-        $payload['updated_at'] = time();
-        if (!$cache->set($key, $payload, intval($payload['expire']))) {
-            return false;
-        }
-
-        static::saveIndex($key, intval($payload['expire']));
-        return true;
+        return static::set($name, $value, $expire, $scope);
     }
 
     /**
@@ -232,6 +282,26 @@ class CacheSession extends Service
     }
 
     /**
+     * 判断当前会话是否存在。
+     * @throws Exception
+     */
+    public static function exists(?string $scope = null): bool
+    {
+        static::sweep();
+        $payload = static::store()->get(static::sessionKey($scope), null);
+        return is_array($payload) && array_key_exists('data', $payload) && is_array($payload['data']);
+    }
+
+    /**
+     * 销毁当前会话别名。
+     * @throws Exception
+     */
+    public static function forget(?string $scope = null): bool
+    {
+        return static::destroy($scope);
+    }
+
+    /**
      * 销毁当前会话。
      * @throws Exception
      */
@@ -242,15 +312,6 @@ class CacheSession extends Service
         static::dropIndex($key);
         static::store()->delete($key);
         return true;
-    }
-
-    /**
-     * 销毁当前会话别名。
-     * @throws Exception
-     */
-    public static function forget(?string $scope = null): bool
-    {
-        return static::destroy($scope);
     }
 
     /**
@@ -282,72 +343,11 @@ class CacheSession extends Service
     }
 
     /**
-     * 获取当前会话作用域。
-     * @throws Exception
-     */
-    public static function scope(?string $scope = null): string
-    {
-        $scope = trim(strval($scope));
-        if ($scope !== '') {
-            return $scope;
-        }
-
-        if (($sessionId = static::currentSessionId()) !== '') {
-            return "sid:{$sessionId}";
-        }
-
-        throw new Exception('令牌会话未初始化，请先完成 Token 鉴权或显式传入作用域标识！', 401);
-    }
-
-    /**
-     * 惰性清理已过期会话。
-     */
-    public static function sweep(bool $force = false): int
-    {
-        $cache = static::store();
-        $interval = static::gcInterval();
-        $now = time();
-        if (!$force && $interval > 0 && intval($cache->get(self::GC_KEY, 0)) > $now) {
-            return 0;
-        }
-
-        $index = $cache->get(self::INDEX_KEY, []);
-        if (!is_array($index)) {
-            $index = [];
-        }
-
-        $count = 0;
-        foreach ($index as $key => $expireAt) {
-            $expireAt = intval($expireAt);
-            if ($expireAt > 0 && $expireAt <= $now) {
-                $cache->delete($key);
-                unset($index[$key]);
-                ++$count;
-            } elseif ($expireAt <= 0 && !$cache->has($key)) {
-                unset($index[$key]);
-            }
-        }
-
-        $cache->set(self::INDEX_KEY, $index);
-        $cache->set(self::GC_KEY, $now + $interval, max(60, $interval));
-        return $count;
-    }
-
-    /**
      * 垃圾清理别名。
      */
     public static function gc(bool $force = false): int
     {
         return static::sweep($force);
-    }
-
-    /**
-     * 获取缓存会话键名。
-     * @throws Exception
-     */
-    public static function sessionKey(?string $scope = null): string
-    {
-        return self::CACHE_PREFIX . md5(static::scope($scope));
     }
 
     /**
@@ -360,28 +360,17 @@ class CacheSession extends Service
     }
 
     /**
-     * 获取缓存会话默认过期时间。
+     * 读取令牌会话配置。
+     * @param mixed $default
+     * @return mixed
      */
-    private static function ttl(?int $expire = null): int
+    private static function config(string $name, $default = null)
     {
-        $expire = is_null($expire) ? static::getExpire() : $expire;
-        return max(0, intval($expire));
-    }
-
-    /**
-     * 获取自动续期配置。
-     */
-    private static function autoTouch(): bool
-    {
-        return boolval(static::config('token_session_touch', true));
-    }
-
-    /**
-     * 获取默认过期时间。
-     */
-    private static function getExpire(): int
-    {
-        return max(0, intval(static::config('token_session_expire', self::DEFAULT_EXPIRE)));
+        $config = Library::$sapp->config->get('app', []);
+        if (is_array($config) && array_key_exists($name, $config)) {
+            return $config[$name];
+        }
+        return $default;
     }
 
     /**
@@ -390,6 +379,19 @@ class CacheSession extends Service
     private static function gcInterval(): int
     {
         return max(60, intval(static::config('token_session_gc_interval', self::DEFAULT_GC_INTERVAL)));
+    }
+
+    /**
+     * 获取当前请求绑定的认证会话编号。
+     */
+    private static function currentSessionId(): string
+    {
+        $sessionId = RequestContext::instance()->sessionId();
+        if ($sessionId !== '') {
+            return $sessionId;
+        }
+
+        return trim(strval(sysvar('plugin_account_user_session_id') ?: ''));
     }
 
     /**
@@ -409,30 +411,20 @@ class CacheSession extends Service
     }
 
     /**
-     * 获取当前请求绑定的认证会话编号。
+     * 获取缓存会话默认过期时间。
      */
-    private static function currentSessionId(): string
+    private static function ttl(?int $expire = null): int
     {
-        $sessionId = RequestContext::instance()->sessionId();
-        if ($sessionId !== '') {
-            return $sessionId;
-        }
-
-        return trim(strval(sysvar('plugin_account_user_session_id') ?: ''));
+        $expire = is_null($expire) ? static::getExpire() : $expire;
+        return max(0, intval($expire));
     }
 
     /**
-     * 读取令牌会话配置。
-     * @param mixed $default
-     * @return mixed
+     * 获取默认过期时间。
      */
-    private static function config(string $name, $default = null)
+    private static function getExpire(): int
     {
-        $config = Library::$sapp->config->get('app', []);
-        if (is_array($config) && array_key_exists($name, $config)) {
-            return $config[$name];
-        }
-        return $default;
+        return max(0, intval(static::config('token_session_expire', self::DEFAULT_EXPIRE)));
     }
 
     /**
@@ -463,5 +455,13 @@ class CacheSession extends Service
 
         unset($index[$key]);
         $cache->set(self::INDEX_KEY, $index);
+    }
+
+    /**
+     * 获取自动续期配置。
+     */
+    private static function autoTouch(): bool
+    {
+        return boolval(static::config('token_session_touch', true));
     }
 }

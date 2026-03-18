@@ -38,20 +38,6 @@ class CodeToolkit
     }
 
     /**
-     * 生成随机编码。
-     * `type` 仅允许数字、字母、数字字母三种规则，避免继续引入隐式分支。
-     */
-    public static function random(int $size = 10, int $type = 1, string $prefix = ''): string
-    {
-        $chars = static::alphabet($type);
-        $code = $prefix . $chars[mt_rand(1, strlen($chars) - 1)];
-        while (strlen($code) < $size) {
-            $code .= $chars[mt_rand(0, strlen($chars) - 1)];
-        }
-        return $code;
-    }
-
-    /**
      * 生成日期编码。
      */
     public static function uniqidDate(int $size = 16, string $prefix = ''): string
@@ -101,14 +87,17 @@ class CodeToolkit
     }
 
     /**
-     * 数据解密处理。
-     *
-     * @return mixed
+     * 生成随机编码。
+     * `type` 仅允许数字、字母、数字字母三种规则，避免继续引入隐式分支。
      */
-    public static function decrypt(string $data, string $skey)
+    public static function random(int $size = 10, int $type = 1, string $prefix = ''): string
     {
-        $attr = json_decode(static::deSafe64($data), true) ?: [];
-        return unserialize(openssl_decrypt((string)($attr['value'] ?? ''), 'AES-256-CBC', $skey, 0, (string)($attr['iv'] ?? '')));
+        $chars = static::alphabet($type);
+        $code = $prefix . $chars[mt_rand(1, strlen($chars) - 1)];
+        while (strlen($code) < $size) {
+            $code .= $chars[mt_rand(0, strlen($chars) - 1)];
+        }
+        return $code;
     }
 
     /**
@@ -117,6 +106,17 @@ class CodeToolkit
     public static function enSafe64(string $text): string
     {
         return rtrim(strtr(base64_encode($text), '+/', '-_'), '=');
+    }
+
+    /**
+     * 数据解密处理。
+     *
+     * @return mixed
+     */
+    public static function decrypt(string $data, string $skey)
+    {
+        $attr = json_decode(static::deSafe64($data), true) ?: [];
+        return unserialize(openssl_decrypt((string)($attr['value'] ?? ''), 'AES-256-CBC', $skey, 0, (string)($attr['iv'] ?? '')));
     }
 
     /**
@@ -148,22 +148,6 @@ class CodeToolkit
     }
 
     /**
-     * 根据规则选择随机字符集。
-     */
-    private static function alphabet(int $type): string
-    {
-        $numbers = '0123456789';
-        $letters = 'abcdefghijklmnopqrstuvwxyz';
-        if ($type === 1) {
-            return $numbers;
-        }
-        if ($type === 3) {
-            return $numbers . $letters;
-        }
-        return $letters;
-    }
-
-    /**
      * 尝试通过 BOM 判断文本编码。
      */
     private static function detectEncoding(string $text): string
@@ -182,5 +166,21 @@ class CodeToolkit
             return 'UTF-16LE';
         }
         return mb_detect_encoding($text) ?: 'UTF-8';
+    }
+
+    /**
+     * 根据规则选择随机字符集。
+     */
+    private static function alphabet(int $type): string
+    {
+        $numbers = '0123456789';
+        $letters = 'abcdefghijklmnopqrstuvwxyz';
+        if ($type === 1) {
+            return $numbers;
+        }
+        if ($type === 3) {
+            return $numbers . $letters;
+        }
+        return $letters;
     }
 }

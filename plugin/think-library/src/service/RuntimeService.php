@@ -20,6 +20,7 @@ declare(strict_types=1);
 
 namespace think\admin\service;
 
+use Exception;
 use think\admin\Library;
 use think\admin\route\Route;
 use think\admin\route\Url;
@@ -66,17 +67,24 @@ class RuntimeService
     private static $envHash = '';
 
     /**
-     * 系统服务初始化.
+     * 同步运行配置.
      */
-    public static function init(?App $app = null): App
+    public static function sync()
     {
-        // 初始化运行环境
-        Library::$sapp = $app ?: Container::getInstance()->make(App::class);
-        Library::$sapp->bind('think\Route', Route::class);
-        Library::$sapp->bind('think\route\Url', Url::class);
-        // 初始化运行配置位置
-        self::$envFile = syspath('runtime/.env');
-        return Library::$sapp->debug(static::isDebug());
+        clearstatcache(true, self::$envFile);
+        is_file(self::$envFile) && md5_file(self::$envFile) !== self::$envHash && self::apply();
+    }
+
+    /**
+     * 绑定动态配置.
+     * @param array $data 配置数据
+     * @return bool 是否调试模式
+     */
+    public static function apply(array $data = []): bool
+    {
+        $data = array_merge(static::get(), $data);
+        is_file(self::$envFile) && self::$envHash = md5_file(self::$envFile);
+        return Library::$sapp->debug($data['mode'] !== 'product')->isDebug();
     }
 
     /**
@@ -102,6 +110,25 @@ class RuntimeService
     }
 
     /**
+     * 开发模式运行.
+     */
+    public static function isDebug(): bool
+    {
+        return static::get('mode') !== 'product';
+    }
+
+    /**
+     * 压缩发布项目.
+     */
+    public static function push(): string
+    {
+        self::set('product');
+        $connection = Library::$sapp->db->getConfig('default');
+        Library::$sapp->console->call('optimize:schema', ["--connection={$connection}"]);
+        return $connection;
+    }
+
+    /**
      * 设置动态配置.
      * @param null|mixed $mode 支持模式
      * @param null|array $appmap 历史保留参数（已停用）
@@ -118,6 +145,8 @@ class RuntimeService
         // 组装配置文件格式
         $rows[] = "mode = {$envs['mode']}";
 
+        is_dir($dir = dirname(self::$envFile)) || @mkdir($dir, 0777, true);
+
         // 写入并刷新文件哈希值
         @file_put_contents(self::$envFile, "[RUNTIME]\n" . join("\n", $rows));
 
@@ -126,38 +155,6 @@ class RuntimeService
 
         //  应用当前的配置文件
         return static::apply($envs);
-    }
-
-    /**
-     * 同步运行配置.
-     */
-    public static function sync()
-    {
-        clearstatcache(true, self::$envFile);
-        is_file(self::$envFile) && md5_file(self::$envFile) !== self::$envHash && self::apply();
-    }
-
-    /**
-     * 绑定动态配置.
-     * @param array $data 配置数据
-     * @return bool 是否调试模式
-     */
-    public static function apply(array $data = []): bool
-    {
-        $data = array_merge(static::get(), $data);
-        is_file(self::$envFile) && self::$envHash = md5_file(self::$envFile);
-        return Library::$sapp->debug($data['mode'] !== 'product')->isDebug();
-    }
-
-    /**
-     * 压缩发布项目.
-     */
-    public static function push(): string
-    {
-        self::set('product');
-        $connection = Library::$sapp->db->getConfig('default');
-        Library::$sapp->console->call('optimize:schema', ["--connection={$connection}"]);
-        return $connection;
     }
 
     /**
@@ -195,14 +192,6 @@ class RuntimeService
     }
 
     /**
-     * 开发模式运行.
-     */
-    public static function isDebug(): bool
-    {
-        return static::get('mode') !== 'product';
-    }
-
-    /**
      * 生产模式运行.
      */
     public static function isOnline(): bool
@@ -224,13 +213,28 @@ class RuntimeService
     }
 
     /**
+     * 系统服务初始化.
+     */
+    public static function init(?App $app = null): App
+    {
+        // 初始化运行环境
+        Library::$sapp = $app ?: Container::getInstance()->make(App::class);
+        Library::$sapp->bind('think\Route', Route::class);
+        Library::$sapp->bind('think\route\Url', Url::class);
+        // 初始化运行配置位置
+        // 运行配置固定落在可写目录（Phar 环境为安装目录，普通环境为项目根目录）
+        self::$envFile = runpath('runtime/.env');
+        return Library::$sapp->debug(static::isDebug());
+    }
+
+    /**
      * 初始化命令行.
      */
     public static function doConsoleInit(?App $app = null): int
     {
         try {
             return static::init($app)->console->run();
-        } catch (\Exception $exception) {
+        } catch (Exception $exception) {
             ProcessService::message($exception->getMessage());
             return 0;
         }

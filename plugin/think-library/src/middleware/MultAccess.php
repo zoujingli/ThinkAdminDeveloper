@@ -20,6 +20,8 @@ declare(strict_types=1);
 
 namespace think\admin\middleware;
 
+use Closure;
+use SplFileInfo;
 use think\admin\extend\FileTools;
 use think\admin\Library;
 use think\admin\route\Route as AdminRoute;
@@ -61,7 +63,7 @@ class MultAccess
     /**
      * 多应用解析.
      */
-    public function handle(Request $request, \Closure $next): Response
+    public function handle(Request $request, Closure $next): Response
     {
         [$this->appPath, $this->appSpace] = ['', ''];
         if (!$this->parseMultiApp()) {
@@ -135,40 +137,6 @@ class MultAccess
     }
 
     /**
-     * 应用本地 app 调度结果.
-     *
-     * @param array<string, mixed> $local
-     */
-    private function applyLocal(array $local, bool $stripPrefix): bool
-    {
-        [$this->appPath, $this->appSpace] = [strval($local['path'] ?? ''), strval($local['space'] ?? '')];
-        PluginService::activateEntry(strval($local['entry'] ?? RequestContext::ENTRY_WEB));
-
-        $prefix = trim(strval($local['matched_prefix'] ?? ''), '\/');
-        if ($stripPrefix && $prefix !== '') {
-            $this->app->request->setRoot('/' . $prefix);
-            $this->app->request->setPathinfo(strval($local['pathinfo'] ?? ''));
-        }
-
-        return $this->setMultiApp(strval($local['code'] ?? ''), true);
-    }
-
-    /**
-     * 从根路由预解析目标应用。
-     *
-     * @return null|array<string, mixed>
-     */
-    private function resolveGlobalRouteTarget(Request $request): ?array
-    {
-        $route = $this->app->route;
-        if (!$route instanceof AdminRoute) {
-            return null;
-        }
-
-        return $route->resolveTarget($request, $this->app->getRootPath() . 'route' . DIRECTORY_SEPARATOR);
-    }
-
-    /**
      * 设置应用参数.
      */
     private function setMultiApp(string $appName, bool $appBind, string $prefix = ''): bool
@@ -212,7 +180,7 @@ class MultAccess
             Library::load($file);
         }
 
-        FileTools::find($appPath . 'config', 1, function (\SplFileInfo $info) use ($ext, &$fmaps) {
+        FileTools::find($appPath . 'config', 1, function (SplFileInfo $info) use ($ext, &$fmaps) {
             if ($info->isFile() && strtolower(".{$info->getExtension()}") === $ext) {
                 $name = $info->getBasename($ext);
                 $fmaps[] = $name;
@@ -241,5 +209,39 @@ class MultAccess
         }
 
         return true;
+    }
+
+    /**
+     * 应用本地 app 调度结果.
+     *
+     * @param array<string, mixed> $local
+     */
+    private function applyLocal(array $local, bool $stripPrefix): bool
+    {
+        [$this->appPath, $this->appSpace] = [strval($local['path'] ?? ''), strval($local['space'] ?? '')];
+        PluginService::activateEntry(strval($local['entry'] ?? RequestContext::ENTRY_WEB));
+
+        $prefix = trim(strval($local['matched_prefix'] ?? ''), '\/');
+        if ($stripPrefix && $prefix !== '') {
+            $this->app->request->setRoot('/' . $prefix);
+            $this->app->request->setPathinfo(strval($local['pathinfo'] ?? ''));
+        }
+
+        return $this->setMultiApp(strval($local['code'] ?? ''), true);
+    }
+
+    /**
+     * 从根路由预解析目标应用。
+     *
+     * @return null|array<string, mixed>
+     */
+    private function resolveGlobalRouteTarget(Request $request): ?array
+    {
+        $route = $this->app->route;
+        if (!$route instanceof AdminRoute) {
+            return null;
+        }
+
+        return $route->resolveTarget($request, $this->app->getRootPath() . 'route' . DIRECTORY_SEPARATOR);
     }
 }

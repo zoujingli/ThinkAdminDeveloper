@@ -78,20 +78,6 @@ abstract class Storage
     }
 
     /**
-     * 获取文件相对名称.
-     * @param string $url 文件访问链接
-     * @param string $ext 文件后缀名称
-     * @param string $pre 文件存储前缀
-     * @param string $fun 名称规则方法
-     */
-    public static function name(string $url, string $ext = '', string $pre = '', string $fun = 'md5'): string
-    {
-        [$hah, $ext] = [$fun($url), trim($ext ?: pathinfo($url, 4), '.\/')];
-        $attr = [trim($pre, '.\/'), substr($hah, 0, 2), substr($hah, 2, 30)];
-        return trim(join('/', $attr), '/') . '.' . strtolower($ext ?: 'tmp');
-    }
-
-    /**
      * 下载文件到本地.
      * @param string $url 文件URL地址
      * @param bool $force 是否强制下载
@@ -111,6 +97,38 @@ abstract class Storage
         } catch (\Exception $exception) {
             return ['url' => $url, 'hash' => md5($url), 'key' => $url, 'file' => $url];
         }
+    }
+
+    /**
+     * 获取文件相对名称.
+     * @param string $url 文件访问链接
+     * @param string $ext 文件后缀名称
+     * @param string $pre 文件存储前缀
+     * @param string $fun 名称规则方法
+     */
+    public static function name(string $url, string $ext = '', string $pre = '', string $fun = 'md5'): string
+    {
+        [$hah, $ext] = [$fun($url), trim($ext ?: pathinfo($url, 4), '.\/')];
+        $attr = [trim($pre, '.\/'), substr($hah, 0, 2), substr($hah, 2, 30)];
+        return trim(join('/', $attr), '/') . '.' . strtolower($ext ?: 'tmp');
+    }
+
+    /**
+     * 使用CURL读取网络资源.
+     * @param string $url 资源地址
+     */
+    public static function curlGet(string $url): string
+    {
+        $ch = curl_init();
+        curl_setopt($ch, CURLOPT_URL, $url);
+        curl_setopt($ch, CURLOPT_HEADER, 0);
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
+        curl_setopt($ch, CURLOPT_FOLLOWLOCATION, 1);
+        curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
+        curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, false);
+        $body = curl_exec($ch) ?: '';
+        curl_close($ch);
+        return $body;
     }
 
     /**
@@ -165,24 +183,6 @@ abstract class Storage
     public static function authorize(string $name, string $key, bool $safe = false, ?string $attname = null, string $hash = ''): array
     {
         return static::manager()->authorize($name, $key, $safe, $attname, $hash);
-    }
-
-    /**
-     * 使用CURL读取网络资源.
-     * @param string $url 资源地址
-     */
-    public static function curlGet(string $url): string
-    {
-        $ch = curl_init();
-        curl_setopt($ch, CURLOPT_URL, $url);
-        curl_setopt($ch, CURLOPT_HEADER, 0);
-        curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
-        curl_setopt($ch, CURLOPT_FOLLOWLOCATION, 1);
-        curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
-        curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, false);
-        $body = curl_exec($ch) ?: '';
-        curl_close($ch);
-        return $body;
     }
 
     /**

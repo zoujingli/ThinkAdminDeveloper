@@ -61,6 +61,14 @@ class QueryFactory
     }
 
     /**
+     * 判断是否为子查询 SQL。
+     */
+    private static function isSubquery(string $sql): bool
+    {
+        return preg_match('/^\(?\s*select\s+/i', $sql) > 0;
+    }
+
+    /**
      * 触发查询执行前事件。
      * @param BaseQuery|mixed|Model $query
      * @return BaseQuery|mixed|Model
@@ -69,13 +77,5 @@ class QueryFactory
     {
         Library::$sapp->db->trigger('think_before_event', $query);
         return $query;
-    }
-
-    /**
-     * 判断是否为子查询 SQL。
-     */
-    private static function isSubquery(string $sql): bool
-    {
-        return preg_match('/^\(?\s*select\s+/i', $sql) > 0;
     }
 }

@@ -63,6 +63,42 @@ class PluginService extends Service
     }
 
     /**
+     * 判断插件是否存在。
+     * @param string $code 插件编码或别名
+     * @param bool $force 强制刷新
+     */
+    public static function exists(string $code, bool $force = false): bool
+    {
+        return self::resolve($code, false, $force) !== null;
+    }
+
+    /**
+     * 解析插件编码或别名。
+     * @param ?string $name 插件编码或别名
+     * @param bool $append 关联安装信息
+     * @param bool $force 强制刷新
+     */
+    public static function resolve(?string $name, bool $append = false, bool $force = false): ?array
+    {
+        if ($name === null || $name === '') {
+            return null;
+        }
+
+        $plugins = self::all($append, $force);
+        if (isset($plugins[$name])) {
+            return $plugins[$name];
+        }
+
+        $bind = self::bindings($force)[$name] ?? null;
+        if ($bind && isset($plugins[$bind])) {
+            return $plugins[$bind];
+        }
+
+        $code = self::aliases($force)[$name] ?? null;
+        return $code ? ($plugins[$code] ?? null) : null;
+    }
+
+    /**
      * 获取全部插件定义。
      * @param bool $append 关联安装信息
      * @param bool $force 强制刷新
@@ -102,38 +138,6 @@ class PluginService extends Service
     }
 
     /**
-     * 判断插件是否存在。
-     * @param string $code 插件编码或别名
-     * @param bool $force 强制刷新
-     */
-    public static function exists(string $code, bool $force = false): bool
-    {
-        return self::resolve($code, false, $force) !== null;
-    }
-
-    /**
-     * 获取插件别名映射。
-     * @param bool $force 强制刷新
-     * @return array<string, string>
-     */
-    public static function aliases(bool $force = false): array
-    {
-        if (!$force && is_array($aliases = sysvar(self::CACHE_ALIASES))) {
-            return $aliases;
-        }
-
-        $aliases = [];
-        foreach (self::all(false, $force) as $code => $plugin) {
-            if (!empty($plugin['alias'])) {
-                $aliases[$plugin['alias']] = $code;
-            }
-        }
-
-        ksort($aliases);
-        return sysvar(self::CACHE_ALIASES, $aliases);
-    }
-
-    /**
      * 获取插件前缀绑定关系。
      * @param bool $force 强制刷新
      * @return array<string, string>
@@ -162,23 +166,25 @@ class PluginService extends Service
     }
 
     /**
-     * 获取插件前缀集合。
-     * @param ?string $code 插件编码
+     * 获取插件别名映射。
      * @param bool $force 强制刷新
-     * @return array<string, array<string>>|array<string>
+     * @return array<string, string>
      */
-    public static function prefixes(?string $code = null, bool $force = false): array
+    public static function aliases(bool $force = false): array
     {
-        $plugins = self::all(false, $force);
-        if ($code === null) {
-            $items = [];
-            foreach ($plugins as $name => $plugin) {
-                $items[$name] = $plugin['prefixes'] ?? [];
-            }
-            return $items;
+        if (!$force && is_array($aliases = sysvar(self::CACHE_ALIASES))) {
+            return $aliases;
         }
 
-        return $plugins[$code]['prefixes'] ?? [];
+        $aliases = [];
+        foreach (self::all(false, $force) as $code => $plugin) {
+            if (!empty($plugin['alias'])) {
+                $aliases[$plugin['alias']] = $code;
+            }
+        }
+
+        ksort($aliases);
+        return sysvar(self::CACHE_ALIASES, $aliases);
     }
 
     /**
@@ -211,29 +217,23 @@ class PluginService extends Service
     }
 
     /**
-     * 解析插件编码或别名。
-     * @param ?string $name 插件编码或别名
-     * @param bool $append 关联安装信息
+     * 获取插件前缀集合。
+     * @param ?string $code 插件编码
      * @param bool $force 强制刷新
+     * @return array<string, array<string>>|array<string>
      */
-    public static function resolve(?string $name, bool $append = false, bool $force = false): ?array
+    public static function prefixes(?string $code = null, bool $force = false): array
     {
-        if ($name === null || $name === '') {
-            return null;
+        $plugins = self::all(false, $force);
+        if ($code === null) {
+            $items = [];
+            foreach ($plugins as $name => $plugin) {
+                $items[$name] = $plugin['prefixes'] ?? [];
+            }
+            return $items;
         }
 
-        $plugins = self::all($append, $force);
-        if (isset($plugins[$name])) {
-            return $plugins[$name];
-        }
-
-        $bind = self::bindings($force)[$name] ?? null;
-        if ($bind && isset($plugins[$bind])) {
-            return $plugins[$bind];
-        }
-
-        $code = self::aliases($force)[$name] ?? null;
-        return $code ? ($plugins[$code] ?? null) : null;
+        return $plugins[$code]['prefixes'] ?? [];
     }
 
     /**
@@ -280,6 +280,20 @@ class PluginService extends Service
         }
 
         return null;
+    }
+
+    /**
+     * 获取 API 入口前缀。
+     */
+    public static function entryPrefix(): string
+    {
+        if (is_string($entry = sysvar(self::CACHE_ENTRY)) && $entry !== '') {
+            return $entry;
+        }
+        $entry = trim(strval(Library::$sapp->config->get('app.plugin.api_prefix', 'api')), '\/');
+        $entry = $entry !== '' ? $entry : 'api';
+        sysvar(self::CACHE_ENTRY, $entry);
+        return $entry;
     }
 
     /**
@@ -360,14 +374,6 @@ class PluginService extends Service
     }
 
     /**
-     * 获取当前请求插件编码。
-     */
-    public static function currentCode(): string
-    {
-        return RequestContext::instance()->pluginCode();
-    }
-
-    /**
      * 获取当前请求插件前缀。
      */
     public static function currentPrefix(): string
@@ -389,20 +395,6 @@ class PluginService extends Service
     public static function currentEntry(): string
     {
         return RequestContext::instance()->entryType();
-    }
-
-    /**
-     * 获取 API 入口前缀。
-     */
-    public static function entryPrefix(): string
-    {
-        if (is_string($entry = sysvar(self::CACHE_ENTRY)) && $entry !== '') {
-            return $entry;
-        }
-        $entry = trim(strval(Library::$sapp->config->get('app.plugin.api_prefix', 'api')), '\/');
-        $entry = $entry !== '' ? $entry : 'api';
-        sysvar(self::CACHE_ENTRY, $entry);
-        return $entry;
     }
 
     /**
@@ -434,34 +426,39 @@ class PluginService extends Service
     }
 
     /**
-     * 获取插件菜单定义。
-     * @param null|array|string $plugin 插件编码或定义
-     * @param bool $check 检查权限
-     * @param bool $normalize 标准化输出
+     * 校验插件菜单声明。
+     * @param null|array|string $plugin 插件编码、服务类或定义
      */
-    public static function menus($plugin, bool $check = false, bool $normalize = false): array
+    public static function assertMenus($plugin, bool $force = false): void
     {
-        $current = self::plugin($plugin, true);
-        if (empty($current['service']) || !class_exists($current['service'])) {
-            return [];
+        if (empty($invalid = self::invalidMenus($plugin, $force))) {
+            return;
         }
 
-        $menus = (array)$current['service']::menu();
-        return ($check || $normalize) ? self::normalizeMenus($menus, $check) : $menus;
+        $current = self::plugin($plugin, true, $force);
+        $label = strval($current['code'] ?? $current['service'] ?? (is_string($plugin) ? $plugin : 'plugin'));
+        $errors = [];
+        foreach ($invalid as $item) {
+            $reasons = [];
+            empty($item['exists']) && $reasons[] = 'node not found';
+            empty($item['isauth']) && $reasons[] = '@auth true required';
+            empty($item['ismenu']) && $reasons[] = '@menu true required';
+            $errors[] = sprintf('%s (%s)', $item['node'], join(', ', $reasons));
+        }
+
+        throw new \RuntimeException(sprintf('Plugin menu binding invalid [%s]: %s', $label, join('; ', $errors)));
     }
 
     /**
-     * 获取插件声明的菜单节点。
+     * 获取插件菜单声明异常项。
      * @param null|array|string $plugin 插件编码、服务类或定义
-     * @return string[]
+     * @return array<int, array<string, mixed>>
      */
-    public static function menuNodes($plugin): array
+    public static function invalidMenus($plugin, bool $force = false): array
     {
-        $nodes = [];
-        static::collectMenuNodes(self::menus($plugin), $nodes);
-        $nodes = array_values(array_unique(array_filter(array_map('strval', $nodes))));
-        sort($nodes);
-        return $nodes;
+        return array_values(array_filter(self::menuBindings($plugin, $force), static function (array $item): bool {
+            return empty($item['exists']) || empty($item['isauth']) || empty($item['ismenu']);
+        }));
     }
 
     /**
@@ -488,39 +485,42 @@ class PluginService extends Service
     }
 
     /**
-     * 获取插件菜单声明异常项。
+     * 获取插件声明的菜单节点。
      * @param null|array|string $plugin 插件编码、服务类或定义
-     * @return array<int, array<string, mixed>>
+     * @return string[]
      */
-    public static function invalidMenus($plugin, bool $force = false): array
+    public static function menuNodes($plugin): array
     {
-        return array_values(array_filter(self::menuBindings($plugin, $force), static function (array $item): bool {
-            return empty($item['exists']) || empty($item['isauth']) || empty($item['ismenu']);
-        }));
+        $nodes = [];
+        static::collectMenuNodes(self::menus($plugin), $nodes);
+        $nodes = array_values(array_unique(array_filter(array_map('strval', $nodes))));
+        sort($nodes);
+        return $nodes;
     }
 
     /**
-     * 校验插件菜单声明。
-     * @param null|array|string $plugin 插件编码、服务类或定义
+     * 获取插件菜单定义。
+     * @param null|array|string $plugin 插件编码或定义
+     * @param bool $check 检查权限
+     * @param bool $normalize 标准化输出
      */
-    public static function assertMenus($plugin, bool $force = false): void
+    public static function menus($plugin, bool $check = false, bool $normalize = false): array
     {
-        if (empty($invalid = self::invalidMenus($plugin, $force))) {
-            return;
+        $current = self::plugin($plugin, true);
+        if (empty($current['service']) || !class_exists($current['service'])) {
+            return [];
         }
 
-        $current = self::plugin($plugin, true, $force);
-        $label = strval($current['code'] ?? $current['service'] ?? (is_string($plugin) ? $plugin : 'plugin'));
-        $errors = [];
-        foreach ($invalid as $item) {
-            $reasons = [];
-            empty($item['exists']) && $reasons[] = 'node not found';
-            empty($item['isauth']) && $reasons[] = '@auth true required';
-            empty($item['ismenu']) && $reasons[] = '@menu true required';
-            $errors[] = sprintf('%s (%s)', $item['node'], join(', ', $reasons));
-        }
+        $menus = (array)$current['service']::menu();
+        return ($check || $normalize) ? self::normalizeMenus($menus, $check) : $menus;
+    }
 
-        throw new \RuntimeException(sprintf('Plugin menu binding invalid [%s]: %s', $label, join('; ', $errors)));
+    /**
+     * 获取当前请求插件编码。
+     */
+    public static function currentCode(): string
+    {
+        return RequestContext::instance()->pluginCode();
     }
 
     /**
@@ -551,44 +551,6 @@ class PluginService extends Service
             'license' => (array)($plugin['license'] ?? []),
             'version' => strval($plugin['version'] ?? ''),
             'homepage' => strval($plugin['homepage'] ?? ''),
-        ];
-    }
-
-    /**
-     * 附加安装信息。
-     * @param array $plugin 插件定义
-     */
-    private static function appendInstall(array $plugin): array
-    {
-        $versions = ModuleService::getLibrarys();
-        $plugin['install'] = $versions[$plugin['package']] ?? [];
-        foreach (['type', 'name', 'document', 'description', 'homepage', 'version'] as $field) {
-            if (empty($plugin[$field])) {
-                $plugin[$field] = $plugin['install'][$field] ?? ($field === 'type' ? 'plugin' : '');
-            }
-        }
-        $plugin['platforms'] = array_values(array_unique(array_filter(array_merge(
-            (array)($plugin['platforms'] ?? []),
-            (array)($plugin['install']['platforms'] ?? [])
-        ))));
-        $plugin['license'] = array_values(array_unique(array_filter(array_merge(
-            (array)($plugin['license'] ?? []),
-            (array)($plugin['install']['license'] ?? [])
-        ))));
-        return $plugin;
-    }
-
-    /**
-     * 获取插件切换配置。
-     * @return array{enabled:bool,query:string,header:string}
-     */
-    private static function switchConfig(): array
-    {
-        $config = (array)Library::$sapp->config->get('app.plugin.switch', []);
-        return [
-            'enabled' => isset($config['enabled']) ? boolval($config['enabled']) : false,
-            'query' => strval($config['query'] ?? '_plugin'),
-            'header' => strval($config['header'] ?? 'X-Plugin-App'),
         ];
     }
 
@@ -665,37 +627,59 @@ class PluginService extends Service
     }
 
     /**
-     * 标准化插件菜单并可选按权限过滤。
-     * @param array<int, array<string, mixed>> $menus
-     * @return array<int, array<string, mixed>>
+     * 附加安装信息。
+     * @param array $plugin 插件定义
      */
-    private static function normalizeMenus(array $menus, bool $check = false): array
+    private static function appendInstall(array $plugin): array
     {
-        foreach ($menus as $k1 => &$one) {
-            $one['title'] = lang($one['title'] ?? ($one['name'] ?? ''));
-            $one['url'] = $one['url'] ?? static::buildMenuUrl(strval($one['node'] ?? ''));
-            if (!empty($one['subs'])) {
-                foreach ($one['subs'] as $k2 => &$two) {
-                    if ($check && isset($two['node']) && !auth($two['node'])) {
-                        unset($one['subs'][$k2]);
-                        continue;
-                    }
-                    $two['title'] = lang($two['title'] ?? ($two['name'] ?? ''));
-                    $two['url'] = $two['url'] ?? static::buildMenuUrl(strval($two['node'] ?? ''));
-                }
-                $one['subs'] = array_values($one['subs']);
-            }
-
-            if ($check && isset($one['node']) && !auth($one['node'])) {
-                unset($menus[$k1]);
-                continue;
-            }
-            if ($one['url'] === '#' && empty($one['subs'])) {
-                unset($menus[$k1]);
+        $versions = ModuleService::getLibrarys();
+        $plugin['install'] = $versions[$plugin['package']] ?? [];
+        foreach (['type', 'name', 'document', 'description', 'homepage', 'version'] as $field) {
+            if (empty($plugin[$field])) {
+                $plugin[$field] = $plugin['install'][$field] ?? ($field === 'type' ? 'plugin' : '');
             }
         }
+        $plugin['platforms'] = array_values(array_unique(array_filter(array_merge(
+            (array)($plugin['platforms'] ?? []),
+            (array)($plugin['install']['platforms'] ?? [])
+        ))));
+        $plugin['license'] = array_values(array_unique(array_filter(array_merge(
+            (array)($plugin['license'] ?? []),
+            (array)($plugin['install']['license'] ?? [])
+        ))));
+        return $plugin;
+    }
 
-        return array_values($menus);
+    /**
+     * 标准化 API 入口路径。
+     * /api/{plugin}/upload/file -> api.upload/file.
+     */
+    private static function normalizeApiPathinfo(string $pathinfo): string
+    {
+        $pathinfo = trim($pathinfo, '\/');
+        if ($pathinfo === '') {
+            return 'api.index/index';
+        }
+        if (strpos($pathinfo, 'api.') === 0) {
+            return $pathinfo;
+        }
+        [$controller, $action] = array_pad(explode('/', $pathinfo, 2), 2, 'index');
+        $controller = trim(strtr($controller, '/', '.'), '.');
+        return 'api.' . $controller . '/' . trim($action, '\/');
+    }
+
+    /**
+     * 获取插件切换配置。
+     * @return array{enabled:bool,query:string,header:string}
+     */
+    private static function switchConfig(): array
+    {
+        $config = (array)Library::$sapp->config->get('app.plugin.switch', []);
+        return [
+            'enabled' => isset($config['enabled']) ? boolval($config['enabled']) : false,
+            'query' => strval($config['query'] ?? '_plugin'),
+            'header' => strval($config['header'] ?? 'X-Plugin-App'),
+        ];
     }
 
     /**
@@ -744,6 +728,40 @@ class PluginService extends Service
     }
 
     /**
+     * 标准化插件菜单并可选按权限过滤。
+     * @param array<int, array<string, mixed>> $menus
+     * @return array<int, array<string, mixed>>
+     */
+    private static function normalizeMenus(array $menus, bool $check = false): array
+    {
+        foreach ($menus as $k1 => &$one) {
+            $one['title'] = lang($one['title'] ?? ($one['name'] ?? ''));
+            $one['url'] = $one['url'] ?? static::buildMenuUrl(strval($one['node'] ?? ''));
+            if (!empty($one['subs'])) {
+                foreach ($one['subs'] as $k2 => &$two) {
+                    if ($check && isset($two['node']) && !auth($two['node'])) {
+                        unset($one['subs'][$k2]);
+                        continue;
+                    }
+                    $two['title'] = lang($two['title'] ?? ($two['name'] ?? ''));
+                    $two['url'] = $two['url'] ?? static::buildMenuUrl(strval($two['node'] ?? ''));
+                }
+                $one['subs'] = array_values($one['subs']);
+            }
+
+            if ($check && isset($one['node']) && !auth($one['node'])) {
+                unset($menus[$k1]);
+                continue;
+            }
+            if ($one['url'] === '#' && empty($one['subs'])) {
+                unset($menus[$k1]);
+            }
+        }
+
+        return array_values($menus);
+    }
+
+    /**
      * 生成菜单 URL，缺少插件上下文时回退为系统 URL。
      */
     private static function buildMenuUrl(string $node): string
@@ -757,23 +775,5 @@ class PluginService extends Service
         }
 
         return sysuri($node);
-    }
-
-    /**
-     * 标准化 API 入口路径。
-     * /api/{plugin}/upload/file -> api.upload/file.
-     */
-    private static function normalizeApiPathinfo(string $pathinfo): string
-    {
-        $pathinfo = trim($pathinfo, '\/');
-        if ($pathinfo === '') {
-            return 'api.index/index';
-        }
-        if (strpos($pathinfo, 'api.') === 0) {
-            return $pathinfo;
-        }
-        [$controller, $action] = array_pad(explode('/', $pathinfo, 2), 2, 'index');
-        $controller = trim(strtr($controller, '/', '.'), '.');
-        return 'api.' . $controller . '/' . trim($action, '\/');
     }
 }

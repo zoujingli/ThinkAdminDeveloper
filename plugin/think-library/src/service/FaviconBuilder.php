@@ -46,51 +46,6 @@ class FaviconBuilder
     }
 
     /**
-     * 添加图像到生成器中。
-     *
-     * @throws Exception
-     */
-    public function addImage(string $file, array $size = []): static
-    {
-        $im = $this->loadImageFile($file);
-        if ($im === false) {
-            throw new Exception(lang('Read picture file Failed.'));
-        }
-        if (empty($size)) {
-            $size = [imagesx($im), imagesy($im)];
-        }
-        [$width, $height] = $size;
-        $image = imagecreatetruecolor($width, $height);
-        imagecolortransparent($image, imagecolorallocatealpha($image, 0, 0, 0, 127));
-        imagealphablending($image, false);
-        imagesavealpha($image, true);
-        if (imagecopyresampled($image, $im, 0, 0, 0, 0, $width, $height, imagesx($im), imagesy($im)) === false) {
-            throw new Exception(lang('Parse and process picture Failed.'));
-        }
-        $this->addImageData($image);
-        return $this;
-    }
-
-    /**
-     * 将 ICO 内容写入到文件。
-     */
-    public function saveIco(string $file): bool
-    {
-        if (false === ($data = $this->getIcoData())) {
-            return false;
-        }
-        if (false === ($fh = fopen($file, 'w'))) {
-            return false;
-        }
-        if (fwrite($fh, $data) === false) {
-            fclose($fh);
-            return false;
-        }
-        fclose($fh);
-        return true;
-    }
-
-    /**
      * 检查 GD 依赖函数是否可用。
      *
      * @throws Exception
@@ -117,22 +72,48 @@ class FaviconBuilder
     }
 
     /**
-     * 生成并获取 ICO 图像数据。
+     * 添加图像到生成器中。
+     *
+     * @throws Exception
      */
-    private function getIcoData()
+    public function addImage(string $file, array $size = []): static
     {
-        if (empty($this->images)) {
+        $im = $this->loadImageFile($file);
+        if ($im === false) {
+            throw new Exception(lang('Read picture file Failed.'));
+        }
+        if (empty($size)) {
+            $size = [imagesx($im), imagesy($im)];
+        }
+        [$width, $height] = $size;
+        $image = imagecreatetruecolor($width, $height);
+        imagecolortransparent($image, imagecolorallocatealpha($image, 0, 0, 0, 127));
+        imagealphablending($image, false);
+        imagesavealpha($image, true);
+        if (imagecopyresampled($image, $im, 0, 0, 0, 0, $width, $height, imagesx($im), imagesy($im)) === false) {
+            throw new Exception(lang('Parse and process picture Failed.'));
+        }
+        $this->addImageData($image);
+        return $this;
+    }
+
+    /**
+     * 读取图片资源。
+     *
+     * @return false|\GdImage|resource
+     */
+    private function loadImageFile(string $file)
+    {
+        if (getimagesize($file) === false) {
             return false;
         }
-        [$pixelData, $entrySize] = ['', 16];
-        $data = pack('vvv', 0, 1, count($this->images));
-        $offset = 6 + ($entrySize * count($this->images));
-        foreach ($this->images as $image) {
-            $data .= pack('CCCCvvVV', $image['width'], $image['height'], $image['colors'], 0, 1, $image['pixel'], $image['size'], $offset);
-            $pixelData .= $image['data'];
-            $offset += $image['size'];
+        if (false === ($data = file_get_contents($file))) {
+            return false;
         }
-        return $data . $pixelData;
+        if (false === ($image = @imagecreatefromstring($data))) {
+            return false;
+        }
+        return $image;
     }
 
     /**
@@ -188,21 +169,40 @@ class FaviconBuilder
     }
 
     /**
-     * 读取图片资源。
-     *
-     * @return false|\GdImage|resource
+     * 将 ICO 内容写入到文件。
      */
-    private function loadImageFile(string $file)
+    public function saveIco(string $file): bool
     {
-        if (getimagesize($file) === false) {
+        if (false === ($data = $this->getIcoData())) {
             return false;
         }
-        if (false === ($data = file_get_contents($file))) {
+        if (false === ($fh = fopen($file, 'w'))) {
             return false;
         }
-        if (false === ($image = @imagecreatefromstring($data))) {
+        if (fwrite($fh, $data) === false) {
+            fclose($fh);
             return false;
         }
-        return $image;
+        fclose($fh);
+        return true;
+    }
+
+    /**
+     * 生成并获取 ICO 图像数据。
+     */
+    private function getIcoData()
+    {
+        if (empty($this->images)) {
+            return false;
+        }
+        [$pixelData, $entrySize] = ['', 16];
+        $data = pack('vvv', 0, 1, count($this->images));
+        $offset = 6 + ($entrySize * count($this->images));
+        foreach ($this->images as $image) {
+            $data .= pack('CCCCvvVV', $image['width'], $image['height'], $image['colors'], 0, 1, $image['pixel'], $image['size'], $offset);
+            $pixelData .= $image['data'];
+            $offset += $image['size'];
+        }
+        return $data . $pixelData;
     }
 }

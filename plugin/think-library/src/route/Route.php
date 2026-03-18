@@ -77,6 +77,22 @@ class Route extends ThinkRoute
     }
 
     /**
+     * 注册带目标声明的根路由。
+     * 这里的 $route 必须是目标应用内部的相对控制器地址，而不是带模块前缀的旧写法。
+     *
+     * @param string $rule 路由规则
+     * @param mixed $route 路由地址
+     * @param array<string, mixed> $target 目标声明
+     * @param string $method 请求方法
+     */
+    public function bindTarget(string $rule, $route, array $target, string $method = '*'): RuleItem
+    {
+        $item = $this->rule($rule, $route, $method);
+        $option = $this->normalizeTargetOptions($target);
+        return empty($option) ? $item : $item->option($option);
+    }
+
+    /**
      * 注册绑定到插件的根路由。
      * @param mixed $route
      */
@@ -94,28 +110,25 @@ class Route extends ThinkRoute
     }
 
     /**
-     * 注册带目标声明的根路由。
-     * 这里的 $route 必须是目标应用内部的相对控制器地址，而不是带模块前缀的旧写法。
-     *
-     * @param string $rule 路由规则
-     * @param mixed $route 路由地址
-     * @param array<string, mixed> $target 目标声明
-     * @param string $method 请求方法
-     */
-    public function bindTarget(string $rule, $route, array $target, string $method = '*'): RuleItem
-    {
-        $item = $this->rule($rule, $route, $method);
-        $option = $this->normalizeTargetOptions($target);
-        return empty($option) ? $item : $item->option($option);
-    }
-
-    /**
      * 注册绑定到本地 app 的根路由分组。
      * @param null|mixed $route
      */
     public function appGroup(string $app, \Closure|string $name, $route = null): RuleGroup
     {
         return $this->groupTarget([self::OPTION_APP => $app], $name, $route);
+    }
+
+    /**
+     * 注册带目标声明的根路由分组。
+     *
+     * @param array<string, mixed> $target
+     * @param null|mixed $route
+     */
+    public function groupTarget(array $target, \Closure|string $name, $route = null): RuleGroup
+    {
+        $group = $this->group($name, $route);
+        $option = $this->normalizeTargetOptions($target);
+        return empty($option) ? $group : $group->option($option);
     }
 
     /**
@@ -138,19 +151,6 @@ class Route extends ThinkRoute
             self::OPTION_PLUGIN => $plugin,
             self::OPTION_ENTRY => $entry,
         ], $name, $route);
-    }
-
-    /**
-     * 注册带目标声明的根路由分组。
-     *
-     * @param array<string, mixed> $target
-     * @param null|mixed $route
-     */
-    public function groupTarget(array $target, \Closure|string $name, $route = null): RuleGroup
-    {
-        $group = $this->group($name, $route);
-        $option = $this->normalizeTargetOptions($target);
-        return empty($option) ? $group : $group->option($option);
     }
 
     /**
@@ -181,6 +181,34 @@ class Route extends ThinkRoute
         }
 
         return $this->extractDispatchTarget($dispatch, $request->pathinfo());
+    }
+
+    /**
+     * 标准化根路由目标声明。
+     *
+     * @param array<string, mixed> $target
+     * @return array<string, string>
+     */
+    private function normalizeTargetOptions(array $target): array
+    {
+        $option = [];
+
+        $app = trim(strval($target[self::OPTION_APP] ?? ''));
+        if ($app !== '') {
+            $option[self::OPTION_APP] = $app;
+        }
+
+        $plugin = trim(strval($target[self::OPTION_PLUGIN] ?? ''));
+        if ($plugin !== '') {
+            $option[self::OPTION_PLUGIN] = $plugin;
+        }
+
+        $entry = trim(strval($target[self::OPTION_ENTRY] ?? ''));
+        if (in_array($entry, [RequestContext::ENTRY_WEB, RequestContext::ENTRY_API], true)) {
+            $option[self::OPTION_ENTRY] = $entry;
+        }
+
+        return $option;
     }
 
     /**
@@ -295,6 +323,15 @@ class Route extends ThinkRoute
     }
 
     /**
+     * 读取命中路由的最终调度目标。
+     */
+    private function dispatchTarget(object $dispatch): string
+    {
+        $target = method_exists($dispatch, 'getDispatch') ? $dispatch->getDispatch() : '';
+        return is_array($target) ? join('/', array_map('strval', $target)) : strval($target);
+    }
+
+    /**
      * 推断插件根路由绑定的入口类型。
      *
      * @param array<string, mixed> $option
@@ -309,42 +346,5 @@ class Route extends ThinkRoute
         return preg_match('#^api([/.]|$)#i', trim($target ?: $this->dispatchTarget($dispatch), '\/'))
             ? RequestContext::ENTRY_API
             : RequestContext::ENTRY_WEB;
-    }
-
-    /**
-     * 读取命中路由的最终调度目标。
-     */
-    private function dispatchTarget(object $dispatch): string
-    {
-        $target = method_exists($dispatch, 'getDispatch') ? $dispatch->getDispatch() : '';
-        return is_array($target) ? join('/', array_map('strval', $target)) : strval($target);
-    }
-
-    /**
-     * 标准化根路由目标声明。
-     *
-     * @param array<string, mixed> $target
-     * @return array<string, string>
-     */
-    private function normalizeTargetOptions(array $target): array
-    {
-        $option = [];
-
-        $app = trim(strval($target[self::OPTION_APP] ?? ''));
-        if ($app !== '') {
-            $option[self::OPTION_APP] = $app;
-        }
-
-        $plugin = trim(strval($target[self::OPTION_PLUGIN] ?? ''));
-        if ($plugin !== '') {
-            $option[self::OPTION_PLUGIN] = $plugin;
-        }
-
-        $entry = trim(strval($target[self::OPTION_ENTRY] ?? ''));
-        if (in_array($entry, [RequestContext::ENTRY_WEB, RequestContext::ENTRY_API], true)) {
-            $option[self::OPTION_ENTRY] = $entry;
-        }
-
-        return $option;
     }
 }

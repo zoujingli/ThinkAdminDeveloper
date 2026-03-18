@@ -367,25 +367,75 @@ if (!function_exists('isOnline')) {
 
 if (!function_exists('syspath')) {
     /**
-     * 拼接项目根目录下的绝对路径。
+     * 获取系统路径（兼容 Phar 的内部路径）.
      *
-     * @param string $name 相对路径
-     * @param ?string $root 根路径
+     * 直接读取打包在 Phar 包内的文件。
+     * - PHAR 环境：返回 phar:// 协议路径（只读）
+     * - 普通环境：返回实际文件系统路径
+     *
+     * 示例：syspath('config') 读取 phar 包内的 config 目录
+     *
+     * @param string $path 相对路径
+     * @param ?string $root 自定义根路径（一般不传）
+     * @return string 完整的系统路径（Phar 内部路径或文件系统路径）
      */
-    function syspath(string $name = '', ?string $root = null): string
+    function syspath(string $path = '', ?string $root = null): string
     {
+        static $base;
+
+        // 如果未提供 root，自动检测运行环境
         if ($root === null) {
-            $root = Library::$sapp->getRootPath();
-            if (defined('THINK_PLUGS_INSTALL_ROOT') && is_string(THINK_PLUGS_INSTALL_ROOT) && THINK_PLUGS_INSTALL_ROOT !== '') {
-                $prefix = strtolower(strtok(str_replace('\\', '/', ltrim($name, '\\/')), '/'));
-                if (in_array($prefix, ['database', 'public', 'runtime', 'safefile'], true)) {
-                    $root = THINK_PLUGS_INSTALL_ROOT;
-                }
+            if ($base === null) {
+                // Phar::running(false) 返回物理路径（不含 phar://），避免出现 phar://phar:// 这种重复前缀
+                $phar = Phar::running(false);
+                $base = $phar !== '' ? "phar://{$phar}" : Library::$sapp->getRootPath();
             }
+            $root = $base;
         }
 
-        $attr = ['/' => DIRECTORY_SEPARATOR, '\\' => DIRECTORY_SEPARATOR];
-        return rtrim($root, '\/') . DIRECTORY_SEPARATOR . ltrim(strtr($name, $attr), '\/');
+        $root = rtrim(strval($root), '/\\');
+        return $path === '' ? $root : "{$root}/" . ltrim(str_replace('\\', '/', $path), '/');
+    }
+}
+
+if (!function_exists('runpath')) {
+    /**
+     * 获取运行时路径（操作系统文件系统路径）.
+     *
+     * 直接读取/写入操作系统的文件。
+     * - PHAR 环境：返回 Phar 包外部的安装目录（可写）
+     * - 普通环境：返回项目根目录（可写）
+     *
+     * 示例：runpath('runtime') 读取/写入操作系统文件系统的 runtime 目录
+     *
+     * @param string $path 相对路径
+     * @return string 完整的运行时路径（操作系统文件系统路径）
+     */
+    function runpath(string $path = ''): string
+    {
+        static $base;
+
+        if ($base === null) {
+            $phar = Phar::running(false);
+            $base = $phar !== '' ? dirname($phar) : Library::$sapp->getRootPath();
+        }
+
+        $base = rtrim($base, '/\\');
+        return $path === '' ? $base : (($path === '/') ? $base : "{$base}/" . ltrim(str_replace('\\', '/', $path), '/'));
+    }
+}
+
+if (!function_exists('is_phar')) {
+    /**
+     * 判断当前是否运行在 PHAR 环境中。
+     */
+    function is_phar(): bool
+    {
+        static $cache = null;
+        if ($cache === null) {
+            $cache = Phar::running() !== '';
+        }
+        return $cache;
     }
 }
 

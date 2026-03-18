@@ -32,13 +32,13 @@ class ModuleService extends Service
         return trim($library['version'] ?? 'v8.0.0', 'v');
     }
 
-    public static function getRunVar(string $field): string
+    public static function getLibrarys(?string $package = null, bool $force = false)
     {
-        $file = syspath('vendor/binarys.php');
-        if (is_file($file) && is_array($binarys = include $file)) {
-            return $binarys[$field] ?? '';
+        $plugs = sysvar($keys = 'think.admin.version');
+        if ((empty($plugs) || $force) && is_file($file = syspath('vendor/versions.php'))) {
+            $plugs = sysvar($keys, include $file);
         }
-        return '';
+        return empty($package) ? $plugs : ($plugs[$package] ?? null);
     }
 
     public static function getPhpExec(): string
@@ -54,6 +54,15 @@ class ModuleService extends Service
         return sysvar($keys, ProcessService::isFile($phpExec) ? $phpExec : 'php');
     }
 
+    public static function getRunVar(string $field): string
+    {
+        $file = syspath('vendor/binarys.php');
+        if (is_file($file) && is_array($binarys = include $file)) {
+            return $binarys[$field] ?? '';
+        }
+        return '';
+    }
+
     public static function getModules(array $data = []): array
     {
         return array_values(array_unique(array_merge($data, array_keys(AppService::local()))));
@@ -62,14 +71,5 @@ class ModuleService extends Service
     public static function getApps(array $data = []): array
     {
         return array_values(array_unique(array_merge($data, array_keys(AppService::all()))));
-    }
-
-    public static function getLibrarys(?string $package = null, bool $force = false)
-    {
-        $plugs = sysvar($keys = 'think.admin.version');
-        if ((empty($plugs) || $force) && is_file($file = syspath('vendor/versions.php'))) {
-            $plugs = sysvar($keys, include $file);
-        }
-        return empty($package) ? $plugs : ($plugs[$package] ?? null);
     }
 }

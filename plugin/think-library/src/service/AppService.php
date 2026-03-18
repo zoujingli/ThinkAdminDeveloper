@@ -54,6 +54,14 @@ class AppService extends Service
     }
 
     /**
+     * 判断应用是否存在.
+     */
+    public static function exists(string $code, bool $force = false): bool
+    {
+        return isset(self::all($force)[$code]);
+    }
+
+    /**
      * 获取全部应用定义.
      *
      * @param bool $force 强制刷新
@@ -71,35 +79,6 @@ class AppService extends Service
     }
 
     /**
-     * 获取指定应用定义.
-     *
-     * @param ?string $code 应用编号
-     */
-    public static function get(?string $code = null, bool $force = false): ?array
-    {
-        $apps = self::all($force);
-        return is_null($code) ? $apps : ($apps[$code] ?? null);
-    }
-
-    /**
-     * 判断应用是否存在.
-     */
-    public static function exists(string $code, bool $force = false): bool
-    {
-        return isset(self::all($force)[$code]);
-    }
-
-    /**
-     * 获取全部应用编号.
-     *
-     * @return string[]
-     */
-    public static function codes(bool $force = false): array
-    {
-        return array_keys(self::all($force));
-    }
-
-    /**
      * 获取本地 app/* 应用定义.
      *
      * @return array<string, array<string, string>>
@@ -113,91 +92,6 @@ class AppService extends Service
         $apps = self::discoverLocalApps();
         ksort($apps);
         return sysvar(self::CACHE_LOCALS, $apps);
-    }
-
-    /**
-     * 获取默认本地应用编号.
-     */
-    public static function singleCode(): string
-    {
-        $apps = self::local();
-        $code = strval(Library::$sapp->config->get('route.default_app') ?: Library::$sapp->config->get('app.single_app') ?: '');
-        if ($code !== '' && !in_array($code, self::IGNORE_LOCAL_APPS, true) && isset($apps[$code])) {
-            return $code;
-        }
-        if (isset($apps['index'])) {
-            return 'index';
-        }
-        return strval(array_key_first($apps) ?: 'index');
-    }
-
-    /**
-     * 获取插件应用定义.
-     *
-     * @return array<string, array<string, string>>
-     */
-    public static function plugins(bool $force = false): array
-    {
-        return PluginService::all(false, $force);
-    }
-
-    /**
-     * 获取指定本地应用定义.
-     */
-    public static function localApp(?string $code = null, bool $force = false): ?array
-    {
-        $apps = self::local($force);
-        return is_null($code) ? null : ($apps[$code] ?? null);
-    }
-
-    /**
-     * 按首段路径命中本地应用.
-     *
-     * @return null|array<string, mixed>
-     */
-    public static function matchPath(string $pathinfo, bool $force = false): ?array
-    {
-        $pathinfo = trim($pathinfo, '\/');
-        if ($pathinfo === '') {
-            return null;
-        }
-
-        [$prefix, $suffix] = array_pad(explode('/', $pathinfo, 2), 2, '');
-        if (strpos($prefix, '.')) {
-            $prefix = strstr($prefix, '.', true) ?: $prefix;
-        }
-
-        if ($prefix === '' || !($app = self::localApp($prefix, $force))) {
-            return null;
-        }
-
-        $app['matched_prefix'] = $prefix;
-        $app['pathinfo'] = $suffix;
-        return $app;
-    }
-
-    /**
-     * 标准化应用定义.
-     *
-     * @param string $code 应用编号
-     * @param array<string, mixed> $app 应用配置
-     * @return array<string, string>
-     */
-    private static function normalize(string $code, array $app): array
-    {
-        $path = $app['path'] ?? '';
-        $path = $path === '' ? '' : rtrim((string)$path, '\/') . DIRECTORY_SEPARATOR;
-
-        return [
-            'code' => $code,
-            'type' => $app['type'] ?? 'local',
-            'name' => $app['name'] ?? ucfirst($code),
-            'path' => $path,
-            'alias' => $app['alias'] ?? '',
-            'space' => $app['space'] ?? NodeService::space($code),
-            'package' => $app['package'] ?? '',
-            'service' => $app['service'] ?? '',
-        ];
     }
 
     /**
@@ -245,5 +139,111 @@ class AppService extends Service
         }
 
         return is_file($path . 'Service.php');
+    }
+
+    /**
+     * 标准化应用定义.
+     *
+     * @param string $code 应用编号
+     * @param array<string, mixed> $app 应用配置
+     * @return array<string, string>
+     */
+    private static function normalize(string $code, array $app): array
+    {
+        $path = $app['path'] ?? '';
+        $path = $path === '' ? '' : rtrim((string)$path, '\/') . DIRECTORY_SEPARATOR;
+
+        return [
+            'code' => $code,
+            'type' => $app['type'] ?? 'local',
+            'name' => $app['name'] ?? ucfirst($code),
+            'path' => $path,
+            'alias' => $app['alias'] ?? '',
+            'space' => $app['space'] ?? NodeService::space($code),
+            'package' => $app['package'] ?? '',
+            'service' => $app['service'] ?? '',
+        ];
+    }
+
+    /**
+     * 获取插件应用定义.
+     *
+     * @return array<string, array<string, string>>
+     */
+    public static function plugins(bool $force = false): array
+    {
+        return PluginService::all(false, $force);
+    }
+
+    /**
+     * 获取全部应用编号.
+     *
+     * @return string[]
+     */
+    public static function codes(bool $force = false): array
+    {
+        return array_keys(self::all($force));
+    }
+
+    /**
+     * 获取默认本地应用编号.
+     */
+    public static function singleCode(): string
+    {
+        $apps = self::local();
+        $code = strval(Library::$sapp->config->get('route.default_app') ?: Library::$sapp->config->get('app.single_app') ?: '');
+        if ($code !== '' && !in_array($code, self::IGNORE_LOCAL_APPS, true) && isset($apps[$code])) {
+            return $code;
+        }
+        if (isset($apps['index'])) {
+            return 'index';
+        }
+        return strval(array_key_first($apps) ?: 'index');
+    }
+
+    /**
+     * 获取指定应用定义.
+     *
+     * @param ?string $code 应用编号
+     */
+    public static function get(?string $code = null, bool $force = false): ?array
+    {
+        $apps = self::all($force);
+        return is_null($code) ? $apps : ($apps[$code] ?? null);
+    }
+
+    /**
+     * 按首段路径命中本地应用.
+     *
+     * @return null|array<string, mixed>
+     */
+    public static function matchPath(string $pathinfo, bool $force = false): ?array
+    {
+        $pathinfo = trim($pathinfo, '\/');
+        if ($pathinfo === '') {
+            return null;
+        }
+
+        [$prefix, $suffix] = array_pad(explode('/', $pathinfo, 2), 2, '');
+        if (strpos($prefix, '.')) {
+            $prefix = strstr($prefix, '.', true) ?: $prefix;
+        }
+
+        if ($prefix === '' || !($app = self::localApp($prefix, $force))) {
+            return null;
+        }
+
+        $app['matched_prefix'] = $prefix;
+        $app['pathinfo'] = $suffix;
+        return $app;
+    }
+
+    /**
+     * 获取指定本地应用定义.
+     */
+    public static function localApp(?string $code = null, bool $force = false): ?array
+    {
+        $apps = self::local($force);
+        return is_null($code) ? null : ($apps[$code] ?? null);
     }
 }

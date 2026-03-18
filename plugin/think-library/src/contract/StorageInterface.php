@@ -27,6 +27,11 @@ namespace think\admin\contract;
 interface StorageInterface
 {
     /**
+     * 获取存储区域
+     */
+    public static function region(): array;
+
+    /**
      * 上传文件内容.
      * @param string $name 文件名称
      * @param string $file 文件内容
@@ -83,9 +88,4 @@ interface StorageInterface
      * 获取上传地址
      */
     public function upload(): string;
-
-    /**
-     * 获取存储区域
-     */
-    public static function region(): array;
 }

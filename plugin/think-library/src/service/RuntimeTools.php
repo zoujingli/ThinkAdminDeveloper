@@ -25,6 +25,7 @@ use think\admin\Library;
 use think\admin\model\QueryFactory;
 use think\db\Query;
 use think\Model;
+use Throwable;
 
 /**
  * Library 通用运行时工具。
@@ -33,6 +34,15 @@ use think\Model;
  */
 class RuntimeTools
 {
+    /**
+     * 生成全部静态路径。
+     * @return string[]
+     */
+    public static function uris(string $path = ''): array
+    {
+        return static::uri($path, null);
+    }
+
     /**
      * 生成静态路径链接。
      * @param string $path 后缀路径
@@ -57,15 +67,6 @@ class RuntimeTools
     }
 
     /**
-     * 生成全部静态路径。
-     * @return string[]
-     */
-    public static function uris(string $path = ''): array
-    {
-        return static::uri($path, null);
-    }
-
-    /**
      * 打印调试数据到文件。
      * @param mixed $data 输出的数据
      * @param bool $new 强制替换文件
@@ -78,12 +79,34 @@ class RuntimeTools
         var_dump($data);
         $output = preg_replace('/]=>\n(\s+)/m', '] => ', ob_get_clean());
         if (is_null($file)) {
-            $file = syspath('runtime/' . date('Ymd') . '.log');
+            $file = runpath('runtime/' . date('Ymd') . '.log');
         } elseif (!preg_match('#[/\\\]+#', $file)) {
-            $file = syspath("runtime/{$file}.log");
+            $file = runpath("runtime/{$file}.log");
         }
         is_dir($dir = dirname($file)) or mkdir($dir, 0777, true);
         return $new ? file_put_contents($file, $output) : file_put_contents($file, $output, FILE_APPEND);
+    }
+
+    /**
+     * 批量更新保存数据。
+     * @param Model|Query|string $query 数据查询对象
+     * @param array $data 需要保存的数据
+     * @param string $key 更新条件查询主键
+     * @param mixed $map 额外更新查询条件
+     * @return bool|int
+     * @throws Exception
+     */
+    public static function update($query, array $data, string $key = 'id', $map = [])
+    {
+        try {
+            $query = QueryFactory::build($query)->master()->where($map);
+            if (empty($map[$key])) {
+                $query->where([$key => $data[$key] ?? null]);
+            }
+            return (clone $query)->count() > 1 ? $query->strict(false)->update($data) : $query->findOrEmpty()->save($data);
+        } catch (\Exception|Throwable $exception) {
+            throw new Exception($exception->getMessage(), $exception->getCode());
+        }
     }
 
     /**
@@ -113,28 +136,6 @@ class RuntimeTools
             $data = $model->toArray();
             return $model[$key] ?? true;
         } catch (\Exception $exception) {
-            throw new Exception($exception->getMessage(), $exception->getCode());
-        }
-    }
-
-    /**
-     * 批量更新保存数据。
-     * @param Model|Query|string $query 数据查询对象
-     * @param array $data 需要保存的数据
-     * @param string $key 更新条件查询主键
-     * @param mixed $map 额外更新查询条件
-     * @return bool|int
-     * @throws Exception
-     */
-    public static function update($query, array $data, string $key = 'id', $map = [])
-    {
-        try {
-            $query = QueryFactory::build($query)->master()->where($map);
-            if (empty($map[$key])) {
-                $query->where([$key => $data[$key] ?? null]);
-            }
-            return (clone $query)->count() > 1 ? $query->strict(false)->update($data) : $query->findOrEmpty()->save($data);
-        } catch (\Exception|\Throwable $exception) {
             throw new Exception($exception->getMessage(), $exception->getCode());
         }
     }

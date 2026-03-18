@@ -92,32 +92,6 @@ class JwtToken
     }
 
     /**
-     * 验证 token 是否有效，默认验证 exp、nbf、iat 时间。
-     *
-     * @throws Exception
-     */
-    public static function verify(string $token, ?string $jwtkey = null): array
-    {
-        [$base64header, $base64payload, $signature] = self::splitToken($token);
-        $header = self::decodeSegment($base64header);
-        if (empty($header['alg'])) {
-            throw new Exception('数据解密失败！', 0, []);
-        }
-        $jwtkey = self::jwtkey($jwtkey);
-        if (self::withSign("{$base64header}.{$base64payload}", $header['alg'], $jwtkey) !== $signature) {
-            throw new Exception('验证签名失败！', 0, []);
-        }
-        $payload = self::decodeSegment($base64payload);
-        self::validatePayload($payload);
-        $extra = [];
-        if (isset($payload['enc'])) {
-            $extra = json_decode(CodeToolkit::decrypt($payload['enc'], $jwtkey), true) ?: [];
-            unset($payload['enc']);
-        }
-        return self::$input = array_merge($payload, $extra);
-    }
-
-    /**
      * 获取 JWT 密钥。
      */
     public static function jwtkey(?string $jwtkey = null): string
@@ -144,23 +118,6 @@ class JwtToken
     }
 
     /**
-     * 输出模板变量。
-     * 这是旧接口能力，仍然保留在这里，避免影响现有 API 控制器。
-     */
-    public static function fetch(Controller $class, array $vars = [])
-    {
-        $ignore = array_keys(get_class_vars(Controller::class));
-        foreach ($class as $name => $value) {
-            if (!in_array($name, $ignore, true)) {
-                if (is_array($value) || is_numeric($value) || is_string($value) || is_bool($value) || is_null($value)) {
-                    $vars[$name] = $value;
-                }
-            }
-        }
-        $class->success('获取变量成功！', $vars);
-    }
-
-    /**
      * 拆分 JWT 标准 claim 与业务扩展数据。
      */
     private static function splitClaims(array $data): array
@@ -173,6 +130,40 @@ class JwtToken
             }
         }
         return [$claims, $data];
+    }
+
+    /**
+     * 生成数据签名。
+     */
+    private static function withSign(string $input, string $alg = 'HS256', ?string $key = null): string
+    {
+        return CodeToolkit::enSafe64(hash_hmac(self::SIGN_TYPES[$alg], $input, self::jwtkey($key), true));
+    }
+
+    /**
+     * 验证 token 是否有效，默认验证 exp、nbf、iat 时间。
+     *
+     * @throws Exception
+     */
+    public static function verify(string $token, ?string $jwtkey = null): array
+    {
+        [$base64header, $base64payload, $signature] = self::splitToken($token);
+        $header = self::decodeSegment($base64header);
+        if (empty($header['alg'])) {
+            throw new Exception('数据解密失败！', 0, []);
+        }
+        $jwtkey = self::jwtkey($jwtkey);
+        if (self::withSign("{$base64header}.{$base64payload}", $header['alg'], $jwtkey) !== $signature) {
+            throw new Exception('验证签名失败！', 0, []);
+        }
+        $payload = self::decodeSegment($base64payload);
+        self::validatePayload($payload);
+        $extra = [];
+        if (isset($payload['enc'])) {
+            $extra = json_decode(CodeToolkit::decrypt($payload['enc'], $jwtkey), true) ?: [];
+            unset($payload['enc']);
+        }
+        return self::$input = array_merge($payload, $extra);
     }
 
     /**
@@ -217,10 +208,19 @@ class JwtToken
     }
 
     /**
-     * 生成数据签名。
+     * 输出模板变量。
+     * 这是旧接口能力，仍然保留在这里，避免影响现有 API 控制器。
      */
-    private static function withSign(string $input, string $alg = 'HS256', ?string $key = null): string
+    public static function fetch(Controller $class, array $vars = [])
     {
-        return CodeToolkit::enSafe64(hash_hmac(self::SIGN_TYPES[$alg], $input, self::jwtkey($key), true));
+        $ignore = array_keys(get_class_vars(Controller::class));
+        foreach ($class as $name => $value) {
+            if (!in_array($name, $ignore, true)) {
+                if (is_array($value) || is_numeric($value) || is_string($value) || is_bool($value) || is_null($value)) {
+                    $vars[$name] = $value;
+                }
+            }
+        }
+        $class->success('获取变量成功！', $vars);
     }
 }

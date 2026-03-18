@@ -35,13 +35,21 @@ class NodeService extends Service
         return empty($suffix) ? $default : trim($default . '\\' . trim($suffix, '\/'), '\\');
     }
 
-    public static function nameTolower(string $name): string
+    public static function fullNode(?string $node = ''): string
     {
-        $dots = [];
-        foreach (explode('.', strtr($name, '/', '.')) as $dot) {
-            $dots[] = trim(preg_replace('/[A-Z]/', '_\0', $dot), '_');
+        if (empty($node)) {
+            return static::getCurrent();
         }
-        return strtolower(join('.', $dots));
+        switch (count($attrs = explode('/', $node))) {
+            case 1:
+                return static::getCurrent('controller') . '/' . strtolower($node);
+            case 2:
+                $suffix = static::nameTolower($attrs[0]) . '/' . $attrs[1];
+                return static::getCurrent('module') . '/' . strtolower($suffix);
+            default:
+                $attrs[1] = static::nameTolower($attrs[1]);
+                return strtolower(join('/', $attrs));
+        }
     }
 
     public static function getCurrent(string $type = ''): string
@@ -58,21 +66,13 @@ class NodeService extends Service
         return "{$appname}/{$controller}/{$method}";
     }
 
-    public static function fullNode(?string $node = ''): string
+    public static function nameTolower(string $name): string
     {
-        if (empty($node)) {
-            return static::getCurrent();
+        $dots = [];
+        foreach (explode('.', strtr($name, '/', '.')) as $dot) {
+            $dots[] = trim(preg_replace('/[A-Z]/', '_\0', $dot), '_');
         }
-        switch (count($attrs = explode('/', $node))) {
-            case 1:
-                return static::getCurrent('controller') . '/' . strtolower($node);
-            case 2:
-                $suffix = static::nameTolower($attrs[0]) . '/' . $attrs[1];
-                return static::getCurrent('module') . '/' . strtolower($suffix);
-            default:
-                $attrs[1] = static::nameTolower($attrs[1]);
-                return strtolower(join('/', $attrs));
-        }
+        return strtolower(join('.', $dots));
     }
 
     public static function getMethods(bool $force = false): array

@@ -88,6 +88,27 @@ class QueryHelper extends Helper
     }
 
     /**
+     * 快捷助手调用勾子.
+     * @param Model|Query|string $model
+     * @return false|int|mixed|QueryHelper
+     */
+    public static function make($model, string $method = 'init', array $args = [], ?callable $nohook = null)
+    {
+        $hooks = [
+            'mForm' => [FormHelper::class, 'init'],
+            'mSave' => [SaveHelper::class, 'init'],
+            'mQuery' => [QueryHelper::class, 'init'],
+            'mDelete' => [DeleteHelper::class, 'init'],
+            'mUpdate' => [RuntimeTools::class, 'update'],
+        ];
+        if (isset($hooks[$method])) {
+            [$class, $method] = $hooks[$method];
+            return Container::getInstance()->invokeClass($class)->{$method}($model, ...$args);
+        }
+        return is_callable($nohook) ? $nohook($method, $args) : false;
+    }
+
+    /**
      * 获取当前Db操作对象
      */
     public function db(): Query
@@ -108,6 +129,33 @@ class QueryHelper extends Helper
         $this->query = $this->autoSortQuery($dbQuery);
         is_callable($callable) && call_user_func($callable, $this, $this->query);
         return $this;
+    }
+
+    /**
+     * 绑定排序并返回操作对象。
+     * @param BaseQuery|Model|string $dbQuery
+     * @param string $field 指定排序字段
+     */
+    public function autoSortQuery($dbQuery, string $field = 'sort'): Query
+    {
+        $query = QueryFactory::build($dbQuery);
+        if ($this->app->request->isPost() && $this->app->request->post('action') === 'sort') {
+            SystemContext::isLogin() or $this->class->error('请重新登录！');
+            if (method_exists($query, 'getTableFields') && in_array($field, $query->getTableFields(), true)) {
+                if ($this->app->request->has($pk = $query->getPk() ?: 'id', 'post')) {
+                    $map = [$pk => $this->app->request->post($pk, 0)];
+                    $data = [$field => intval($this->app->request->post($field, 0))];
+                    try {
+                        $query->newQuery()->where($map)->update($data);
+                    } catch (\Throwable) {
+                        $this->class->error('列表排序失败！');
+                    }
+                    $this->class->success('列表排序成功！', '');
+                }
+            }
+            $this->class->error('列表排序失败！');
+        }
+        return $query;
     }
 
     /**
@@ -260,64 +308,6 @@ class QueryHelper extends Helper
     }
 
     /**
-     * 执行分页查询并按控制器约定渲染结果。
-     * @param bool|int $page 是否启用分页
-     * @param bool $display 是否渲染模板
-     * @param bool|int $total 集合分页记录数
-     * @param int $limit 集合每页记录数
-     * @param string $template 模板文件名称
-     * @throws DataNotFoundException
-     * @throws DbException
-     * @throws ModelNotFoundException
-     */
-    public function page($page = true, bool $display = true, $total = false, int $limit = 0, string $template = ''): array
-    {
-        if ($page !== false) {
-            $get = $this->app->request->get();
-            $limits = [10, 20, 30, 40, 50, 60, 70, 80, 90, 100, 110, 120, 130, 140, 150, 160, 170, 180, 190, 200];
-            if ($limit <= 1) {
-                $limit = intval($get['limit'] ?? 20);
-                if (!in_array($limit, $limits, true)) {
-                    $limit = 20;
-                }
-            }
-            $inner = strpos($get['spm'] ?? '', 'm-') === 0;
-            $prefix = $inner ? (sysuri('system/index/index') . '#') : '';
-            $config = ['list_rows' => $limit, 'query' => $get];
-            if (is_numeric($page)) {
-                $config['page'] = $page;
-            } elseif (isset($get['page']) && is_numeric($get['page'])) {
-                $config['page'] = max(1, intval($get['page']));
-            }
-            $data = ($paginate = $this->query->paginate($config, static::getCount($this->query, $total)))->toArray();
-            $result = ['page' => ['limit' => $data['per_page'], 'total' => $data['total'], 'pages' => $data['last_page'], 'current' => $data['current_page']], 'list' => $data['data']];
-            $select = "<select onchange='location.href=this.options[this.selectedIndex].value'>";
-            if (in_array($limit, $limits, true)) {
-                foreach ($limits as $num) {
-                    $get = array_merge($get, ['limit' => $num, 'page' => 1]);
-                    $url = $this->app->request->baseUrl() . '?' . http_build_query($get, '', '&', PHP_QUERY_RFC3986);
-                    $select .= sprintf('<option data-num="%d" value="%s" %s>%d</option>', $num, $prefix . $url, $limit === $num ? 'selected' : '', $num);
-                }
-            } else {
-                $select .= "<option selected>{$limit}</option>";
-            }
-            $html = lang('共 %s 条记录，每页显示 %s 条，共 %s 页当前显示第 %s 页。', [$data['total'], "{$select}</select>", $data['last_page'], $data['current_page']]);
-            $link = $inner ? str_replace('<a href="', '<a data-open="' . $prefix, $paginate->render() ?: '') : ($paginate->render() ?: '');
-            $this->class->assign('pagehtml', "<div class='pagination-container nowrap'><span>{$html}</span>{$link}</div>");
-        } else {
-            $result = ['list' => $this->query->select()->toArray()];
-        }
-        if ($this->class->callback('_page_filter', $result['list'], $result) !== false && $display) {
-            if ($this->output === 'get.json') {
-                $this->class->success('JSON-DATA', $result);
-            } else {
-                $this->class->fetch($template, $result);
-            }
-        }
-        return $result;
-    }
-
-    /**
      * 清空数据并保留表结构.
      * @return $this
      */
@@ -392,51 +382,89 @@ class QueryHelper extends Helper
     }
 
     /**
-     * 快捷助手调用勾子.
-     * @param Model|Query|string $model
-     * @return false|int|mixed|QueryHelper
+     * 执行分页查询并按控制器约定渲染结果。
+     * @param bool|int $page 是否启用分页
+     * @param bool $display 是否渲染模板
+     * @param bool|int $total 集合分页记录数
+     * @param int $limit 集合每页记录数
+     * @param string $template 模板文件名称
+     * @throws DataNotFoundException
+     * @throws DbException
+     * @throws ModelNotFoundException
      */
-    public static function make($model, string $method = 'init', array $args = [], ?callable $nohook = null)
+    public function page($page = true, bool $display = true, $total = false, int $limit = 0, string $template = ''): array
     {
-        $hooks = [
-            'mForm' => [FormHelper::class, 'init'],
-            'mSave' => [SaveHelper::class, 'init'],
-            'mQuery' => [QueryHelper::class, 'init'],
-            'mDelete' => [DeleteHelper::class, 'init'],
-            'mUpdate' => [RuntimeTools::class, 'update'],
-        ];
-        if (isset($hooks[$method])) {
-            [$class, $method] = $hooks[$method];
-            return Container::getInstance()->invokeClass($class)->{$method}($model, ...$args);
+        if ($page !== false) {
+            $get = $this->app->request->get();
+            $limits = [10, 20, 30, 40, 50, 60, 70, 80, 90, 100, 110, 120, 130, 140, 150, 160, 170, 180, 190, 200];
+            if ($limit <= 1) {
+                $limit = intval($get['limit'] ?? 20);
+                if (!in_array($limit, $limits, true)) {
+                    $limit = 20;
+                }
+            }
+            $inner = strpos($get['spm'] ?? '', 'm-') === 0;
+            $prefix = $inner ? (sysuri('system/index/index') . '#') : '';
+            $config = ['list_rows' => $limit, 'query' => $get];
+            if (is_numeric($page)) {
+                $config['page'] = $page;
+            } elseif (isset($get['page']) && is_numeric($get['page'])) {
+                $config['page'] = max(1, intval($get['page']));
+            }
+            $data = ($paginate = $this->query->paginate($config, static::getCount($this->query, $total)))->toArray();
+            $result = ['page' => ['limit' => $data['per_page'], 'total' => $data['total'], 'pages' => $data['last_page'], 'current' => $data['current_page']], 'list' => $data['data']];
+            $select = "<select onchange='location.href=this.options[this.selectedIndex].value'>";
+            if (in_array($limit, $limits, true)) {
+                foreach ($limits as $num) {
+                    $get = array_merge($get, ['limit' => $num, 'page' => 1]);
+                    $url = $this->app->request->baseUrl() . '?' . http_build_query($get, '', '&', PHP_QUERY_RFC3986);
+                    $select .= sprintf('<option data-num="%d" value="%s" %s>%d</option>', $num, $prefix . $url, $limit === $num ? 'selected' : '', $num);
+                }
+            } else {
+                $select .= "<option selected>{$limit}</option>";
+            }
+            $html = lang('共 %s 条记录，每页显示 %s 条，共 %s 页当前显示第 %s 页。', [$data['total'], "{$select}</select>", $data['last_page'], $data['current_page']]);
+            $link = $inner ? str_replace('<a href="', '<a data-open="' . $prefix, $paginate->render() ?: '') : ($paginate->render() ?: '');
+            $this->class->assign('pagehtml', "<div class='pagination-container nowrap'><span>{$html}</span>{$link}</div>");
+        } else {
+            $result = ['list' => $this->query->select()->toArray()];
         }
-        return is_callable($nohook) ? $nohook($method, $args) : false;
+        if ($this->class->callback('_page_filter', $result['list'], $result) !== false && $display) {
+            if ($this->output === 'get.json') {
+                $this->class->success('JSON-DATA', $result);
+            } else {
+                $this->class->fetch($template, $result);
+            }
+        }
+        return $result;
+    }
+
+    private function handleCompatQueryCall(string $name, array &$args): bool
+    {
+        $model = $this->query->getModel();
+        return $model instanceof \think\admin\Model
+            && $model->normalizeLegacySoftDeleteCall($this->query, $name, $args);
     }
 
     /**
-     * 绑定排序并返回操作对象。
-     * @param BaseQuery|Model|string $dbQuery
-     * @param string $field 指定排序字段
+     * 获取输入数据.
+     * @param null|array|string $input
      */
-    public function autoSortQuery($dbQuery, string $field = 'sort'): Query
+    private function getInputData($input): array
     {
-        $query = QueryFactory::build($dbQuery);
-        if ($this->app->request->isPost() && $this->app->request->post('action') === 'sort') {
-            SystemContext::isLogin() or $this->class->error('请重新登录！');
-            if (method_exists($query, 'getTableFields') && in_array($field, $query->getTableFields(), true)) {
-                if ($this->app->request->has($pk = $query->getPk() ?: 'id', 'post')) {
-                    $map = [$pk => $this->app->request->post($pk, 0)];
-                    $data = [$field => intval($this->app->request->post($field, 0))];
-                    try {
-                        $query->newQuery()->where($map)->update($data);
-                    } catch (\Throwable) {
-                        $this->class->error('列表排序失败！');
-                    }
-                    $this->class->success('列表排序成功！', '');
-                }
-            }
-            $this->class->error('列表排序失败！');
+        if (is_array($input)) {
+            return $input;
         }
-        return $query;
+        $input = $input ?: 'request';
+        return $this->app->request->{$input}();
+    }
+
+    private function normalizeLegacyFieldName(string $field): string
+    {
+        return match ($field) {
+            'deleted_at', 'deleted_time' => 'delete_time',
+            default => $field,
+        };
     }
 
     /**
@@ -470,34 +498,6 @@ class QueryHelper extends Helper
     }
 
     /**
-     * 获取输入数据.
-     * @param null|array|string $input
-     */
-    private function getInputData($input): array
-    {
-        if (is_array($input)) {
-            return $input;
-        }
-        $input = $input ?: 'request';
-        return $this->app->request->{$input}();
-    }
-
-    private function handleCompatQueryCall(string $name, array &$args): bool
-    {
-        $model = $this->query->getModel();
-        return $model instanceof \think\admin\Model
-            && $model->normalizeLegacySoftDeleteCall($this->query, $name, $args);
-    }
-
-    private function normalizeLegacyFieldName(string $field): string
-    {
-        return match ($field) {
-            'deleted_at', 'deleted_time' => 'delete_time',
-            default => $field,
-        };
-    }
-
-    /**
      * 根据查询参数补充排序规则。
      */
     private function applyOrderParams(Query $query): void
@@ -505,20 +505,6 @@ class QueryHelper extends Helper
         $get = $this->app->request->get();
         if (isset($get['_field_'], $get['_order_'])) {
             $query->order("{$get['_field_']} {$get['_order_']}");
-        }
-    }
-
-    /**
-     * 输出 XSS 过滤处理。
-     */
-    private static function xssFilter(array &$items): void
-    {
-        foreach ($items as &$item) {
-            if (is_array($item)) {
-                static::xssFilter($item);
-            } elseif (is_string($item)) {
-                $item = htmlspecialchars($item, ENT_QUOTES);
-            }
         }
     }
 
@@ -544,5 +530,19 @@ class QueryHelper extends Helper
         }
         $table = [$query->buildSql() => '_union_count_'];
         return $query->newQuery()->table($table)->count();
+    }
+
+    /**
+     * 输出 XSS 过滤处理。
+     */
+    private static function xssFilter(array &$items): void
+    {
+        foreach ($items as &$item) {
+            if (is_array($item)) {
+                static::xssFilter($item);
+            } elseif (is_string($item)) {
+                $item = htmlspecialchars($item, ENT_QUOTES);
+            }
+        }
     }
 }

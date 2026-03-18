@@ -126,6 +126,14 @@ final class RequestContext
     }
 
     /**
+     * 清理当前插件信息。
+     */
+    public function clearPlugin(): self
+    {
+        return $this->setPlugin();
+    }
+
+    /**
      * 设置当前插件信息。
      */
     public function setPlugin(string $code = '', string $prefix = ''): self
@@ -133,14 +141,6 @@ final class RequestContext
         $this->pluginCode = trim($code);
         $this->pluginPrefix = trim($prefix, '\/');
         return $this;
-    }
-
-    /**
-     * 清理当前插件信息。
-     */
-    public function clearPlugin(): self
-    {
-        return $this->setPlugin();
     }
 
     /**
@@ -185,27 +185,6 @@ final class RequestContext
     }
 
     /**
-     * 更新当前认证信息。
-     * @param array<string, mixed> $user
-     */
-    public function setAuth(array $user = [], string $token = '', bool $ready = true): self
-    {
-        $this->currentUser = $user;
-        $this->currentToken = $token;
-        $this->authReady = $ready;
-        return $this;
-    }
-
-    /**
-     * 设置当前认证会话编号。
-     */
-    public function setSessionId(string $sessionId = ''): self
-    {
-        $this->currentSessionId = trim($sessionId);
-        return $this;
-    }
-
-    /**
      * 仅更新当前令牌。
      */
     public function setToken(string $token): self
@@ -221,6 +200,27 @@ final class RequestContext
     {
         $this->setSessionId('');
         return $this->setAuth([], '', $ready);
+    }
+
+    /**
+     * 设置当前认证会话编号。
+     */
+    public function setSessionId(string $sessionId = ''): self
+    {
+        $this->currentSessionId = trim($sessionId);
+        return $this;
+    }
+
+    /**
+     * 更新当前认证信息。
+     * @param array<string, mixed> $user
+     */
+    public function setAuth(array $user = [], string $token = '', bool $ready = true): self
+    {
+        $this->currentUser = $user;
+        $this->currentToken = $token;
+        $this->authReady = $ready;
+        return $this;
     }
 
     /**

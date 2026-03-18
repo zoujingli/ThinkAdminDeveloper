@@ -78,6 +78,11 @@ trait StorageUsageTrait
     }
 
     /**
+     * 自定义初始化方法.
+     */
+    protected function init() {}
+
+    /**
      * 获取对象实例.
      * @return static
      */
@@ -88,9 +93,12 @@ trait StorageUsageTrait
     }
 
     /**
-     * 自定义初始化方法.
+     * 兼容无全局语言函数的上下文.
      */
-    protected function init() {}
+    protected static function trans(string $text): string
+    {
+        return function_exists('lang') ? lang($text) : $text;
+    }
 
     /**
      * 获取下载链接后缀
@@ -134,13 +142,5 @@ trait StorageUsageTrait
             return strstr($name, '!', true);
         }
         return $name;
-    }
-
-    /**
-     * 兼容无全局语言函数的上下文.
-     */
-    protected static function trans(string $text): string
-    {
-        return function_exists('lang') ? lang($text) : $text;
     }
 }

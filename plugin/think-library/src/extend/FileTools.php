@@ -79,6 +79,29 @@ class FileTools
     }
 
     /**
+     * 递归扫描指定目录，返回文件或目录的 SplFileInfo 对象。
+     */
+    public static function findFilesYield(string $path, ?int $depth = null, ?\Closure $filter = null, bool $appendPath = false, int $currDepth = 1): \Generator
+    {
+        if (!file_exists($path) || !is_dir($path) || (!is_null($depth) && $currDepth > $depth)) {
+            return;
+        }
+        foreach (new \FilesystemIterator($path, \FilesystemIterator::SKIP_DOTS) as $item) {
+            if ($filter !== null && $filter($item) === false) {
+                continue;
+            }
+            if ($item->isDir() && !$item->isLink()) {
+                if ($appendPath) {
+                    yield $item;
+                }
+                yield from static::findFilesYield($item->getPathname(), $depth, $filter, $appendPath, $currDepth + 1);
+            } else {
+                yield $item;
+            }
+        }
+    }
+
+    /**
      * 深度拷贝到指定目录。
      * `remove=true` 时会在复制后删除源文件，适合初始化发布场景。
      */
@@ -132,26 +155,11 @@ class FileTools
     }
 
     /**
-     * 递归扫描指定目录，返回文件或目录的 SplFileInfo 对象。
+     * 计算相对于根目录的短路径。
      */
-    public static function findFilesYield(string $path, ?int $depth = null, ?\Closure $filter = null, bool $appendPath = false, int $currDepth = 1): \Generator
+    private static function relativePath(string $root, string $pathname): string
     {
-        if (!file_exists($path) || !is_dir($path) || (!is_null($depth) && $currDepth > $depth)) {
-            return;
-        }
-        foreach (new \FilesystemIterator($path, \FilesystemIterator::SKIP_DOTS) as $item) {
-            if ($filter !== null && $filter($item) === false) {
-                continue;
-            }
-            if ($item->isDir() && !$item->isLink()) {
-                if ($appendPath) {
-                    yield $item;
-                }
-                yield from static::findFilesYield($item->getPathname(), $depth, $filter, $appendPath, $currDepth + 1);
-            } else {
-                yield $item;
-            }
-        }
+        return substr($pathname, strlen($root) + 1);
     }
 
     /**
@@ -160,13 +168,5 @@ class FileTools
     private static function normalizeDirectory(string $path): string
     {
         return rtrim($path, '\/') . DIRECTORY_SEPARATOR;
-    }
-
-    /**
-     * 计算相对于根目录的短路径。
-     */
-    private static function relativePath(string $root, string $pathname): string
-    {
-        return substr($pathname, strlen($root) + 1);
     }
 }

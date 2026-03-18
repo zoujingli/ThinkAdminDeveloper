@@ -173,50 +173,6 @@ class FormBuilder
     }
 
     /**
-     * 获取字段规则配置.
-     */
-    public function getFields(): array
-    {
-        return array_values($this->items);
-    }
-
-    /**
-     * 获取 _vali 兼容规则.
-     */
-    public function getValidateRules(): array
-    {
-        return $this->rules;
-    }
-
-    /**
-     * 获取可直接用于 _vali 的请求规则.
-     */
-    public function getRequestRules(): array
-    {
-        $rules = [];
-        foreach ($this->items as $field) {
-            $rules[sprintf('%s.default', $field['name'])] = $this->resolveFieldDefault($field);
-        }
-        return array_merge($rules, $this->getValidateRules());
-    }
-
-    /**
-     * 获取构建数据.
-     */
-    public function toArray(): array
-    {
-        return [
-            'type' => $this->type,
-            'mode' => $this->mode,
-            'action' => $this->action ?? '',
-            'variable' => $this->variable,
-            'fields' => $this->getFields(),
-            'buttons' => $this->buttonItems,
-            'rules' => $this->getValidateRules(),
-        ];
-    }
-
-    /**
      * 添加页面脚本.
      * @return $this
      */
@@ -239,17 +195,23 @@ class FormBuilder
     }
 
     /**
-     * 添加单条 _vali 验证规则.
-     * @return $this
+     * 获取可直接用于 _vali 的请求规则.
      */
-    public function addValidateRule(string $name, string $rule, string $message): self
+    public function getRequestRules(): array
     {
-        $name = trim($name);
-        $rule = trim($rule);
-        if ($name !== '' && $rule !== '') {
-            $this->rules["{$name}.{$rule}"] = $message;
+        $rules = [];
+        foreach ($this->items as $field) {
+            $rules[sprintf('%s.default', $field['name'])] = $this->resolveFieldDefault($field);
         }
-        return $this;
+        return array_merge($rules, $this->getValidateRules());
+    }
+
+    /**
+     * 获取 _vali 兼容规则.
+     */
+    public function getValidateRules(): array
+    {
+        return $this->rules;
     }
 
     /**
@@ -267,6 +229,18 @@ class FormBuilder
     }
 
     /**
+     * 动态添加多个字段.
+     * @return $this
+     */
+    public function addFields(array $fields): self
+    {
+        foreach ($fields as $field) {
+            is_array($field) && $this->addField($field);
+        }
+        return $this;
+    }
+
+    /**
      * 动态添加单个字段.
      * @return $this
      */
@@ -279,13 +253,15 @@ class FormBuilder
     }
 
     /**
-     * 动态添加多个字段.
+     * 添加单条 _vali 验证规则.
      * @return $this
      */
-    public function addFields(array $fields): self
+    public function addValidateRule(string $name, string $rule, string $message): self
     {
-        foreach ($fields as $field) {
-            is_array($field) && $this->addField($field);
+        $name = trim($name);
+        $rule = trim($rule);
+        if ($name !== '' && $rule !== '') {
+            $this->rules["{$name}.{$rule}"] = $message;
         }
         return $this;
     }
@@ -313,6 +289,23 @@ class FormBuilder
     }
 
     /**
+     * 创建密钥输入框.
+     * @param string $name 字段名称
+     * @param string $title 字段标题
+     * @param string $substr 字段子标题
+     * @param string $remark 字段备注
+     * @param bool $required 是否必填
+     * @param ?string $pattern 验证规则
+     * @param array $attrs 附加属性
+     * @return $this
+     */
+    public function addPassInput(string $name, string $title, string $substr = '', bool $required = false, string $remark = '', ?string $pattern = null, array $attrs = []): self
+    {
+        $attrs['type'] = 'password';
+        return $this->addTextInput($name, $title, $substr, $required, $remark, $pattern, $attrs);
+    }
+
+    /**
      * 创建 Text 输入.
      * @param string $name 字段名称
      * @param string $title 字段标题
@@ -335,23 +328,6 @@ class FormBuilder
             'pattern' => $pattern,
             'attrs' => $attrs,
         ]);
-    }
-
-    /**
-     * 创建密钥输入框.
-     * @param string $name 字段名称
-     * @param string $title 字段标题
-     * @param string $substr 字段子标题
-     * @param string $remark 字段备注
-     * @param bool $required 是否必填
-     * @param ?string $pattern 验证规则
-     * @param array $attrs 附加属性
-     * @return $this
-     */
-    public function addPassInput(string $name, string $title, string $substr = '', bool $required = false, string $remark = '', ?string $pattern = null, array $attrs = []): self
-    {
-        $attrs['type'] = 'password';
-        return $this->addTextInput($name, $title, $substr, $required, $remark, $pattern, $attrs);
     }
 
     /**
@@ -440,6 +416,21 @@ class FormBuilder
     }
 
     /**
+     * 添加单选框架字段.
+     * @param string $name 字段名称
+     * @param string $title 字段标题
+     * @param string $substr 字段子标题
+     * @param string $vname 变量名称
+     * @param bool $required 是否必选
+     * @param array $attrs 附加属性
+     * @return $this
+     */
+    public function addRadioInput(string $name, string $title, string $substr, string $vname, bool $required = false, array $attrs = []): self
+    {
+        return $this->addCheckInput($name, $title, $substr, $vname, $required, $attrs, 'radio');
+    }
+
+    /**
      * 创建复选框字段.
      * @param string $name 字段名称
      * @param string $title 字段标题
@@ -460,21 +451,6 @@ class FormBuilder
             'attrs' => $attrs,
             'vname' => $vname,
         ]);
-    }
-
-    /**
-     * 添加单选框架字段.
-     * @param string $name 字段名称
-     * @param string $title 字段标题
-     * @param string $substr 字段子标题
-     * @param string $vname 变量名称
-     * @param bool $required 是否必选
-     * @param array $attrs 附加属性
-     * @return $this
-     */
-    public function addRadioInput(string $name, string $title, string $substr, string $vname, bool $required = false, array $attrs = []): self
-    {
-        return $this->addCheckInput($name, $title, $substr, $vname, $required, $attrs, 'radio');
     }
 
     /**
@@ -527,26 +503,27 @@ class FormBuilder
     }
 
     /**
-     * 兼容旧版受保护输入方法.
-     * @param string $name 字段名称
-     * @param string $title 字段标题
-     * @param string $subtitle 字段子标题
-     * @param string $remark 字段备注
-     * @param array $attrs 附加属性
-     * @return $this
+     * 获取构建数据.
      */
-    protected function addInput(string $name, string $title, string $subtitle = '', string $remark = '', array $attrs = []): self
+    public function toArray(): array
     {
-        return $this->addField([
-            'type' => $attrs['type'] ?? 'text',
-            'name' => $name,
-            'title' => $title,
-            'subtitle' => $subtitle,
-            'remark' => $remark,
-            'required' => !empty($attrs['required']),
-            'pattern' => $attrs['pattern'] ?? null,
-            'attrs' => $attrs,
-        ]);
+        return [
+            'type' => $this->type,
+            'mode' => $this->mode,
+            'action' => $this->action ?? '',
+            'variable' => $this->variable,
+            'fields' => $this->getFields(),
+            'buttons' => $this->buttonItems,
+            'rules' => $this->getValidateRules(),
+        ];
+    }
+
+    /**
+     * 获取字段规则配置.
+     */
+    public function getFields(): array
+    {
+        return array_values($this->items);
     }
 
     /**
@@ -586,6 +563,37 @@ class FormBuilder
             'attrs' => $attrs,
         ];
         return $this;
+    }
+
+    /**
+     * 兼容旧版受保护输入方法.
+     * @param string $name 字段名称
+     * @param string $title 字段标题
+     * @param string $subtitle 字段子标题
+     * @param string $remark 字段备注
+     * @param array $attrs 附加属性
+     * @return $this
+     */
+    protected function addInput(string $name, string $title, string $subtitle = '', string $remark = '', array $attrs = []): self
+    {
+        return $this->addField([
+            'type' => $attrs['type'] ?? 'text',
+            'name' => $name,
+            'title' => $title,
+            'subtitle' => $subtitle,
+            'remark' => $remark,
+            'required' => !empty($attrs['required']),
+            'pattern' => $attrs['pattern'] ?? null,
+            'attrs' => $attrs,
+        ]);
+    }
+
+    /**
+     * 解析字段默认值，确保可回填全部输入字段.
+     */
+    private function resolveFieldDefault(array $field)
+    {
+        return $field['type'] === 'checkbox' ? [] : '';
     }
 
     /**
@@ -659,6 +667,63 @@ class FormBuilder
     }
 
     /**
+     * 规范组件类型.
+     */
+    private function normalizeType(string $type): string
+    {
+        $type = strtolower(trim($type));
+        return match ($type) {
+            '', 'input' => 'text',
+            'pass' => 'password',
+            'upload-image', 'upload-one-image' => 'image',
+            'upload-video', 'upload-one-video' => 'video',
+            'upload-images', 'upload-mul-image' => 'images',
+            default => $type,
+        };
+    }
+
+    /**
+     * 解析 pattern 对应的后端规则.
+     */
+    private function resolvePatternRule(string $pattern): ?string
+    {
+        $pattern = trim($pattern);
+        if ($pattern === '') {
+            return null;
+        }
+        if (isset(self::PATTERN_RULES[$pattern])) {
+            return self::PATTERN_RULES[$pattern];
+        }
+        if (str_contains($pattern, '|')) {
+            return null;
+        }
+
+        $regex = preg_replace('~(?<!\\\)/~', '\/', $pattern) ?? $pattern;
+        if (!str_starts_with($regex, '^')) {
+            $regex = '^' . $regex;
+        }
+        if (!str_ends_with($regex, '$')) {
+            $regex .= '$';
+        }
+
+        return "regex:/{$regex}/";
+    }
+
+    /**
+     * 提取当前字段的 _vali 规则.
+     */
+    private function extractFieldRules(string $name): array
+    {
+        $rules = [];
+        foreach ($this->rules as $rule => $message) {
+            if (strpos($rule, "{$name}.") === 0) {
+                $rules[$rule] = $message;
+            }
+        }
+        return $rules;
+    }
+
+    /**
      * 收集字段配置.
      */
     private function collectField(array $field): void
@@ -705,25 +770,6 @@ class FormBuilder
     }
 
     /**
-     * 渲染普通输入框.
-     */
-    private function renderInput(array $field): string
-    {
-        $attrs = $this->mergeClass($field['attrs'], 'layui-input');
-        if ($field['type'] !== 'text' && !isset($attrs['type'])) {
-            $attrs['type'] = $field['type'];
-        }
-        $attrs['placeholder'] = $attrs['placeholder'] ?? "请输入{$field['title']}";
-        $html = "\n\t\t" . sprintf('<label class="layui-form-item block relative" data-field-name="%s">', htmlspecialchars($field['name'], ENT_QUOTES, 'UTF-8'));
-        $html .= "\n\t\t\t" . $this->renderLabel($field['title'], $field['subtitle'], !empty($attrs['required']));
-        $html .= "\n\t\t\t" . sprintf('<input name="%s" %s value="%s">', $field['name'], $this->_attrs($attrs), $this->valueExpression($field['name']));
-        if ($field['remark'] !== '') {
-            $html .= "\n\t\t\t" . sprintf('<span class="help-block">%s</span>', $field['remark']);
-        }
-        return "{$html}\n\t\t</label>";
-    }
-
-    /**
      * 渲染文本域.
      */
     private function renderTextArea(array $field): string
@@ -737,6 +783,35 @@ class FormBuilder
             $html .= "\n\t\t\t" . sprintf('<span class="help-block">%s</span>', $field['remark']);
         }
         return "{$html}\n\t\t</label>";
+    }
+
+    /**
+     * 合并样式类名.
+     */
+    private function mergeClass(array $attrs, string $class): array
+    {
+        $class = trim($class);
+        if ($class === '') {
+            return $attrs;
+        }
+        $attrs['class'] = trim(($attrs['class'] ?? '') . ' ' . $class);
+        return $attrs;
+    }
+
+    /**
+     * 渲染字段标题.
+     */
+    private function renderLabel(string $title, string $subtitle, bool $required): string
+    {
+        return sprintf('<span class="help-label %s"><b>%s</b>%s</span>', $required ? 'label-required-prev' : '', $title, $subtitle);
+    }
+
+    /**
+     * 获取字段值表达式.
+     */
+    private function valueExpression(string $name): string
+    {
+        return sprintf('{%s.%s|default=\'\'}', $this->variable, $name);
     }
 
     /**
@@ -810,6 +885,27 @@ class FormBuilder
     }
 
     /**
+     * 渲染下拉选项.
+     */
+    private function renderSelectOptions(array $field): string
+    {
+        if ($field['vname'] !== '') {
+            $html = sprintf('{foreach $%s as $k=>$v}', $field['vname']);
+            $html .= sprintf('{if isset(%s.%s) and strval(%s.%s) eq strval($k)}<option selected value="{$k|default=\'\'}">{$v|default=\'\'}</option>{else}<option value="{$k|default=\'\'}">{$v|default=\'\'}</option>{/if}', $this->variable, $field['name'], $this->variable, $field['name']);
+            $html .= '{/foreach}';
+            return $html;
+        }
+
+        $html = '';
+        foreach ($field['options'] as $value => $label) {
+            $value = htmlspecialchars((string)$value, ENT_QUOTES, 'UTF-8');
+            $label = htmlspecialchars((string)$label, ENT_QUOTES, 'UTF-8');
+            $html .= sprintf('{if isset(%s.%s) and strval(%s.%s) eq \'%s\'}<option selected value="%s">%s</option>{else}<option value="%s">%s</option>{/if}', $this->variable, $field['name'], $this->variable, $field['name'], addslashes($value), $value, $label, $value, $label);
+        }
+        return $html;
+    }
+
+    /**
      * 渲染单选或复选.
      */
     private function renderCheckInput(array $field): string
@@ -854,14 +950,6 @@ class FormBuilder
     }
 
     /**
-     * 渲染字段标题.
-     */
-    private function renderLabel(string $title, string $subtitle, bool $required): string
-    {
-        return sprintf('<span class="help-label %s"><b>%s</b>%s</span>', $required ? 'label-required-prev' : '', $title, $subtitle);
-    }
-
-    /**
      * 渲染单选或复选选中条件.
      */
     private function renderCheckCondition(string $name, string $type): string
@@ -887,110 +975,61 @@ class FormBuilder
     }
 
     /**
-     * 渲染下拉选项.
+     * 渲染普通输入框.
      */
-    private function renderSelectOptions(array $field): string
+    private function renderInput(array $field): string
     {
-        if ($field['vname'] !== '') {
-            $html = sprintf('{foreach $%s as $k=>$v}', $field['vname']);
-            $html .= sprintf('{if isset(%s.%s) and strval(%s.%s) eq strval($k)}<option selected value="{$k|default=\'\'}">{$v|default=\'\'}</option>{else}<option value="{$k|default=\'\'}">{$v|default=\'\'}</option>{/if}', $this->variable, $field['name'], $this->variable, $field['name']);
-            $html .= '{/foreach}';
-            return $html;
+        $attrs = $this->mergeClass($field['attrs'], 'layui-input');
+        if ($field['type'] !== 'text' && !isset($attrs['type'])) {
+            $attrs['type'] = $field['type'];
         }
-
-        $html = '';
-        foreach ($field['options'] as $value => $label) {
-            $value = htmlspecialchars((string)$value, ENT_QUOTES, 'UTF-8');
-            $label = htmlspecialchars((string)$label, ENT_QUOTES, 'UTF-8');
-            $html .= sprintf('{if isset(%s.%s) and strval(%s.%s) eq \'%s\'}<option selected value="%s">%s</option>{else}<option value="%s">%s</option>{/if}', $this->variable, $field['name'], $this->variable, $field['name'], addslashes($value), $value, $label, $value, $label);
+        $attrs['placeholder'] = $attrs['placeholder'] ?? "请输入{$field['title']}";
+        $html = "\n\t\t" . sprintf('<label class="layui-form-item block relative" data-field-name="%s">', htmlspecialchars($field['name'], ENT_QUOTES, 'UTF-8'));
+        $html .= "\n\t\t\t" . $this->renderLabel($field['title'], $field['subtitle'], !empty($attrs['required']));
+        $html .= "\n\t\t\t" . sprintf('<input name="%s" %s value="%s">', $field['name'], $this->_attrs($attrs), $this->valueExpression($field['name']));
+        if ($field['remark'] !== '') {
+            $html .= "\n\t\t\t" . sprintf('<span class="help-block">%s</span>', $field['remark']);
         }
-        return $html;
+        return "{$html}\n\t\t</label>";
     }
 
     /**
-     * 合并样式类名.
+     * 生成页面表单模板
      */
-    private function mergeClass(array $attrs, string $class): array
+    private function _buildFormPage(): string
     {
-        $class = trim($class);
-        if ($class === '') {
-            return $attrs;
-        }
-        $attrs['class'] = trim(($attrs['class'] ?? '') . ' ' . $class);
-        return $attrs;
+        return $this->_buildFormModal();
     }
 
     /**
-     * 获取字段值表达式.
+     * 生成弹层表单模板
      */
-    private function valueExpression(string $name): string
+    private function _buildFormModal(): string
     {
-        return sprintf('{%s.%s|default=\'\'}', $this->variable, $name);
+        $attrs = array_merge([
+            'action' => $this->resolveAction(),
+            'method' => 'post',
+            'data-auto' => 'true',
+        ], $this->formAttrs);
+        $attrs = $this->mergeClass($attrs, 'layui-form layui-card');
+        $html = sprintf('<form %s>', $this->_attrs($attrs));
+        $html .= "\n\t" . '<div class="layui-card-body padding-left-40">' . join("\n", $this->fields);
+        if (count($this->buttons)) {
+            $html .= "\n\n\t\t" . '<div class="hr-line-dashed"></div>';
+            $html .= "\n\t\t" . sprintf('{notempty name="%s.id"}<input type="hidden" value="{%s.id}" name="id">{/notempty}', $this->variableName(), $this->variable);
+            $html .= "\n\t\t" . sprintf('<div class="layui-form-item text-center">%s</div>', "\n\t\t\t" . join("\n\t\t\t", $this->buttons) . "\n\t\t");
+        }
+        $html .= "\n\t\t" . $this->renderSchemaScript();
+        $html .= "\n\t" . '</div>';
+        return $html . "\n</form>" . $this->renderScripts();
     }
 
     /**
-     * 提取当前字段的 _vali 规则.
+     * 获取提交地址.
      */
-    private function extractFieldRules(string $name): array
+    private function resolveAction(): string
     {
-        $rules = [];
-        foreach ($this->rules as $rule => $message) {
-            if (strpos($rule, "{$name}.") === 0) {
-                $rules[$rule] = $message;
-            }
-        }
-        return $rules;
-    }
-
-    /**
-     * 规范组件类型.
-     */
-    private function normalizeType(string $type): string
-    {
-        $type = strtolower(trim($type));
-        return match ($type) {
-            '', 'input' => 'text',
-            'pass' => 'password',
-            'upload-image', 'upload-one-image' => 'image',
-            'upload-video', 'upload-one-video' => 'video',
-            'upload-images', 'upload-mul-image' => 'images',
-            default => $type,
-        };
-    }
-
-    /**
-     * 解析 pattern 对应的后端规则.
-     */
-    private function resolvePatternRule(string $pattern): ?string
-    {
-        $pattern = trim($pattern);
-        if ($pattern === '') {
-            return null;
-        }
-        if (isset(self::PATTERN_RULES[$pattern])) {
-            return self::PATTERN_RULES[$pattern];
-        }
-        if (str_contains($pattern, '|')) {
-            return null;
-        }
-
-        $regex = preg_replace('~(?<!\\\)/~', '\/', $pattern) ?? $pattern;
-        if (!str_starts_with($regex, '^')) {
-            $regex = '^' . $regex;
-        }
-        if (!str_ends_with($regex, '$')) {
-            $regex .= '$';
-        }
-
-        return "regex:/{$regex}/";
-    }
-
-    /**
-     * 解析字段默认值，确保可回填全部输入字段.
-     */
-    private function resolveFieldDefault(array $field)
-    {
-        return $field['type'] === 'checkbox' ? [] : '';
+        return $this->action ?? url()->build();
     }
 
     /**
@@ -1025,44 +1064,5 @@ class FormBuilder
         }
 
         return $html;
-    }
-
-    /**
-     * 获取提交地址.
-     */
-    private function resolveAction(): string
-    {
-        return $this->action ?? url()->build();
-    }
-
-    /**
-     * 生成弹层表单模板
-     */
-    private function _buildFormModal(): string
-    {
-        $attrs = array_merge([
-            'action' => $this->resolveAction(),
-            'method' => 'post',
-            'data-auto' => 'true',
-        ], $this->formAttrs);
-        $attrs = $this->mergeClass($attrs, 'layui-form layui-card');
-        $html = sprintf('<form %s>', $this->_attrs($attrs));
-        $html .= "\n\t" . '<div class="layui-card-body padding-left-40">' . join("\n", $this->fields);
-        if (count($this->buttons)) {
-            $html .= "\n\n\t\t" . '<div class="hr-line-dashed"></div>';
-            $html .= "\n\t\t" . sprintf('{notempty name="%s.id"}<input type="hidden" value="{%s.id}" name="id">{/notempty}', $this->variableName(), $this->variable);
-            $html .= "\n\t\t" . sprintf('<div class="layui-form-item text-center">%s</div>', "\n\t\t\t" . join("\n\t\t\t", $this->buttons) . "\n\t\t");
-        }
-        $html .= "\n\t\t" . $this->renderSchemaScript();
-        $html .= "\n\t" . '</div>';
-        return $html . "\n</form>" . $this->renderScripts();
-    }
-
-    /**
-     * 生成页面表单模板
-     */
-    private function _buildFormPage(): string
-    {
-        return $this->_buildFormModal();
     }
 }
