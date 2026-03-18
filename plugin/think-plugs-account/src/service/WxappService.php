@@ -22,7 +22,7 @@ namespace plugin\account\service;
 
 use plugin\wechat\client\service\WechatService;
 use think\admin\Exception;
-use think\admin\service\Service;
+use think\admin\Service;
 
 /**
  * 微信小程序接入服务

@@ -24,7 +24,7 @@ use plugin\wuma\model\PluginWumaWarehouseOrder;
 use plugin\wuma\model\PluginWumaWarehouseOrderData;
 use plugin\wuma\model\PluginWumaWarehouseOrderDataMins;
 use plugin\wuma\model\PluginWumaWarehouseOrderDataNums;
-use think\admin\service\Service;
+use think\admin\Service;
 use think\db\exception\DataNotFoundException;
 use think\db\exception\DbException;
 use think\db\exception\ModelNotFoundException;

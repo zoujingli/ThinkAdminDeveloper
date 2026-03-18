@@ -24,7 +24,7 @@ use think\admin\contract\StorageInterface;
 use think\admin\contract\StorageUsageTrait;
 use think\admin\Exception;
 use think\admin\extend\HttpClient;
-use think\admin\service\Storage;
+use think\admin\Storage;
 
 /**
  * 七牛云存储支持

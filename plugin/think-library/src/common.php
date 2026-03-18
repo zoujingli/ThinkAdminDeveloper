@@ -29,7 +29,7 @@ use think\admin\service\CacheSession;
 use think\admin\service\PluginService;
 use think\admin\service\RuntimeService;
 use think\admin\service\RuntimeTools;
-use think\admin\service\Storage;
+use think\admin\Storage;
 use think\db\BaseQuery;
 use think\db\Query;
 use think\helper\Str;

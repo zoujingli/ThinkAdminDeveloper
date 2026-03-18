@@ -27,7 +27,7 @@ use plugin\system\service\UserService;
 use think\admin\Controller;
 use think\admin\service\ModuleService;
 use think\admin\service\PluginService;
-use think\admin\service\Storage;
+use think\admin\Storage;
 
 /**
  * 系统参数配置.

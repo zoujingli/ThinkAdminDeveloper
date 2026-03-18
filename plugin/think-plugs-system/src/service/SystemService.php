@@ -29,8 +29,8 @@ use think\admin\model\QueryFactory;
 use think\admin\runtime\SystemContext;
 use think\admin\service\FaviconBuilder;
 use think\admin\service\NodeService;
-use think\admin\service\Service;
-use think\admin\service\Storage;
+use think\admin\Service;
+use think\admin\Storage;
 use think\db\Query;
 use think\Model;
 

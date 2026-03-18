@@ -27,7 +27,7 @@ use think\admin\contract\QueueRuntimeInterface;
 use think\admin\Exception;
 use think\admin\extend\CodeToolkit;
 use think\admin\service\ProcessService;
-use think\admin\service\Service;
+use think\admin\Service;
 use think\Model;
 
 /**

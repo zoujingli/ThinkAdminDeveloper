@@ -25,7 +25,7 @@ use plugin\account\model\PluginAccountAuth;
 use plugin\account\model\PluginAccountBind;
 use plugin\account\service\Account;
 use plugin\account\service\Message;
-use think\admin\service\Storage;
+use think\admin\Storage;
 use think\exception\HttpResponseException;
 
 /**

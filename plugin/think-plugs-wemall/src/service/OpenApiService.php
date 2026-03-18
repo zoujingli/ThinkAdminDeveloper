@@ -23,7 +23,7 @@ namespace plugin\wemall\service;
 use think\admin\Exception;
 use think\admin\extend\HttpClient;
 use think\admin\helper\ValidateHelper;
-use think\admin\service\Service;
+use think\admin\Service;
 use think\App;
 use think\exception\HttpResponseException;
 

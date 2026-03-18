@@ -22,7 +22,7 @@ namespace plugin\helper\service;
 
 use think\admin\extend\CodeToolkit;
 use think\admin\extend\HttpClient;
-use think\admin\service\Service;
+use think\admin\Service;
 
 /**
  * 百度快递 100 物流查询辅助服务。

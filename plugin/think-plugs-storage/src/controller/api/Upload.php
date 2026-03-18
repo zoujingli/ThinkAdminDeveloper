@@ -26,7 +26,7 @@ use plugin\storage\service\StorageConfig;
 use think\admin\Controller;
 use think\admin\helper\QueryHelper;
 use think\admin\runtime\SystemContext;
-use think\admin\service\Storage;
+use think\admin\Storage;
 use think\db\exception\DataNotFoundException;
 use think\db\exception\DbException;
 use think\db\exception\ModelNotFoundException;

@@ -24,7 +24,7 @@ use plugin\storage\service\StorageConfig;
 use think\admin\Controller;
 use think\admin\Exception;
 use think\admin\runtime\SystemContext;
-use think\admin\service\Storage;
+use think\admin\Storage;
 
 /**
  * 存储参数配置.

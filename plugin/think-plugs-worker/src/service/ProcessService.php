@@ -23,7 +23,7 @@ namespace plugin\worker\service;
 use Symfony\Component\Process\Process;
 use think\admin\extend\CodeToolkit;
 use think\admin\service\ModuleService;
-use think\admin\service\Service;
+use think\admin\Service;
 
 /**
  * 基于 Worker 的进程运行时服务。

@@ -32,7 +32,7 @@ use think\admin\runtime\RequestTokenService;
 use think\admin\service\CacheSession;
 use think\admin\service\JwtToken;
 use think\admin\service\NodeService;
-use think\admin\service\Service;
+use think\admin\Service;
 use think\helper\Str;
 use think\Request;
 

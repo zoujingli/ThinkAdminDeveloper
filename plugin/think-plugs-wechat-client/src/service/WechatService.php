@@ -35,7 +35,7 @@ use plugin\storage\service\LocalStorage;
 use think\admin\Exception;
 use think\admin\Library;
 use think\admin\service\JsonRpcHttpClient;
-use think\admin\service\Service;
+use think\admin\Service;
 use think\exception\HttpResponseException;
 use think\Response;
 use WeChat\Exceptions\InvalidResponseException;

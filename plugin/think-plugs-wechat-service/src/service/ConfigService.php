@@ -23,7 +23,7 @@ namespace plugin\wechat\service\service;
 use plugin\wechat\service\model\WechatAuth;
 use think\admin\Exception;
 use think\admin\Model;
-use think\admin\service\Service;
+use think\admin\Service;
 use think\db\exception\DataNotFoundException;
 use think\db\exception\DbException;
 use think\db\exception\ModelNotFoundException;

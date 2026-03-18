@@ -21,7 +21,7 @@ declare(strict_types=1);
 namespace plugin\wechat\service\service;
 
 use plugin\wechat\service\model\WechatAuth;
-use think\admin\service\Service;
+use think\admin\Service;
 use think\db\exception\DataNotFoundException;
 use think\db\exception\DbException;
 use think\db\exception\ModelNotFoundException;

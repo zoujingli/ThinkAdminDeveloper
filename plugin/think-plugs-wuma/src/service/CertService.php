@@ -21,8 +21,8 @@ declare(strict_types=1);
 namespace plugin\wuma\service;
 
 use think\admin\Exception;
-use think\admin\service\Service;
-use think\admin\service\Storage;
+use think\admin\Service;
+use think\admin\Storage;
 
 /**
  * 证书图片生成服务

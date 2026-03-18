@@ -25,7 +25,7 @@ use plugin\wemall\model\PluginWemallHelpQuestion;
 use plugin\wemall\model\PluginWemallHelpQuestionX;
 use think\admin\Exception;
 use think\admin\helper\QueryHelper;
-use think\admin\service\Storage;
+use think\admin\Storage;
 
 /**
  * 用户工单接口.

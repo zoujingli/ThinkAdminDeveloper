@@ -37,7 +37,7 @@ use plugin\wemall\service\UserOrder;
 use plugin\wemall\service\UserUpgrade;
 use think\admin\extend\CodeToolkit;
 use think\admin\helper\QueryHelper;
-use think\admin\service\Storage;
+use think\admin\Storage;
 use think\db\exception\DataNotFoundException;
 use think\db\exception\DbException;
 use think\db\exception\ModelNotFoundException;

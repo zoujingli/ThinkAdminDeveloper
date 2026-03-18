@@ -22,7 +22,7 @@ namespace plugin\system\service;
 
 use plugin\system\model\SystemUser;
 use think\admin\helper\FormBuilder;
-use think\admin\service\Service;
+use think\admin\Service;
 
 class UserService extends Service
 {

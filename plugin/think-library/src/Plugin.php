@@ -21,7 +21,6 @@ declare(strict_types=1);
 namespace think\admin;
 
 use think\admin\service\AppService;
-use think\admin\service\ModuleService;
 use think\admin\service\NodeService;
 use think\App;
 use think\Service;

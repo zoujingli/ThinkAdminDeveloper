@@ -29,7 +29,7 @@ use plugin\wuma\model\PluginWumaWarehouseRelationData;
 use think\admin\Exception;
 use think\admin\extend\CodeToolkit;
 use think\admin\Library;
-use think\admin\service\Service;
+use think\admin\Service;
 use think\db\exception\DataNotFoundException;
 use think\db\exception\DbException;
 use think\db\exception\ModelNotFoundException;

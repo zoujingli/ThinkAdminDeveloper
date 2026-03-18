@@ -24,7 +24,7 @@ use plugin\system\model\SystemMenu;
 use think\admin\extend\ArrayTree;
 use think\admin\service\NodeService;
 use think\admin\service\PluginService;
-use think\admin\service\Service;
+use think\admin\Service;
 use think\db\exception\DataNotFoundException;
 use think\db\exception\DbException;
 use think\db\exception\ModelNotFoundException;

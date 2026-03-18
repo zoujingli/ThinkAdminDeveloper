@@ -27,7 +27,7 @@ use plugin\wemall\model\PluginWemallUserActionCollect;
 use plugin\wemall\model\PluginWemallUserActionComment;
 use plugin\wemall\model\PluginWemallUserActionHistory;
 use think\admin\Exception;
-use think\admin\service\Storage;
+use think\admin\Storage;
 use think\db\exception\DbException;
 
 /**

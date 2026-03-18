@@ -21,7 +21,7 @@ declare(strict_types=1);
 namespace plugin\system\service;
 
 use think\admin\Library;
-use think\admin\service\Service;
+use think\admin\Service;
 
 /**
  * 图形验证码服务

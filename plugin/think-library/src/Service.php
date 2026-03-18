@@ -18,39 +18,43 @@ declare(strict_types=1);
  * +----------------------------------------------------------------------
  */
 
-namespace plugin\wechat\client\service;
+namespace think\admin;
 
-use plugin\wechat\client\model\WechatAuto;
-use think\admin\Exception;
-use think\admin\service\QueueService;
-use think\admin\Service;
+use think\App;
+use think\Container;
 
 /**
- * 关注自动回复服务
- * @class AutoService
+ * 自定义服务基类.
+ * @class Service
  */
-class AutoService extends Service
+abstract class Service
 {
     /**
-     * 注册微信用户推送任务
-     * @throws Exception
+     * 应用实例.
      */
-    public static function register(string $openid)
+    protected App $app;
+
+    /**
+     * Constructor.
+     */
+    public function __construct(App $app)
     {
-        foreach (WechatAuto::mk()->where(['status' => 1])->order('time asc')->cursor() as $vo) {
-            [$name, $time] = ["推送客服消息 {$vo['code']}#{$openid}", static::parseTimeString($vo['time'])];
-            QueueService::register($name, "xadmin:fansmsg {$openid} {$vo['code']}", $time);
-        }
+        $this->app = $app;
+        $this->initialize();
     }
 
     /**
-     * 解析配置时间格式.
+     * 静态实例对象
+     * @param array $var 实例参数
+     * @param bool $new 创建新实例
      */
-    private static function parseTimeString(string $time): int
+    public static function instance(array $var = [], bool $new = false): static
     {
-        if (preg_match('|^.*?(\d{2}).*?(\d{2}).*?(\d{2}).*?$|', $time, $vars)) {
-            return intval($vars[1]) * 3600 * intval($vars[2]) * 60 + intval($vars[3]);
-        }
-        return 0;
+        return Container::getInstance()->make(static::class, $var, $new);
     }
+
+    /**
+     * 初始化服务
+     */
+    protected function initialize() {}
 }
