@@ -17,8 +17,7 @@
   ],
   "autoload": {
     "psr-4": {
-      "app\\": "app/",
-      "plugin\\system\\": "plugin/think-plugs-system/src/"
+      "app\\": "app/"
     }
   },
   "require": {
@@ -44,14 +43,16 @@
   },
   "require-dev": {
     "friendsofphp/php-cs-fixer": "^3.0",
-    "phpunit/phpunit": "^9.5|^10.0"
+    "phpunit/phpunit": "^9.5|^10.0",
+    "phpstan/phpstan": "^2.0"
   },
   "scripts": {
     "post-autoload-dump": [
       "@php think service:discover"
     ],
-    "sync": [
-      "php-cs-fixer fix"
+    "check": [
+      "php-cs-fixer fix",
+      "@composer analyse"
     ],
     "rewrite-model": [
       "@php think xadmin:helper:model --reset",
@@ -73,7 +74,8 @@
     "test": [
       "@test:smoke",
       "@test:unit"
-    ]
+    ],
+    "analyse": "phpstan analyse --memory-limit 2G -l 0 -c phpstan.neon ./app ./config ./plugin"
   },
   "repositories": [
     {
