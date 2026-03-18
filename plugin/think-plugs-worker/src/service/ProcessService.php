@@ -22,7 +22,6 @@ namespace plugin\worker\service;
 
 use Symfony\Component\Process\Process;
 use think\admin\extend\CodeToolkit;
-use think\admin\Library;
 use think\admin\service\ModuleService;
 use think\admin\service\Service;
 

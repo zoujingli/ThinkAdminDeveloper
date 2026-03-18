@@ -60,7 +60,7 @@ class ThinkRequest extends Request
         $this->get = $request->get();
         $this->post = $request->post();
         $this->file = $request->file() ?? [];
-        $this->cookie = $request->cookie();
+        $this->cookie = $this->normalizeCookies($request->cookie());
         $this->header = $headers;
         $this->method = strtoupper($request->method());
         $this->request = $this->post + $this->get;
@@ -86,6 +86,23 @@ class ThinkRequest extends Request
             ->withCookie($this->cookie)
             ->withFiles($this->file)
             ->withServer($server);
+    }
+
+    /**
+     * Workerman 读取 Cookie 时不会自动 urldecode，这里统一还原为 PHP 原生请求语义。
+     *
+     * @param array<string, mixed> $cookies
+     * @return array<string, mixed>
+     */
+    private function normalizeCookies(array $cookies): array
+    {
+        foreach ($cookies as $name => $value) {
+            if (is_string($value)) {
+                $cookies[$name] = rawurldecode($value);
+            }
+        }
+
+        return $cookies;
     }
 
     private function resolveRealIp(array $headers, TcpConnection $connection): string

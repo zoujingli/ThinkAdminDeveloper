@@ -61,7 +61,22 @@ class ThinkCookie extends Cookie
         }
         $isWorkerResponse = $this->response instanceof Response;
         if ($isWorkerResponse || !empty($this->config['setcookie'])) {
-            $this->response->cookie($name, $value, $expire ?: null, $path, $domain, $secure, $httponly, $samesite);
+            $maxAge = $expire > 0 ? max(0, $expire - time()) : null;
+            $this->response->cookie($name, $value, $maxAge, $path, $domain, $secure, $httponly, $samesite);
+
+            if (worker_auth_debug_enabled() && in_array($name, ['system_access_token', 'account_access_token'], true)) {
+                worker_auth_debug('worker.cookie.save', [
+                    'name' => $name,
+                    'expire_at' => $expire,
+                    'max_age' => $maxAge,
+                    'path' => $path,
+                    'domain' => $domain,
+                    'secure' => $secure,
+                    'httponly' => $httponly,
+                    'samesite' => $samesite,
+                    'value' => worker_auth_token_snapshot($value),
+                ]);
+            }
         }
     }
 }

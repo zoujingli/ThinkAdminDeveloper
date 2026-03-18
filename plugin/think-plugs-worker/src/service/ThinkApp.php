@@ -60,6 +60,16 @@ class ThinkApp extends App
             $response = $this->marshalResponse($response, $thinkResponse, ob_get_clean());
             $this->cookie->save();
 
+            if (worker_auth_should_debug($request->path(), $this->request->cookie(), $this->request->header())) {
+                worker_auth_debug('worker.response.out', [
+                    'method' => strtoupper($request->method()),
+                    'path' => $request->path(),
+                    'status' => $response->getStatusCode(),
+                    'location' => $response->getHeader('Location'),
+                    'set_cookie' => $response->getHeader('Set-Cookie'),
+                ]);
+            }
+
             if ($this->shouldKeepAlive($request)) {
                 $connection->send($response);
             } else {

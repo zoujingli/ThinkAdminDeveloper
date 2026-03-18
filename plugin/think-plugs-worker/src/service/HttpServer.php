@@ -119,6 +119,23 @@ class HttpServer extends Server
             return;
         }
 
+        $cookies = $request->cookie();
+        $headers = $request->header();
+        $shouldDebug = worker_auth_should_debug($request->path(), is_array($cookies) ? $cookies : [], is_array($headers) ? $headers : []);
+        if ($shouldDebug) {
+            worker_auth_trace_id(substr(md5(microtime(true) . $request->path() . getmypid()), 0, 12));
+            worker_auth_debug('worker.request.in', [
+                'method' => strtoupper($request->method()),
+                'path' => $request->path(),
+                'uri' => $request->uri(),
+                'host' => $request->host(),
+                'remote_ip' => $connection->getRemoteIp(),
+                'cookies' => array_keys(is_array($cookies) ? $cookies : []),
+                'system_cookie' => worker_auth_token_snapshot(strval($cookies['system_access_token'] ?? '')),
+                'authorization' => worker_auth_token_snapshot(strval($headers['authorization'] ?? $headers['Authorization'] ?? '')),
+            ]);
+        }
+
         if (is_callable($this->callable)) {
             $result = call_user_func($this->callable, $connection, $request);
             if ($result instanceof WorkerResponse) {
