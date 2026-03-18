@@ -64,5 +64,6 @@ class Build extends Command
         );
 
         $this->output->writeln("PHAR 打包完成: {$target}");
+        $this->output->writeln('<comment>若运行时出现内存不足，请使用: php -d memory_limit=256M ' . basename($target) . ' [命令]</comment>');
     }
 }

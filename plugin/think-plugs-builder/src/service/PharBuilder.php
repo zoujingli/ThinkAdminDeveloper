@@ -31,11 +31,11 @@ final class PharBuilder
     /** @var string[] */
     private array $includeFiles = ['think', 'composer.json', 'composer.lock', '.env.example'];
 
-    /** @var string[] */
-    private array $excludeNames = ['.git', '.github', '.idea', '.vscode', 'build', 'docs', 'runtime', 'safefile', 'tests'];
+    /** @var string[] 按目录名排除，仅用于项目根及非 vendor 路径，避免误排除 vendor 内同名目录（如 think-library/src/runtime） */
+    private array $excludeNames = ['.git', '.github', '.idea', '.vscode', 'build', 'docs', 'safefile', 'tests'];
 
-    /** @var string[] */
-    private array $excludePaths = ['.env', 'public/upload'];
+    /** @var string[] 按路径前缀排除；含项目根 runtime，不含 vendor 内 runtime */
+    private array $excludePaths = ['.env', 'public/upload', 'runtime'];
 
     public function __construct(
         private readonly App $app,
@@ -317,28 +317,22 @@ final class PharBuilder
     {
         $patches = [
             'vendor/topthink/framework/src/think/App.php' => [
-                '$this->thinkPath   = realpath(dirname(__DIR__)) . DIRECTORY_SEPARATOR;'
-                => '$this->thinkPath   = (realpath(dirname(__DIR__)) ?: dirname(__DIR__)) . DIRECTORY_SEPARATOR;',
-                '$this->runtimePath = $this->rootPath . \'runtime\' . DIRECTORY_SEPARATOR;'
-                => '$this->runtimePath = defined(\'THINK_PLUGS_INSTALL_ROOT\') && is_string(THINK_PLUGS_INSTALL_ROOT) && THINK_PLUGS_INSTALL_ROOT !== \'\' ? rtrim(THINK_PLUGS_INSTALL_ROOT, \'\\\\/\') . DIRECTORY_SEPARATOR . \'runtime\' . DIRECTORY_SEPARATOR : $this->rootPath . \'runtime\' . DIRECTORY_SEPARATOR;',
-                "        if (is_dir(\$configPath)) {\n            \$files = glob(\$configPath . '*' . \$this->configExt);\n        }\n"
-                => "        if (is_dir(\$configPath)) {\n            foreach (new \\DirectoryIterator(\$configPath) as \$item) {\n                if (\$item->isFile() && \$item->getExtension() === ltrim(\$this->configExt, '.')) {\n                    \$files[] = \$item->getPathname();\n                }\n            }\n        }\n",
+                '$this->thinkPath   = realpath(dirname(__DIR__)) . DIRECTORY_SEPARATOR;' => '$this->thinkPath   = (realpath(dirname(__DIR__)) ?: dirname(__DIR__)) . DIRECTORY_SEPARATOR;',
+                '$this->rootPath = $this->getRootPath();' => '$this->rootPath = runpath();',
+                '$this->runtimePath = $this->rootPath . \'runtime\' . DIRECTORY_SEPARATOR;' => '$this->runtimePath = rtrim(runpath(\'runtime\'), \'\\\/\') . DIRECTORY_SEPARATOR;',
+                "        if (is_dir(\$configPath)) {\n            \$files = glob(\$configPath . '*' . \$this->configExt);\n        }\n" => "        if (is_dir(\$configPath)) {\n            foreach (new \\DirectoryIterator(\$configPath) as \$item) {\n                if (\$item->isFile() && \$item->getExtension() === ltrim(\$this->configExt, '.')) {\n                    \$files[] = \$item->getPathname();\n                }\n            }\n        }\n",
             ],
             'vendor/topthink/framework/src/think/Http.php' => [
-                "        if (is_dir(\$routePath)) {\n            \$files = glob(\$routePath . '*.php');\n            foreach (\$files as \$file) {\n                include \$file;\n            }\n        }\n"
-                => "        if (is_dir(\$routePath)) {\n            foreach (new \\DirectoryIterator(\$routePath) as \$item) {\n                if (\$item->isFile() && \$item->getExtension() === 'php') {\n                    include \$item->getPathname();\n                }\n            }\n        }\n",
+                "        if (is_dir(\$routePath)) {\n            \$files = glob(\$routePath . '*.php');\n            foreach (\$files as \$file) {\n                include \$file;\n            }\n        }\n" => "        if (is_dir(\$routePath)) {\n            foreach (new \\DirectoryIterator(\$routePath) as \$item) {\n                if (\$item->isFile() && \$item->getExtension() === 'php') {\n                    include \$item->getPathname();\n                }\n            }\n        }\n",
             ],
             'vendor/topthink/framework/src/think/Lang.php' => [
-                "        \$files = glob(\$this->app->getAppPath() . 'lang' . DIRECTORY_SEPARATOR . \$langset . '.*');\n        \$this->load(\$files);\n"
-                => "        \$files = [];\n        \$langPath = \$this->app->getAppPath() . 'lang' . DIRECTORY_SEPARATOR;\n        if (is_dir(\$langPath)) {\n            foreach (new \\DirectoryIterator(\$langPath) as \$item) {\n                if (\$item->isFile() && str_starts_with(\$item->getFilename(), \$langset . '.')) {\n                    \$files[] = \$item->getPathname();\n                }\n            }\n        }\n        \$this->load(\$files);\n",
+                "        \$files = glob(\$this->app->getAppPath() . 'lang' . DIRECTORY_SEPARATOR . \$langset . '.*');\n        \$this->load(\$files);\n" => "        \$files = [];\n        \$langPath = \$this->app->getAppPath() . 'lang' . DIRECTORY_SEPARATOR;\n        if (is_dir(\$langPath)) {\n            foreach (new \\DirectoryIterator(\$langPath) as \$item) {\n                if (\$item->isFile() && str_starts_with(\$item->getFilename(), \$langset . '.')) {\n                    \$files[] = \$item->getPathname();\n                }\n            }\n        }\n        \$this->load(\$files);\n",
             ],
             'vendor/topthink/framework/src/think/route/Domain.php' => [
-                "        if (is_dir(\$routePath)) {\n            \$dirs = glob(\$routePath . '*', GLOB_ONLYDIR);\n            foreach (\$dirs as \$dir) {\n"
-                => "        if (is_dir(\$routePath)) {\n            \$dirs = [];\n            foreach (new \\DirectoryIterator(\$routePath) as \$item) {\n                if (\$item->isDir() && !\$item->isDot()) {\n                    \$dirs[] = \$item->getPathname();\n                }\n            }\n            foreach (\$dirs as \$dir) {\n",
+                "        if (is_dir(\$routePath)) {\n            \$dirs = glob(\$routePath . '*', GLOB_ONLYDIR);\n            foreach (\$dirs as \$dir) {\n" => "        if (is_dir(\$routePath)) {\n            \$dirs = [];\n            foreach (new \\DirectoryIterator(\$routePath) as \$item) {\n                if (\$item->isDir() && !\$item->isDot()) {\n                    \$dirs[] = \$item->getPathname();\n                }\n            }\n            foreach (\$dirs as \$dir) {\n",
             ],
             'vendor/topthink/framework/src/think/route/RuleGroup.php' => [
-                "        if (is_dir(\$routePath)) {\n            // 动态加载分组路由\n            \$files = glob(\$routePath . '*.php');\n            foreach (\$files as \$file) {\n                include_once \$file;\n            }\n\n            // 自动扫描下级分组\n            \$dirs = \$this->config('route_auto_group') ? glob(\$routePath . '*', GLOB_ONLYDIR) : [];\n            foreach (\$dirs as \$dir) {\n"
-                => "        if (is_dir(\$routePath)) {\n            // 动态加载分组路由\n            \$files = [];\n            \$dirs = [];\n            foreach (new \\DirectoryIterator(\$routePath) as \$item) {\n                if (\$item->isFile() && \$item->getExtension() === 'php') {\n                    \$files[] = \$item->getPathname();\n                }\n                if (\$item->isDir() && !\$item->isDot()) {\n                    \$dirs[] = \$item->getPathname();\n                }\n            }\n            foreach (\$files as \$file) {\n                include_once \$file;\n            }\n\n            // 自动扫描下级分组\n            if (!\$this->config('route_auto_group')) {\n                \$dirs = [];\n            }\n            foreach (\$dirs as \$dir) {\n",
+                "        if (is_dir(\$routePath)) {\n            // 动态加载分组路由\n            \$files = glob(\$routePath . '*.php');\n            foreach (\$files as \$file) {\n                include_once \$file;\n            }\n\n            // 自动扫描下级分组\n            \$dirs = \$this->config('route_auto_group') ? glob(\$routePath . '*', GLOB_ONLYDIR) : [];\n            foreach (\$dirs as \$dir) {\n" => "        if (is_dir(\$routePath)) {\n            // 动态加载分组路由\n            \$files = [];\n            \$dirs = [];\n            foreach (new \\DirectoryIterator(\$routePath) as \$item) {\n                if (\$item->isFile() && \$item->getExtension() === 'php') {\n                    \$files[] = \$item->getPathname();\n                }\n                if (\$item->isDir() && !\$item->isDot()) {\n                    \$dirs[] = \$item->getPathname();\n                }\n            }\n            foreach (\$files as \$file) {\n                include_once \$file;\n            }\n\n            // 自动扫描下级分组\n            if (!\$this->config('route_auto_group')) {\n                \$dirs = [];\n            }\n            foreach (\$dirs as \$dir) {\n",
             ],
         ];
 

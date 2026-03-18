@@ -67,6 +67,22 @@ declare(strict_types=1);
     if (\$archive === '') {
         return;
     }
+    // PHAR 体积较大时，加载阶段即可能超过 PHP 默认 128M，若仍为低限制则提示
+    if (PHP_SAPI === 'cli') {
+        \$ml = ini_get('memory_limit');
+        \$n = (int) \$ml;
+        \$u = \$ml !== '' && \$ml !== '-1' ? strtolower(ltrim(trim(\$ml), '0123456789')) : '';
+        if (str_starts_with(\$u, 'g')) {
+            \$n *= 1024 * 1024 * 1024;
+        } elseif (str_starts_with(\$u, 'm')) {
+            \$n *= 1024 * 1024;
+        } elseif (str_starts_with(\$u, 'k')) {
+            \$n *= 1024;
+        }
+        if (\$n > 0 && \$n < 256 * 1024 * 1024) {
+            fwrite(STDERR, 'Warning: memory_limit may be too low for this PHAR. Run: php -d memory_limit=256M ' . basename(\$archive) . PHP_EOL);
+        }
+    }
 
     \$installRoot = dirname(\$archive);
     \$installRoot = rtrim(\$installRoot, '\\\\/') . DIRECTORY_SEPARATOR;
@@ -75,9 +91,6 @@ declare(strict_types=1);
     \$mountFiles = {$exportMountFiles};
     \$mountDirs = {$exportMountDirs};
 
-    defined('THINK_PLUGS_PHAR_ENTRY') || define('THINK_PLUGS_PHAR_ENTRY', \$archive);
-    defined('THINK_PLUGS_INSTALL_ROOT') || define('THINK_PLUGS_INSTALL_ROOT', \$installRoot);
-    defined('THINK_PLUGS_PUBLIC_ROOT') || define('THINK_PLUGS_PUBLIC_ROOT', \$installRoot . 'public' . DIRECTORY_SEPARATOR);
     chdir(\$installRoot);
 
     \$normalize = static function (string \$path) use (\$installRoot): string {
