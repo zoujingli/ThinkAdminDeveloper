@@ -7,6 +7,8 @@
 - ThinkAdmin `8.x`
 - ThinkPHP `8.1+`
 - PHP `8.1+`
+- PHPStan `2.0+`（开发工具）
+- PHP-CS-Fixer `3.0+`（代码风格）
 
 ## 详细描述
 
@@ -157,6 +159,36 @@ flowchart TD
 - `app` 只保留单应用入口
 - 实际源码只维护在 `plugin/*/src`
 
+## 开发工具
+
+### PHPStan 静态代码分析
+
+项目已集成 PHPStan 2.0，用于代码质量检查和静态分析。
+
+```bash
+# 运行代码分析
+composer analyse
+
+# 分析结果无错误时输出：[OK] No errors
+```
+
+配置说明：
+
+- 配置文件：`phpstan.neon`
+- 检查级别：`level 0`（最宽松，可逐步提升）
+- 检查范围：`app/`, `config/`, `plugin/`
+- 已配置 ThinkPHP 框架函数兼容性规则
+- 排除目录：`runtime/`, `vendor/`, `tests/`
+
+### 代码风格
+
+使用 PHP-CS-Fixer 统一代码风格：
+
+```bash
+# 自动修复代码风格
+composer sync
+```
+
 ## 安装与初始化
 
 ```bash
@@ -185,7 +217,7 @@ php think xadmin:worker start http -d
 
 默认访问地址：
 
-- `http://127.0.0.1:2346`
+- `http://127.0.0.1:2346`（可通过 `config/worker.php` 修改端口）
 
 ## 常用命令
 
@@ -201,6 +233,12 @@ php think xadmin:worker start queue -d
 
 # 查看运行状态
 php think xadmin:worker status all
+
+# 代码质量检查
+composer analyse
+
+# 代码风格修复
+composer sync
 
 # 生成插件迁移脚本
 php think xadmin:helper:migrate
