@@ -108,7 +108,7 @@ class MultAccess
             return $this->applyPlugin($plugin, false);
         }
 
-        AppService::activateEntry();
+        RequestContext::instance()->setEntryType(RequestContext::ENTRY_WEB);
         return $this->setMultiApp(AppService::singleCode(), true);
     }
 
@@ -120,7 +120,7 @@ class MultAccess
     private function applyPlugin(array $plugin, bool $stripPrefix): bool
     {
         [$this->appPath, $this->appSpace] = [strval($plugin['path'] ?? ''), strval($plugin['space'] ?? '')];
-        AppService::activateEntry(strval($plugin['entry'] ?? RequestContext::ENTRY_WEB));
+        RequestContext::instance()->setEntryType(strval($plugin['entry'] ?? RequestContext::ENTRY_WEB));
 
         $prefix = trim(strval($plugin['matched_prefix'] ?? ''), '\/');
         if ($stripPrefix && $prefix !== '') {
@@ -144,7 +144,7 @@ class MultAccess
         }
 
         $app = AppService::get($appName);
-        ($app['type'] ?? '') === 'plugin' ? AppService::activate($appName, $prefix) : AppService::activate();
+        ($app['type'] ?? '') === 'plugin' ? AppService::activatePlugin($appName, $prefix) : AppService::activatePlugin();
 
         if (empty($this->appPath) && $app) {
             [$this->appPath, $this->appSpace] = [strval($app['path'] ?? ''), strval($app['space'] ?? '')];
@@ -217,7 +217,7 @@ class MultAccess
     private function applyLocal(array $local, bool $stripPrefix): bool
     {
         [$this->appPath, $this->appSpace] = [strval($local['path'] ?? ''), strval($local['space'] ?? '')];
-        AppService::activateEntry(strval($local['entry'] ?? RequestContext::ENTRY_WEB));
+        RequestContext::instance()->setEntryType(strval($local['entry'] ?? RequestContext::ENTRY_WEB));
 
         $prefix = trim(strval($local['matched_prefix'] ?? ''), '\/');
         if ($stripPrefix && $prefix !== '') {

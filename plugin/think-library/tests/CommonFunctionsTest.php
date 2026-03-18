@@ -76,7 +76,7 @@ class CommonFunctionsTest extends TestCase
     {
         $this->assertSame('/system/login/index.html', sysuri('/system/login/index'));
 
-        AppService::activate('system', 'system');
+        AppService::activatePlugin('system', 'system');
 
         $this->assertSame('/api/system/upload/file.html', apiuri('upload/file'));
         $this->assertSame('/api/system/upload/file.html', apiuri('/api/system/upload/file'));

@@ -161,7 +161,7 @@ class Auth extends Controller
             $current = $plugin;
             if (strpos(strval($node['node'] ?? ''), '/') === false) {
                 $current = strval($node['node'] ?? '');
-                if ($pluginInfo = AppService::resolve($current, true)) {
+                if ($pluginInfo = AppService::resolvePlugin($current, true)) {
                     $node['title'] = lang(strval($pluginInfo['name'] ?? $node['title']));
                 } elseif ($app = AppService::get($current)) {
                     $node['title'] = lang(strval($app['name'] ?? $node['title']));

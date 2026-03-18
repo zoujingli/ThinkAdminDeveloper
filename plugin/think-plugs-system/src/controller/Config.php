@@ -66,8 +66,8 @@ class Config extends Controller
         $this->plugins = AppService::all(true);
         $this->issuper = SystemAuthService::isSuper();
         $this->systemid = AppService::getRunVar('uni');
-        $this->framework = AppService::getLibrarys('topthink/framework');
-        $this->thinkadmin = AppService::getLibrarys('zoujingli/think-library');
+        $this->framework = AppService::getPluginLibrarys('topthink/framework');
+        $this->thinkadmin = AppService::getPluginLibrarys('zoujingli/think-library');
         if (SystemAuthService::isSuper() && UserService::verifyPassword('admin', strval(SystemAuthService::getUser('password', '')))) {
             $url = url('system/index/pass', ['id' => SystemAuthService::getUserId()]);
             $this->showErrorMessage = lang("超级管理员账号的密码未修改，建议立即<a data-modal='%s'>修改密码</a>！", [$url]);

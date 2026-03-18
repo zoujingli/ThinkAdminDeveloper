@@ -119,7 +119,7 @@ class AppService extends Service
             return $apps;
         }
 
-        $apps = array_merge(self::local($force), self::plugins($force));
+        $apps = array_merge(self::local($force), self::allPlugins($force));
         ksort($apps);
         return sysvar(self::CACHE_APPS, $apps);
     }
@@ -612,113 +612,7 @@ class AppService extends Service
         return RequestContext::instance()->pluginCode();
     }
 
-    /**
-     * 获取插件应用定义（兼容旧版 plugins 方法）。
-     *
-     * @return array<string, array<string, string>>
-     */
-    public static function plugins(bool $force = false): array
-    {
-        return self::allPlugins(false, $force);
-    }
 
-    /**
-     * 获取当前请求插件编码（兼容旧版 currentCode）。
-     */
-    public static function currentCode(): string
-    {
-        return RequestContext::instance()->pluginCode();
-    }
-
-    /**
-     * 获取当前请求入口类型（兼容旧版 currentEntry）。
-     */
-    public static function currentEntry(): string
-    {
-        return RequestContext::instance()->entryType();
-    }
-
-    /**
-     * 设置当前请求入口类型（兼容旧版 activateEntry）。
-     */
-    public static function activateEntry(string $entryType = RequestContext::ENTRY_WEB): void
-    {
-        RequestContext::instance()->setEntryType($entryType);
-    }
-
-    /**
-     * 激活插件（兼容旧版 activate 方法）。
-     * @param null|array|string $plugin 插件编码或定义
-     * @param string $prefix 当前请求前缀
-     */
-    public static function activate($plugin = null, string $prefix = ''): ?array
-    {
-        return self::activatePlugin($plugin, $prefix);
-    }
-
-    /**
-     * 解析插件定义，支持插件编码、别名、前缀、服务类或定义数组（兼容旧版 resolve）。
-     * @param null|array|string $plugin 插件编码、服务类或定义
-     * @param bool $append 关联安装信息
-     * @param bool $force 强制刷新
-     */
-    public static function resolve($plugin, bool $append = false, bool $force = false): ?array
-    {
-        if (is_array($plugin)) {
-            return $plugin;
-        }
-
-        $name = trim(strval($plugin));
-        if ($name === '') {
-            return null;
-        }
-
-        if (($current = self::resolvePlugin($name, $append, $force)) !== null) {
-            return $current;
-        }
-
-        foreach (self::allPlugins($append, $force) as $item) {
-            if (($item['service'] ?? '') === $name) {
-                return $item;
-            }
-        }
-
-        return null;
-    }
-
-    /**
-     * 获取插件定义（兼容旧版 get 方法）。
-     * @param null|array|string $plugin 插件编码或定义
-     * @param bool $append 关联安装信息
-     * @param bool $force 强制刷新
-     */
-    public static function get($plugin = null, bool $append = false, bool $force = false): ?array
-    {
-        if (is_null($plugin)) {
-            return self::allPlugins($append, $force);
-        }
-        
-        if (is_array($plugin)) {
-            return $plugin;
-        }
-
-        $name = trim(strval($plugin));
-        if ($name === '') {
-            return null;
-        }
-
-        if (($current = self::resolvePlugin($name, $append, $force)) !== null) {
-            return $current;
-        }
-
-        foreach (self::allPlugins($append, $force) as $item) {
-            if (($item['service'] ?? '') === $name) {
-                return $item;
-            }
-        }
-
-        return null;
-    }
 
     /**
      * 获取插件菜单定义。
@@ -797,7 +691,7 @@ class AppService extends Service
             return '#';
         }
 
-        if (function_exists('plguri') && self::currentCode() !== '') {
+        if (function_exists('plguri') && self::currentPluginCode() !== '') {
             return plguri($node);
         }
 
@@ -810,7 +704,7 @@ class AppService extends Service
      */
     public static function getVersion(): string
     {
-        $library = self::getLibrarys('zoujingli/think-library');
+        $library = self::getPluginLibrarys('zoujingli/think-library');
         return trim($library['version'] ?? 'v8.0.0', 'v');
     }
 
@@ -845,16 +739,7 @@ class AppService extends Service
         return '';
     }
 
-    /**
-     * 获取插件包版本信息（兼容旧版 getLibrarys）。
-     * @param ?string $package 包名
-     * @param bool $force 强制刷新
-     * @return array|mixed
-     */
-    public static function getLibrarys(?string $package = null, bool $force = false)
-    {
-        return self::getPluginLibrarys($package, $force);
-    }
+
 
     /**
      * 标准化应用定义.

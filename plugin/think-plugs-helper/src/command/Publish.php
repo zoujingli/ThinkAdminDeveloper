@@ -73,7 +73,7 @@ class Publish extends Command
     private function plugin(): self
     {
         $force = boolval($this->input->getOption('force'));
-        $plugins = AppService::plugins();
+        $plugins = AppService::allPlugins();
         $migrationSources = [];
 
         foreach (AppService::local() as $appName => $app) {

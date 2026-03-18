@@ -200,7 +200,7 @@ if (!function_exists('apiuri')) {
         }
 
         $attrs = $url === '' ? [] : array_values(array_filter(explode('/', trim($url, '/')), 'strlen'));
-        $module = AppService::currentCode() ?: (Library::$sapp->http->getName() ?: AppService::singleCode());
+        $module = RequestContext::instance()->pluginCode() ?: (Library::$sapp->http->getName() ?: AppService::singleCode());
         $controller = Library::$sapp->request->controller();
         $action = Library::$sapp->request->action(true);
 
