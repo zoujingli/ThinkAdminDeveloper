@@ -20,8 +20,6 @@ declare(strict_types=1);
 
 namespace think\admin\middleware;
 
-use Closure;
-use SplFileInfo;
 use think\admin\extend\FileTools;
 use think\admin\Library;
 use think\admin\route\Route as AdminRoute;
@@ -63,7 +61,7 @@ class MultAccess
     /**
      * 多应用解析.
      */
-    public function handle(Request $request, Closure $next): Response
+    public function handle(Request $request, \Closure $next): Response
     {
         [$this->appPath, $this->appSpace] = ['', ''];
         if (!$this->parseMultiApp()) {
@@ -180,7 +178,7 @@ class MultAccess
             Library::load($file);
         }
 
-        FileTools::find($appPath . 'config', 1, function (SplFileInfo $info) use ($ext, &$fmaps) {
+        FileTools::find($appPath . 'config', 1, function (\SplFileInfo $info) use ($ext, &$fmaps) {
             if ($info->isFile() && strtolower(".{$info->getExtension()}") === $ext) {
                 $name = $info->getBasename($ext);
                 $fmaps[] = $name;

@@ -78,11 +78,6 @@ trait StorageUsageTrait
     }
 
     /**
-     * 自定义初始化方法.
-     */
-    protected function init() {}
-
-    /**
      * 获取对象实例.
      * @return static
      */
@@ -91,6 +86,11 @@ trait StorageUsageTrait
         /* @var \think\admin\contract\StorageInterface */
         return Container::getInstance()->make(static::class);
     }
+
+    /**
+     * 自定义初始化方法.
+     */
+    protected function init() {}
 
     /**
      * 兼容无全局语言函数的上下文.

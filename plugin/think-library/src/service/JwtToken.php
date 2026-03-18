@@ -118,29 +118,6 @@ class JwtToken
     }
 
     /**
-     * 拆分 JWT 标准 claim 与业务扩展数据。
-     */
-    private static function splitClaims(array $data): array
-    {
-        $claims = ['iat' => time()];
-        foreach ($data as $k => $v) {
-            if (in_array($k, self::CLAIM_FIELDS, true)) {
-                $claims[$k] = $v;
-                unset($data[$k]);
-            }
-        }
-        return [$claims, $data];
-    }
-
-    /**
-     * 生成数据签名。
-     */
-    private static function withSign(string $input, string $alg = 'HS256', ?string $key = null): string
-    {
-        return CodeToolkit::enSafe64(hash_hmac(self::SIGN_TYPES[$alg], $input, self::jwtkey($key), true));
-    }
-
-    /**
      * 验证 token 是否有效，默认验证 exp、nbf、iat 时间。
      *
      * @throws Exception
@@ -164,6 +141,46 @@ class JwtToken
             unset($payload['enc']);
         }
         return self::$input = array_merge($payload, $extra);
+    }
+
+    /**
+     * 输出模板变量。
+     * 这是旧接口能力，仍然保留在这里，避免影响现有 API 控制器。
+     */
+    public static function fetch(Controller $class, array $vars = [])
+    {
+        $ignore = array_keys(get_class_vars(Controller::class));
+        foreach ($class as $name => $value) {
+            if (!in_array($name, $ignore, true)) {
+                if (is_array($value) || is_numeric($value) || is_string($value) || is_bool($value) || is_null($value)) {
+                    $vars[$name] = $value;
+                }
+            }
+        }
+        $class->success('获取变量成功！', $vars);
+    }
+
+    /**
+     * 拆分 JWT 标准 claim 与业务扩展数据。
+     */
+    private static function splitClaims(array $data): array
+    {
+        $claims = ['iat' => time()];
+        foreach ($data as $k => $v) {
+            if (in_array($k, self::CLAIM_FIELDS, true)) {
+                $claims[$k] = $v;
+                unset($data[$k]);
+            }
+        }
+        return [$claims, $data];
+    }
+
+    /**
+     * 生成数据签名。
+     */
+    private static function withSign(string $input, string $alg = 'HS256', ?string $key = null): string
+    {
+        return CodeToolkit::enSafe64(hash_hmac(self::SIGN_TYPES[$alg], $input, self::jwtkey($key), true));
     }
 
     /**
@@ -205,22 +222,5 @@ class JwtToken
         if (isset($payload['nbf']) && $payload['nbf'] > $time) {
             throw new Exception('不接收处理该TOKEN', 0, $payload);
         }
-    }
-
-    /**
-     * 输出模板变量。
-     * 这是旧接口能力，仍然保留在这里，避免影响现有 API 控制器。
-     */
-    public static function fetch(Controller $class, array $vars = [])
-    {
-        $ignore = array_keys(get_class_vars(Controller::class));
-        foreach ($class as $name => $value) {
-            if (!in_array($name, $ignore, true)) {
-                if (is_array($value) || is_numeric($value) || is_string($value) || is_bool($value) || is_null($value)) {
-                    $vars[$name] = $value;
-                }
-            }
-        }
-        $class->success('获取变量成功！', $vars);
     }
 }

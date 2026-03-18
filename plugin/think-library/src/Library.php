@@ -20,9 +20,6 @@ declare(strict_types=1);
 
 namespace think\admin;
 
-use Closure;
-use Error;
-use SplFileInfo;
 use think\admin\extend\FileTools;
 use think\admin\middleware\MultAccess;
 use think\admin\runtime\RequestContext;
@@ -33,7 +30,6 @@ use think\exception\HttpResponseException;
 use think\Request;
 use think\Response;
 use think\Service;
-use Throwable;
 
 /**
  * 模块注册服务
@@ -97,7 +93,7 @@ class Library extends Service
     {
         // 动态加载全局配置
         [$dir, $ext] = [$this->app->getBasePath(), $this->app->getConfigExt()];
-        FileTools::find($dir, 2, function (SplFileInfo $info) use ($ext) {
+        FileTools::find($dir, 2, function (\SplFileInfo $info) use ($ext) {
             $info->isFile() && $info->getBasename() === "sys{$ext}" && Library::load($info->getPathname());
         });
         if (is_file($file = "{$dir}common{$ext}")) {
@@ -116,7 +112,7 @@ class Library extends Service
         // 终端 HTTP 访问时特殊处理
         if (!$this->app->runningInConsole()) {
             // 动态注释 CORS 跨域处理
-            $this->app->middleware->add(function (Request $request, Closure $next): Response {
+            $this->app->middleware->add(function (Request $request, \Closure $next): Response {
                 $header = ['X-Frame-Options' => $this->app->config->get('app.cors_frame') ?: 'sameorigin'];
                 // HTTP.CORS 跨域规则配置
                 if ($this->app->config->get('app.cors_on', true) && ($origin = $request->header('origin', '-')) !== '-') {
@@ -155,7 +151,7 @@ class Library extends Service
     {
         try {
             return include $file;
-        } catch (Error|Throwable $error) {
+        } catch (\Error|\Throwable $error) {
             trace_file($error);
             throw new HttpException(500, $error->getMessage());
         }

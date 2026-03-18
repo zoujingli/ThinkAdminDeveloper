@@ -20,7 +20,6 @@ declare(strict_types=1);
 
 namespace think\admin;
 
-use stdClass;
 use think\admin\helper\DeleteHelper;
 use think\admin\helper\FormHelper;
 use think\admin\helper\QueryHelper;
@@ -43,7 +42,7 @@ use think\Request;
  * 标准控制器基类.
  * @class Controller
  */
-class Controller extends stdClass
+class Controller extends \stdClass
 {
     /**
      * 应用容器.
@@ -100,7 +99,7 @@ class Controller extends stdClass
     public function success($info, $data = '{-null-}', $code = 1): void
     {
         if ($data === '{-null-}') {
-            $data = new stdClass();
+            $data = new \stdClass();
         }
         $result = ['code' => $code, 'info' => is_string($info) ? lang($info) : $info, 'data' => $data];
         if (JwtToken::isRejwt()) {
@@ -111,11 +110,6 @@ class Controller extends stdClass
         }
         throw new HttpResponseException(json($result));
     }
-
-    /**
-     * 控制器初始化.
-     */
-    protected function initialize() {}
 
     /**
      * URL重定向.
@@ -180,6 +174,11 @@ class Controller extends stdClass
         }
         return true;
     }
+
+    /**
+     * 控制器初始化.
+     */
+    protected function initialize() {}
 
     /**
      * 快捷查询逻辑器.

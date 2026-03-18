@@ -26,7 +26,6 @@ use think\db\BaseQuery;
 use think\db\Mongo;
 use think\db\Query;
 use think\model\concern\SoftDelete;
-use Throwable;
 
 /**
  * 基础模型类.
@@ -72,93 +71,6 @@ abstract class Model extends \think\Model
     }
 
     /**
-     * 按真实表结构推断当前模型的软删配置。
-     */
-    protected function resolveSoftDeleteOptions(): void
-    {
-        if (!in_array(SoftDelete::class, $this->allTraits(), true)) {
-            return;
-        }
-
-        $field = $this->getOption('deleteTime', 'delete_time');
-        if ($field === false) {
-            return;
-        }
-
-        try {
-            $fields = array_keys((array)$this->getFields());
-        } catch (Throwable $exception) {
-            return;
-        }
-
-        if (in_array(strval($field), $fields, true)) {
-            return;
-        }
-
-        $options = [];
-        foreach (['delete_time', 'deleted_time', 'deleted_at'] as $name) {
-            if (in_array($name, $fields, true)) {
-                $options['deleteTime'] = $name;
-                break;
-            }
-        }
-
-        if (empty($options) && in_array('deleted', $fields, true)) {
-            $options['deleteTime'] = 'deleted';
-            $options['defaultSoftDelete'] = 0;
-        }
-
-        if (empty($options)) {
-            $options['deleteTime'] = false;
-        }
-
-        foreach ($options as $name => $value) {
-            $this->setOption($name, $value);
-        }
-    }
-
-    /**
-     * 收集当前模型及父类声明的全部 Trait。
-     * @return array<int, string>
-     */
-    private function allTraits(): array
-    {
-        $traits = [];
-        foreach ([static::class, ...class_parents(static::class)] as $class) {
-            $traits = array_merge($traits, class_uses($class) ?: []);
-        }
-
-        return array_values(array_unique($traits));
-    }
-
-    /**
-     * 为软删模型统一追加 deleted 虚拟属性。
-     */
-    protected function bootSoftDeleteAppend(): void
-    {
-        if (!$this->usesSoftDeleteQuery()) {
-            return;
-        }
-
-        $append = (array)$this->getOption('append', []);
-        foreach (['deleted'] as $field) {
-            if (!in_array($field, $append, true)) {
-                $append[] = $field;
-            }
-        }
-        $this->setOption('append', $append);
-    }
-
-    /**
-     * 判断当前模型是否启用了软删除查询。
-     */
-    private function usesSoftDeleteQuery(): bool
-    {
-        return in_array(SoftDelete::class, $this->allTraits(), true)
-            && $this->getOption('deleteTime', 'delete_time') !== false;
-    }
-
-    /**
      * 静态魔术方法.
      * @param string $method 方法名称
      * @param array $args 调用参数
@@ -169,26 +81,6 @@ abstract class Model extends \think\Model
         return QueryHelper::make(static::class, $method, $args, function ($method, $args) {
             return parent::__callStatic($method, $args);
         });
-    }
-
-    /**
-     * 创建查询实例.
-     * @return Mongo|Query
-     */
-    public static function mq(array $data = [])
-    {
-        return QueryFactory::build(static::mk($data)->newQuery());
-    }
-
-    /**
-     * 创建模型实例.
-     * @template t of static
-     * @param mixed $data
-     * @return static|t
-     */
-    public static function mk($data = [])
-    {
-        return new static($data);
     }
 
     /**
@@ -223,18 +115,23 @@ abstract class Model extends \think\Model
     }
 
     /**
-     * 在模型魔术调用阶段兜底兼容旧软删查询写法。
-     * @param string $method 调用方法
-     * @param array $args 调用参数
+     * 创建查询实例.
+     * @return Mongo|Query
      */
-    private function handleCompatQueryCall(string $method, array &$args): mixed
+    public static function mq(array $data = [])
     {
-        $query = $this->db();
-        if ($this->normalizeLegacySoftDeleteCall($query, $method, $args)) {
-            return $query;
-        }
+        return QueryFactory::build(static::mk($data)->newQuery());
+    }
 
-        return null;
+    /**
+     * 创建模型实例.
+     * @template t of static
+     * @param mixed $data
+     * @return static|t
+     */
+    public static function mk($data = [])
+    {
+        return new static($data);
     }
 
     /**
@@ -254,6 +151,170 @@ abstract class Model extends \think\Model
             'whereNull', 'whereNotNull' => $this->normalizeLegacySoftDeleteNull($args),
             default => false,
         };
+    }
+
+    /**
+     * 追加模型数据并标记为待持久化变更。
+     */
+    public function appendData(array $data, bool $overwrite = false): static
+    {
+        foreach ($data as $name => $value) {
+            if ($overwrite || !$this->hasData($name)) {
+                $this->setAttr($name, $value);
+            }
+        }
+
+        return $this;
+    }
+
+    /**
+     * 兼容旧软删字段赋值入口。
+     * @param string $name 字段名称
+     * @param mixed $value 字段数据
+     * @return $this
+     */
+    public function set(string $name, $value)
+    {
+        [$name, $value] = $this->normalizeLegacySoftDeleteSet($name, $value);
+        return parent::set($name, $value);
+    }
+
+    /**
+     * 兼容读取旧版 deleted_at 访问器。
+     * @param mixed $value 原始字段值
+     * @param array $data 当前模型数据
+     */
+    public function getDeletedAtAttr($value, array $data): mixed
+    {
+        $field = $this->softDeleteField();
+        if ($field === 'deleted') {
+            return $data['delete_time'] ?? $data['deleted_time'] ?? $value;
+        }
+        return $data[$field] ?? $data['delete_time'] ?? $data['deleted_time'] ?? $value;
+    }
+
+    /**
+     * 追加 deleted 虚拟属性，兼容旧模板与旧业务判断。
+     * @param mixed $value 原始字段值
+     * @param array $data 当前模型数据
+     */
+    public function getDeletedAttr($value, array $data): int
+    {
+        $field = $this->softDeleteField();
+        return empty($data[$field] ?? ($data['delete_time'] ?? $data['deleted_time'] ?? null)) ? 0 : 1;
+    }
+
+    /**
+     * 兼容旧 deleted 写法，自动映射为当前软删字段值。
+     * @param mixed $value 字段数据
+     */
+    public function setDeletedAttr($value): int|string
+    {
+        return $this->softDeleteField() === 'deleted'
+            ? ($this->isDeletedTruthy($value) ? 1 : 0)
+            : (is_scalar($value) ? strval($value) : '');
+    }
+
+    /**
+     * 按真实表结构推断当前模型的软删配置。
+     */
+    protected function resolveSoftDeleteOptions(): void
+    {
+        if (!in_array(SoftDelete::class, $this->allTraits(), true)) {
+            return;
+        }
+
+        $field = $this->getOption('deleteTime', 'delete_time');
+        if ($field === false) {
+            return;
+        }
+
+        try {
+            $fields = array_keys((array)$this->getFields());
+        } catch (\Throwable $exception) {
+            return;
+        }
+
+        if (in_array(strval($field), $fields, true)) {
+            return;
+        }
+
+        $options = [];
+        foreach (['delete_time', 'deleted_time', 'deleted_at'] as $name) {
+            if (in_array($name, $fields, true)) {
+                $options['deleteTime'] = $name;
+                break;
+            }
+        }
+
+        if (empty($options) && in_array('deleted', $fields, true)) {
+            $options['deleteTime'] = 'deleted';
+            $options['defaultSoftDelete'] = 0;
+        }
+
+        if (empty($options)) {
+            $options['deleteTime'] = false;
+        }
+
+        foreach ($options as $name => $value) {
+            $this->setOption($name, $value);
+        }
+    }
+
+    /**
+     * 为软删模型统一追加 deleted 虚拟属性。
+     */
+    protected function bootSoftDeleteAppend(): void
+    {
+        if (!$this->usesSoftDeleteQuery()) {
+            return;
+        }
+
+        $append = (array)$this->getOption('append', []);
+        foreach (['deleted'] as $field) {
+            if (!in_array($field, $append, true)) {
+                $append[] = $field;
+            }
+        }
+        $this->setOption('append', $append);
+    }
+
+    /**
+     * 收集当前模型及父类声明的全部 Trait。
+     * @return array<int, string>
+     */
+    private function allTraits(): array
+    {
+        $traits = [];
+        foreach ([static::class, ...class_parents(static::class)] as $class) {
+            $traits = array_merge($traits, class_uses($class) ?: []);
+        }
+
+        return array_values(array_unique($traits));
+    }
+
+    /**
+     * 判断当前模型是否启用了软删除查询。
+     */
+    private function usesSoftDeleteQuery(): bool
+    {
+        return in_array(SoftDelete::class, $this->allTraits(), true)
+            && $this->getOption('deleteTime', 'delete_time') !== false;
+    }
+
+    /**
+     * 在模型魔术调用阶段兜底兼容旧软删查询写法。
+     * @param string $method 调用方法
+     * @param array $args 调用参数
+     */
+    private function handleCompatQueryCall(string $method, array &$args): mixed
+    {
+        $query = $this->db();
+        if ($this->normalizeLegacySoftDeleteCall($query, $method, $args)) {
+            return $query;
+        }
+
+        return null;
     }
 
     /**
@@ -379,32 +440,6 @@ abstract class Model extends \think\Model
     }
 
     /**
-     * 追加模型数据并标记为待持久化变更。
-     */
-    public function appendData(array $data, bool $overwrite = false): static
-    {
-        foreach ($data as $name => $value) {
-            if ($overwrite || !$this->hasData($name)) {
-                $this->setAttr($name, $value);
-            }
-        }
-
-        return $this;
-    }
-
-    /**
-     * 兼容旧软删字段赋值入口。
-     * @param string $name 字段名称
-     * @param mixed $value 字段数据
-     * @return $this
-     */
-    public function set(string $name, $value)
-    {
-        [$name, $value] = $this->normalizeLegacySoftDeleteSet($name, $value);
-        return parent::set($name, $value);
-    }
-
-    /**
      * 兼容旧 deleted / deleted_at / deleted_time 写入。
      * @return array{0:string,1:mixed}
      */
@@ -445,41 +480,5 @@ abstract class Model extends \think\Model
         }
 
         return is_scalar($value) ? strval($value) : date('Y-m-d H:i:s');
-    }
-
-    /**
-     * 兼容读取旧版 deleted_at 访问器。
-     * @param mixed $value 原始字段值
-     * @param array $data 当前模型数据
-     */
-    public function getDeletedAtAttr($value, array $data): mixed
-    {
-        $field = $this->softDeleteField();
-        if ($field === 'deleted') {
-            return $data['delete_time'] ?? $data['deleted_time'] ?? $value;
-        }
-        return $data[$field] ?? $data['delete_time'] ?? $data['deleted_time'] ?? $value;
-    }
-
-    /**
-     * 追加 deleted 虚拟属性，兼容旧模板与旧业务判断。
-     * @param mixed $value 原始字段值
-     * @param array $data 当前模型数据
-     */
-    public function getDeletedAttr($value, array $data): int
-    {
-        $field = $this->softDeleteField();
-        return empty($data[$field] ?? ($data['delete_time'] ?? $data['deleted_time'] ?? null)) ? 0 : 1;
-    }
-
-    /**
-     * 兼容旧 deleted 写法，自动映射为当前软删字段值。
-     * @param mixed $value 字段数据
-     */
-    public function setDeletedAttr($value): int|string
-    {
-        return $this->softDeleteField() === 'deleted'
-            ? ($this->isDeletedTruthy($value) ? 1 : 0)
-            : (is_scalar($value) ? strval($value) : '');
     }
 }

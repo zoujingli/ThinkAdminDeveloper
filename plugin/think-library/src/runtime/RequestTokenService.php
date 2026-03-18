@@ -121,6 +121,10 @@ class RequestTokenService
             return '';
         }
 
+        if (str_contains($token, '%')) {
+            $token = rawurldecode($token);
+        }
+
         if (stripos($token, self::COOKIE_TOKEN_PREFIX) === 0) {
             try {
                 return static::normalizeToken(strval(CodeToolkit::decrypt(substr($token, strlen(self::COOKIE_TOKEN_PREFIX)), static::cookieTokenSecret())));

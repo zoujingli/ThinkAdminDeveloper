@@ -46,32 +46,6 @@ class FaviconBuilder
     }
 
     /**
-     * 检查 GD 依赖函数是否可用。
-     *
-     * @throws Exception
-     */
-    private function assertGdFunctions(): void
-    {
-        $functions = [
-            'imagesx',
-            'imagesy',
-            'getimagesize',
-            'imagesavealpha',
-            'imagecreatefromstring',
-            'imagecreatetruecolor',
-            'imagecolortransparent',
-            'imagecolorallocatealpha',
-            'imagecopyresampled',
-            'imagealphablending',
-        ];
-        foreach ($functions as $function) {
-            if (!function_exists($function)) {
-                throw new Exception(lang('Required %s function not found.', [$function]));
-            }
-        }
-    }
-
-    /**
      * 添加图像到生成器中。
      *
      * @throws Exception
@@ -95,6 +69,51 @@ class FaviconBuilder
         }
         $this->addImageData($image);
         return $this;
+    }
+
+    /**
+     * 将 ICO 内容写入到文件。
+     */
+    public function saveIco(string $file): bool
+    {
+        if (false === ($data = $this->getIcoData())) {
+            return false;
+        }
+        if (false === ($fh = fopen($file, 'w'))) {
+            return false;
+        }
+        if (fwrite($fh, $data) === false) {
+            fclose($fh);
+            return false;
+        }
+        fclose($fh);
+        return true;
+    }
+
+    /**
+     * 检查 GD 依赖函数是否可用。
+     *
+     * @throws Exception
+     */
+    private function assertGdFunctions(): void
+    {
+        $functions = [
+            'imagesx',
+            'imagesy',
+            'getimagesize',
+            'imagesavealpha',
+            'imagecreatefromstring',
+            'imagecreatetruecolor',
+            'imagecolortransparent',
+            'imagecolorallocatealpha',
+            'imagecopyresampled',
+            'imagealphablending',
+        ];
+        foreach ($functions as $function) {
+            if (!function_exists($function)) {
+                throw new Exception(lang('Required %s function not found.', [$function]));
+            }
+        }
     }
 
     /**
@@ -166,25 +185,6 @@ class FaviconBuilder
             'pixel' => 32,
             'colors' => 0,
         ];
-    }
-
-    /**
-     * 将 ICO 内容写入到文件。
-     */
-    public function saveIco(string $file): bool
-    {
-        if (false === ($data = $this->getIcoData())) {
-            return false;
-        }
-        if (false === ($fh = fopen($file, 'w'))) {
-            return false;
-        }
-        if (fwrite($fh, $data) === false) {
-            fclose($fh);
-            return false;
-        }
-        fclose($fh);
-        return true;
     }
 
     /**

@@ -179,29 +179,6 @@ class ImageSliderVerify
     }
 
     /**
-     * 计算水印矩阵坐标。
-     */
-    private function withWaterPoint(): array
-    {
-        $waters = [];
-        $dr = $this->r * $this->r;
-        $lw = $this->r * 2 - 5;
-        $c1x = $lw + ($this->picWidth - $lw * 2) / 2;
-        $c1y = $this->r;
-        $c2x = $this->picHeight - $this->r;
-        $c2y = $lw + ($this->picHeight - $lw * 2) / 2;
-
-        for ($i = 0; $i < $this->picHeight; ++$i) {
-            for ($j = 0; $j < $this->picWidth; ++$j) {
-                $d1 = pow($j - $c1x, 2) + pow($i - $c1y, 2);
-                $d2 = pow($j - $c2x, 2) + pow($i - $c2y, 2);
-                $waters[$i][$j] = (($i >= $lw && $j >= $lw && $i <= $this->picHeight - $lw && $j <= $this->picWidth - $lw) || $d1 <= $dr || $d2 <= $dr) ? 1 : 0;
-            }
-        }
-        return $waters;
-    }
-
-    /**
      * 在线验证是否通过。
      * 返回值约定：
      * `-1` 需要刷新，`0` 验证失败，`1` 验证成功。
@@ -226,5 +203,28 @@ class ImageSliderVerify
         }
         Library::$sapp->cache->delete($code);
         return -1;
+    }
+
+    /**
+     * 计算水印矩阵坐标。
+     */
+    private function withWaterPoint(): array
+    {
+        $waters = [];
+        $dr = $this->r * $this->r;
+        $lw = $this->r * 2 - 5;
+        $c1x = $lw + ($this->picWidth - $lw * 2) / 2;
+        $c1y = $this->r;
+        $c2x = $this->picHeight - $this->r;
+        $c2y = $lw + ($this->picHeight - $lw * 2) / 2;
+
+        for ($i = 0; $i < $this->picHeight; ++$i) {
+            for ($j = 0; $j < $this->picWidth; ++$j) {
+                $d1 = pow($j - $c1x, 2) + pow($i - $c1y, 2);
+                $d2 = pow($j - $c2x, 2) + pow($i - $c2y, 2);
+                $waters[$i][$j] = (($i >= $lw && $j >= $lw && $i <= $this->picHeight - $lw && $j <= $this->picWidth - $lw) || $d1 <= $dr || $d2 <= $dr) ? 1 : 0;
+            }
+        }
+        return $waters;
     }
 }

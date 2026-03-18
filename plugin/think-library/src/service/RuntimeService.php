@@ -20,7 +20,6 @@ declare(strict_types=1);
 
 namespace think\admin\service;
 
-use Exception;
 use think\admin\Library;
 use think\admin\route\Route;
 use think\admin\route\Url;
@@ -234,7 +233,7 @@ class RuntimeService
     {
         try {
             return static::init($app)->console->run();
-        } catch (Exception $exception) {
+        } catch (\Exception $exception) {
             ProcessService::message($exception->getMessage());
             return 0;
         }

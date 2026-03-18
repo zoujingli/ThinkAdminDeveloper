@@ -95,77 +95,6 @@ class AppService extends Service
     }
 
     /**
-     * 扫描 app/* 本地应用目录.
-     *
-     * @return array<string, array<string, string>>
-     */
-    private static function discoverLocalApps(): array
-    {
-        $apps = [];
-        $basePath = rtrim(Library::$sapp->getBasePath(), '\/') . DIRECTORY_SEPARATOR;
-        foreach (scandir($basePath) ?: [] as $code) {
-            if ($code === '.' || $code === '..' || in_array($code, self::IGNORE_LOCAL_APPS, true)) {
-                continue;
-            }
-            if (!preg_match('/^[A-Za-z][A-Za-z0-9_]*$/', $code)) {
-                continue;
-            }
-
-            $path = $basePath . $code . DIRECTORY_SEPARATOR;
-            if (!is_dir($path) || !self::isLocalAppPath($path)) {
-                continue;
-            }
-
-            $apps[$code] = self::normalize($code, [
-                'type' => 'local',
-                'name' => ucfirst($code),
-                'path' => $path,
-                'space' => NodeService::space($code),
-            ]);
-        }
-
-        return $apps;
-    }
-
-    /**
-     * 判断是否为本地应用目录.
-     */
-    private static function isLocalAppPath(string $path): bool
-    {
-        foreach (['controller', 'route', 'view', 'config'] as $name) {
-            if (is_dir($path . $name)) {
-                return true;
-            }
-        }
-
-        return is_file($path . 'Service.php');
-    }
-
-    /**
-     * 标准化应用定义.
-     *
-     * @param string $code 应用编号
-     * @param array<string, mixed> $app 应用配置
-     * @return array<string, string>
-     */
-    private static function normalize(string $code, array $app): array
-    {
-        $path = $app['path'] ?? '';
-        $path = $path === '' ? '' : rtrim((string)$path, '\/') . DIRECTORY_SEPARATOR;
-
-        return [
-            'code' => $code,
-            'type' => $app['type'] ?? 'local',
-            'name' => $app['name'] ?? ucfirst($code),
-            'path' => $path,
-            'alias' => $app['alias'] ?? '',
-            'space' => $app['space'] ?? NodeService::space($code),
-            'package' => $app['package'] ?? '',
-            'service' => $app['service'] ?? '',
-        ];
-    }
-
-    /**
      * 获取插件应用定义.
      *
      * @return array<string, array<string, string>>
@@ -245,5 +174,76 @@ class AppService extends Service
     {
         $apps = self::local($force);
         return is_null($code) ? null : ($apps[$code] ?? null);
+    }
+
+    /**
+     * 扫描 app/* 本地应用目录.
+     *
+     * @return array<string, array<string, string>>
+     */
+    private static function discoverLocalApps(): array
+    {
+        $apps = [];
+        $basePath = rtrim(Library::$sapp->getBasePath(), '\/') . DIRECTORY_SEPARATOR;
+        foreach (scandir($basePath) ?: [] as $code) {
+            if ($code === '.' || $code === '..' || in_array($code, self::IGNORE_LOCAL_APPS, true)) {
+                continue;
+            }
+            if (!preg_match('/^[A-Za-z][A-Za-z0-9_]*$/', $code)) {
+                continue;
+            }
+
+            $path = $basePath . $code . DIRECTORY_SEPARATOR;
+            if (!is_dir($path) || !self::isLocalAppPath($path)) {
+                continue;
+            }
+
+            $apps[$code] = self::normalize($code, [
+                'type' => 'local',
+                'name' => ucfirst($code),
+                'path' => $path,
+                'space' => NodeService::space($code),
+            ]);
+        }
+
+        return $apps;
+    }
+
+    /**
+     * 判断是否为本地应用目录.
+     */
+    private static function isLocalAppPath(string $path): bool
+    {
+        foreach (['controller', 'route', 'view', 'config'] as $name) {
+            if (is_dir($path . $name)) {
+                return true;
+            }
+        }
+
+        return is_file($path . 'Service.php');
+    }
+
+    /**
+     * 标准化应用定义.
+     *
+     * @param string $code 应用编号
+     * @param array<string, mixed> $app 应用配置
+     * @return array<string, string>
+     */
+    private static function normalize(string $code, array $app): array
+    {
+        $path = $app['path'] ?? '';
+        $path = $path === '' ? '' : rtrim((string)$path, '\/') . DIRECTORY_SEPARATOR;
+
+        return [
+            'code' => $code,
+            'type' => $app['type'] ?? 'local',
+            'name' => $app['name'] ?? ucfirst($code),
+            'path' => $path,
+            'alias' => $app['alias'] ?? '',
+            'space' => $app['space'] ?? NodeService::space($code),
+            'package' => $app['package'] ?? '',
+            'service' => $app['service'] ?? '',
+        ];
     }
 }

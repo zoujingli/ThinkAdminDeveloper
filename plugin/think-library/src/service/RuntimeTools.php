@@ -25,7 +25,6 @@ use think\admin\Library;
 use think\admin\model\QueryFactory;
 use think\db\Query;
 use think\Model;
-use Throwable;
 
 /**
  * Library 通用运行时工具。
@@ -104,7 +103,7 @@ class RuntimeTools
                 $query->where([$key => $data[$key] ?? null]);
             }
             return (clone $query)->count() > 1 ? $query->strict(false)->update($data) : $query->findOrEmpty()->save($data);
-        } catch (\Exception|Throwable $exception) {
+        } catch (\Exception|\Throwable $exception) {
             throw new Exception($exception->getMessage(), $exception->getCode());
         }
     }

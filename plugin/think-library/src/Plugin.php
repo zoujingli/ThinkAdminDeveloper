@@ -20,7 +20,6 @@ declare(strict_types=1);
 
 namespace think\admin;
 
-use ReflectionClass;
 use think\admin\service\AppService;
 use think\admin\service\ModuleService;
 use think\admin\service\NodeService;
@@ -35,85 +34,104 @@ use think\Service;
 abstract class Plugin extends Service
 {
     /**
-     * 插件配置.
-     */
-    private static array $addons = [];
-    /**
      * 插件类型.
      */
     protected string $appType = '';
+
     /**
      * 必填，插件包名.
      */
     protected string $package = '';
+
     /**
      * 必填，插件编码
      */
     protected string $appCode = '';
+
     /**
      * 必填，插件名称.
      */
     protected string $appName = '';
+
     /**
      * 可选，插件目录.
      */
     protected string $appPath = '';
+
     /**
      * 可选，插件别名.
      */
     protected string $appAlias = '';
+
     /**
      * 可选，主访问前缀.
      */
     protected string $appPrefix = '';
+
     /**
      * 可选，访问前缀集合.
      */
     protected array $appPrefixes = [];
+
     /**
      * 可选，命名空间.
      */
     protected string $appSpace = '';
+
     /**
      * 可选，注册服务
      */
     protected string $appService = '';
+
     /**
      * 可选，文档地址.
      */
     protected string $appDocument = '';
+
     /**
      * 可选，插件说明.
      */
     protected string $appDescription = '';
+
     /**
      * 可选，支持平台.
      */
     protected array $appPlatforms = [];
+
     /**
      * 可选，协议列表.
      */
     protected array $appLicense = [];
+
     /**
      * 可选，版本号.
      */
     protected string $appVersion = '';
+
     /**
      * 可选，主页地址.
      */
     protected string $appHomepage = '';
+
     /**
      * 可选，菜单根节点配置.
      */
     protected array $appMenuRoot = [];
+
     /**
      * 可选，菜单存在检测条件.
      */
     protected array $appMenuExists = [];
+
     /**
      * Composer 配置.
      */
     protected array $composer = [];
+
+    /**
+     * 插件配置.
+     */
+    private static array $addons = [];
 
     /**
      * 自动注册插件.
@@ -123,7 +141,7 @@ abstract class Plugin extends Service
         parent::__construct($app);
 
         // 获取基础服务类
-        $ref = new ReflectionClass(static::class);
+        $ref = new \ReflectionClass(static::class);
         $this->composer = $this->resolveComposerManifest($ref);
         $this->hydrateComposerManifest($this->composer);
 
@@ -191,9 +209,116 @@ abstract class Plugin extends Service
     }
 
     /**
+     * 获取插件编号。
+     */
+    public static function getAppCode(): string
+    {
+        return static::plugin()->appCode;
+    }
+
+    /**
+     * 获取插件名称。
+     */
+    public static function getAppName(): string
+    {
+        return static::plugin()->appName;
+    }
+
+    /**
+     * 获取插件路径。
+     */
+    public static function getAppPath(): string
+    {
+        return static::plugin()->appPath;
+    }
+
+    /**
+     * 获取插件命名空间。
+     */
+    public static function getAppSpace(): string
+    {
+        return static::plugin()->appSpace;
+    }
+
+    /**
+     * 获取插件安装包名。
+     */
+    public static function getAppPackage(): string
+    {
+        return static::plugin()->package;
+    }
+
+    /**
+     * 获取插件主访问前缀。
+     */
+    public static function getAppPrefix(): string
+    {
+        return static::plugin()->appPrefix;
+    }
+
+    /**
+     * 获取插件全部访问前缀。
+     * @return string[]
+     */
+    public static function getAppPrefixes(): array
+    {
+        return static::plugin()->appPrefixes;
+    }
+
+    /**
+     * 获取插件菜单根节点配置。
+     */
+    public static function getMenuRoot(): array
+    {
+        return static::plugin()->appMenuRoot;
+    }
+
+    /**
+     * 获取插件菜单存在检测条件。
+     */
+    public static function getMenuExists(): array
+    {
+        return static::plugin()->appMenuExists;
+    }
+
+    /**
+     * 获取插件及安装信息.
+     * @param ?string $code 指定插件编号
+     * @param bool $append 关联安装数据
+     */
+    public static function get(?string $code = null, bool $append = false): ?array
+    {
+        // 读取插件原始信息
+        $data = empty($code) ? self::$addons : (self::$addons[$code] ?? null);
+        if (empty($data) || empty($append)) {
+            return $data;
+        }
+        // 关联插件安装信息
+        $versions = ModuleService::getLibrarys();
+        return empty($code) ? array_map(static function ($item) use ($versions) {
+            $item['install'] = $versions[$item['package']] ?? [];
+            if (empty($item['name'])) {
+                $item['name'] = $item['install']['name'] ?? '';
+            }
+            return $item;
+        }, $data) : $data + ['install' => $versions[$data['package']] ?? []];
+    }
+
+    /**
+     * 定义插件菜单.
+     * @return array 一级或二级菜单
+     */
+    abstract public static function menu(): array;
+
+    /**
+     * 注册应用启动.
+     */
+    public function boot(): void {}
+
+    /**
      * 解析 Composer 配置.
      */
-    private function resolveComposerManifest(ReflectionClass $ref): array
+    private function resolveComposerManifest(\ReflectionClass $ref): array
     {
         if (!($path = $ref->getFileName())) {
             return [];
@@ -298,117 +423,10 @@ abstract class Plugin extends Service
     }
 
     /**
-     * 获取插件编号。
-     */
-    public static function getAppCode(): string
-    {
-        return static::plugin()->appCode;
-    }
-
-    /**
      * 获取当前插件服务实例。
      */
     private static function plugin(): static
     {
         return app(static::class);
     }
-
-    /**
-     * 获取插件名称。
-     */
-    public static function getAppName(): string
-    {
-        return static::plugin()->appName;
-    }
-
-    /**
-     * 获取插件路径。
-     */
-    public static function getAppPath(): string
-    {
-        return static::plugin()->appPath;
-    }
-
-    /**
-     * 获取插件命名空间。
-     */
-    public static function getAppSpace(): string
-    {
-        return static::plugin()->appSpace;
-    }
-
-    /**
-     * 获取插件安装包名。
-     */
-    public static function getAppPackage(): string
-    {
-        return static::plugin()->package;
-    }
-
-    /**
-     * 获取插件主访问前缀。
-     */
-    public static function getAppPrefix(): string
-    {
-        return static::plugin()->appPrefix;
-    }
-
-    /**
-     * 获取插件全部访问前缀。
-     * @return string[]
-     */
-    public static function getAppPrefixes(): array
-    {
-        return static::plugin()->appPrefixes;
-    }
-
-    /**
-     * 获取插件菜单根节点配置。
-     */
-    public static function getMenuRoot(): array
-    {
-        return static::plugin()->appMenuRoot;
-    }
-
-    /**
-     * 获取插件菜单存在检测条件。
-     */
-    public static function getMenuExists(): array
-    {
-        return static::plugin()->appMenuExists;
-    }
-
-    /**
-     * 获取插件及安装信息.
-     * @param ?string $code 指定插件编号
-     * @param bool $append 关联安装数据
-     */
-    public static function get(?string $code = null, bool $append = false): ?array
-    {
-        // 读取插件原始信息
-        $data = empty($code) ? self::$addons : (self::$addons[$code] ?? null);
-        if (empty($data) || empty($append)) {
-            return $data;
-        }
-        // 关联插件安装信息
-        $versions = ModuleService::getLibrarys();
-        return empty($code) ? array_map(static function ($item) use ($versions) {
-            $item['install'] = $versions[$item['package']] ?? [];
-            if (empty($item['name'])) {
-                $item['name'] = $item['install']['name'] ?? '';
-            }
-            return $item;
-        }, $data) : $data + ['install' => $versions[$data['package']] ?? []];
-    }
-
-    /**
-     * 定义插件菜单.
-     * @return array 一级或二级菜单
-     */
-    abstract public static function menu(): array;
-
-    /**
-     * 注册应用启动.
-     */
-    public function boot(): void {}
 }
