@@ -70,7 +70,7 @@ class FormHelper extends Helper
         if ($this->app->request->isPost()) {
             $edata = array_merge($this->app->request->post(), $edata);
             if ($this->class->callback('_form_filter', $edata, $where) !== false) {
-                $result = RuntimeTools::save($query, $edata, $field, $where) !== false;
+                $result = AppService::save($query, $edata, $field, $where) !== false;
                 if ($this->class->callback('_form_result', $result, $edata) !== false) {
                     if ($result !== false) {
                         $this->class->success('数据保存成功！');

@@ -99,7 +99,7 @@ class QueryHelper extends Helper
             'mSave' => [SaveHelper::class, 'init'],
             'mQuery' => [QueryHelper::class, 'init'],
             'mDelete' => [DeleteHelper::class, 'init'],
-            'mUpdate' => [RuntimeTools::class, 'update'],
+            'mUpdate' => [AppService::class, 'update'],
         ];
         if (isset($hooks[$method])) {
             [$class, $method] = $hooks[$method];

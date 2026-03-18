@@ -108,7 +108,7 @@ class MultAccess
             return $this->applyPlugin($plugin, false);
         }
 
-        PluginService::activateEntry(RequestContext::ENTRY_WEB);
+        PluginService::activateEntry();
         return $this->setMultiApp(AppService::singleCode(), true);
     }
 
@@ -157,7 +157,7 @@ class MultAccess
         $this->app->setNamespace($this->appSpace ?: NodeService::space($appName))->setAppPath($this->appPath);
         $this->app->http->setBind($appBind)->name($appName)->path($this->appPath)->setRoutePath($this->appPath . 'route' . DIRECTORY_SEPARATOR);
 
-        $uris = array_merge($this->app->config->get('view.tpl_replace_string', []), RuntimeTools::uris());
+        $uris = array_merge($this->app->config->get('view.tpl_replace_string', []), AppService::uris());
         $this->app->config->set([
             'view_path' => $this->appPath . 'view' . DIRECTORY_SEPARATOR,
             'tpl_replace_string' => $uris,

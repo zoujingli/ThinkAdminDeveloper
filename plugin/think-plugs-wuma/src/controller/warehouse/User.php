@@ -138,7 +138,7 @@ class User extends Controller
             return;
         }
 
-        $result = RuntimeTools::save(PluginWumaWarehouseUser::mk(), $data) !== false;
+        $result = AppService::save(PluginWumaWarehouseUser::mk(), $data) !== false;
         if ($this->callback('_form_result', $result, $data) === false) {
             return;
         }

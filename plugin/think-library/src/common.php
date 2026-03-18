@@ -45,7 +45,7 @@ if (!function_exists('p')) {
      */
     function p($data, bool $new = false, ?string $file = null): false|int
     {
-        return RuntimeTools::putDebug($data, $new, $file);
+        return AppService::putDebug($data, $new, $file);
     }
 }
 
@@ -517,7 +517,7 @@ if (!function_exists('data_save')) {
      */
     function data_save($dbQuery, array $data, string $key = 'id', $where = [])
     {
-        return RuntimeTools::save($dbQuery, $data, $key, $where);
+        return AppService::save($dbQuery, $data, $key, $where);
     }
 }
 

@@ -246,4 +246,111 @@ class AppService extends Service
             'service' => $app['service'] ?? '',
         ];
     }
+
+    /**
+     * 生成全部静态路径。
+     * @param string $path 后缀路径
+     * @return string[]
+     */
+    public static function uris(string $path = ''): array
+    {
+        return static::uri($path, null);
+    }
+
+    /**
+     * 生成静态路径链接。
+     * @param string $path 后缀路径
+     * @param ?string $type 路径类型
+     * @param mixed $default 默认数据
+     * @return array|string
+     */
+    public static function uri(string $path = '', ?string $type = '__ROOT__', $default = '')
+    {
+        $plugin = Library::$sapp->http->getName();
+        if (strlen($path)) {
+            $path = '/' . ltrim($path, '/');
+        }
+        $prefix = rtrim(dirname(Library::$sapp->request->basefile()), '\/');
+        $data = [
+            '__APP__' => rtrim(url('@')->build(), '\/') . $path,
+            '__ROOT__' => $prefix . $path,
+            '__PLUG__' => "{$prefix}/static/extra/{$plugin}{$path}",
+            '__FULL__' => Library::$sapp->request->domain() . $prefix . $path,
+        ];
+        return is_null($type) ? $data : ($data[$type] ?? $default);
+    }
+
+    /**
+     * 打印调试数据到文件。
+     * @param mixed $data 输出的数据
+     * @param bool $new 强制替换文件
+     * @param null|string $file 文件名称
+     * @return false|int
+     */
+    public static function putDebug($data, bool $new = false, ?string $file = null)
+    {
+        ob_start();
+        var_dump($data);
+        $output = preg_replace('/]=>\n(\s+)/m', '] => ', ob_get_clean());
+        if (is_null($file)) {
+            $file = runpath('runtime/' . date('Ymd') . '.log');
+        } elseif (!preg_match('#[/\\\]+#', $file)) {
+            $file = runpath("runtime/{$file}.log");
+        }
+        is_dir($dir = dirname($file)) or mkdir($dir, 0777, true);
+        return $new ? file_put_contents($file, $output) : file_put_contents($file, $output, FILE_APPEND);
+    }
+
+    /**
+     * 批量更新保存数据。
+     * @param \think\Model|\think\db\Query|string $query 数据查询对象
+     * @param array $data 需要保存的数据
+     * @param string $key 更新条件查询主键
+     * @param mixed $map 额外更新查询条件
+     * @return bool|int
+     * @throws \think\admin\Exception
+     */
+    public static function update($query, array $data, string $key = 'id', $map = [])
+    {
+        try {
+            $query = \think\admin\model\QueryFactory::build($query)->master()->where($map);
+            if (empty($map[$key])) {
+                $query->where([$key => $data[$key] ?? null]);
+            }
+            return (clone $query)->count() > 1 ? $query->strict(false)->update($data) : $query->findOrEmpty()->save($data);
+        } catch (\Exception|\Throwable $exception) {
+            throw new \think\admin\Exception($exception->getMessage(), $exception->getCode());
+        }
+    }
+
+    /**
+     * 数据增量保存。
+     * @param \think\Model|\think\db\Query|string $query 数据查询对象
+     * @param array $data 需要保存的数据
+     * @param string $key 更新条件查询主键
+     * @param mixed $map 额外更新查询条件
+     * @return bool|int
+     * @throws \think\admin\Exception
+     */
+    public static function save($query, array &$data, string $key = 'id', $map = [])
+    {
+        try {
+            $query = \think\admin\model\QueryFactory::build($query)->master()->strict(false);
+            if (empty($map[$key])) {
+                $query->where([$key => $data[$key] ?? null]);
+            }
+            $model = $query->where($map)->findOrEmpty();
+            $action = $model->isExists() ? 'onAdminUpdate' : 'onAdminInsert';
+            if ($model->save($data) === false) {
+                return false;
+            }
+            if ($model instanceof \think\admin\Model) {
+                $model->{$action}(strval($model->getAttr($key)));
+            }
+            $data = $model->toArray();
+            return $model[$key] ?? true;
+        } catch (\Exception $exception) {
+            throw new \think\admin\Exception($exception->getMessage(), $exception->getCode());
+        }
+    }
 }
