@@ -33,18 +33,15 @@ $(function () {
         });
     });
 
-    /*! 后台加密登录处理 */
+    /*! 后台登录提交处理 */
     $body.find('form[data-login-form]').each(function (idx, form) {
-        $.module.use(['md5'], function (md5) {
-            $(form).vali(function (data) {
-                data['password'] = md5.hash(md5.hash(data['password']) + data['uniqid']);
-                $.form.load(location.href, data, "post", function (ret) {
-                    if (parseInt(ret.code) !== 1) {
-                        $(form).find('[data-captcha]').trigger('click');
-                        $(form).find('.verify.layui-hide').removeClass('layui-hide');
-                    }
-                }, null, null, 'false');
-            });
+        $(form).vali(function (data) {
+            $.form.load(location.href, data, "post", function (ret) {
+                if (parseInt(ret.code) !== 1) {
+                    $(form).find('[data-captcha]').trigger('click');
+                    $(form).find('.verify.layui-hide').removeClass('layui-hide');
+                }
+            }, null, null, 'false');
         });
     });
 

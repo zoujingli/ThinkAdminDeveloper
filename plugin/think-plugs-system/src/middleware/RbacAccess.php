@@ -66,11 +66,26 @@ class RbacAccess
         }
 
         if (SystemAuthService::isLogin()) {
+            if (function_exists('worker_auth_should_debug') && worker_auth_should_debug($request->pathinfo(), $request->cookie(), $request->header())) {
+                worker_auth_debug('system.rbac.denied', [
+                    'path' => $request->pathinfo(),
+                    'user_id' => SystemAuthService::getUserId(),
+                    'login' => true,
+                    'reason' => 'forbidden',
+                ]);
+            }
             throw new HttpResponseException(json(['code' => 0, 'info' => lang('禁用访问！')]));
         }
 
         $loginUrl = $this->app->config->get('app.rbac_login') ?: 'system/login/index';
         $loginPage = preg_match('#^(/|https?://)#', $loginUrl) ? $loginUrl : sysuri($loginUrl);
+        if (function_exists('worker_auth_should_debug') && worker_auth_should_debug($request->pathinfo(), $request->cookie(), $request->header())) {
+            worker_auth_debug('system.rbac.relogin', [
+                'path' => $request->pathinfo(),
+                'login' => false,
+                'redirect' => $loginPage,
+            ]);
+        }
         throw new HttpResponseException(json(['code' => 0, 'info' => lang('请重新登录！'), 'url' => $loginPage]));
     }
 }

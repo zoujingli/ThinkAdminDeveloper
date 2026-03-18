@@ -51,16 +51,45 @@ class JwtTokenAuth
      */
     public function handle(Request $request, \Closure $next): Response
     {
-        RequestTokenService::capture($request);
+        $context = RequestTokenService::capture($request);
+        if (function_exists('worker_auth_should_debug') && worker_auth_should_debug($request->pathinfo(), $request->cookie(), $request->header())) {
+            worker_auth_debug('system.jwt.capture', [
+                'path' => $request->pathinfo(),
+                'authorization' => worker_auth_token_snapshot($context->authorizationToken()),
+                'system_cookie' => worker_auth_token_snapshot($context->systemCookieToken()),
+                'system_request' => worker_auth_token_snapshot($context->systemRequestToken()),
+            ]);
+        }
+
         if ($token = RequestTokenService::systemToken($request)) {
             try {
                 SystemAuthService::resolve($token, true);
+                if (function_exists('worker_auth_should_debug') && worker_auth_should_debug($request->pathinfo(), $request->cookie(), $request->header())) {
+                    worker_auth_debug('system.jwt.resolve.ok', [
+                        'path' => $request->pathinfo(),
+                        'user_id' => SystemAuthService::getUserId(),
+                        'session_id' => SystemAuthService::currentSessionId(),
+                        'token' => worker_auth_token_snapshot($token),
+                    ]);
+                }
             } catch (\Throwable $exception) {
                 SystemAuthService::forget();
                 RequestTokenService::forgetSystem($request);
+                if (function_exists('worker_auth_should_debug') && worker_auth_should_debug($request->pathinfo(), $request->cookie(), $request->header())) {
+                    worker_auth_debug('system.jwt.resolve.fail', [
+                        'path' => $request->pathinfo(),
+                        'token' => worker_auth_token_snapshot($token),
+                        'error' => $exception->getMessage(),
+                    ]);
+                }
             }
         } else {
             SystemAuthService::forget();
+            if (function_exists('worker_auth_should_debug') && worker_auth_should_debug($request->pathinfo(), $request->cookie(), $request->header())) {
+                worker_auth_debug('system.jwt.missing', [
+                    'path' => $request->pathinfo(),
+                ]);
+            }
         }
 
         return $next($request);

@@ -24,6 +24,7 @@ use plugin\system\model\SystemUser;
 use plugin\system\service\CaptchaService;
 use plugin\system\service\SystemAuthService;
 use plugin\system\service\SystemService;
+use plugin\system\service\UserService;
 use think\admin\Controller;
 use think\admin\Exception;
 use think\admin\extend\CodeToolkit;
@@ -91,15 +92,7 @@ class Login extends Controller
                 $this->markCaptchaError($data['uniqid']);
                 $this->error('账号已经被禁用，请联系管理员!');
             }
-            // 验证密码：支持 password_hash 格式和旧版 MD5 格式（兼容升级）
-            $passwordVerified = false;
-            if (password_verify($data['password'], $user['password'])) {
-                $passwordVerified = true;
-            } elseif (strlen($user['password']) === 32 && md5("{$user['password']}{$data['uniqid']}") === $data['password']) {
-                // 兼容旧版 MD5 密码格式
-                $passwordVerified = true;
-            }
-            if (!$passwordVerified) {
+            if (!UserService::verifyPassword($data['password'], strval($user['password']))) {
                 $this->markCaptchaError($data['uniqid']);
                 $this->error('登录账号或密码错误，请重新输入!');
             }
@@ -108,6 +101,17 @@ class Login extends Controller
             $this->clearCaptchaError($data['uniqid']);
             $token = SystemAuthService::buildToken();
             SystemAuthService::syncTokenCookie($token);
+
+            if (function_exists('worker_auth_debug_enabled') && worker_auth_debug_enabled()) {
+                worker_auth_debug('system.login.success', [
+                    'username' => strval($user['username']),
+                    'user_id' => intval($user['id']),
+                    'session_id' => SystemAuthService::currentSessionId(),
+                    'token' => worker_auth_token_snapshot($token),
+                    'request_cookie' => worker_auth_token_snapshot(strval($this->request->cookie(SystemAuthService::getTokenCookie(), ''))),
+                ]);
+            }
+
             // 更新登录次数
             $user->where(['id' => $user->getAttr('id')])->inc('login_num')->update([
                 'login_at' => date('Y-m-d H:i:s'), 'login_ip' => $this->app->request->ip(),

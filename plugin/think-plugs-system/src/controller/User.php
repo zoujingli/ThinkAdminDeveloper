@@ -93,7 +93,7 @@ class User extends Controller
         }
 
         $user = SystemUser::mk()->findOrEmpty($data['id']);
-        if ($user->isExists() && $user->save(['password' => md5($data['password'])])) {
+        if ($user->isExists() && $user->save(['password' => UserService::hashPassword($data['password'])])) {
             $this->app->event->trigger('PluginAdminChangePassword', [
                 'uuid' => $data['id'], 'pass' => $data['password'],
             ]);
@@ -143,7 +143,7 @@ class User extends Controller
                 if (SystemUser::mk()->where(['username' => $data['username']])->count() > 0) {
                     $this->error('账号已经存在，请使用其它账号！');
                 }
-                $data['password'] = md5($data['username']);
+                $data['password'] = UserService::hashPassword($data['username']);
             } else {
                 unset($data['username']);
             }

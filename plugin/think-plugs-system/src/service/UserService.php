@@ -28,6 +28,23 @@ class UserService extends Service
 {
     private const PASSWORD_PATTERN = '^(?![\d]+$)(?![a-zA-Z]+$)(?![^\da-zA-Z]+$).{6,32}$';
 
+    /**
+     * 生成系统用户密码哈希。
+     */
+    public static function hashPassword(string $password): string
+    {
+        return password_hash($password, PASSWORD_DEFAULT);
+    }
+
+    /**
+     * 校验系统用户登录密码。
+     */
+    public static function verifyPassword(string $password, ?string $hash): bool
+    {
+        $hash = trim((string)$hash);
+        return $hash !== '' && password_verify($password, $hash);
+    }
+
     public static function buildPassForm(bool $withOldPassword = false): FormBuilder
     {
         $builder = FormBuilder::mk()

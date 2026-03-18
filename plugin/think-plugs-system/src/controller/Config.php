@@ -23,6 +23,7 @@ namespace plugin\system\controller;
 use plugin\storage\service\StorageConfig;
 use plugin\system\service\SystemAuthService;
 use plugin\system\service\SystemService;
+use plugin\system\service\UserService;
 use think\admin\Controller;
 use think\admin\service\ModuleService;
 use think\admin\service\PluginService;
@@ -67,7 +68,7 @@ class Config extends Controller
         $this->systemid = ModuleService::getRunVar('uni');
         $this->framework = ModuleService::getLibrarys('topthink/framework');
         $this->thinkadmin = ModuleService::getLibrarys('zoujingli/think-library');
-        if (SystemAuthService::isSuper() && SystemAuthService::getUser('password') === md5('admin')) {
+        if (SystemAuthService::isSuper() && UserService::verifyPassword('admin', strval(SystemAuthService::getUser('password', '')))) {
             $url = url('system/index/pass', ['id' => SystemAuthService::getUserId()]);
             $this->showErrorMessage = lang("超级管理员账号的密码未修改，建议立即<a data-modal='%s'>修改密码</a>！", [$url]);
         }

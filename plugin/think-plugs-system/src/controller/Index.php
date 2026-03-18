@@ -121,10 +121,10 @@ class Index extends Controller
         if ($user->isEmpty()) {
             $this->error('用户不存在！');
         }
-        if (md5($data['oldpassword']) !== $user['password']) {
+        if (!UserService::verifyPassword($data['oldpassword'], strval($user['password']))) {
             $this->error('旧密码验证失败，请重新输入！');
         }
-        if ($user->save(['password' => md5($data['password'])])) {
+        if ($user->save(['password' => UserService::hashPassword($data['password'])])) {
             sysoplog('系统用户管理', "修改用户[{$user['id']}]密码成功");
             $this->app->event->trigger('PluginAdminChangePassword', [
                 'uuid' => intval($user['id']), 'pass' => $data['password'],
