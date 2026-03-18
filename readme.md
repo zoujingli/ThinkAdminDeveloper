@@ -126,6 +126,15 @@ flowchart TD
 - `pidFile` 只保留为 Workerman 辅助运行文件，不再作为唯一状态来源；当 pid 文件缺失、脏数据残留或被误删时，会自动回退到进程扫描与健康检查
 - Windows 后台服务统一通过 `plugin/think-plugs-worker/src/service/bin/console.exe` 启动，Linux / macOS 仍保留 Workerman 守护化与 reload 语义
 
+### PHAR 路径约定
+
+当使用 `ThinkPlugsBuilder` 构建并以 `admin.phar` 方式运行时，请遵循下面约定：
+
+- `syspath()`：读取 **PHAR 包内**只读资源（如 `public/static`、内置模板/数据）
+- `runpath()`：读写 **PHAR 外部**可写目录（如 `runtime/`、`safefile/`、`database/`、`public/upload/`、Worker 的 pid/log/status/stdout 文件）
+
+更完整的构建与运行说明请参考 `plugin/think-plugs-builder/readme.md`。
+
 ### 前端
 
 - 后台统一使用 `LayUI + $.module.use(...)`

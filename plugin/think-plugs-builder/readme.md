@@ -138,6 +138,18 @@ PHAR 首次启动时会自动完成下面这些事情：
 
 这意味着部署后即使目录里一开始只有 `.env + admin.phar`，第一次运行后也会自动补齐运行目录。
 
+## 路径约定（PHAR 兼容关键点）
+
+在 PHAR 运行模式下，必须严格区分“包内只读资源”和“外部可写运行目录”：
+
+- `syspath()`：用于读取 **PHAR 包内**资源（只读），典型如 `public/static/...`、模板、内置数据文件等
+- `runpath()`：用于读写 **PHAR 外部**文件系统（可写），典型如 `runtime/`、`safefile/`、`database/`、`public/upload/` 以及 Worker 的 pid/log/status/stdout 文件
+
+常见坑：
+
+- GD 的 `imagettftext()` 不支持 `phar://` 字体流：字体需复制到 `runpath()` 再使用
+- SQLite / File cache 等落盘路径必须使用 `runpath()`，否则会尝试写入 PHAR 内导致失败
+
 ## Worker 使用说明
 
 打包后的 PHAR 支持直接运行 Worker：

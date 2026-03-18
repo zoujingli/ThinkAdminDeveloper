@@ -81,7 +81,7 @@ declare(strict_types=1);
 return [
     'defaults' => [
         'runtime' => [
-            // 'stdout_file' => syspath('safefile/worker/shared.stdout.log'),
+            // 'stdout_file' => runpath('safefile/worker/shared.stdout.log'),
             // 'log_max_size' => 10 * 1024 * 1024,
             // 'stop_timeout' => 2,
             // 'event_loop' => \Workerman\Events\Event::class,
@@ -131,6 +131,8 @@ return [
     ],
 ];
 ```
+
+> 说明：PHAR 环境下 `runtime/safefile/database/public(upload)` 等可变目录必须落在 **PHAR 外部**，因此请统一使用 `runpath()`；只有读取包内资源（如 `public/static`）才使用 `syspath()`。
 
 ### 配置说明
 
