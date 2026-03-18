@@ -68,7 +68,8 @@ return [
             // 数据库类型
             'type' => 'sqlite',
             // 数据库文件
-            'database' => syspath('database/sqlite.db'),
+            // Phar 环境下 sqlite.db 需位于外部可写目录
+            'database' => runpath('database/sqlite.db'),
             // 数据库编码默认采用 utf8
             'charset' => 'utf8',
             // 监听执行日志

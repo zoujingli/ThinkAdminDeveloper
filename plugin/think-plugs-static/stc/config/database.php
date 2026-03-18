@@ -68,7 +68,7 @@ return [
             // 数据库类型
             'type' => 'sqlite',
             // 数据库文件
-            'database' => syspath('database/sqlite.db'),
+            'database' => runpath('database/sqlite.db'),
             // 数据库编码默认采用 utf8
             'charset' => 'utf8',
             // 监听执行日志
