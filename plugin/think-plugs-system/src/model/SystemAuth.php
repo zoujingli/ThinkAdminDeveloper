@@ -71,7 +71,7 @@ class SystemAuth extends Model
         }
 
         $titles = [];
-        foreach (PluginService::all(true) as $code => $plugin) {
+        foreach (AppService::all(true) as $code => $plugin) {
             $titles[$code] = strval($plugin['name'] ?? $code);
         }
         foreach (AppService::all() as $code => $app) {
@@ -187,7 +187,7 @@ class SystemAuth extends Model
         }
 
         $prefix = explode('/', $node, 2)[0];
-        if ($plugin = PluginService::resolvePrefix($prefix, true) ?: PluginService::resolve($prefix, true)) {
+        if ($plugin = AppService::resolvePluginPrefix($prefix, true) ?: AppService::resolve($prefix, true)) {
             return strval($plugin['code'] ?? '');
         }
         if ($app = AppService::get($prefix)) {

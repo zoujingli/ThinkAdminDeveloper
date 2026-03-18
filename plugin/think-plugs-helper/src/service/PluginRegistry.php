@@ -38,7 +38,7 @@ final class PluginRegistry
     public static function all(): array
     {
         $items = [];
-        foreach (PluginService::all(true, true) as $code => $plugin) {
+        foreach (AppService::all(true, true) as $code => $plugin) {
             if (!is_array($config = self::detect($plugin))) {
                 continue;
             }

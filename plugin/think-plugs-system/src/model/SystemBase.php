@@ -104,7 +104,7 @@ class SystemBase extends Model
         }
 
         $titles = [];
-        foreach (PluginService::all(true) as $code => $plugin) {
+        foreach (AppService::all(true) as $code => $plugin) {
             $titles[$code] = strval($plugin['name'] ?? $code);
         }
         foreach (AppService::all() as $code => $app) {
@@ -202,7 +202,7 @@ class SystemBase extends Model
     public static function pluginOptions(): array
     {
         $items = [];
-        foreach (PluginService::all(true) as $code => $plugin) {
+        foreach (AppService::all(true) as $code => $plugin) {
             $items[] = ['code' => $code, 'name' => strval($plugin['name'] ?? $code)];
         }
         foreach (AppService::local() as $code => $app) {
@@ -288,7 +288,7 @@ class SystemBase extends Model
             if ($plugin === '') {
                 continue;
             }
-            if ($resolved = PluginService::resolve($plugin, true)) {
+            if ($resolved = AppService::resolve($plugin, true)) {
                 $plugin = strval($resolved['code'] ?? $plugin);
             } elseif ($app = AppService::get($plugin)) {
                 $plugin = strval($app['code'] ?? $plugin);

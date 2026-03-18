@@ -7,8 +7,6 @@
 - ThinkAdmin `8.x`
 - ThinkPHP `8.1+`
 - PHP `8.1+`
-- PHPStan `2.0+`（开发工具）
-- PHP-CS-Fixer `3.0+`（代码风格）
 
 ## 详细描述
 

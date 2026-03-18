@@ -200,7 +200,7 @@ if (!function_exists('apiuri')) {
         }
 
         $attrs = $url === '' ? [] : array_values(array_filter(explode('/', trim($url, '/')), 'strlen'));
-        $module = PluginService::currentCode() ?: (Library::$sapp->http->getName() ?: AppService::singleCode());
+        $module = AppService::currentCode() ?: (Library::$sapp->http->getName() ?: AppService::singleCode());
         $controller = Library::$sapp->request->controller();
         $action = Library::$sapp->request->action(true);
 
@@ -225,7 +225,7 @@ if (!function_exists('apiuri')) {
         }, $segments)) ?: 'index';
         $action = trim(str_replace('\\', '/', $action), '/') ?: 'index';
 
-        $apiPrefix = PluginService::entryPrefix();
+        $apiPrefix = AppService::pluginApiPrefix();
         $target = '/' . trim("{$apiPrefix}/{$module}/{$controller}/{$action}", '/');
         return Library::$sapp->route->buildUrl($target, $vars)->suffix($suffix)->domain($domain)->build();
     }

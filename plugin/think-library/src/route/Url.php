@@ -198,8 +198,8 @@ class Url extends ThinkUrl
             $module = empty($attrs) ? $this->app->http->getName() : array_pop($attrs);
             // 拼装新的链接地址
             $url = NodeService::nameTolower($contrl) . '/' . $action;
-            if ($plugin = PluginService::resolve($module)) {
-                $prefix = PluginService::prefix($plugin['code']);
+            if ($plugin = AppService::resolve($module)) {
+                $prefix = AppService::pluginPrefix($plugin['code']);
                 $url = ($prefix ?: $plugin['code']) . '/' . $url;
             } elseif ($module !== AppService::singleCode()) {
                 $url = $module . '/' . $url;

@@ -86,7 +86,7 @@ class Index extends Controller
         }
 
         // 读取插件菜单
-        $menus = PluginService::menus($this->plugin, true, true);
+        $menus = AppService::menus($this->plugin, true, true);
         if (empty($menus)) {
             $this->fetchError('插件未配置菜单！');
         }
@@ -145,7 +145,7 @@ class Index extends Controller
      */
     private function openPlugin(string $code, string $name = '打开指定插件'): Response
     {
-        $current = PluginService::current();
+        $current = AppService::current();
         $href = '#' . sysuri(sprintf('layout/%s', encode(strval($current['code'] ?? $code))), [], false);
         return json(['code' => 1, 'info' => $name, 'data' => $href, 'wait' => 'false']);
     }

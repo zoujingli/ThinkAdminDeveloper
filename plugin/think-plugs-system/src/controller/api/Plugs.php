@@ -84,7 +84,7 @@ class Plugs extends Controller
         $domain = $unid > 0;
         return response(join("\r\n", [
             sprintf('window.taDebug = %s;', $this->app->isDebug() ? 'true' : 'false'),
-            sprintf("window.taApiPrefix = '%s';", PluginService::entryPrefix()),
+            sprintf("window.taApiPrefix = '%s';", AppService::pluginApiPrefix()),
             sprintf("window.taSystem = '%s';", sysuri('system/index/index', [], false, $domain)),
             sprintf("window.taStorage = '%s';", sysuri('storage/index/index', [], false, $domain)),
             sprintf("window.taSystemApi = '%s';", $this->buildApiRoot('system', $domain)),
@@ -112,8 +112,8 @@ class Plugs extends Controller
 
     private function buildApiRoot(string $plugin, bool $domain): string
     {
-        $prefix = PluginService::prefix($plugin) ?: $plugin;
-        $path = '/' . trim(PluginService::entryPrefix() . '/' . $prefix, '/');
+        $prefix = AppService::pluginPrefix($plugin) ?: $plugin;
+        $path = '/' . trim(AppService::pluginApiPrefix() . '/' . $prefix, '/');
         return ($domain ? $this->request->domain(true) : '') . $path;
     }
 }

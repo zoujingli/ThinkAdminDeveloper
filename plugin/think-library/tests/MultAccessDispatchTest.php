@@ -200,8 +200,8 @@ PHP);
         $response = (new MultAccess($app))->handle($request, static function (Request $request) use ($app): Response {
             return Response::create([
                 'app' => $app->http->getName(),
-                'plugin' => PluginService::currentCode(),
-                'entry' => PluginService::currentEntry(),
+                'plugin' => AppService::currentCode(),
+                'entry' => AppService::currentEntry(),
                 'root' => $request->root(),
                 'pathinfo' => $request->pathinfo(),
             ], 'json');

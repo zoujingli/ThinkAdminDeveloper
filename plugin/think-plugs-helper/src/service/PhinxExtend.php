@@ -98,9 +98,9 @@ class PhinxExtend
         }
 
         PluginService::assertMenus($service);
-        $menus = PluginService::menus($service);
-        $root = array_replace($root, PluginService::menuRoot($service));
-        $exists = array_replace($exists, PluginService::menuExists($service));
+        $menus = AppService::menus($service);
+        $root = array_replace($root, AppService::menuRoot($service));
+        $exists = array_replace($exists, AppService::menuExists($service));
         if (!empty($root)) {
             if (!empty($menus)) {
                 $root['subs'] = $menus;

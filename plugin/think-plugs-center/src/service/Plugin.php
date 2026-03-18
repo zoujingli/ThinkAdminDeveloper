@@ -48,7 +48,7 @@ abstract class Plugin
      */
     public static function isInstall(string $code): bool
     {
-        return !empty(PluginService::get($code, true));
+        return !empty(AppService::get($code, true));
     }
 
     /**
@@ -59,14 +59,14 @@ abstract class Plugin
     public static function getLocalPlugs(?string $type = null, bool $check = false): array
     {
         $data = [];
-        foreach (PluginService::all(true) as $code => $packer) {
+        foreach (AppService::all(true) as $code => $packer) {
             $install = (array)($packer['install'] ?? []);
             $ptype = strval($packer['type'] ?? ($install['type'] ?? ''));
             if (is_string($type) && $ptype !== $type) {
                 continue;
             }
             // 插件菜单处理
-            $menus = PluginService::menus($packer, $check, false);
+            $menus = AppService::menus($packer, $check, false);
             if ($check) {
                 if (empty($menus)) {
                     continue;

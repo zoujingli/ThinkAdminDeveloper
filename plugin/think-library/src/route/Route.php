@@ -264,7 +264,7 @@ class Route extends ThinkRoute
         $target = trim($this->dispatchTarget($dispatch), '\/');
 
         $pluginCode = trim(strval($option[self::OPTION_PLUGIN] ?? $option['plugin'] ?? ''));
-        if ($pluginCode !== '' && ($plugin = PluginService::resolve($pluginCode))) {
+        if ($pluginCode !== '' && ($plugin = AppService::resolve($pluginCode))) {
             $plugin['type'] = 'plugin';
             $plugin['entry'] = $this->detectPluginEntry($dispatch, $option, $target);
             $plugin['matched_prefix'] = '';
@@ -287,7 +287,7 @@ class Route extends ThinkRoute
             $code = trim(strval($parts[0]));
             $inner = join('/', array_slice($parts, 1));
 
-            if ($code !== '' && ($plugin = PluginService::resolve($code))) {
+            if ($code !== '' && ($plugin = AppService::resolve($code))) {
                 $plugin['type'] = 'plugin';
                 $plugin['entry'] = $this->detectPluginEntry($dispatch, $option, $inner);
                 $plugin['matched_prefix'] = '';
