@@ -311,6 +311,7 @@ class SystemAuthService extends Service
 
     /**
      * 同步后台认证 Cookie。
+     * 使用 path=>'/' 保证同站任意路径均携带；值经 encodeCookieToken 加密后写入。
      */
     public static function syncTokenCookie(?string $token = null): string
     {
@@ -320,7 +321,11 @@ class SystemAuthService extends Service
             return '';
         }
 
-        cookie(static::getTokenCookie(), RequestTokenService::encodeCookieToken($token), ['expire' => static::getTokenExpire()]);
+        $expire = static::getTokenExpire();
+        cookie(static::getTokenCookie(), RequestTokenService::encodeCookieToken($token), [
+            'expire' => $expire,
+            'path' => '/',
+        ]);
         return $token;
     }
 
@@ -329,7 +334,7 @@ class SystemAuthService extends Service
      */
     public static function forgetTokenCookie(): void
     {
-        cookie(static::getTokenCookie(), null);
+        cookie(static::getTokenCookie(), null, ['path' => '/']);
     }
 
     /**

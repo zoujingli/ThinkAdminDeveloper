@@ -60,6 +60,9 @@ class SystemAuth extends Model
      * 追加插件归属信息.
      * @param array<int, array<string, mixed>> $items
      * @return array<int, array<string, mixed>>
+     * @throws DataNotFoundException
+     * @throws DbException
+     * @throws ModelNotFoundException
      */
     public static function appendPlugins(array $items): array
     {

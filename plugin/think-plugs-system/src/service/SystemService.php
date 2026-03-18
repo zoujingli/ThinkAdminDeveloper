@@ -315,9 +315,9 @@ class SystemService extends Service
         var_dump($data);
         $output = preg_replace('/]=>\n(\s+)/m', '] => ', ob_get_clean());
         if (is_null($file)) {
-            $file = syspath('runtime/' . date('Ymd') . '.log');
+            $file = runpath('runtime/' . date('Ymd') . '.log');
         } elseif (!preg_match('#[/\\\]+#', $file)) {
-            $file = syspath("runtime/{$file}.log");
+            $file = runpath("runtime/{$file}.log");
         }
         is_dir($dir = dirname($file)) or mkdir($dir, 0777, true);
         return $new ? file_put_contents($file, $output) : file_put_contents($file, $output, FILE_APPEND);
@@ -341,7 +341,7 @@ class SystemService extends Service
             }
             try {
                 $favicon = new FaviconBuilder($file, [48, 48]);
-                return $favicon->saveIco(syspath('public/favicon.ico'));
+                return $favicon->saveIco(runpath('public/favicon.ico'));
             } finally {
                 if ($temporary && is_file($file)) {
                     @unlink($file);
@@ -368,7 +368,7 @@ class SystemService extends Service
         if ($body === '') {
             return ['', false];
         }
-        $file = syspath('runtime/' . Storage::name($icon, 'tmp', 'favicon'));
+        $file = runpath('runtime/' . Storage::name($icon, 'tmp', 'favicon'));
         is_dir($dir = dirname($file)) || mkdir($dir, 0777, true);
         return file_put_contents($file, $body) === false ? ['', false] : [$file, true];
     }
@@ -386,7 +386,8 @@ class SystemService extends Service
         if (preg_match('#(^|/)\.\.(/|$)#', $name)) {
             return null;
         }
-        $file = syspath("public/upload/{$name}");
+        // upload 目录属于可写运行目录（Phar 环境在外部挂载）
+        $file = runpath("public/upload/{$name}");
         return is_file($file) ? $file : null;
     }
 

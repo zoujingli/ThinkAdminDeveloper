@@ -123,11 +123,24 @@ class CaptchaService extends Service
     }
 
     /**
-     * 获取字体文件.
+     * 获取字体文件路径。GD imagettftext 不支持 phar 流，phar 下需复制到磁盘路径。
      */
     public static function font(): string
     {
-        return __DIR__ . '/bin/captcha.ttf';
+        $source = __DIR__ . '/bin/captcha.ttf';
+        if (!str_starts_with($source, 'phar://')) {
+            return $source;
+        }
+        $runtimeDir = runpath('runtime');
+        $target = $runtimeDir . '/captcha_font.ttf';
+        $dir = dirname($target);
+        if (!is_dir($dir)) {
+            @mkdir($dir, 0777, true);
+        }
+        if (!is_file($target) || (is_file($source) && filemtime($source) > filemtime($target))) {
+            @copy($source, $target);
+        }
+        return is_file($target) ? $target : $source;
     }
 
     /**
