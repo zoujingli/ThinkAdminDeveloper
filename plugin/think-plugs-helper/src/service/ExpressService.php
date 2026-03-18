@@ -106,7 +106,7 @@ class ExpressService extends Service
             $clientIp = join('.', [rand(1, 254), rand(1, 254), rand(1, 254), rand(1, 254)]);
         }
         // 通过固定请求头和 cookie 文件模拟真实浏览器访问。
-        $this->options['cookie_file'] = syspath('runtime/.cok');
+        $this->options['cookie_file'] = runpath('runtime/.cok');
         $this->options['headers'] = ['Host:express.baidu.com', "CLIENT-IP:{$clientIp}", "X-FORWARDED-FOR:{$clientIp}"];
         return $this;
     }

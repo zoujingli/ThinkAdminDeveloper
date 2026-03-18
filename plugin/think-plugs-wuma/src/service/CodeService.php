@@ -466,7 +466,7 @@ class CodeService
      */
     public static function withFile(string $batch): string
     {
-        return syspath("safefile/code/{$batch}.zip");
+        return runpath("safefile/code/{$batch}.zip");
     }
 
     /**

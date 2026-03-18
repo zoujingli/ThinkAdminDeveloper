@@ -56,7 +56,7 @@ class Package extends Command
     public function handle()
     {
         try {
-            $dirname = syspath('database/migrations');
+            $dirname = runpath('database/migrations');
             is_dir($dirname) || mkdir($dirname, 0777, true);
             $this->output->writeln('--- 开始创建数据库迁移脚本 ---');
             if ($this->createBackup() && $this->createScheme()) {
@@ -111,7 +111,7 @@ class Package extends Command
         foreach ($groups as $key => $tbs) {
             $name = 'Install' . ucfirst($key) . 'Table';
             $phinx = PhinxExtend::create2table($tbs, $name, $force);
-            $target = syspath("database/migrations/{$phinx['file']}");
+            $target = runpath("database/migrations/{$phinx['file']}");
             if (file_put_contents($target, $phinx['text']) !== false) {
                 $this->setQueueMessage($total, ++$count, "创建数据库 {$name} 安装脚本成功！");
             } else {
@@ -150,7 +150,7 @@ class Package extends Command
 
         $this->setQueueMessage(4, 1, '开始创建数据包安装脚本！');
         $phinx = PhinxExtend::create2backup($tables);
-        $target = syspath("database/migrations/{$phinx['file']}");
+        $target = runpath("database/migrations/{$phinx['file']}");
         if (file_put_contents($target, $phinx['text']) !== false) {
             $this->setQueueMessage(4, 2, '成功创建数据包安装脚本！');
             return true;

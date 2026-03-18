@@ -91,7 +91,9 @@ class Create extends Command
         $auth = CodeToolkit::random(20);
         $this->app->cache->set("create_auth_{$this->batch}", $auth, 360);
         $token = base64_encode(json_encode([
-            'auth' => $auth, 'host' => sysconf('site_host'), 'target' => syspath('safefile/code/'),
+            'auth' => $auth,
+            'host' => sysconf('site_host'),
+            'target' => runpath('safefile/code/'),
         ]));
         $binary = dirname(__DIR__, 2) . '/stc/bin/' . (Process::isWin() ? 'coder.exe' : 'coder');
         // 赋予文件可执行权限

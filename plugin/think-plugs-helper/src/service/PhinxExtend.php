@@ -206,7 +206,7 @@ class PhinxExtend
             foreach ($tables as $table) {
                 if (($count = ($db = Library::$sapp->db->table($table))->count()) > 0) {
                     $dataFileName = "{$version}/{$table}.data";
-                    $dataFilePath = syspath("database/migrations/{$dataFileName}");
+                    $dataFilePath = runpath("database/migrations/{$dataFileName}");
                     is_dir($dataDirectory = dirname($dataFilePath)) || mkdir($dataDirectory, 0777, true);
                     $progress && ProcessService::message(" -- Starting write {$table}.data ..." . PHP_EOL);
                     [$used, $fp] = [0, fopen($dataFilePath, 'w+')];
@@ -561,7 +561,7 @@ CODE;
     private static function nextFile(string $class): string
     {
         [$snake, $items] = [Str::snake($class), [20010000000000]];
-        FileTools::find(syspath('database/migrations'), 1, function (\SplFileInfo $info) use ($snake, &$items) {
+        FileTools::find(runpath('database/migrations'), 1, function (\SplFileInfo $info) use ($snake, &$items) {
             if ($info->isFile()) {
                 $bname = pathinfo($info->getBasename(), PATHINFO_FILENAME);
                 $items[] = $version = intval(substr($bname, 0, 14));

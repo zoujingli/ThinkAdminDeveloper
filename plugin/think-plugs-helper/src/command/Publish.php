@@ -113,9 +113,9 @@ class Publish extends Command
     {
         $copy = rtrim($copy, '\/');
 
-        FileTools::copy($copy . DIRECTORY_SEPARATOR . 'config', syspath('config'), [], $force, false);
-        FileTools::copy($copy . DIRECTORY_SEPARATOR . 'public', syspath('public'), [], $force, false);
-        FileTools::copy($copy . DIRECTORY_SEPARATOR . 'stc' . DIRECTORY_SEPARATOR . 'config', syspath('config'), [], $force, false);
+        FileTools::copy($copy . DIRECTORY_SEPARATOR . 'config', runpath('config'), [], $force, false);
+        FileTools::copy($copy . DIRECTORY_SEPARATOR . 'public', runpath('public'), [], $force, false);
+        FileTools::copy($copy . DIRECTORY_SEPARATOR . 'stc' . DIRECTORY_SEPARATOR . 'config', runpath('config'), [], $force, false);
         $this->copyByManifest($copy, $publish, 'init', $force);
         $this->copyByManifest($copy, $publish, 'copy', $force);
     }
@@ -148,7 +148,7 @@ class Publish extends Command
      */
     private function syncMigrations(array $sources, bool $force = false): void
     {
-        $targetDir = syspath('database/migrations');
+        $targetDir = runpath('database/migrations');
         is_dir($targetDir) || mkdir($targetDir, 0777, true);
 
         $normalized = [];
@@ -331,12 +331,14 @@ class Publish extends Command
 
         $services = array_values(array_unique(array_filter(array_map('strval', $services))));
 
+        is_dir($dir = runpath('vendor')) || @mkdir($dir, 0777, true);
+
         $header = '// Automatically Generated At: ' . date('Y-m-d H:i:s') . PHP_EOL . 'declare(strict_types=1);';
         $content = '<?php' . PHP_EOL . $header . PHP_EOL . 'return ' . var_export($services, true) . ';';
-        @file_put_contents(syspath('vendor/services.php'), $content);
+        @file_put_contents(runpath('vendor/services.php'), $content);
 
         $content = '<?php' . PHP_EOL . $header . PHP_EOL . 'return ' . var_export($versions, true) . ';';
-        @file_put_contents(syspath('vendor/versions.php'), preg_replace('#\s+=>\s+array\s+\(#m', ' => array (', $content));
+        @file_put_contents(runpath('vendor/versions.php'), preg_replace('#\s+=>\s+array\s+\(#m', ' => array (', $content));
 
         return $this;
     }

@@ -183,7 +183,7 @@ class WechatService extends Service
             'token' => sysconf('wechat.token'),
             'appsecret' => sysconf('wechat.appsecret'),
             'encodingaeskey' => sysconf('wechat.encodingaeskey'),
-            'cache_path' => syspath('runtime/wechat'),
+            'cache_path' => runpath('runtime/wechat'),
         ];
         return $ispay ? static::withWxpayCert($config) : $config;
     }
@@ -199,7 +199,7 @@ class WechatService extends Service
         $config = [
             'appid' => $wxapp['appid'] ?? '',
             'appsecret' => $wxapp['appkey'] ?? '',
-            'cache_path' => syspath('runtime/wechat'),
+            'cache_path' => runpath('runtime/wechat'),
         ];
         return $ispay ? static::withWxpayCert($config) : $config;
     }

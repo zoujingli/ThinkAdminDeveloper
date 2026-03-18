@@ -131,7 +131,9 @@ class DbRestoreStruct extends DbBackupStruct
             return false;
         }
 
-        copy($path, $tmp = syspath('runtime/backup_data_tmp.gz'));
+        $tmp = runpath('runtime/backup_data_tmp.gz');
+        is_dir($dir = dirname($tmp)) || @mkdir($dir, 0777, true);
+        copy($path, $tmp);
         $schemaManager = $this->makeConnect()->createSchemaManager();
 
         // 先清空 forceCleanTables 表，无需 count 检查

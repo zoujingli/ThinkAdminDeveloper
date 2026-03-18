@@ -159,7 +159,7 @@ class DbBackupStruct extends Command
      */
     protected function getSchemaPath(): string
     {
-        return syspath('database/backup.schema.gz');
+        return runpath('database/backup.schema.gz');
     }
 
     /**
@@ -167,6 +167,6 @@ class DbBackupStruct extends Command
      */
     protected function getBackupPath(): string
     {
-        return syspath('database/backup.data.gz');
+        return runpath('database/backup.data.gz');
     }
 }

@@ -224,6 +224,6 @@ class AuthService extends Service
      */
     private function getCachePath(): string
     {
-        return syspath('safefile/cache');
+        return runpath('safefile/cache');
     }
 }

@@ -295,7 +295,7 @@ class Trans extends Command
             'cert_private' => $local->path($file1, true),
             'cert_public' => $local->path($file2, true),
             // 设置缓存目录
-            'cache_path' => syspath('safefile/wechat'),
+            'cache_path' => runpath('safefile/wechat'),
         ];
     }
 }

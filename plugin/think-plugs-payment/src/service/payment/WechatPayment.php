@@ -80,7 +80,7 @@ abstract class WechatPayment implements PaymentInterface
         $this->config['mch_key'] = $this->cfgParams['wechat_mch_key'] ?? '';
         $this->config['mch_v3_key'] = $this->cfgParams['wechat_mch_v3_key'] ?? '';
         $this->withCertConfig();
-        $this->config['cache_path'] = syspath('runtime/wechat');
+        $this->config['cache_path'] = runpath('runtime/wechat');
         return $this;
     }
 
