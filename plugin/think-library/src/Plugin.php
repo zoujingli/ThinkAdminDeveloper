@@ -294,7 +294,7 @@ abstract class Plugin extends Service
             return $data;
         }
         // 关联插件安装信息
-        $versions = ModuleService::getLibrarys();
+        $versions = PluginService::getLibrarys();
         return empty($code) ? array_map(static function ($item) use ($versions) {
             $item['install'] = $versions[$item['package']] ?? [];
             if (empty($item['name'])) {

@@ -42,7 +42,7 @@ class ProcessService extends Service
      */
     public static function php(string $args = ''): string
     {
-        return ModuleService::getPhpExec() . ' ' . $args;
+        return PluginService::getPhpExec() . ' ' . $args;
     }
 
     /**
@@ -62,7 +62,7 @@ class ProcessService extends Service
     {
         static $comExec;
         if (empty($comExec)) {
-            $comExec = ModuleService::getRunVar('com');
+            $comExec = PluginService::getRunVar('com');
             $comExec = static::isFile($comExec) ? static::php($comExec) : 'composer';
         }
         $root = static::workingDirectory();

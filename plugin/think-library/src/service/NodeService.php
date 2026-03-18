@@ -115,12 +115,12 @@ class NodeService extends Service
 
     public static function getModules(array $data = []): array
     {
-        return ModuleService::getModules($data);
+        return PluginService::getModules($data);
     }
 
     public static function getApps(array $data = []): array
     {
-        return ModuleService::getApps($data);
+        return PluginService::getApps($data);
     }
 
     private static function parseClass(string $appName, string $appSpace, string $className, array $ignoreNode, array &$data): void

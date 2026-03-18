@@ -52,6 +52,26 @@ class PluginService extends Service
     private const CACHE_ENTRY = 'think.admin.plugins.entry';
 
     /**
+     * 获取本地模块列表。
+     * @param array $data 额外数据
+     * @return array
+     */
+    public static function getModules(array $data = []): array
+    {
+        return array_values(array_unique(array_merge($data, array_keys(AppService::local()))));
+    }
+
+    /**
+     * 获取全部应用列表。
+     * @param array $data 额外数据
+     * @return array
+     */
+    public static function getApps(array $data = []): array
+    {
+        return array_values(array_unique(array_merge($data, array_keys(AppService::all()))));
+    }
+
+    /**
      * 清理插件缓存。
      */
     public static function clear(): void
@@ -632,7 +652,7 @@ class PluginService extends Service
      */
     private static function appendInstall(array $plugin): array
     {
-        $versions = ModuleService::getLibrarys();
+        $versions = self::getLibrarys();
         $plugin['install'] = $versions[$plugin['package']] ?? [];
         foreach (['type', 'name', 'document', 'description', 'homepage', 'version'] as $field) {
             if (empty($plugin[$field])) {
@@ -648,6 +668,62 @@ class PluginService extends Service
             (array)($plugin['install']['license'] ?? [])
         ))));
         return $plugin;
+    }
+
+    /**
+     * 获取包版本信息。
+     * @param ?string $package 包名
+     * @param bool $force 强制刷新
+     * @return array|mixed
+     */
+    private static function getLibrarys(?string $package = null, bool $force = false)
+    {
+        $plugs = sysvar($keys = 'think.admin.version');
+        if ((empty($plugs) || $force) && is_file($file = syspath('vendor/versions.php'))) {
+            $plugs = sysvar($keys, include $file);
+        }
+        return empty($package) ? $plugs : ($plugs[$package] ?? null);
+    }
+
+    /**
+     * 获取版本信息。
+     * @return string
+     */
+    public static function getVersion(): string
+    {
+        $library = self::getLibrarys('zoujingli/think-library');
+        return trim($library['version'] ?? 'v8.0.0', 'v');
+    }
+
+    /**
+     * 获取 PHP 可执行文件路径。
+     * @return string
+     */
+    public static function getPhpExec(): string
+    {
+        if ($phpExec = sysvar($keys = 'phpBinary')) {
+            return $phpExec;
+        }
+        if (ProcessService::isFile($phpExec = self::getRunVar('php'))) {
+            return sysvar($keys, $phpExec);
+        }
+        $phpExec = str_replace('/sbin/php-fpm', '/bin/php', PHP_BINARY);
+        $phpExec = preg_replace('#-(cgi|fpm)(\.exe)?$#', '$2', $phpExec);
+        return sysvar($keys, ProcessService::isFile($phpExec) ? $phpExec : 'php');
+    }
+
+    /**
+     * 获取运行时二进制文件。
+     * @param string $field 字段名
+     * @return string
+     */
+    public static function getRunVar(string $field): string
+    {
+        $file = syspath('vendor/binarys.php');
+        if (is_file($file) && is_array($binarys = include $file)) {
+            return $binarys[$field] ?? '';
+        }
+        return '';
     }
 
     /**
