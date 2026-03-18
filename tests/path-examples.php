@@ -1,13 +1,22 @@
 <?php
 
 declare(strict_types=1);
-
 /**
- * 路径函数使用示例
- * 
- * 展示在不同场景下如何正确使用 syspath() 和 runpath()
+ * +----------------------------------------------------------------------
+ * | ThinkAdmin Plugin for ThinkAdmin
+ * +----------------------------------------------------------------------
+ * | 版权所有 2014~2026 ThinkAdmin [ thinkadmin.top ]
+ * +----------------------------------------------------------------------
+ * | 官方网站: https://thinkadmin.top
+ * +----------------------------------------------------------------------
+ * | 开源协议 ( https://mit-license.org )
+ * | 免责声明 ( https://thinkadmin.top/disclaimer )
+ * | 会员特权 ( https://thinkadmin.top/vip-introduce )
+ * +----------------------------------------------------------------------
+ * | gitee 代码仓库：https://gitee.com/zoujingli/ThinkAdmin
+ * | github 代码仓库：https://github.com/zoujingli/ThinkAdmin
+ * +----------------------------------------------------------------------
  */
-
 // ============================================
 // 场景 1：加载 PHP 类文件（使用 syspath）
 // ============================================
@@ -49,7 +58,7 @@ $dbFile = runpath('database/sqlite.db');
 // 场景 6：缓存文件（使用 runpath）
 // ============================================
 $cacheFile = runpath('runtime/cache/' . md5($key) . '.php');
-file_put_contents($cacheFile, "<?php\nreturn " . var_export($data, true) . ";");
+file_put_contents($cacheFile, "<?php\nreturn " . var_export($data, true) . ';');
 
 // ============================================
 // 场景 7：会话文件（使用 runpath）
@@ -90,12 +99,12 @@ if (is_file(runpath('runtime/cache/test.php'))) {
 // ============================================
 if (is_phar()) {
     echo "当前运行在 PHAR 环境\n";
-    echo "系统根目录：" . syspath() . "\n";      // phar:///path/to/admin.phar
-    echo "运行根目录：" . runpath() . "\n";      // /path/to/install
+    echo '系统根目录：' . syspath() . "\n";      // phar:///path/to/admin.phar
+    echo '运行根目录：' . runpath() . "\n";      // /path/to/install
 } else {
     echo "当前运行在普通环境\n";
-    echo "系统根目录：" . syspath() . "\n";      // /project
-    echo "运行根目录：" . runpath() . "\n";      // /project
+    echo '系统根目录：' . syspath() . "\n";      // /project
+    echo '运行根目录：' . runpath() . "\n";      // /project
 }
 
 // ============================================
