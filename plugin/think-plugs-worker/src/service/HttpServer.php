@@ -148,19 +148,17 @@ class HttpServer extends Server
     public function setRoot(string $path): void
     {
         $this->root = rtrim($path, \DIRECTORY_SEPARATOR) . \DIRECTORY_SEPARATOR;
-        if (!defined('THINK_PLUGS_PUBLIC_ROOT')) {
-            $this->public = $this->root . 'public' . \DIRECTORY_SEPARATOR;
-        }
+        $this->public = $this->resolvePublicRoot();
     }
 
     protected function init(): void {}
 
     private function resolvePublicRoot(): string
     {
-        if (defined('THINK_PLUGS_PUBLIC_ROOT') && is_string(THINK_PLUGS_PUBLIC_ROOT) && THINK_PLUGS_PUBLIC_ROOT !== '') {
-            return rtrim(THINK_PLUGS_PUBLIC_ROOT, \DIRECTORY_SEPARATOR) . \DIRECTORY_SEPARATOR;
+        // 统一使用 runpath 计算可写 public 根目录（phar/普通环境一致）
+        if (function_exists('runpath')) {
+            return rtrim(runpath('public'), \DIRECTORY_SEPARATOR) . \DIRECTORY_SEPARATOR;
         }
-
         return $this->root . 'public' . \DIRECTORY_SEPARATOR;
     }
 

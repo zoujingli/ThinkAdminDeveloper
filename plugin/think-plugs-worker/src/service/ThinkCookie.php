@@ -43,6 +43,8 @@ class ThinkCookie extends Cookie
 
     /**
      * 保存 Cookie 数据.
+     * Worker 下已绑定 Workerman Response 时始终写回 Set-Cookie，不依赖 config[setcookie]（该配置仅控制 PHP/Think 响应写回）。
+     *
      * @param string $name cookie名称
      * @param string $value cookie值
      * @param int $expire cookie过期时间
@@ -54,9 +56,12 @@ class ThinkCookie extends Cookie
      */
     protected function saveCookie(string $name, string $value, int $expire, string $path, string $domain, bool $secure, bool $httponly, string $samesite): void
     {
-        if (empty($this->config['setcookie'])) {
+        if (!isset($this->response)) {
             return;
         }
-        $this->response->cookie($name, $value, $expire ?: null, $path, $domain, $secure, $httponly, $samesite);
+        $isWorkerResponse = $this->response instanceof Response;
+        if ($isWorkerResponse || !empty($this->config['setcookie'])) {
+            $this->response->cookie($name, $value, $expire ?: null, $path, $domain, $secure, $httponly, $samesite);
+        }
     }
 }

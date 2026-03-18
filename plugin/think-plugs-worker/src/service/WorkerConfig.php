@@ -334,10 +334,11 @@ class WorkerConfig
     protected function defaultRuntimeFile(string $slug, string $type): string
     {
         return match ($type) {
-            'pidFile' => syspath("safefile/worker/{$slug}.pid"),
-            'statusFile' => syspath("safefile/worker/{$slug}.status"),
-            'logFile' => syspath("safefile/worker/{$slug}.log"),
-            'stdoutFile' => syspath("safefile/worker/{$slug}.stdout.log"),
+            // Phar 环境下需要写入外部可写目录
+            'pidFile' => runpath("safefile/worker/{$slug}.pid"),
+            'statusFile' => runpath("safefile/worker/{$slug}.status"),
+            'logFile' => runpath("safefile/worker/{$slug}.log"),
+            'stdoutFile' => runpath("safefile/worker/{$slug}.stdout.log"),
             default => throw new \InvalidArgumentException("Unsupported runtime file type [{$type}]."),
         };
     }

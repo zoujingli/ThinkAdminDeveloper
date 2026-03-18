@@ -143,7 +143,9 @@ class QueueServer
             return;
         }
 
-        @file_put_contents(syspath('runtime/cache/time.queue'), strval(time()));
+        $timeQueue = runpath('runtime/cache/time.queue');
+        is_dir($dir = dirname($timeQueue)) || @mkdir($dir, 0777, true);
+        @file_put_contents($timeQueue, strval(time()));
 
         $limit = max(1, intval($this->config['queue']['batch_limit'] ?? 20));
         $queue = $this->claimQueue($limit);

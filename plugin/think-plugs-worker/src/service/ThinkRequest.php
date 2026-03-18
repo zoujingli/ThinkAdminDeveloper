@@ -150,9 +150,7 @@ class ThinkRequest extends Request
 
     private function buildServer(WorkerRequest $request, TcpConnection $connection, string $scheme, int $port): array
     {
-        $root = defined('THINK_PLUGS_INSTALL_ROOT') && is_string(THINK_PLUGS_INSTALL_ROOT) && THINK_PLUGS_INSTALL_ROOT !== ''
-            ? rtrim(THINK_PLUGS_INSTALL_ROOT, \DIRECTORY_SEPARATOR)
-            : dirname(__DIR__, 4);
+        $root = runpath();
         $pathInfo = '/' . ltrim($this->pathinfo, '/');
         $server = [
             'DOCUMENT_ROOT' => $root . \DIRECTORY_SEPARATOR . 'public',

@@ -272,11 +272,7 @@ class ProcessService extends Service
      */
     public static function workingDirectory(): string
     {
-        if (defined('THINK_PLUGS_INSTALL_ROOT') && is_string(THINK_PLUGS_INSTALL_ROOT) && THINK_PLUGS_INSTALL_ROOT !== '') {
-            return rtrim(THINK_PLUGS_INSTALL_ROOT, '\\/');
-        }
-
-        return rtrim(Library::$sapp->getRootPath(), '\\/');
+        return rtrim(runpath(), '\/');
     }
 
     /**
@@ -284,10 +280,6 @@ class ProcessService extends Service
      */
     public static function entryScript(): string
     {
-        if (defined('THINK_PLUGS_PHAR_ENTRY') && is_string(THINK_PLUGS_PHAR_ENTRY) && THINK_PLUGS_PHAR_ENTRY !== '') {
-            return THINK_PLUGS_PHAR_ENTRY;
-        }
-
         if (($running = \Phar::running(false)) !== '') {
             return $running;
         }
