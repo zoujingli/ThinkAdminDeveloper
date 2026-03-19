@@ -3,18 +3,18 @@
 declare(strict_types=1);
 /**
  * +----------------------------------------------------------------------
- * | ThinkAdmin Plugin for ThinkAdmin
+ * | ThinkAdmin Plugin for ThinkAdminDeveloper
  * +----------------------------------------------------------------------
- * | 版权所有 2014~2026 ThinkAdmin [ thinkadmin.top ]
+ * | Copyright (c) 2014~2026 ThinkAdmin [ thinkadmin.top ]
  * +----------------------------------------------------------------------
- * | 官方网站: https://thinkadmin.top
+ * | Official Website: https://thinkadmin.top
  * +----------------------------------------------------------------------
- * | 开源协议 ( https://mit-license.org )
- * | 免责声明 ( https://thinkadmin.top/disclaimer )
- * | 会员特权 ( https://thinkadmin.top/vip-introduce )
+ * | Licensed: https://mit-license.org
+ * | Disclaimer: https://thinkadmin.top/disclaimer
+ * | Vip Rights: https://thinkadmin.top/vip-introduce
  * +----------------------------------------------------------------------
- * | gitee 代码仓库：https://gitee.com/zoujingli/ThinkAdmin
- * | github 代码仓库：https://github.com/zoujingli/ThinkAdmin
+ * | Gitee Repository: https://gitee.com/zoujingli/ThinkAdmin
+ * | Github Repository: https://github.com/zoujingli/ThinkAdmin
  * +----------------------------------------------------------------------
  */
 
@@ -55,7 +55,7 @@ class Assign extends Controller
         PluginWumaSourceAssign::mQuery()->layTable(function () {
             $this->title = '赋码批次管理';
         }, function (QueryHelper $query) {
-            $query->withoutField('items')->where(['deleted' => 0]);
+            $query->withoutField('items');
             $query->like('batch,cbatch')->dateBetween('create_time');
             $query->withCount(['range' => 'total'])->with([
                 'coder' => static function (Query $query) {
@@ -156,12 +156,12 @@ class Assign extends Controller
         }
         if ($this->request->isGet()) {
             // 生产批次数据
-            $this->produces = PluginWumaSourceProduce::lists(['status' => 1, 'deleted' => 0]);
+            $this->produces = PluginWumaSourceProduce::lists(['status' => 1]);
             // 物码批次数据
             $this->coders = PluginWumaCodeRule::lists(static function (Query $query) use ($data) {
                 $subsql1 = empty($data['cbatch']) ? '' : "batch='{$data['cbatch']}' OR";
-                $subsql2 = PluginWumaSourceAssign::mk()->where(['status' => 1, 'deleted' => 0])->field('cbatch')->buildSql();
-                $query->where(['deleted' => 0])->whereRaw("number>0 and ({$subsql1} batch not in {$subsql2})");
+                $subsql2 = PluginWumaSourceAssign::mk()->where(['status' => 1])->field('cbatch')->buildSql();
+                $query->whereRaw("number>0 and ({$subsql1} batch not in {$subsql2})");
             });
             if (empty($this->coders)) {
                 $this->error('物码批次不能为空！');

@@ -3,18 +3,18 @@
 declare(strict_types=1);
 /**
  * +----------------------------------------------------------------------
- * | ThinkAdmin Plugin for ThinkAdmin
+ * | ThinkAdmin Plugin for ThinkAdminDeveloper
  * +----------------------------------------------------------------------
- * | 版权所有 2014~2026 ThinkAdmin [ thinkadmin.top ]
+ * | Copyright (c) 2014~2026 ThinkAdmin [ thinkadmin.top ]
  * +----------------------------------------------------------------------
- * | 官方网站: https://thinkadmin.top
+ * | Official Website: https://thinkadmin.top
  * +----------------------------------------------------------------------
- * | 开源协议 ( https://mit-license.org )
- * | 免责声明 ( https://thinkadmin.top/disclaimer )
- * | 会员特权 ( https://thinkadmin.top/vip-introduce )
+ * | Licensed: https://mit-license.org
+ * | Disclaimer: https://thinkadmin.top/disclaimer
+ * | Vip Rights: https://thinkadmin.top/vip-introduce
  * +----------------------------------------------------------------------
- * | gitee 代码仓库：https://gitee.com/zoujingli/ThinkAdmin
- * | github 代码仓库：https://github.com/zoujingli/ThinkAdmin
+ * | Gitee Repository: https://gitee.com/zoujingli/ThinkAdmin
+ * | Github Repository: https://github.com/zoujingli/ThinkAdmin
  * +----------------------------------------------------------------------
  */
 
@@ -71,10 +71,6 @@ class QueryHelper extends Helper
      */
     public function __call(string $name, array $args)
     {
-        if ($this->handleCompatQueryCall($name, $args)) {
-            return $this;
-        }
-
         return static::make($this->query, $name, $args, function ($name, $args) {
             if (is_callable($callable = [$this->query, $name])) {
                 $value = call_user_func_array($callable, $args);
@@ -171,7 +167,6 @@ class QueryHelper extends Helper
             if (stripos($field, $alias) !== false) {
                 [$dk, $qk] = explode($alias, $field);
             }
-            $dk = $this->normalizeLegacyFieldName($dk);
             if (isset($data[$qk]) && $data[$qk] !== '') {
                 $this->query->whereLike($dk, "%{$split}{$data[$qk]}{$split}%");
             }
@@ -194,7 +189,6 @@ class QueryHelper extends Helper
             if (stripos($field, $alias) !== false) {
                 [$dk, $qk] = explode($alias, $field);
             }
-            $dk = $this->normalizeLegacyFieldName($dk);
             if (isset($data[$qk]) && $data[$qk] !== '') {
                 $this->query->where($dk, strval($data[$qk]));
             }
@@ -218,7 +212,6 @@ class QueryHelper extends Helper
             if (stripos($field, $alias) !== false) {
                 [$dk, $qk] = explode($alias, $field);
             }
-            $dk = $this->normalizeLegacyFieldName($dk);
             if (isset($data[$qk]) && $data[$qk] !== '') {
                 $this->query->whereIn($dk, explode($split, strval($data[$qk])));
             }
@@ -245,8 +238,6 @@ class QueryHelper extends Helper
                 } else {
                     [$qk0] = [$dk1, $dk2] = explode(':', $field, 2);
                 }
-                $dk1 = $this->normalizeLegacyFieldName($dk1);
-                $dk2 = $this->normalizeLegacyFieldName($dk2);
                 if (isset($data[$qk0]) && $data[$qk0] !== '') {
                     $this->query->where([[$dk1, '<=', $data[$qk0]], [$dk2, '>=', $data[$qk0]]]);
                 }
@@ -436,13 +427,6 @@ class QueryHelper extends Helper
         return $result;
     }
 
-    private function handleCompatQueryCall(string $name, array &$args): bool
-    {
-        $model = $this->query->getModel();
-        return $model instanceof \think\admin\Model
-            && $model->normalizeLegacySoftDeleteCall($this->query, $name, $args);
-    }
-
     /**
      * 获取输入数据.
      * @param null|array|string $input
@@ -454,14 +438,6 @@ class QueryHelper extends Helper
         }
         $input = $input ?: 'request';
         return $this->app->request->{$input}();
-    }
-
-    private function normalizeLegacyFieldName(string $field): string
-    {
-        return match ($field) {
-            'deleted_at', 'deleted_time' => 'delete_time',
-            default => $field,
-        };
     }
 
     /**
@@ -481,7 +457,6 @@ class QueryHelper extends Helper
             if (stripos($field, $alias) !== false) {
                 [$dk, $qk] = explode($alias, $field);
             }
-            $dk = $this->normalizeLegacyFieldName($dk);
             if (isset($data[$qk]) && $data[$qk] !== '') {
                 [$begin, $after] = explode($split, strval($data[$qk]));
                 if (is_callable($callback)) {

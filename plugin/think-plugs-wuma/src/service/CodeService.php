@@ -3,18 +3,18 @@
 declare(strict_types=1);
 /**
  * +----------------------------------------------------------------------
- * | ThinkAdmin Plugin for ThinkAdmin
+ * | ThinkAdmin Plugin for ThinkAdminDeveloper
  * +----------------------------------------------------------------------
- * | 版权所有 2014~2026 ThinkAdmin [ thinkadmin.top ]
+ * | Copyright (c) 2014~2026 ThinkAdmin [ thinkadmin.top ]
  * +----------------------------------------------------------------------
- * | 官方网站: https://thinkadmin.top
+ * | Official Website: https://thinkadmin.top
  * +----------------------------------------------------------------------
- * | 开源协议 ( https://mit-license.org )
- * | 免责声明 ( https://thinkadmin.top/disclaimer )
- * | 会员特权 ( https://thinkadmin.top/vip-introduce )
+ * | Licensed: https://mit-license.org
+ * | Disclaimer: https://thinkadmin.top/disclaimer
+ * | Vip Rights: https://thinkadmin.top/vip-introduce
  * +----------------------------------------------------------------------
- * | gitee 代码仓库：https://gitee.com/zoujingli/ThinkAdmin
- * | github 代码仓库：https://github.com/zoujingli/ThinkAdmin
+ * | Gitee Repository: https://gitee.com/zoujingli/ThinkAdmin
+ * | Github Repository: https://github.com/zoujingli/ThinkAdmin
  * +----------------------------------------------------------------------
  */
 
@@ -205,7 +205,7 @@ class CodeService
             throw new Exception('未找到物码规则！');
         }
         // 获取批次号格式化物码规则
-        $map = ['batch' => $batch, 'status' => 1, 'deleted' => 0];
+        $map = ['batch' => $batch, 'status' => 1];
         $coder = PluginWumaCodeRule::mk()->with(['rules'])->where($map)->findOrEmpty()->toArray();
         return PluginWumaCodeRule::applyRangeData($coder);
     }
@@ -347,7 +347,7 @@ class CodeService
             'batch' => $range['batch'],
             'remark' => $range['main']['remark'],
             'status' => $range['main']['status'],
-            'deleted' => $range['main']['deleted'],
+            'delete_time' => $range['main']['delete_time'] ?? null,
         ];
     }
 

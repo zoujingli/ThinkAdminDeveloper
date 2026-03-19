@@ -3,18 +3,18 @@
 declare(strict_types=1);
 /**
  * +----------------------------------------------------------------------
- * | ThinkAdmin Plugin for ThinkAdmin
+ * | ThinkAdmin Plugin for ThinkAdminDeveloper
  * +----------------------------------------------------------------------
- * | 版权所有 2014~2026 ThinkAdmin [ thinkadmin.top ]
+ * | Copyright (c) 2014~2026 ThinkAdmin [ thinkadmin.top ]
  * +----------------------------------------------------------------------
- * | 官方网站: https://thinkadmin.top
+ * | Official Website: https://thinkadmin.top
  * +----------------------------------------------------------------------
- * | 开源协议 ( https://mit-license.org )
- * | 免责声明 ( https://thinkadmin.top/disclaimer )
- * | 会员特权 ( https://thinkadmin.top/vip-introduce )
+ * | Licensed: https://mit-license.org
+ * | Disclaimer: https://thinkadmin.top/disclaimer
+ * | Vip Rights: https://thinkadmin.top/vip-introduce
  * +----------------------------------------------------------------------
- * | gitee 代码仓库：https://gitee.com/zoujingli/ThinkAdmin
- * | github 代码仓库：https://github.com/zoujingli/ThinkAdmin
+ * | Gitee Repository: https://gitee.com/zoujingli/ThinkAdmin
+ * | Github Repository: https://github.com/zoujingli/ThinkAdmin
  * +----------------------------------------------------------------------
  */
 
@@ -54,7 +54,7 @@ class Batch extends Controller
         PluginWumaSourceAssign::mQuery()->layTable(function () {
             $this->title = '仓库批次出库';
         }, static function (QueryHelper $query) {
-            $query->withoutField('items')->where(['deleted' => 0]);
+            $query->withoutField('items');
 
             $query->with(['coder', 'range' => function (Query $relation) {
                 $relation->with(['bindProduce']);
@@ -109,7 +109,7 @@ class Batch extends Controller
             PluginWumaCodeRule::applyRangeData($data['coder']);
             unset($data['coder']['rules']);
             $this->warehouses = PluginWumaWarehouse::lists([
-                'status' => 1, 'deleted' => 0,
+                'status' => 1,
             ]);
             RelationService::withMergeRange($data['range']);
         } else {
