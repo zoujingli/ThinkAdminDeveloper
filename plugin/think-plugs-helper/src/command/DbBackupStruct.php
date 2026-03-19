@@ -3,18 +3,18 @@
 declare(strict_types=1);
 /**
  * +----------------------------------------------------------------------
- * | ThinkAdmin Plugin for ThinkAdmin
+ * | ThinkAdmin Plugin for ThinkAdminDeveloper
  * +----------------------------------------------------------------------
- * | 版权所有 2014~2026 ThinkAdmin [ thinkadmin.top ]
+ * | Copyright (c) 2014~2026 ThinkAdmin [ thinkadmin.top ]
  * +----------------------------------------------------------------------
- * | 官方网站: https://thinkadmin.top
+ * | Official Website: https://thinkadmin.top
  * +----------------------------------------------------------------------
- * | 开源协议 ( https://mit-license.org )
- * | 免责声明 ( https://thinkadmin.top/disclaimer )
- * | 会员特权 ( https://thinkadmin.top/vip-introduce )
+ * | Licensed: https://mit-license.org
+ * | Disclaimer: https://thinkadmin.top/disclaimer
+ * | Vip Rights: https://thinkadmin.top/vip-introduce
  * +----------------------------------------------------------------------
- * | gitee 代码仓库：https://gitee.com/zoujingli/ThinkAdmin
- * | github 代码仓库：https://github.com/zoujingli/ThinkAdmin
+ * | Gitee Repository: https://gitee.com/zoujingli/ThinkAdmin
+ * | Github Repository: https://github.com/zoujingli/ThinkAdmin
  * +----------------------------------------------------------------------
  */
 
@@ -99,14 +99,8 @@ class DbBackupStruct extends Command
             if (!empty($fields = $this->app->db->getFields($table))) {
                 $query = $this->app->db->table($table)->order(in_array('id', $fields) ? 'id' : array_values($fields)[0]);
                 in_array('ssid', $fields) && $query = $query->where('ssid', '0');
-                if (in_array('delete_time', $fields)) {
+                if (in_array('delete_time', $fields, true)) {
                     $query = $query->whereNull('delete_time');
-                } elseif (in_array('deleted_at', $fields)) {
-                    $query = $query->whereNull('deleted_at');
-                } elseif (in_array('deleted_time', $fields)) {
-                    $query = $query->whereNull('deleted_time');
-                } elseif (in_array('deleted', $fields)) {
-                    $query = $query->where('deleted', '0');
                 }
                 $query->chunk(10000, function ($rows) use ($gz, $table, &$total) {
                     foreach ($rows as $row) {

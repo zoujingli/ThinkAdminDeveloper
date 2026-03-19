@@ -3,18 +3,18 @@
 declare(strict_types=1);
 /**
  * +----------------------------------------------------------------------
- * | ThinkAdmin Plugin for ThinkAdmin
+ * | ThinkAdmin Plugin for ThinkAdminDeveloper
  * +----------------------------------------------------------------------
- * | 版权所有 2014~2026 ThinkAdmin [ thinkadmin.top ]
+ * | Copyright (c) 2014~2026 ThinkAdmin [ thinkadmin.top ]
  * +----------------------------------------------------------------------
- * | 官方网站: https://thinkadmin.top
+ * | Official Website: https://thinkadmin.top
  * +----------------------------------------------------------------------
- * | 开源协议 ( https://mit-license.org )
- * | 免责声明 ( https://thinkadmin.top/disclaimer )
- * | 会员特权 ( https://thinkadmin.top/vip-introduce )
+ * | Licensed: https://mit-license.org
+ * | Disclaimer: https://thinkadmin.top/disclaimer
+ * | Vip Rights: https://thinkadmin.top/vip-introduce
  * +----------------------------------------------------------------------
- * | gitee 代码仓库：https://gitee.com/zoujingli/ThinkAdmin
- * | github 代码仓库：https://github.com/zoujingli/ThinkAdmin
+ * | Gitee Repository: https://gitee.com/zoujingli/ThinkAdmin
+ * | Github Repository: https://github.com/zoujingli/ThinkAdmin
  * +----------------------------------------------------------------------
  */
 
@@ -43,19 +43,12 @@ class SystemUser extends Model
         $query = static::mk()->where($map)->order('sort desc,id desc');
         if (count($data) > 0) {
             $users = $query->whereIn('id', array_unique(array_column($data, $field)))->column($fields, 'id');
-            foreach ($users as &$user) {
-                $user['deleted'] = empty($user['delete_time']) ? 0 : 1;
-            }
             foreach ($data as &$vo) {
                 $vo[$target] = $users[$vo[$field]] ?? [];
             }
             return $users;
         }
-        $users = $query->column($fields, 'id');
-        foreach ($users as &$user) {
-            $user['deleted'] = empty($user['delete_time']) ? 0 : 1;
-        }
-        return $users;
+        return $query->column($fields, 'id');
     }
 
     public function userinfo(): HasOne

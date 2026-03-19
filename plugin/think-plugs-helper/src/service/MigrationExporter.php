@@ -3,18 +3,18 @@
 declare(strict_types=1);
 /**
  * +----------------------------------------------------------------------
- * | ThinkAdmin Plugin for ThinkAdmin
+ * | ThinkAdmin Plugin for ThinkAdminDeveloper
  * +----------------------------------------------------------------------
- * | 版权所有 2014~2026 ThinkAdmin [ thinkadmin.top ]
+ * | Copyright (c) 2014~2026 ThinkAdmin [ thinkadmin.top ]
  * +----------------------------------------------------------------------
- * | 官方网站: https://thinkadmin.top
+ * | Official Website: https://thinkadmin.top
  * +----------------------------------------------------------------------
- * | 开源协议 ( https://mit-license.org )
- * | 免责声明 ( https://thinkadmin.top/disclaimer )
- * | 会员特权 ( https://thinkadmin.top/vip-introduce )
+ * | Licensed: https://mit-license.org
+ * | Disclaimer: https://thinkadmin.top/disclaimer
+ * | Vip Rights: https://thinkadmin.top/vip-introduce
  * +----------------------------------------------------------------------
- * | gitee 代码仓库：https://gitee.com/zoujingli/ThinkAdmin
- * | github 代码仓库：https://github.com/zoujingli/ThinkAdmin
+ * | Gitee Repository: https://gitee.com/zoujingli/ThinkAdmin
+ * | Github Repository: https://github.com/zoujingli/ThinkAdmin
  * +----------------------------------------------------------------------
  */
 
@@ -122,15 +122,10 @@ PHP;
     {
         $columns = [];
         $columnMap = [];
-        $legacyDelete = ['deleted', 'deleted_at', 'deleted_by', 'deleted_time'];
 
         foreach ($table->getColumns() as $column) {
             $name = $column->getName();
             if ($name === 'id') {
-                continue;
-            }
-
-            if (in_array($name, $legacyDelete, true)) {
                 continue;
             }
 
@@ -140,30 +135,10 @@ PHP;
             $columns[$target] = $this->exportColumn($target, $column);
         }
 
-        if ($this->hasLegacyDeleteColumn($table)) {
-            $columns['delete_time'] = $this->exportDeleteTimeColumn();
-        }
-
         $fields = '[' . PHP_EOL . implode(PHP_EOL, array_values($columns)) . PHP_EOL . '        ]';
-        $indexes = $this->exportIndexes($table, $columnMap, isset($columns['delete_time']));
+        $indexes = $this->exportIndexes($table, $columnMap);
 
         return [$fields, $indexes];
-    }
-
-    private function hasLegacyDeleteColumn(Table $table): bool
-    {
-        foreach (['deleted', 'deleted_at', 'deleted_time'] as $field) {
-            if ($table->hasColumn($field)) {
-                return true;
-            }
-        }
-
-        return false;
-    }
-
-    private function exportDeleteTimeColumn(): string
-    {
-        return "            ['delete_time', 'datetime', ['default' => null, 'null' => true, 'comment' => '删除时间']],";
     }
 
     private function exportColumn(string $name, Column $column): string
@@ -230,7 +205,7 @@ PHP;
         return $value;
     }
 
-    private function exportIndexes(Table $table, array $columnMap, bool $withDeleteTime): string
+    private function exportIndexes(Table $table, array $columnMap): string
     {
         $items = [];
 
@@ -243,8 +218,6 @@ PHP;
             foreach ($index->getColumns() as $column) {
                 if (isset($columnMap[$column])) {
                     $columns[] = $columnMap[$column];
-                } elseif (in_array($column, ['deleted', 'deleted_at', 'deleted_time'], true) && $withDeleteTime) {
-                    $columns[] = 'delete_time';
                 }
             }
 
