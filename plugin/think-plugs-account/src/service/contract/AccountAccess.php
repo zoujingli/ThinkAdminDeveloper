@@ -3,18 +3,18 @@
 declare(strict_types=1);
 /**
  * +----------------------------------------------------------------------
- * | ThinkAdmin Plugin for ThinkAdmin
+ * | ThinkAdmin Plugin for ThinkAdminDeveloper
  * +----------------------------------------------------------------------
- * | 版权所有 2014~2026 ThinkAdmin [ thinkadmin.top ]
+ * | Copyright (c) 2014~2026 ThinkAdmin [ thinkadmin.top ]
  * +----------------------------------------------------------------------
- * | 官方网站: https://thinkadmin.top
+ * | Official Website: https://thinkadmin.top
  * +----------------------------------------------------------------------
- * | 开源协议 ( https://mit-license.org )
- * | 免责声明 ( https://thinkadmin.top/disclaimer )
- * | 会员特权 ( https://thinkadmin.top/vip-introduce )
+ * | Licensed: https://mit-license.org
+ * | Disclaimer: https://thinkadmin.top/disclaimer
+ * | Vip Rights: https://thinkadmin.top/vip-introduce
  * +----------------------------------------------------------------------
- * | gitee 代码仓库：https://gitee.com/zoujingli/ThinkAdmin
- * | github 代码仓库：https://github.com/zoujingli/ThinkAdmin
+ * | Gitee Repository: https://gitee.com/zoujingli/ThinkAdmin
+ * | Github Repository: https://github.com/zoujingli/ThinkAdmin
  * +----------------------------------------------------------------------
  */
 
@@ -117,7 +117,7 @@ class AccountAccess implements AccountInterface
             $this->user = $this->bind->user()->findOrEmpty();
         } elseif (is_array($token)) {
             // 返向查询终端账号
-            $map = ['deleted' => 0];
+            $map = [];
             if ($this->type) {
                 $map['type'] = $this->type;
             }
@@ -203,11 +203,10 @@ class AccountAccess implements AccountInterface
      */
     public function pwdVerify(string $pass): bool
     {
-        $pass = md5($pass);
-        if ($this->user->getAttr('password') === $pass) {
+        if ($this->verifyPasswordHash(strval($this->user->getAttr('password')), $pass)) {
             return (bool)$this->expire();
         }
-        return $this->bind->getAttr('password') === $pass && $this->expire();
+        return $this->verifyPasswordHash(strval($this->bind->getAttr('password')), $pass) && $this->expire();
     }
 
     /**
@@ -220,7 +219,7 @@ class AccountAccess implements AccountInterface
         if ($this->bind->isEmpty()) {
             return false;
         }
-        $data = ['password' => md5($pass)];
+        $data = ['password' => $this->hashPassword($pass)];
         $this->user->isExists() && $this->user->save($data);
         if (!$this->bind->save($data)) {
             return false;
@@ -244,7 +243,7 @@ class AccountAccess implements AccountInterface
         if ($this->bind->isEmpty()) {
             throw new Exception('终端账号异常！');
         }
-        $this->user = PluginAccountUser::mk()->where(['deleted' => 0])->where($map)->findOrEmpty();
+        $this->user = PluginAccountUser::mk()->where($map)->findOrEmpty();
         if (!empty($data['extra'])) {
             $this->user->setAttr('extra', array_merge($this->user->getAttr('extra'), $data['extra']));
         }
@@ -337,7 +336,7 @@ class AccountAccess implements AccountInterface
                 return [];
             }
             if ($this->isBind() && ($unid = $this->bind->getAttr('unid'))) {
-                $map = ['unid' => $unid, 'deleted' => 0];
+                $map = ['unid' => $unid];
                 return PluginAccountBind::mk()->where($map)->select()->toArray();
             }
             return [$this->bind->refresh()->toArray()];
@@ -452,7 +451,7 @@ class AccountAccess implements AccountInterface
         // 生成新令牌数据
         if ($this->auth->isEmpty()) {
             do {
-                $check = ['type' => $this->type, 'token' => md5(uniqid(strval(rand(0, 999))))];
+                $check = ['type' => $this->type, 'token' => bin2hex(random_bytes(16))];
             } while (PluginAccountAuth::mk()->master()->where($check)->findOrEmpty()->isExists());
             $time = $this->expire > 0 ? $this->expire + time() : 0;
             $this->auth->save($check + ['usid' => $usid, 'time' => $time]);
@@ -505,5 +504,19 @@ class AccountAccess implements AccountInterface
     private function userCode(): string
     {
         return CodeToolkit::uniqidNumber(12, 'U');
+    }
+
+    private function hashPassword(string $pass): string
+    {
+        return password_hash($pass, PASSWORD_DEFAULT);
+    }
+
+    private function verifyPasswordHash(string $hash, string $pass): bool
+    {
+        $hash = trim($hash);
+        if ($hash === '') {
+            return false;
+        }
+        return password_verify($pass, $hash);
     }
 }

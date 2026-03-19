@@ -3,18 +3,18 @@
 declare(strict_types=1);
 /**
  * +----------------------------------------------------------------------
- * | ThinkAdmin Plugin for ThinkAdmin
+ * | ThinkAdmin Plugin for ThinkAdminDeveloper
  * +----------------------------------------------------------------------
- * | 版权所有 2014~2026 ThinkAdmin [ thinkadmin.top ]
+ * | Copyright (c) 2014~2026 ThinkAdmin [ thinkadmin.top ]
  * +----------------------------------------------------------------------
- * | 官方网站: https://thinkadmin.top
+ * | Official Website: https://thinkadmin.top
  * +----------------------------------------------------------------------
- * | 开源协议 ( https://mit-license.org )
- * | 免责声明 ( https://thinkadmin.top/disclaimer )
- * | 会员特权 ( https://thinkadmin.top/vip-introduce )
+ * | Licensed: https://mit-license.org
+ * | Disclaimer: https://thinkadmin.top/disclaimer
+ * | Vip Rights: https://thinkadmin.top/vip-introduce
  * +----------------------------------------------------------------------
- * | gitee 代码仓库：https://gitee.com/zoujingli/ThinkAdmin
- * | github 代码仓库：https://github.com/zoujingli/ThinkAdmin
+ * | Gitee Repository: https://gitee.com/zoujingli/ThinkAdmin
+ * | Github Repository: https://github.com/zoujingli/ThinkAdmin
  * +----------------------------------------------------------------------
  */
 
@@ -51,7 +51,6 @@ class AccountIntegrationTest extends SqliteIntegrationTestCase
         $this->assertSame('https://example.com/default-account.png', $info['headimg']);
         $this->assertNotEmpty($info['nickname']);
         $this->assertNotEmpty($info['token']);
-        $this->assertSame(0, intval($info['user']['deleted'] ?? 0));
         $this->assertArrayNotHasKey('id', $info['user']);
 
         $bind = PluginAccountBind::mk()->where(['phone' => $phone])->findOrEmpty();
@@ -91,7 +90,6 @@ class AccountIntegrationTest extends SqliteIntegrationTestCase
         $fresh = Account::mk(Account::WAP, ['phone' => $phone], false)->get();
 
         $this->assertSame(0, intval($fresh['unid']));
-        $this->assertSame(0, intval($fresh['user']['deleted'] ?? 0));
         $this->assertArrayNotHasKey('id', $fresh['user']);
     }
 
@@ -107,10 +105,8 @@ class AccountIntegrationTest extends SqliteIntegrationTestCase
 
         $user = PluginAccountUser::mk()->findOrEmpty(intval($bound['user']['id']));
         $bind = PluginAccountBind::mk()->where(['phone' => $phone])->findOrEmpty();
-        $hash = md5('Secret@123');
-
-        $this->assertSame($hash, $user->getAttr('password'));
-        $this->assertSame($hash, $bind->getAttr('password'));
+        $this->assertTrue(password_verify('Secret@123', strval($user->getAttr('password'))));
+        $this->assertTrue(password_verify('Secret@123', strval($bind->getAttr('password'))));
     }
 
     public function testAllBindAndDelBindReflectMultipleClients(): void

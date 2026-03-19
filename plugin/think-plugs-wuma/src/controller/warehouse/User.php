@@ -3,18 +3,18 @@
 declare(strict_types=1);
 /**
  * +----------------------------------------------------------------------
- * | ThinkAdmin Plugin for ThinkAdmin
+ * | ThinkAdmin Plugin for ThinkAdminDeveloper
  * +----------------------------------------------------------------------
- * | 版权所有 2014~2026 ThinkAdmin [ thinkadmin.top ]
+ * | Copyright (c) 2014~2026 ThinkAdmin [ thinkadmin.top ]
  * +----------------------------------------------------------------------
- * | 官方网站: https://thinkadmin.top
+ * | Official Website: https://thinkadmin.top
  * +----------------------------------------------------------------------
- * | 开源协议 ( https://mit-license.org )
- * | 免责声明 ( https://thinkadmin.top/disclaimer )
- * | 会员特权 ( https://thinkadmin.top/vip-introduce )
+ * | Licensed: https://mit-license.org
+ * | Disclaimer: https://thinkadmin.top/disclaimer
+ * | Vip Rights: https://thinkadmin.top/vip-introduce
  * +----------------------------------------------------------------------
- * | gitee 代码仓库：https://gitee.com/zoujingli/ThinkAdmin
- * | github 代码仓库：https://github.com/zoujingli/ThinkAdmin
+ * | Gitee Repository: https://gitee.com/zoujingli/ThinkAdmin
+ * | Github Repository: https://github.com/zoujingli/ThinkAdmin
  * +----------------------------------------------------------------------
  */
 
@@ -44,7 +44,7 @@ class User extends Controller
             $this->title = '仓库用户管理';
         }, function (QueryHelper $query) {
             $query->like('username,nickname')->dateBetween('login_time,create_time');
-            $query->where(['deleted' => 0, 'status' => intval($this->type === 'index')]);
+            $query->where(['status' => intval($this->type === 'index')]);
         });
     }
 
@@ -90,7 +90,7 @@ class User extends Controller
         }
 
         unset($data['repassword']);
-        $data['password'] = md5($data['password']);
+        $data['password'] = $this->hashPassword($data['password']);
         if (PluginWumaWarehouseUser::mUpdate($data)) {
             $this->success('密码修改成功！', '');
         }
@@ -116,7 +116,7 @@ class User extends Controller
             $this->error('账号已经存在！');
         }
 
-        $data['password'] = md5($data['username']);
+        $data['password'] = $this->hashPassword($data['username']);
     }
 
     private function handleForm(): void
@@ -200,5 +200,10 @@ class User extends Controller
 
         $user = PluginWumaWarehouseUser::mk()->findOrEmpty($id);
         return $user->isEmpty() ? [] : $user->toArray();
+    }
+
+    private function hashPassword(string $password): string
+    {
+        return password_hash($password, PASSWORD_DEFAULT);
     }
 }

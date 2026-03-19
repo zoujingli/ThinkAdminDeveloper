@@ -3,18 +3,18 @@
 declare(strict_types=1);
 /**
  * +----------------------------------------------------------------------
- * | ThinkAdmin Plugin for ThinkAdmin
+ * | ThinkAdmin Plugin for ThinkAdminDeveloper
  * +----------------------------------------------------------------------
- * | 版权所有 2014~2026 ThinkAdmin [ thinkadmin.top ]
+ * | Copyright (c) 2014~2026 ThinkAdmin [ thinkadmin.top ]
  * +----------------------------------------------------------------------
- * | 官方网站: https://thinkadmin.top
+ * | Official Website: https://thinkadmin.top
  * +----------------------------------------------------------------------
- * | 开源协议 ( https://mit-license.org )
- * | 免责声明 ( https://thinkadmin.top/disclaimer )
- * | 会员特权 ( https://thinkadmin.top/vip-introduce )
+ * | Licensed: https://mit-license.org
+ * | Disclaimer: https://thinkadmin.top/disclaimer
+ * | Vip Rights: https://thinkadmin.top/vip-introduce
  * +----------------------------------------------------------------------
- * | gitee 代码仓库：https://gitee.com/zoujingli/ThinkAdmin
- * | github 代码仓库：https://github.com/zoujingli/ThinkAdmin
+ * | Gitee Repository: https://gitee.com/zoujingli/ThinkAdmin
+ * | Github Repository: https://github.com/zoujingli/ThinkAdmin
  * +----------------------------------------------------------------------
  */
 
@@ -139,7 +139,7 @@ class UserControllerTest extends SqliteIntegrationTestCase
         $this->assertSame(1, intval($add['code'] ?? 0));
         $this->assertSame('数据保存成功！', $add['info'] ?? '');
         $this->assertTrue($created->isExists());
-        $this->assertSame(md5('operator-new'), $created->getData('password'));
+        $this->assertTrue($this->verifySystemPassword('operator-new', strval($created->getData('password'))));
         $this->assertSame(',2,3,', $created->getData('authorize'));
 
         $edit = $this->callFormController('edit', [
@@ -169,7 +169,7 @@ class UserControllerTest extends SqliteIntegrationTestCase
     {
         $user = $this->createSystemUserFixture([
             'username' => 'pass-user',
-            'password' => md5('old-password'),
+            'password' => $this->hashSystemPassword('old-password'),
         ]);
 
         $result = $this->callActionController('pass', [
@@ -182,14 +182,14 @@ class UserControllerTest extends SqliteIntegrationTestCase
 
         $this->assertSame(1, intval($result['code'] ?? 0));
         $this->assertSame('密码修改成功，请使用新密码登录！', $result['info'] ?? '');
-        $this->assertSame(md5('new-password'), $updated->getData('password'));
+        $this->assertTrue($this->verifySystemPassword('new-password', strval($updated->getData('password'))));
     }
 
     public function testPassGetRendersFormBuilderMarkup(): void
     {
         $user = $this->createSystemUserFixture([
             'username' => 'pass-view-user',
-            'password' => md5('old-password'),
+            'password' => $this->hashSystemPassword('old-password'),
         ]);
 
         $html = $this->callActionHtml('pass', [

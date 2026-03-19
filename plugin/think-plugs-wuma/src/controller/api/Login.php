@@ -3,18 +3,18 @@
 declare(strict_types=1);
 /**
  * +----------------------------------------------------------------------
- * | ThinkAdmin Plugin for ThinkAdmin
+ * | ThinkAdmin Plugin for ThinkAdminDeveloper
  * +----------------------------------------------------------------------
- * | 版权所有 2014~2026 ThinkAdmin [ thinkadmin.top ]
+ * | Copyright (c) 2014~2026 ThinkAdmin [ thinkadmin.top ]
  * +----------------------------------------------------------------------
- * | 官方网站: https://thinkadmin.top
+ * | Official Website: https://thinkadmin.top
  * +----------------------------------------------------------------------
- * | 开源协议 ( https://mit-license.org )
- * | 免责声明 ( https://thinkadmin.top/disclaimer )
- * | 会员特权 ( https://thinkadmin.top/vip-introduce )
+ * | Licensed: https://mit-license.org
+ * | Disclaimer: https://thinkadmin.top/disclaimer
+ * | Vip Rights: https://thinkadmin.top/vip-introduce
  * +----------------------------------------------------------------------
- * | gitee 代码仓库：https://gitee.com/zoujingli/ThinkAdmin
- * | github 代码仓库：https://github.com/zoujingli/ThinkAdmin
+ * | Gitee Repository: https://gitee.com/zoujingli/ThinkAdmin
+ * | Github Repository: https://github.com/zoujingli/ThinkAdmin
  * +----------------------------------------------------------------------
  */
 // | Wuma Plugin for ThinkAdmin
@@ -58,22 +58,27 @@ class Login extends Base
 
         // 当前用户数据
         $data['uuid'] = $this->uuid;
-        $data['password'] = md5($data['password']);
-        $user = PluginWumaWarehouseUser::mk()->where($data)->find();
+        $user = PluginWumaWarehouseUser::mk()->where([
+            'uuid' => $data['uuid'],
+            'username' => $data['username'],
+        ])->find();
 
         if (empty($user)) {
             $this->error('账号或密码错误！');
         }
+        if (!$this->verifyPassword($user, strval($data['password']))) {
+            $this->error('璐﹀彿鎴栧瘑鐮侀敊璇紒');
+        }
         if (empty($user['status'])) {
             $this->error('账号已经被禁用！');
         }
-        if (!empty($user['deleted'])) {
+        if (!empty($user['delete_time'])) {
             $this->error('该账号已经被移除！');
         }
 
         // 生成登录令牌数据
         do {
-            $token = ['token' => md5(uniqid(rand(1000, 9999), true))];
+            $token = ['token' => bin2hex(random_bytes(16))];
         } while (PluginWumaWarehouseUser::mk()->where($token)->count() > 0);
 
         // 更新用户登录数据
@@ -101,5 +106,14 @@ class Login extends Base
         $map = ['token' => $this->token];
         PluginWumaWarehouseUser::mk()->where($map)->update(['token' => '']);
         $this->success('退出登录成功！');
+    }
+
+    private function verifyPassword(PluginWumaWarehouseUser $user, string $password): bool
+    {
+        $hash = trim(strval($user->getAttr('password')));
+        if ($hash === '') {
+            return false;
+        }
+        return password_verify($password, $hash);
     }
 }

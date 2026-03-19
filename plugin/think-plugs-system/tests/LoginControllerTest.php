@@ -3,18 +3,18 @@
 declare(strict_types=1);
 /**
  * +----------------------------------------------------------------------
- * | ThinkAdmin Plugin for ThinkAdmin
+ * | ThinkAdmin Plugin for ThinkAdminDeveloper
  * +----------------------------------------------------------------------
- * | 版权所有 2014~2026 ThinkAdmin [ thinkadmin.top ]
+ * | Copyright (c) 2014~2026 ThinkAdmin [ thinkadmin.top ]
  * +----------------------------------------------------------------------
- * | 官方网站: https://thinkadmin.top
+ * | Official Website: https://thinkadmin.top
  * +----------------------------------------------------------------------
- * | 开源协议 ( https://mit-license.org )
- * | 免责声明 ( https://thinkadmin.top/disclaimer )
- * | 会员特权 ( https://thinkadmin.top/vip-introduce )
+ * | Licensed: https://mit-license.org
+ * | Disclaimer: https://thinkadmin.top/disclaimer
+ * | Vip Rights: https://thinkadmin.top/vip-introduce
  * +----------------------------------------------------------------------
- * | gitee 代码仓库：https://gitee.com/zoujingli/ThinkAdmin
- * | github 代码仓库：https://github.com/zoujingli/ThinkAdmin
+ * | Gitee Repository: https://gitee.com/zoujingli/ThinkAdmin
+ * | Github Repository: https://github.com/zoujingli/ThinkAdmin
  * +----------------------------------------------------------------------
  */
 
@@ -74,7 +74,7 @@ class LoginControllerTest extends SqliteIntegrationTestCase
 
         $failed = $this->callActionController('index', [
             'username' => 'missing-user',
-            'password' => md5('wrong-password'),
+            'password' => 'wrong-password',
             'verify' => strval($captcha['data']['code'] ?? ''),
             'uniqid' => strval($captcha['data']['uniqid'] ?? ''),
         ]);
@@ -94,7 +94,7 @@ class LoginControllerTest extends SqliteIntegrationTestCase
         $user = $this->createSystemUserFixture([
             'id' => 9101,
             'username' => 'tester',
-            'password' => md5('secret123'),
+            'password' => $this->hashSystemPassword('secret123'),
             'status' => 1,
         ]);
         $captcha = $this->callActionController('captcha', [
@@ -104,7 +104,7 @@ class LoginControllerTest extends SqliteIntegrationTestCase
 
         $result = $this->callActionController('index', [
             'username' => 'tester',
-            'password' => md5($user->getData('password') . strval($captcha['data']['uniqid'] ?? '')),
+            'password' => 'secret123',
             'verify' => strval($captcha['data']['code'] ?? ''),
             'uniqid' => strval($captcha['data']['uniqid'] ?? ''),
         ]);
@@ -141,7 +141,7 @@ class LoginControllerTest extends SqliteIntegrationTestCase
         $user = $this->createSystemUserFixture([
             'id' => 9201,
             'username' => 'logout-user',
-            'password' => md5('logout-pass'),
+            'password' => $this->hashSystemPassword('logout-pass'),
             'status' => 1,
         ]);
         $sessionId = 'logout-session-id';
@@ -166,7 +166,7 @@ class LoginControllerTest extends SqliteIntegrationTestCase
         $user = $this->createSystemUserFixture([
             'id' => 9251,
             'username' => 'cookie-user',
-            'password' => md5('cookie-pass'),
+            'password' => $this->hashSystemPassword('cookie-pass'),
             'status' => 1,
         ])->toArray();
         $token = SystemAuthService::buildToken($user);
@@ -188,7 +188,7 @@ class LoginControllerTest extends SqliteIntegrationTestCase
         $user = $this->createSystemUserFixture([
             'id' => 9261,
             'username' => 'legacy-cookie-user',
-            'password' => md5('legacy-cookie-pass'),
+            'password' => $this->hashSystemPassword('legacy-cookie-pass'),
             'status' => 1,
         ])->toArray();
         $token = SystemAuthService::buildToken($user);
@@ -333,11 +333,11 @@ class LoginControllerTest extends SqliteIntegrationTestCase
 
     private function captchaMapKey(string $uniqid): string
     {
-        return 'think.admin.login.captcha.map.' . md5($uniqid);
+        return 'think.admin.login.captcha.map.' . hash('sha256', $uniqid);
     }
 
     private function captchaFailKey(string $type, string $token): string
     {
-        return 'think.admin.login.captcha.fail.' . md5("{$type}:{$token}");
+        return 'think.admin.login.captcha.fail.' . hash('sha256', "{$type}:{$token}");
     }
 }

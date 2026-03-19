@@ -3,18 +3,18 @@
 declare(strict_types=1);
 /**
  * +----------------------------------------------------------------------
- * | ThinkAdmin Plugin for ThinkAdmin
+ * | ThinkAdmin Plugin for ThinkAdminDeveloper
  * +----------------------------------------------------------------------
- * | 版权所有 2014~2026 ThinkAdmin [ thinkadmin.top ]
+ * | Copyright (c) 2014~2026 ThinkAdmin [ thinkadmin.top ]
  * +----------------------------------------------------------------------
- * | 官方网站: https://thinkadmin.top
+ * | Official Website: https://thinkadmin.top
  * +----------------------------------------------------------------------
- * | 开源协议 ( https://mit-license.org )
- * | 免责声明 ( https://thinkadmin.top/disclaimer )
- * | 会员特权 ( https://thinkadmin.top/vip-introduce )
+ * | Licensed: https://mit-license.org
+ * | Disclaimer: https://thinkadmin.top/disclaimer
+ * | Vip Rights: https://thinkadmin.top/vip-introduce
  * +----------------------------------------------------------------------
- * | gitee 代码仓库：https://gitee.com/zoujingli/ThinkAdmin
- * | github 代码仓库：https://github.com/zoujingli/ThinkAdmin
+ * | Gitee Repository: https://gitee.com/zoujingli/ThinkAdmin
+ * | Github Repository: https://github.com/zoujingli/ThinkAdmin
  * +----------------------------------------------------------------------
  */
 
@@ -40,7 +40,7 @@ class IndexControllerTest extends SqliteIntegrationTestCase
 {
     public function testThemePersistsCurrentUserThemeIntoSystemData(): void
     {
-        $this->bindAdminUser(9101, 'tester', md5('changed-password'));
+        $this->bindAdminUser(9101, 'tester', $this->hashSystemPassword('changed-password'));
 
         $result = $this->callActionController('theme', [
             'site_theme' => 'black-2',
@@ -60,13 +60,13 @@ class IndexControllerTest extends SqliteIntegrationTestCase
         $user = $this->createSystemUserFixture([
             'id' => 9101,
             'username' => 'tester',
-            'password' => md5('changed-password'),
+            'password' => $this->hashSystemPassword('changed-password'),
             'nickname' => '原昵称',
             'authorize' => ',1,2,',
             'contact_phone' => '13800130000',
         ]);
 
-        $this->bindAdminUser(9101, 'tester', md5('changed-password'));
+        $this->bindAdminUser(9101, 'tester', strval($user->getData('password')));
 
         $result = $this->callActionController('info', [
             'id' => 9101,
@@ -89,7 +89,7 @@ class IndexControllerTest extends SqliteIntegrationTestCase
 
     public function testInfoRejectsEditingOtherUserProfile(): void
     {
-        $this->bindAdminUser(9101, 'tester', md5('changed-password'));
+        $this->bindAdminUser(9101, 'tester', $this->hashSystemPassword('changed-password'));
 
         $result = $this->callActionController('info', [
             'id' => 9102,
@@ -105,10 +105,10 @@ class IndexControllerTest extends SqliteIntegrationTestCase
         $user = $this->createSystemUserFixture([
             'id' => 9101,
             'username' => 'tester',
-            'password' => md5('old-password'),
+            'password' => $this->hashSystemPassword('old-password'),
         ]);
 
-        $this->bindAdminUser(9101, 'tester', md5('old-password'));
+        $this->bindAdminUser(9101, 'tester', strval($user->getData('password')));
 
         $result = $this->callActionController('pass', [
             'id' => 9101,
@@ -122,7 +122,7 @@ class IndexControllerTest extends SqliteIntegrationTestCase
 
         $this->assertSame(1, intval($result['code'] ?? 0));
         $this->assertSame('密码修改成功，下次请使用新密码登录！', $result['info'] ?? '');
-        $this->assertSame(md5('new-password'), $updated->getData('password'));
+        $this->assertTrue($this->verifySystemPassword('new-password', strval($updated->getData('password'))));
         $this->assertTrue($oplog->isExists());
         $this->assertSame('系统用户管理', $oplog->getData('action'));
         $this->assertSame('修改用户[9101]密码成功', $oplog->getData('content'));
@@ -131,13 +131,13 @@ class IndexControllerTest extends SqliteIntegrationTestCase
 
     public function testPassGetRendersFormBuilderMarkup(): void
     {
-        $this->createSystemUserFixture([
+        $user = $this->createSystemUserFixture([
             'id' => 9101,
             'username' => 'tester',
-            'password' => md5('old-password'),
+            'password' => $this->hashSystemPassword('old-password'),
         ]);
 
-        $this->bindAdminUser(9101, 'tester', md5('old-password'));
+        $this->bindAdminUser(9101, 'tester', strval($user->getData('password')));
 
         $html = $this->callActionHtml('pass', ['id' => 9101]);
 
@@ -149,7 +149,7 @@ class IndexControllerTest extends SqliteIntegrationTestCase
 
     public function testPassRejectsChangingOtherUserPassword(): void
     {
-        $this->bindAdminUser(9101, 'tester', md5('changed-password'));
+        $this->bindAdminUser(9101, 'tester', $this->hashSystemPassword('changed-password'));
 
         $result = $this->callActionController('pass', [
             'id' => 9102,

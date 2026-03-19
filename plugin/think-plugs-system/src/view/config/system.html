@@ -40,7 +40,7 @@
         <div class="layui-form-item margin-bottom-5">
             <div class="help-label label-required-prev"><b>{:lang('JWT 接口密钥')}</b>Jwt Key</div>
             <label class="relative block label-required-null">
-                <input class="layui-input" pattern=".{32}" maxlength="32" required vali-name="{:lang('接口密钥')}" placeholder="{:lang('请输入32位JWT接口密钥')}" name="data.jwtkey" value="{:sysconf('data.jwtkey')?:md5(uniqid(strval(rand(1000,9999)),true))}">
+                <input class="layui-input" pattern=".{32}" maxlength="32" required vali-name="{:lang('接口密钥')}" placeholder="{:lang('请输入32位JWT接口密钥')}" name="data.jwtkey" value="{:sysconf('data.jwtkey')?:bin2hex(random_bytes(16))}">
                 <a class="input-right-icon layui-icon layui-icon-refresh" id="RefreshJwtKey"></a>
             </label>
             <div class="help-block sub-span-blue">
@@ -114,10 +114,22 @@
 
 <script>
     $('[name=login_image]').uploadMultipleImage();
-    $.module.use(['md5'], function (md5) {
-        $('body').off('click', '#RefreshJwtKey').on('click', '#RefreshJwtKey', function () {
-            $(this).parent().find('input').val(md5.hash(Date.toString() + Math.random()));
-        });
+    const generateJwtKey = function () {
+        if (window.crypto && typeof window.crypto.getRandomValues === 'function') {
+            const bytes = new Uint8Array(16);
+            window.crypto.getRandomValues(bytes);
+            return Array.from(bytes, function (byte) {
+                return byte.toString(16).padStart(2, '0');
+            }).join('');
+        }
+        let chars = '0123456789abcdef', token = '';
+        while (token.length < 32) {
+            token += chars[Math.floor(Math.random() * chars.length)];
+        }
+        return token;
+    };
+    $('body').off('click', '#RefreshJwtKey').on('click', '#RefreshJwtKey', function () {
+        $(this).parent().find('input').val(generateJwtKey());
     });
     layui.form.on('select(SiteTheme)', function (data) {
         var alls = '', prox = 'layui-layout-theme-', curt = prox + data.value;
