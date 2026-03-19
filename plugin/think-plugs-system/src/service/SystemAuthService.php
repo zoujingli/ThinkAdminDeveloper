@@ -3,18 +3,18 @@
 declare(strict_types=1);
 /**
  * +----------------------------------------------------------------------
- * | ThinkAdmin Plugin for ThinkAdmin
+ * | ThinkAdmin Plugin for ThinkAdminDeveloper
  * +----------------------------------------------------------------------
- * | 版权所有 2014~2026 ThinkAdmin [ thinkadmin.top ]
+ * | Copyright (c) 2014~2026 ThinkAdmin [ thinkadmin.top ]
  * +----------------------------------------------------------------------
- * | 官方网站: https://thinkadmin.top
+ * | Official Website: https://thinkadmin.top
  * +----------------------------------------------------------------------
- * | 开源协议 ( https://mit-license.org )
- * | 免责声明 ( https://thinkadmin.top/disclaimer )
- * | 会员特权 ( https://thinkadmin.top/vip-introduce )
+ * | Licensed: https://mit-license.org
+ * | Disclaimer: https://thinkadmin.top/disclaimer
+ * | Vip Rights: https://thinkadmin.top/vip-introduce
  * +----------------------------------------------------------------------
- * | gitee 代码仓库：https://gitee.com/zoujingli/ThinkAdmin
- * | github 代码仓库：https://github.com/zoujingli/ThinkAdmin
+ * | Gitee Repository: https://gitee.com/zoujingli/ThinkAdmin
+ * | Github Repository: https://github.com/zoujingli/ThinkAdmin
  * +----------------------------------------------------------------------
  */
 
@@ -178,7 +178,7 @@ class SystemAuthService extends Service
         $payload = [
             'typ' => self::TOKEN_TYPE,
             'uid' => intval($user['id']),
-            'pwd' => sha1(strval($user['password'])),
+            'pwd' => static::passwordDigest(strval($user['password'])),
             'sid' => $sessionId,
             'jti' => CodeToolkit::uuid(),
         ];
@@ -224,7 +224,7 @@ class SystemAuthService extends Service
         if (($invalidAt = static::getTokenInvalidAt(intval($user['id']))) > 0 && intval($data['iat'] ?? 0) <= $invalidAt) {
             throw new Exception('登录状态已失效，请重新登录！');
         }
-        if (sha1(strval($user['password'])) !== strval($data['pwd'] ?? '')) {
+        if (static::passwordDigest(strval($user['password'])) !== strval($data['pwd'] ?? '')) {
             throw new Exception('登录状态已失效，请重新登录！');
         }
 
@@ -550,6 +550,11 @@ class SystemAuthService extends Service
             'exts' => str2arr(strtolower($exts)),
             'exp' => time() + static::getUploadTokenExpire(),
         ]);
+    }
+
+    private static function passwordDigest(string $passwordHash): string
+    {
+        return hash('sha256', $passwordHash);
     }
 
     /**
