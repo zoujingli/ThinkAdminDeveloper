@@ -3,18 +3,18 @@
 declare(strict_types=1);
 /**
  * +----------------------------------------------------------------------
- * | ThinkAdmin Plugin for ThinkAdmin
+ * | ThinkAdmin Plugin for ThinkAdminDeveloper
  * +----------------------------------------------------------------------
- * | 版权所有 2014~2026 ThinkAdmin [ thinkadmin.top ]
+ * | Copyright (c) 2014~2026 ThinkAdmin [ thinkadmin.top ]
  * +----------------------------------------------------------------------
- * | 官方网站: https://thinkadmin.top
+ * | Official Website: https://thinkadmin.top
  * +----------------------------------------------------------------------
- * | 开源协议 ( https://mit-license.org )
- * | 免责声明 ( https://thinkadmin.top/disclaimer )
- * | 会员特权 ( https://thinkadmin.top/vip-introduce )
+ * | Licensed: https://mit-license.org
+ * | Disclaimer: https://thinkadmin.top/disclaimer
+ * | Vip Rights: https://thinkadmin.top/vip-introduce
  * +----------------------------------------------------------------------
- * | gitee 代码仓库：https://gitee.com/zoujingli/ThinkAdmin
- * | github 代码仓库：https://github.com/zoujingli/ThinkAdmin
+ * | Gitee Repository: https://gitee.com/zoujingli/ThinkAdmin
+ * | Github Repository: https://github.com/zoujingli/ThinkAdmin
  * +----------------------------------------------------------------------
  */
 
@@ -23,13 +23,14 @@ namespace plugin\worker\service;
 use Symfony\Component\Process\Process;
 use think\admin\extend\CodeToolkit;
 use think\admin\Service;
-use think\admin\service\AppService;
 
 /**
  * 基于 Worker 的进程运行时服务。
  */
 class ProcessService extends Service
 {
+    public const BIND_NAME = 'think.admin.runtime.process';
+
     protected ?WorkerConfig $workers = null;
 
     public function workerConfig(): WorkerConfig
@@ -42,7 +43,7 @@ class ProcessService extends Service
      */
     public static function php(string $args = ''): string
     {
-        return AppService::getPhpExec() . ' ' . $args;
+        return static::getPhpExec() . ' ' . $args;
     }
 
     /**
@@ -62,7 +63,7 @@ class ProcessService extends Service
     {
         static $comExec;
         if (empty($comExec)) {
-            $comExec = AppService::getRunVar('com');
+            $comExec = static::getRunVar('com');
             $comExec = static::isFile($comExec) ? static::php($comExec) : 'composer';
         }
         $root = static::workingDirectory();
@@ -267,6 +268,36 @@ class ProcessService extends Service
     }
 
     /**
+     * 获取 PHP 可执行文件路径。
+     */
+    public static function getPhpExec(): string
+    {
+        if ($phpExec = sysvar($keys = 'phpBinary')) {
+            return $phpExec;
+        }
+        if (static::isFile($phpExec = static::getRunVar('php'))) {
+            return sysvar($keys, $phpExec);
+        }
+        $phpExec = str_replace('/sbin/php-fpm', '/bin/php', PHP_BINARY);
+        $phpExec = preg_replace('#-(cgi|fpm)(\.exe)?$#', '$2', $phpExec);
+        return sysvar($keys, static::isFile($phpExec) ? $phpExec : 'php');
+    }
+
+    /**
+     * 获取运行时二进制文件。
+     */
+    public static function getRunVar(string $field): string
+    {
+        foreach (array_unique([runpath('vendor/binarys.php'), syspath('vendor/binarys.php')]) as $file) {
+            if (is_file($file) && is_array($binarys = include $file)) {
+                return $binarys[$field] ?? '';
+            }
+        }
+
+        return '';
+    }
+
+    /**
      * 获取当前运行环境下的工作目录。
      */
     public static function workingDirectory(): string
@@ -283,7 +314,7 @@ class ProcessService extends Service
             return $running;
         }
 
-        return syspath('think');
+        return str_replace(['/', '\\'], DIRECTORY_SEPARATOR, syspath('think'));
     }
 
     /**

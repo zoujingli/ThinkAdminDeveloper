@@ -3,18 +3,18 @@
 declare(strict_types=1);
 /**
  * +----------------------------------------------------------------------
- * | ThinkAdmin Plugin for ThinkAdmin
+ * | ThinkAdmin Plugin for ThinkAdminDeveloper
  * +----------------------------------------------------------------------
- * | 版权所有 2014~2026 ThinkAdmin [ thinkadmin.top ]
+ * | Copyright (c) 2014~2026 ThinkAdmin [ thinkadmin.top ]
  * +----------------------------------------------------------------------
- * | 官方网站: https://thinkadmin.top
+ * | Official Website: https://thinkadmin.top
  * +----------------------------------------------------------------------
- * | 开源协议 ( https://mit-license.org )
- * | 免责声明 ( https://thinkadmin.top/disclaimer )
- * | 会员特权 ( https://thinkadmin.top/vip-introduce )
+ * | Licensed: https://mit-license.org
+ * | Disclaimer: https://thinkadmin.top/disclaimer
+ * | Vip Rights: https://thinkadmin.top/vip-introduce
  * +----------------------------------------------------------------------
- * | gitee 代码仓库：https://gitee.com/zoujingli/ThinkAdmin
- * | github 代码仓库：https://github.com/zoujingli/ThinkAdmin
+ * | Gitee Repository: https://gitee.com/zoujingli/ThinkAdmin
+ * | Github Repository: https://github.com/zoujingli/ThinkAdmin
  * +----------------------------------------------------------------------
  */
 
@@ -371,7 +371,7 @@ class Worker extends Command
         $info = $this->manager->workerDescribe($name);
 
         $command = $this->manager->workerCommand('serve', $name, true, $this->overrideOptions());
-        $this->output->comment(">$ {$this->process->think($command)}");
+        $this->output->comment(">$ {$this->manager->think($command)}");
 
         if ($info['running']) {
             $this->output->writeln("># Worker [{$name}] already running for pid {$info['pid']}");
@@ -398,7 +398,7 @@ class Worker extends Command
 
         $label = $service['label'] ?: strtoupper($service['name']);
         $this->output->writeln("Starting worker service [{$service['name']}] ({$label})...");
-        if ($this->process->isWin()) {
+        if ($this->manager->isWin()) {
             $this->output->writeln('You can exit with <info>`CTRL-C`</info>');
         }
 
@@ -423,7 +423,7 @@ class Worker extends Command
             }
         }
 
-        Workerman::$daemonize = !$this->process->isWin() && (bool)$this->input->getOption('daemon');
+        Workerman::$daemonize = !$this->manager->isWin() && (bool)$this->input->getOption('daemon');
         foreach (['pidFile', 'logFile', 'statusFile', 'stdoutFile', 'logFileMaxSize', 'stopTimeout', 'eventLoopClass', 'onMasterReload', 'onMasterStop', 'onWorkerExit'] as $name) {
             if (array_key_exists($name, $runtime) && $runtime[$name] !== null && $runtime[$name] !== '') {
                 Workerman::${$name} = $runtime[$name];
@@ -529,7 +529,7 @@ class Worker extends Command
             $argv[0] ?? 'think',
             'start',
         ];
-        if (!$this->process->isWin() && $this->input->getOption('daemon')) {
+        if (!$this->manager->isWin() && $this->input->getOption('daemon')) {
             $argv[] = '-d';
         }
     }

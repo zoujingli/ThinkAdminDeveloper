@@ -3,18 +3,18 @@
 declare(strict_types=1);
 /**
  * +----------------------------------------------------------------------
- * | ThinkAdmin Plugin for ThinkAdmin
+ * | ThinkAdmin Plugin for ThinkAdminDeveloper
  * +----------------------------------------------------------------------
- * | 版权所有 2014~2026 ThinkAdmin [ thinkadmin.top ]
+ * | Copyright (c) 2014~2026 ThinkAdmin [ thinkadmin.top ]
  * +----------------------------------------------------------------------
- * | 官方网站: https://thinkadmin.top
+ * | Official Website: https://thinkadmin.top
  * +----------------------------------------------------------------------
- * | 开源协议 ( https://mit-license.org )
- * | 免责声明 ( https://thinkadmin.top/disclaimer )
- * | 会员特权 ( https://thinkadmin.top/vip-introduce )
+ * | Licensed: https://mit-license.org
+ * | Disclaimer: https://thinkadmin.top/disclaimer
+ * | Vip Rights: https://thinkadmin.top/vip-introduce
  * +----------------------------------------------------------------------
- * | gitee 代码仓库：https://gitee.com/zoujingli/ThinkAdmin
- * | github 代码仓库：https://github.com/zoujingli/ThinkAdmin
+ * | Gitee Repository: https://gitee.com/zoujingli/ThinkAdmin
+ * | Github Repository: https://github.com/zoujingli/ThinkAdmin
  * +----------------------------------------------------------------------
  */
 
@@ -165,7 +165,7 @@ final class AppService extends Service
     /**
      * 获取默认本地应用编号.
      */
-    public static function singleCode(): string
+    public static function defaultAppCode(): string
     {
         $apps = self::local();
         $code = strval(Library::$sapp->config->get('route.default_app') ?: Library::$sapp->config->get('app.single_app') ?: '');
@@ -176,6 +176,14 @@ final class AppService extends Service
             return 'index';
         }
         return strval(array_key_first($apps) ?: 'index');
+    }
+
+    /**
+     * 获取默认本地应用编号.
+     */
+    public static function singleCode(): string
+    {
+        return self::defaultAppCode();
     }
 
     /**
@@ -594,35 +602,6 @@ final class AppService extends Service
     }
 
     /**
-     * 获取 PHP 可执行文件路径。
-     */
-    public static function getPhpExec(): string
-    {
-        if ($phpExec = sysvar($keys = 'phpBinary')) {
-            return $phpExec;
-        }
-        if (ProcessService::isFile($phpExec = self::getRunVar('php'))) {
-            return sysvar($keys, $phpExec);
-        }
-        $phpExec = str_replace('/sbin/php-fpm', '/bin/php', PHP_BINARY);
-        $phpExec = preg_replace('#-(cgi|fpm)(\.exe)?$#', '$2', $phpExec);
-        return sysvar($keys, ProcessService::isFile($phpExec) ? $phpExec : 'php');
-    }
-
-    /**
-     * 获取运行时二进制文件。
-     * @param string $field 字段名
-     */
-    public static function getRunVar(string $field): string
-    {
-        $file = syspath('vendor/binarys.php');
-        if (is_file($file) && is_array($binarys = include $file)) {
-            return $binarys[$field] ?? '';
-        }
-        return '';
-    }
-
-    /**
      * 获取插件包版本信息。
      * @param ?string $package 包名
      * @param bool $force 强制刷新
@@ -631,8 +610,13 @@ final class AppService extends Service
     public static function getPluginLibrarys(?string $package = null, bool $force = false)
     {
         $plugs = sysvar($keys = 'think.admin.version');
-        if ((empty($plugs) || $force) && is_file($file = syspath('vendor/versions.php'))) {
-            $plugs = sysvar($keys, include $file);
+        if (empty($plugs) || $force) {
+            foreach (array_unique([runpath('vendor/versions.php'), syspath('vendor/versions.php')]) as $file) {
+                if (is_file($file)) {
+                    $plugs = sysvar($keys, include $file);
+                    break;
+                }
+            }
         }
         return empty($package) ? $plugs : ($plugs[$package] ?? null);
     }
@@ -753,6 +737,9 @@ final class AppService extends Service
     {
         $apps = [];
         $basePath = rtrim(Library::$sapp->getBasePath(), '\/') . DIRECTORY_SEPARATOR;
+        if (!is_dir($basePath)) {
+            return $apps;
+        }
         foreach (scandir($basePath) ?: [] as $code) {
             if ($code === '.' || $code === '..' || in_array($code, self::IGNORE_LOCAL_APPS, true)) {
                 continue;

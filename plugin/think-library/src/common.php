@@ -3,18 +3,18 @@
 declare(strict_types=1);
 /**
  * +----------------------------------------------------------------------
- * | ThinkAdmin Plugin for ThinkAdmin
+ * | ThinkAdmin Plugin for ThinkAdminDeveloper
  * +----------------------------------------------------------------------
- * | 版权所有 2014~2026 ThinkAdmin [ thinkadmin.top ]
+ * | Copyright (c) 2014~2026 ThinkAdmin [ thinkadmin.top ]
  * +----------------------------------------------------------------------
- * | 官方网站: https://thinkadmin.top
+ * | Official Website: https://thinkadmin.top
  * +----------------------------------------------------------------------
- * | 开源协议 ( https://mit-license.org )
- * | 免责声明 ( https://thinkadmin.top/disclaimer )
- * | 会员特权 ( https://thinkadmin.top/vip-introduce )
+ * | Licensed: https://mit-license.org
+ * | Disclaimer: https://thinkadmin.top/disclaimer
+ * | Vip Rights: https://thinkadmin.top/vip-introduce
  * +----------------------------------------------------------------------
- * | gitee 代码仓库：https://gitee.com/zoujingli/ThinkAdmin
- * | github 代码仓库：https://github.com/zoujingli/ThinkAdmin
+ * | Gitee Repository: https://gitee.com/zoujingli/ThinkAdmin
+ * | Github Repository: https://github.com/zoujingli/ThinkAdmin
  * +----------------------------------------------------------------------
  */
 use think\admin\Exception;
@@ -152,7 +152,7 @@ if (!function_exists('sysuri')) {
         $attr[1] = Str::snake($attr[1]);
         [$rcf, $tmp] = [Library::$sapp->config->get('route', []), uniqid('think_admin_replace_temp_vars_')];
         $map = [
-            Str::lower(AppService::singleCode()),
+            Str::lower(AppService::defaultAppCode()),
             Str::snake($rcf['default_controller'] ?? ''),
             Str::lower($rcf['default_action'] ?? ''),
         ];
@@ -199,7 +199,7 @@ if (!function_exists('apiuri')) {
         }
 
         $attrs = $url === '' ? [] : array_values(array_filter(explode('/', trim($url, '/')), 'strlen'));
-        $module = RequestContext::instance()->pluginCode() ?: (Library::$sapp->http->getName() ?: AppService::singleCode());
+        $module = RequestContext::instance()->pluginCode() ?: (Library::$sapp->http->getName() ?: AppService::defaultAppCode());
         $controller = Library::$sapp->request->controller();
         $action = Library::$sapp->request->action(true);
 
@@ -213,7 +213,7 @@ if (!function_exists('apiuri')) {
             $action = $attrs[0];
         }
 
-        $module = Str::lower(trim(str_replace('\\', '/', $module), '/')) ?: AppService::singleCode();
+        $module = Str::lower(trim(str_replace('\\', '/', $module), '/')) ?: AppService::defaultAppCode();
         $controller = trim(str_replace(['.', '\\'], '/', $controller), '/');
         $segments = array_values(array_filter(explode('/', $controller), 'strlen'));
         if (($segments[0] ?? '') !== '' && strcasecmp($segments[0], 'api') === 0) {
@@ -380,16 +380,11 @@ if (!function_exists('syspath')) {
      */
     function syspath(string $path = '', ?string $root = null): string
     {
-        static $base;
-
         // 如果未提供 root，自动检测运行环境
         if ($root === null) {
-            if ($base === null) {
-                // Phar::running(false) 返回物理路径（不含 phar://），避免出现 phar://phar:// 这种重复前缀
-                $phar = Phar::running(false);
-                $base = $phar !== '' ? "phar://{$phar}" : Library::$sapp->getRootPath();
-            }
-            $root = $base;
+            // Phar::running(false) 返回物理路径（不含 phar://），避免出现 phar://phar:// 这种重复前缀
+            $phar = Phar::running(false);
+            $root = $phar !== '' ? "phar://{$phar}" : Library::$sapp->getRootPath();
         }
 
         $root = rtrim(strval($root), '/\\');
@@ -412,14 +407,8 @@ if (!function_exists('runpath')) {
      */
     function runpath(string $path = ''): string
     {
-        static $base;
-
-        if ($base === null) {
-            $phar = Phar::running(false);
-            $base = $phar !== '' ? dirname($phar) : Library::$sapp->getRootPath();
-        }
-
-        $base = rtrim($base, '/\\');
+        $phar = Phar::running(false);
+        $base = rtrim($phar !== '' ? dirname($phar) : Library::$sapp->getRootPath(), '/\\');
         return $path === '' ? $base : (($path === '/') ? $base : "{$base}/" . ltrim(str_replace('\\', '/', $path), '/'));
     }
 }
