@@ -3,18 +3,18 @@
 declare(strict_types=1);
 /**
  * +----------------------------------------------------------------------
- * | ThinkAdmin Plugin for ThinkAdmin
+ * | ThinkAdmin Plugin for ThinkAdminDeveloper
  * +----------------------------------------------------------------------
- * | 版权所有 2014~2026 ThinkAdmin [ thinkadmin.top ]
+ * | Copyright (c) 2014~2026 ThinkAdmin [ thinkadmin.top ]
  * +----------------------------------------------------------------------
- * | 官方网站: https://thinkadmin.top
+ * | Official Website: https://thinkadmin.top
  * +----------------------------------------------------------------------
- * | 开源协议 ( https://mit-license.org )
- * | 免责声明 ( https://thinkadmin.top/disclaimer )
- * | 会员特权 ( https://thinkadmin.top/vip-introduce )
+ * | Licensed: https://mit-license.org
+ * | Disclaimer: https://thinkadmin.top/disclaimer
+ * | Vip Rights: https://thinkadmin.top/vip-introduce
  * +----------------------------------------------------------------------
- * | gitee 代码仓库：https://gitee.com/zoujingli/ThinkAdmin
- * | github 代码仓库：https://github.com/zoujingli/ThinkAdmin
+ * | Gitee Repository: https://gitee.com/zoujingli/ThinkAdmin
+ * | Github Repository: https://github.com/zoujingli/ThinkAdmin
  * +----------------------------------------------------------------------
  */
 
@@ -56,8 +56,10 @@ class Produce extends Controller
             $query->with(['bindGoods', 'bindTemplate']);
 
             // 数据过滤条件
-            $map = ['deleted' => intval($this->type !== 'index')];
-            $query->like('batch')->dateBetween('create_time')->where($map);
+            $query->like('batch')->dateBetween('create_time');
+            if ($this->type !== 'index') {
+                $query->onlyTrashed();
+            }
 
             // 产品搜索查询
             $db1 = PluginWemallGoods::mQuery()->like('code|name#gname')->db();
@@ -101,15 +103,17 @@ class Produce extends Controller
      */
     public function state()
     {
-        $data = $this->_vali(['deleted.require' => '删除状态不能为空！']);
-        if ($data['deleted'] > 0) {
+        $data = $this->_vali(['delete_time.require' => '删除状态不能为空！']);
+        if (intval($data['delete_time']) > 0) {
             $subsql = PluginWumaSourceProduce::mk()->whereIn('id', str2arr(input('id', '')))->field('batch')->buildSql();
             $batchs = PluginWumaSourceAssignItem::mk()->whereRaw("pbatch in {$subsql}")->distinct()->column('pbatch');
             if (count($batchs) > 0) {
                 $this->error('删除失败，生产批次已经使用！<br><b>' . join('</b><br><b>', $batchs) . '</b>');
             }
         }
-        PluginWumaSourceProduce::mSave();
+        PluginWumaSourceProduce::mSave([
+            'delete_time' => intval($data['delete_time']) > 0 ? date('Y-m-d H:i:s') : null,
+        ]);
     }
 
     /**

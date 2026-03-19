@@ -3,18 +3,18 @@
 declare(strict_types=1);
 /**
  * +----------------------------------------------------------------------
- * | ThinkAdmin Plugin for ThinkAdmin
+ * | ThinkAdmin Plugin for ThinkAdminDeveloper
  * +----------------------------------------------------------------------
- * | 版权所有 2014~2026 ThinkAdmin [ thinkadmin.top ]
+ * | Copyright (c) 2014~2026 ThinkAdmin [ thinkadmin.top ]
  * +----------------------------------------------------------------------
- * | 官方网站: https://thinkadmin.top
+ * | Official Website: https://thinkadmin.top
  * +----------------------------------------------------------------------
- * | 开源协议 ( https://mit-license.org )
- * | 免责声明 ( https://thinkadmin.top/disclaimer )
- * | 会员特权 ( https://thinkadmin.top/vip-introduce )
+ * | Licensed: https://mit-license.org
+ * | Disclaimer: https://thinkadmin.top/disclaimer
+ * | Vip Rights: https://thinkadmin.top/vip-introduce
  * +----------------------------------------------------------------------
- * | gitee 代码仓库：https://gitee.com/zoujingli/ThinkAdmin
- * | github 代码仓库：https://github.com/zoujingli/ThinkAdmin
+ * | Gitee Repository: https://gitee.com/zoujingli/ThinkAdmin
+ * | Github Repository: https://github.com/zoujingli/ThinkAdmin
  * +----------------------------------------------------------------------
  */
 
@@ -71,7 +71,7 @@ class PluginWumaSalesUserStock extends AbstractPrivate
             'gspec' => 'gspec',
             'gcover' => 'gcover',
             'gstatus' => 'gstatus',
-            'gdeleted' => 'gdeleted',
+            'gdelete_time' => 'gdelete_time',
         ]);
     }
 
@@ -89,13 +89,13 @@ class PluginWumaSalesUserStock extends AbstractPrivate
         $fields = 'auid,ghash,sum(num_count) num_total,sum(vir_count) vir_total,0 num_count,0 vir_count';
 
         // 统计仓库出库数据
-        $where = ['auid' => $auid, 'status' => 2, 'deleted' => 0];
+        $where = ['auid' => $auid, 'status' => 2];
         PluginWumaSalesOrder::mk()->where($where)->whereRaw('auid<>xuid')->field($fields)->group('ghash')->select()->map(function (Model $total) use (&$stock) {
             $stock[$total->getAttr('ghash')] = $total->toArray();
         });
 
         // 统计仓库入库数据
-        $where = ['xuid' => $auid, 'status' => 2, 'deleted' => 0];
+        $where = ['xuid' => $auid, 'status' => 2];
         PluginWumaSalesOrder::mk()->where($where)->whereRaw('auid<>xuid')->field($fields)->group('ghash')->select()->map(function (Model $total) use (&$stock) {
             if (isset($stock[$key = $total->getAttr('ghash')])) {
                 $stock[$key]['num_count'] = $total->getAttr('num_total') ?? 0;

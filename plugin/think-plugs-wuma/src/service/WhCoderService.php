@@ -3,18 +3,18 @@
 declare(strict_types=1);
 /**
  * +----------------------------------------------------------------------
- * | ThinkAdmin Plugin for ThinkAdmin
+ * | ThinkAdmin Plugin for ThinkAdminDeveloper
  * +----------------------------------------------------------------------
- * | 版权所有 2014~2026 ThinkAdmin [ thinkadmin.top ]
+ * | Copyright (c) 2014~2026 ThinkAdmin [ thinkadmin.top ]
  * +----------------------------------------------------------------------
- * | 官方网站: https://thinkadmin.top
+ * | Official Website: https://thinkadmin.top
  * +----------------------------------------------------------------------
- * | 开源协议 ( https://mit-license.org )
- * | 免责声明 ( https://thinkadmin.top/disclaimer )
- * | 会员特权 ( https://thinkadmin.top/vip-introduce )
+ * | Licensed: https://mit-license.org
+ * | Disclaimer: https://thinkadmin.top/disclaimer
+ * | Vip Rights: https://thinkadmin.top/vip-introduce
  * +----------------------------------------------------------------------
- * | gitee 代码仓库：https://gitee.com/zoujingli/ThinkAdmin
- * | github 代码仓库：https://github.com/zoujingli/ThinkAdmin
+ * | Gitee Repository: https://gitee.com/zoujingli/ThinkAdmin
+ * | Github Repository: https://github.com/zoujingli/ThinkAdmin
  * +----------------------------------------------------------------------
  */
 
@@ -52,7 +52,7 @@ class WhCoderService extends Service
         $mins = CodeService::min2min($codes, $from);
         [$exists, $mincodes] = [[], array_keys($mins)];
         // 检查是否已经入库
-        $map = [['status', '=', 1], ['deleted', '=', 0], ['code', 'in', $mincodes]];
+        $map = [['status', '=', 1], ['code', 'in', $mincodes]];
         if ($items = PluginWumaWarehouseOrderDataMins::mk()->withSearch('inter')->where($map)->column('code')) {
             if ($intersect = array_intersect($items, $mincodes)) {
                 foreach ($intersect as $min) {
@@ -82,7 +82,7 @@ class WhCoderService extends Service
         $mins = CodeService::min2min($codes, $from);
         [$exists, $mincodes] = [[], array_keys($mins)];
         // 检查小码是否已经出库
-        $where = [['status', '=', 1], ['deleted', '=', 0], ['code', 'in', $mincodes]];
+        $where = [['status', '=', 1], ['code', 'in', $mincodes]];
         if ($items = PluginWumaWarehouseOrderDataMins::mk()->withSearch('outer')->where($where)->column('code')) {
             if ($intersect = array_intersect($items, $mincodes)) {
                 foreach ($intersect as $min) {
@@ -303,7 +303,7 @@ class WhCoderService extends Service
 
         // 赋码批次关联
         $item = PluginWumaSourceAssignItem::mk()->with(['produce'])->where(static function (Query $query) use ($coder) {
-            $assign = PluginWumaSourceAssign::mk()->where(['status' => 1, 'deleted' => 0]);
+            $assign = PluginWumaSourceAssign::mk()->where(['status' => 1]);
             $query->where(['cbatch' => $coder['batch']])->whereRaw("batch in {$assign->field('batch')->buildSql()}");
         })->findOrEmpty()->toArray();
 
@@ -313,7 +313,7 @@ class WhCoderService extends Service
         }
 
         // 出货代理数据读取
-        $map = ['code' => $code, 'status' => 1, 'deleted' => 0];
+        $map = ['code' => $code, 'status' => 1];
         $auid = AgentStockOrderDataMins::mk()->where($map)->order('id desc')->value('auid', 0);
         return [$item['produce']['gcode'], $item['produce']['gspec'], $auid];
     }

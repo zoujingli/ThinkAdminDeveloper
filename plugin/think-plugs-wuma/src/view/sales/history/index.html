@@ -67,7 +67,7 @@
                 },
                 {
                     field: 'status', title: '标签状态', align: 'center', minWidth: 50, templet: function (d) {
-                        if (d.deleted) return '<b class="color-red">已撤消</b>';
+                        if (d.delete_time) return '<b class="color-red">已撤消</b>';
                         return ['<b class="color-blue">已转出</b>', '<b class="color-green">暂存中</b>'][d.status] || 0;
                     }
                 },

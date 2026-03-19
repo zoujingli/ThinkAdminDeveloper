@@ -34,7 +34,7 @@
     <div class="headimg headimg-md headimg-no pull-left" data-tips-image data-tips-hover data-lazy-src="{{d.gcover||''}}"></div>
     产品编号：<b class="color-blue">{{ d.gcode || '-' }}</b><br>
     产品名称：{{d.gname||'-'}}<span class="color-desc padding-left-5">({{ showSpec(d.gspec || '') }})</span><br>
-    产品状态：{{- d.gdeleted>0?'<b class="color-red">已删除</b>':(d.gstatus<1?'<b class="color-red">已下架</b>':'<b class="color-green">使用中</b>')}}
+    产品状态：{{- d.gdelete_time?'<b class="color-red">已删除</b>':(d.gstatus<1?'<b class="color-red">已下架</b>':'<b class="color-green">使用中</b>')}}
     {{#}}}
 </script>
 

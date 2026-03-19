@@ -3,18 +3,18 @@
 declare(strict_types=1);
 /**
  * +----------------------------------------------------------------------
- * | ThinkAdmin Plugin for ThinkAdmin
+ * | ThinkAdmin Plugin for ThinkAdminDeveloper
  * +----------------------------------------------------------------------
- * | 版权所有 2014~2026 ThinkAdmin [ thinkadmin.top ]
+ * | Copyright (c) 2014~2026 ThinkAdmin [ thinkadmin.top ]
  * +----------------------------------------------------------------------
- * | 官方网站: https://thinkadmin.top
+ * | Official Website: https://thinkadmin.top
  * +----------------------------------------------------------------------
- * | 开源协议 ( https://mit-license.org )
- * | 免责声明 ( https://thinkadmin.top/disclaimer )
- * | 会员特权 ( https://thinkadmin.top/vip-introduce )
+ * | Licensed: https://mit-license.org
+ * | Disclaimer: https://thinkadmin.top/disclaimer
+ * | Vip Rights: https://thinkadmin.top/vip-introduce
  * +----------------------------------------------------------------------
- * | gitee 代码仓库：https://gitee.com/zoujingli/ThinkAdmin
- * | github 代码仓库：https://github.com/zoujingli/ThinkAdmin
+ * | Gitee Repository: https://gitee.com/zoujingli/ThinkAdmin
+ * | Github Repository: https://github.com/zoujingli/ThinkAdmin
  * +----------------------------------------------------------------------
  */
 
@@ -27,7 +27,7 @@ use think\model\relation\HasOne;
  * Class plugin\wuma\model\PluginWumaSalesOrder.
  *
  * @property int $auid 经销商编号
- * @property int $deleted 删除状态(0未删,1已删)
+ * @property string $delete_time 删除时间
  * @property int $id
  * @property int $mode 操作方式(1扫码,2虚拟)
  * @property int $num_count 累计已经出库
@@ -83,7 +83,7 @@ class PluginWumaSalesOrder extends AbstractPrivate
             'gspec' => 'gspec',
             'gcover' => 'gcover',
             'gstatus' => 'gstatus',
-            'gdeleted' => 'gdeleted',
+            'gdelete_time' => 'gdelete_time',
         ]);
     }
 }

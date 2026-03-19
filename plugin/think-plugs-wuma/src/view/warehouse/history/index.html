@@ -40,7 +40,7 @@
                 {field: 'code', title: '标签序号', align: 'center', width: 100},
                 {
                     field: 'status', title: '标签状态', align: 'center', width: 100, templet: function (d) {
-                        return d.deleted > 0 ? '<b class="color-red">退货</b>' : [
+                        return d.status < 1 ? '<b class="color-red">退货</b>' : [
                             '<b class="color-desc">无效</b>',
                             '<b class="color-blue">有效</div>',
                             '<b class="color-green">出货</div>',

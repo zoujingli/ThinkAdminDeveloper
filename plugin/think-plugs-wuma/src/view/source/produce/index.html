@@ -6,11 +6,11 @@
 <!--{/if}-->
 {if isset($type) and $type eq 'index'}
 <!--{if auth("remove")}-->
-<button class='layui-btn layui-btn-sm layui-btn-primary' data-action='{:url("state")}' data-rule="id#{id};deleted#1">删除批次</button>
+<button class='layui-btn layui-btn-sm layui-btn-primary' data-action='{:url("state")}' data-rule="id#{id};delete_time#1">删除批次</button>
 <!--{/if}-->
 {else}
 <!--{if auth("remove")}-->
-<button class='layui-btn layui-btn-sm layui-btn-primary' data-action='{:url("state")}' data-confirm="确定要恢复这些数据吗？" data-rule="id#{id};deleted#0">恢复批次</button>
+<button class='layui-btn layui-btn-sm layui-btn-primary' data-action='{:url("state")}' data-confirm="确定要恢复这些数据吗？" data-rule="id#{id};delete_time#0">恢复批次</button>
 <!--{/if}-->
 {/if}
 {/block}
@@ -89,11 +89,11 @@
 
     {if isset($type) and $type eq 'index'}
     <!--{if auth("state")}-->
-    <a class="layui-btn layui-btn-sm layui-btn-danger" data-action="{:url('state')}" data-confirm="确定要移入回收站吗？" data-value="id#{{d.id}};deleted#1">删 除</a>
+    <a class="layui-btn layui-btn-sm layui-btn-danger" data-action="{:url('state')}" data-confirm="确定要移入回收站吗？" data-value="id#{{d.id}};delete_time#1">删 除</a>
     <!--{/if}-->
     {else}
     <!--{if auth("state")}-->
-    <a class="layui-btn layui-btn-sm layui-btn-normal" data-action="{:url('state')}" data-value="id#{{d.id}};deleted#0">恢 复</a>
+    <a class="layui-btn layui-btn-sm layui-btn-normal" data-action="{:url('state')}" data-value="id#{{d.id}};delete_time#0">恢 复</a>
     <!--{/if}-->
     {/if}
 </script>
