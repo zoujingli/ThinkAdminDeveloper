@@ -145,8 +145,8 @@ class Index extends Controller
      */
     private function openPlugin(string $code, string $name = '打开指定插件'): Response
     {
-        $current = AppService::current();
-        $href = '#' . sysuri(sprintf('layout/%s', encode(strval($current['code'] ?? $code))), [], false);
+        $current = AppService::currentPluginCode();
+        $href = '#' . sysuri(sprintf('layout/%s', encode($current !== '' ? $current : $code)), [], false);
         return json(['code' => 1, 'info' => $name, 'data' => $href, 'wait' => 'false']);
     }
 

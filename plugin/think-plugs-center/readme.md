@@ -24,7 +24,7 @@
 ## 架构说明
 
 - 展示层：`src/controller/Index.php` 与视图模板负责渲染插件入口列表和卡片。
-- 元数据层：依赖 `ThinkLibrary service/PluginService` 读取插件编码、名称、前缀、菜单根和安装信息。
+- 元数据层：依赖 `ThinkLibrary service/AppService` 读取插件编码、名称、前缀和安装信息。
 - 协同层：与 `Admin` 一起呈现后台入口，但不介入 `Worker`、`Storage`、`Wechat` 等插件自身业务。
 - 数据层：只消费插件元数据和菜单信息，不维护专属业务表。
 

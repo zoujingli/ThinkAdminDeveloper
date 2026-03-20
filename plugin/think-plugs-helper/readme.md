@@ -82,7 +82,7 @@ composer remove zoujingli/think-plugs-helper
 - `Service::menu()` 只声明菜单结构
 - 叶子节点必须存在真实控制器节点
 - 叶子节点必须同时声明 `@auth true` 和 `@menu true`
-- `PhinxExtend::writePluginMenu()` 写菜单前会先做一致性校验
+- `PluginMenuService::assertMenus()` 与 `PhinxExtend::writePluginMenu()` 会先做一致性校验
 
 ## 业务能力
 

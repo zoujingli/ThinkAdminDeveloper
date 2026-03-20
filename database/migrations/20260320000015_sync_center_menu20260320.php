@@ -24,11 +24,11 @@ use think\migration\Migrator;
 @set_time_limit(0);
 @ini_set('memory_limit', '-1');
 
-class InstallCenter20241010 extends Migrator
+class SyncCenterMenu20260320 extends Migrator
 {
     public function getName(): string
     {
-        return 'CenterPlugin';
+        return 'CenterMenuSync20260320';
     }
 
     public function change(): void

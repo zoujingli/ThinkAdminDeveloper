@@ -28,7 +28,8 @@ use plugin\worker\service\ProcessService;
 use think\admin\extend\ArrayTree;
 use think\admin\extend\FileTools;
 use think\admin\Library;
-use think\admin\service\PluginService;
+use think\db\PDOConnection;
+use think\db\Query;
 use think\helper\Str;
 use think\migration\Migrator;
 
@@ -45,7 +46,7 @@ class PhinxExtend
 
     public static function tableOptions(string $comment = ''): array
     {
-        if (strtolower(Library::$sapp->db->connect()->getConfig('type', 'mysql')) === 'mysql') {
+        if (strtolower(strval(Library::$sapp->db->connect()->getConfig('type') ?: 'mysql')) === 'mysql') {
             return ['engine' => 'InnoDB', 'collation' => 'utf8mb4_general_ci', 'comment' => $comment];
         }
 
@@ -60,7 +61,7 @@ class PhinxExtend
     public static function write2menu(array $zdata, $exists = [], ?Migrator $migrator = null): bool
     {
         if ($migrator instanceof Migrator) {
-            return static::write2menuByMigrator($migrator, $zdata, (array)$exists);
+            return self::write2menuByMigrator($migrator, $zdata, (array)$exists);
         }
         try {
             if (!empty($exists) && SystemMenu::mk()->where($exists)->findOrEmpty()->isExists()) {
@@ -70,13 +71,13 @@ class PhinxExtend
             return false;
         }
         foreach ($zdata as $one) {
-            $pid1 = static::write1menu($one);
+            $pid1 = self::write1menu($one);
             if (!empty($one['subs'])) {
                 foreach ($one['subs'] as $two) {
-                    $pid2 = static::write1menu($two, $pid1);
+                    $pid2 = self::write1menu($two, $pid1);
                     if (!empty($two['subs'])) {
                         foreach ($two['subs'] as $thr) {
-                            static::write1menu($thr, $pid2);
+                            self::write1menu($thr, $pid2);
                         }
                     }
                 }
@@ -97,10 +98,10 @@ class PhinxExtend
             return false;
         }
 
-        PluginService::assertMenus($service);
-        $menus = AppService::menus($service);
-        $root = array_replace($root, AppService::menuRoot($service));
-        $exists = array_replace($exists, AppService::menuExists($service));
+        PluginMenuService::assertMenus($service);
+        $menus = PluginMenuService::menus($service);
+        $root = array_replace($root, PluginMenuService::menuRoot($service));
+        $exists = array_replace($exists, PluginMenuService::menuExists($service));
         if (!empty($root)) {
             if (!empty($menus)) {
                 $root['subs'] = $menus;
@@ -163,10 +164,10 @@ class PhinxExtend
             throw new \Exception(' ** Notify: 只支持 MySql 数据库生成数据库脚本');
         }
         $br = "\r\n";
-        $content = static::_build2table($tables, true, $force);
+        $content = self::_build2table($tables, true, $force);
         $content = substr($content, strpos($content, "\n") + 1);
         $content = '<?php' . "{$br}{$br}use plugin\\helper\\support\\PhinxExtend;{$br}use think\\migration\\Migrator;{$br}{$br}@set_time_limit(0);{$br}@ini_set('memory_limit', '-1');{$br}{$br}class {$class} extends Migrator{$br}{{$br}{$content}}{$br}";
-        return ['file' => static::nextFile($class), 'text' => $content];
+        return ['file' => self::nextFile($class), 'text' => $content];
     }
 
     /**
@@ -201,10 +202,13 @@ class PhinxExtend
             $menuData[] = $one;
         }
 
-        [$extra, $version] = [[], strstr($filename = static::nextFile($class), '_', true)];
+        [$extra, $version] = [[], strstr($filename = self::nextFile($class), '_', true)];
         if (count($tables) > 0) {
             foreach ($tables as $table) {
                 if (($count = ($db = Library::$sapp->db->table($table))->count()) > 0) {
+                    if (!$db instanceof Query) {
+                        continue;
+                    }
                     $dataFileName = "{$version}/{$table}.data";
                     $dataFilePath = runpath("database/migrations/{$dataFileName}");
                     is_dir($dataDirectory = dirname($dataFilePath)) || mkdir($dataDirectory, 0777, true);
@@ -245,7 +249,7 @@ class PhinxExtend
      */
     public static function migrationRowId(Migrator $migrator, string $table, array $where = [], bool $selectId = true): int
     {
-        [$sql, $params] = static::buildMigrationWhereSql($migrator, $table, $where);
+        [$sql, $params] = self::buildMigrationWhereSql($migrator, $table, $where);
         $field = $selectId ? $migrator->getAdapter()->quoteColumnName('id') : '1';
         $stmt = $migrator->query("SELECT {$field} FROM {$sql} LIMIT 1", $params);
         if ($stmt === false) {
@@ -271,7 +275,7 @@ class PhinxExtend
      */
     private static function write1menu(array $menu, int $ppid = 0): int
     {
-        return (int)SystemMenu::mk()->insertGetId(static::normalizeMenuRow($menu, $ppid));
+        return (int)SystemMenu::mk()->insertGetId(self::normalizeMenuRow($menu, $ppid));
     }
 
     /**
@@ -286,13 +290,13 @@ class PhinxExtend
             return false;
         }
         foreach ($zdata as $one) {
-            $pid1 = static::write1menuByMigrator($migrator, $one);
+            $pid1 = self::write1menuByMigrator($migrator, $one);
             if (!empty($one['subs'])) {
                 foreach ($one['subs'] as $two) {
-                    $pid2 = static::write1menuByMigrator($migrator, $two, $pid1);
+                    $pid2 = self::write1menuByMigrator($migrator, $two, $pid1);
                     if (!empty($two['subs'])) {
                         foreach ($two['subs'] as $thr) {
-                            static::write1menuByMigrator($migrator, $thr, $pid2);
+                            self::write1menuByMigrator($migrator, $thr, $pid2);
                         }
                     }
                 }
@@ -307,7 +311,7 @@ class PhinxExtend
      */
     private static function write1menuByMigrator(Migrator $migrator, array $menu, int $ppid = 0): int
     {
-        $data = static::normalizeMenuRow($menu, $ppid);
+        $data = self::normalizeMenuRow($menu, $ppid);
         if ($id = static::migrationRowId($migrator, 'system_menu', [
             'pid' => $data['pid'],
             'title' => $data['title'],
@@ -529,7 +533,11 @@ CODE;
             }
             $_fieldString .= "\t\t]";
             $_indexs = [];
-            foreach (Library::$sapp->db->connect()->query("show index from {$table}") as $index) {
+            $connection = Library::$sapp->db->connect();
+            if (!$connection instanceof PDOConnection) {
+                continue;
+            }
+            foreach ($connection->query("show index from {$table}") as $index) {
                 $keyName = strval($index['Key_name'] ?? '');
                 if ($keyName === '' || $keyName === 'PRIMARY') {
                     continue;

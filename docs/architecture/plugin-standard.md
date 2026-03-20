@@ -12,8 +12,8 @@
 插件标准不是口头约定，而是由以下几部分共同约束：
 
 - `think\admin\Plugin`
-- `PluginService`
 - `AppService`
+- `plugin\helper\service\PluginMenuService`
 - `PhinxExtend`
 - Composer 元数据
 - 架构边界测试
@@ -185,7 +185,7 @@
 - `@auth true`
 - `@menu true`
 
-否则 `PluginService::assertMenus()` 会把它判定为无效菜单绑定。
+否则 `PluginMenuService::assertMenus()` 会把它判定为无效菜单绑定。
 
 ### 3. 登录约束
 

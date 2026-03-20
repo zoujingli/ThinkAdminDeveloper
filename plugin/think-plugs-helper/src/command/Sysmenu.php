@@ -24,6 +24,7 @@ use plugin\system\model\SystemMenu;
 use think\admin\Command;
 use think\admin\Exception;
 use think\admin\extend\ArrayTree;
+use think\admin\helper\QueryHelper;
 use think\db\exception\DataNotFoundException;
 use think\db\exception\DbException;
 use think\db\exception\ModelNotFoundException;
@@ -52,9 +53,13 @@ class Sysmenu extends Command
      */
     public function handle()
     {
-        $query = SystemMenu::mQuery()->where(['status' => 1]);
+        /** @var QueryHelper $query */
+        $query = SystemMenu::mQuery();
+        $query->where(['status' => 1]);
         $menus = $query->db()->order('sort desc,id asc')->select()->toArray();
-        [$total, $count] = [count($menus), 0, $query->empty()];
+        $total = count($menus);
+        $count = 0;
+        $query->empty();
         $this->setQueueMessage($total, 0, '开始重置系统菜单编号...');
         foreach (ArrayTree::arr2tree($menus) as $sub1) {
             $pid1 = $this->write($sub1);
