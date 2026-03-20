@@ -47,7 +47,7 @@ class Config extends Controller
         $this->driver = strtolower((string)StorageConfig::global('driver', 'local'));
         $this->driverName = $this->files[$this->driver] ?? $this->driver;
         $this->canEdit = $this->canManage();
-        return $this->fetch('config/index');
+        $this->fetch('config/index');
     }
 
     /**
@@ -64,7 +64,7 @@ class Config extends Controller
             StorageConfig::initialize();
             $this->type = input('type', array_key_first(Storage::types()) ?: 'local');
             $this->points = Storage::regions($this->type);
-            return $this->fetch(Storage::template($this->type));
+            $this->fetch(Storage::template($this->type));
         }
         $post = $this->request->post();
         if (!empty($post['storage']['allowed_exts'])) {
@@ -100,15 +100,17 @@ class Config extends Controller
 
     private function canView(): bool
     {
-        return SystemContext::isSuper()
-            || SystemContext::check('storage/config/index')
-            || SystemContext::check('storage/config/storage');
+        $context = SystemContext::instance();
+        return $context->isSuper()
+            || $context->check('storage/config/index')
+            || $context->check('storage/config/storage');
     }
 
     private function canManage(): bool
     {
-        return SystemContext::isSuper()
-            || SystemContext::check('storage/config/storage')
-            || SystemContext::check('storage/config/index');
+        $context = SystemContext::instance();
+        return $context->isSuper()
+            || $context->check('storage/config/storage')
+            || $context->check('storage/config/index');
     }
 }

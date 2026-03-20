@@ -73,7 +73,7 @@ class CodeToolkit
      */
     public static function text2utf8(string $text, string $target = 'UTF-8'): string
     {
-        return mb_convert_encoding($text, $target, static::detectEncoding($text));
+        return mb_convert_encoding($text, $target, self::detectEncoding($text));
     }
 
     /**
@@ -95,7 +95,7 @@ class CodeToolkit
      */
     public static function random(int $size = 10, int $type = 1, string $prefix = ''): string
     {
-        $chars = static::alphabet($type);
+        $chars = self::alphabet($type);
         $code = $prefix . $chars[mt_rand(1, strlen($chars) - 1)];
         while (strlen($code) < $size) {
             $code .= $chars[mt_rand(0, strlen($chars) - 1)];

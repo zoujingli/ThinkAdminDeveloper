@@ -67,9 +67,12 @@ class Balance extends Controller
             $this->balanceTotal = PluginPaymentBalance::mk()->where($map)->whereRaw('amount>0')->sum('amount');
             $this->balanceCount = PluginPaymentBalance::mk()->where($map)->whereRaw('amount<0')->sum('amount');
         }, function (QueryHelper $query) {
-            $query->with(['user'])->like('code,remark')->dateBetween('create_time');
+            $query->with(['user']);
+            $query->like('code,remark')->dateBetween('create_time');
             $query->where(['cancel' => intval($this->type !== 'index')]);
-            $db = PluginAccountUser::mQuery()->like('email|nickname|username|phone#user')->db();
+            $userQuery = PluginAccountUser::mQuery();
+            $userQuery->like('email|nickname|username|phone#user');
+            $db = $userQuery->db();
             if (!empty($db->getOptions()['where'] ?? [])) {
                 $query->whereRaw("unid in {$db->field('id')->buildSql()}");
             }

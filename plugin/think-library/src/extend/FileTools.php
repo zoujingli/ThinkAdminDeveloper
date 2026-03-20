@@ -72,7 +72,7 @@ class FileTools
         }
         if ($info->isDir()) {
             foreach (static::findFilesYield($info->getPathname(), $depth, $filter) as $file) {
-                $files[] = $short ? static::relativePath($info->getPathname(), $file->getPathname()) : $file->getPathname();
+                $files[] = $short ? self::relativePath($info->getPathname(), $file->getPathname()) : $file->getPathname();
             }
         }
         return $files;
@@ -107,8 +107,8 @@ class FileTools
      */
     public static function copy(string $frdir, string $todir, array $files = [], bool $force = true, bool $remove = true): bool
     {
-        $frdir = static::normalizeDirectory($frdir);
-        $todir = static::normalizeDirectory($todir);
+        $frdir = self::normalizeDirectory($frdir);
+        $todir = self::normalizeDirectory($todir);
         if (empty($files) && is_dir($frdir)) {
             $files = static::find($frdir, null, static function (\SplFileInfo $info) {
                 return $info->getBasename()[0] !== '.';

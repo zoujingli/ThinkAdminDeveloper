@@ -45,7 +45,8 @@ class News extends Controller
     {
         $this->title = '微信图文列表';
         WechatNews::mQuery(null, static function (QueryHelper $query) {
-            $query->order('id desc')->page();
+            $query->order('id desc');
+            $query->page();
         });
     }
 

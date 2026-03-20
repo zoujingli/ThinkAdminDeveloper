@@ -31,6 +31,11 @@ use Workerman\Worker;
 class ThinkRequest extends Request
 {
     /**
+     * 当前请求主机名（含非默认端口）。
+     */
+    protected string $host = '';
+
+    /**
      * 复用实例前重置请求状态。
      */
     public function reset(): void
@@ -43,6 +48,7 @@ class ThinkRequest extends Request
         foreach ($props as $key => $value) {
             $this->{$key} = $value;
         }
+        $this->host = '';
     }
 
     /**

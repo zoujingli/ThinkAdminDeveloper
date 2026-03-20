@@ -306,7 +306,12 @@ class Publish extends Command
      */
     private function parse(): self
     {
-        [$services, $versions, $known] = [[], [], []];
+        /** @var array<int, string> $services */
+        $services = [];
+        /** @var array<string, array<string, mixed>> $versions */
+        $versions = [];
+        /** @var array<string, true> $known */
+        $known = [];
 
         if (is_file($file = syspath('vendor/composer/installed.json'))) {
             $packages = json_decode((string)@file_get_contents($file), true);
@@ -316,7 +321,7 @@ class Publish extends Command
                     continue;
                 }
                 $known[$name] = true;
-                $this->mergePackage($package, syspath("vendor/{$name}/"), $services, $versions);
+                [$services, $versions] = $this->mergePackage($package, syspath("vendor/{$name}/"), $services, $versions);
             }
         }
 
@@ -326,7 +331,7 @@ class Publish extends Command
                 continue;
             }
             $known[$name] = true;
-            $this->mergePackage($package, strval($package['__path'] ?? ''), $services, $versions);
+            [$services, $versions] = $this->mergePackage($package, strval($package['__path'] ?? ''), $services, $versions);
         }
 
         $services = array_values(array_unique(array_filter(array_map('strval', $services))));
@@ -348,8 +353,9 @@ class Publish extends Command
      * @param array<string, mixed> $package
      * @param array<int, string> $services
      * @param array<string, array<string, mixed>> $versions
+     * @return array{0:array<int, string>,1:array<string, array<string, mixed>>}
      */
-    private function mergePackage(array $package, string $installPath, array &$services, array &$versions): void
+    private function mergePackage(array $package, string $installPath, array $services, array $versions): array
     {
         $installPath = rtrim($installPath, '\/');
         $type = strval($package['type'] ?? '');
@@ -382,6 +388,8 @@ class Publish extends Command
                 copy($source, $target);
             }
         }
+
+        return [$services, $versions];
     }
 
     /**

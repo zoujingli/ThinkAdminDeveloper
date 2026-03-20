@@ -104,7 +104,8 @@ class Checkin extends Auth
         $date = date('Y-m', strtotime($data['date']));
         PluginWemallUserCheckin::mQuery(null, function (QueryHelper $query) use ($date) {
             $query->where(['unid' => $this->unid])->whereLike('create_time', "{$date}%");
-            $this->success('获取签到记录！', $query->order('id desc')->page(false, false, false, 90));
+            $query->order('id desc');
+            $this->success('获取签到记录！', $query->page(false, false, false, 90));
         });
     }
 

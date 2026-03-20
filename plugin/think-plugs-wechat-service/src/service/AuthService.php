@@ -30,61 +30,61 @@ use think\Exception;
 /**
  * Class AuthService.
  *
- * @method \WeChat\Card WeChatCard($appid) static 微信卡券管理
- * @method \WeChat\Custom WeChatCustom($appid) static 微信客服消息
- * @method \WeChat\Limit WeChatLimit($appid) static 接口调用频次限制
- * @method \WeChat\Media WeChatMedia($appid) static 微信素材管理
- * @method \WeChat\Menu WeChatMenu($appid) static 微信菜单管理
- * @method \WeChat\Oauth WeChatOauth($appid) static 微信网页授权
- * @method \WeChat\Pay WeChatPay($appid) static 微信支付商户
- * @method \WeChat\Product WeChatProduct($appid) static 微信商店管理
- * @method \WeChat\Qrcode WeChatQrcode($appid) static 微信二维码管理
- * @method \WeChat\Receive WeChatReceive($appid) static 微信推送管理
- * @method \WeChat\Scan WeChatScan($appid) static 微信扫一扫接入管理
- * @method \WeChat\Script WeChatScript($appid) static 微信前端支持
- * @method \WeChat\Shake WeChatShake($appid) static 微信揺一揺周边
- * @method \WeChat\Tags WeChatTags($appid) static 微信用户标签管理
- * @method \WeChat\Template WeChatTemplate($appid) static 微信模板消息
- * @method \WeChat\User WeChatUser($appid) static 微信粉丝管理
- * @method \WeChat\Wifi WeChatWifi($appid) static 微信门店WIFI管理
+ * @method static \WeChat\Card WeChatCard(string $appid) 微信卡券管理
+ * @method static \WeChat\Custom WeChatCustom(string $appid) 微信客服消息
+ * @method static \WeChat\Limit WeChatLimit(string $appid) 接口调用频次限制
+ * @method static \WeChat\Media WeChatMedia(string $appid) 微信素材管理
+ * @method static \WeChat\Menu WeChatMenu(string $appid) 微信菜单管理
+ * @method static \WeChat\Oauth WeChatOauth(string $appid) 微信网页授权
+ * @method static \WeChat\Pay WeChatPay(string $appid) 微信支付商户
+ * @method static \WeChat\Product WeChatProduct(string $appid) 微信商店管理
+ * @method static \WeChat\Qrcode WeChatQrcode(string $appid) 微信二维码管理
+ * @method static \WeChat\Receive WeChatReceive(string $appid) 微信推送管理
+ * @method static \WeChat\Scan WeChatScan(string $appid) 微信扫一扫接入管理
+ * @method static \WeChat\Script WeChatScript(string $appid) 微信前端支持
+ * @method static \WeChat\Shake WeChatShake(string $appid) 微信揺一揺周边
+ * @method static \WeChat\Tags WeChatTags(string $appid) 微信用户标签管理
+ * @method static \WeChat\Template WeChatTemplate(string $appid) 微信模板消息
+ * @method static \WeChat\User WeChatUser(string $appid) 微信粉丝管理
+ * @method static \WeChat\Wifi WeChatWifi(string $appid) 微信门店WIFI管理
  *
  * ----- WeMini -----
- * @method \WeMini\Account WeMiniAccount($appid) static 小程序账号管理
- * @method \WeMini\Basic WeMiniBasic($appid) static 小程序基础信息设置
- * @method \WeMini\Code WeMiniCode($appid) static 小程序代码管理
- * @method \WeMini\Domain WeMiniDomain($appid) static 小程序域名管理
- * @method \WeMini\Tester WeMinitester($appid) static 小程序成员管理
- * @method \WeMini\User WeMiniUser($appid) static 小程序帐号管理
- *                                         --------------------
- * @method \WeMini\Crypt WeMiniCrypt($options = []) static 小程序数据加密处理
- * @method \WeMini\Delivery WeMiniDelivery($options = []) static 小程序即时配送
- * @method \WeMini\Image WeMiniImage($options = []) static 小程序图像处理
- * @method \WeMini\Logistics WeMiniLogistics($options = []) static 小程序物流助手
- * @method \WeMini\Message WeMiniMessage($options = []) static 小程序动态消息
- * @method \WeMini\Ocr WeMiniOcr($options = []) static 小程序ORC服务
- * @method \WeMini\Plugs WeMiniPlugs($options = []) static 小程序插件管理
- * @method \WeMini\Poi WeMiniPoi($options = []) static 小程序地址管理
- * @method \WeMini\Qrcode WeMiniQrcode($options = []) static 小程序二维码管理
- * @method \WeMini\Security WeMiniSecurity($options = []) static 小程序内容安全
- * @method \WeMini\Soter WeMiniSoter($options = []) static 小程序生物认证
- * @method \WeMini\Template WeMiniTemplate($options = []) static 小程序模板消息支持
- * @method \WeMini\Total WeMiniTotal($options = []) static 小程序数据接口
+ * @method static \WeMini\Account WeMiniAccount(string $appid) 小程序账号管理
+ * @method static \WeMini\Basic WeMiniBasic(string $appid) 小程序基础信息设置
+ * @method static \WeMini\Code WeMiniCode(string $appid) 小程序代码管理
+ * @method static \WeMini\Domain WeMiniDomain(string $appid) 小程序域名管理
+ * @method static \WeMini\Tester WeMinitester(string $appid) 小程序成员管理
+ * @method static \WeMini\User WeMiniUser(string $appid) 小程序帐号管理
+ *                                                       --------------------
+ * @method static \WeMini\Crypt WeMiniCrypt(array $options = []) 小程序数据加密处理
+ * @method static \WeMini\Delivery WeMiniDelivery(array $options = []) 小程序即时配送
+ * @method static \WeMini\Image WeMiniImage(array $options = []) 小程序图像处理
+ * @method static \WeMini\Logistics WeMiniLogistics(array $options = []) 小程序物流助手
+ * @method static \WeMini\Message WeMiniMessage(array $options = []) 小程序动态消息
+ * @method static \WeMini\Ocr WeMiniOcr(array $options = []) 小程序ORC服务
+ * @method static \WeMini\Plugs WeMiniPlugs(array $options = []) 小程序插件管理
+ * @method static \WeMini\Poi WeMiniPoi(array $options = []) 小程序地址管理
+ * @method static \WeMini\Qrcode WeMiniQrcode(array $options = []) 小程序二维码管理
+ * @method static \WeMini\Security WeMiniSecurity(array $options = []) 小程序内容安全
+ * @method static \WeMini\Soter WeMiniSoter(array $options = []) 小程序生物认证
+ * @method static \WeMini\Template WeMiniTemplate(array $options = []) 小程序模板消息支持
+ * @method static \WeMini\Total WeMiniTotal(array $options = []) 小程序数据接口
  *
  * ----- WePay -----
- * @method \WePay\Bill WePayBill($appid) static 微信商户账单及评论
- * @method \WePay\Order WePayOrder($appid) static 微信商户订单
- * @method \WePay\Refund WePayRefund($appid) static 微信商户退款
- * @method \WePay\Coupon WePayCoupon($appid) static 微信商户代金券
- * @method \WePay\Redpack WePayRedpack($appid) static 微信红包支持
- * @method \WePay\Transfers WePayTransfers($appid) static 微信商户打款到零钱
- * @method \WePay\TransfersBank WePayTransfersBank($appid) static 微信商户打款到银行卡
+ * @method static \WePay\Bill WePayBill(string $appid) 微信商户账单及评论
+ * @method static \WePay\Order WePayOrder(string $appid) 微信商户订单
+ * @method static \WePay\Refund WePayRefund(string $appid) 微信商户退款
+ * @method static \WePay\Coupon WePayCoupon(string $appid) 微信商户代金券
+ * @method static \WePay\Redpack WePayRedpack(string $appid) 微信红包支持
+ * @method static \WePay\Transfers WePayTransfers(string $appid) 微信商户打款到零钱
+ * @method static \WePay\TransfersBank WePayTransfersBank(string $appid) 微信商户打款到银行卡
  *
  * ----- WeOpen -----
- * @method \WeOpen\Login WeOpenLogin() static 第三方微信登录
- * @method \WeOpen\Service WeOpenService() static 第三方服务
+ * @method static \WeOpen\Login WeOpenLogin() 第三方微信登录
+ * @method static \WeOpen\Service WeOpenService() 第三方服务
  *
  * ----- ThinkService -----
- * @method ConfigService ThinkServiceConfig($appid) static 平台服务配置
+ * @method static ConfigService ThinkServiceConfig(string $appid) 平台服务配置
  */
 class AuthService extends Service
 {

@@ -375,7 +375,7 @@ if (!function_exists('echo_value')) {
 </head>
 <body>
 <?php if (App::isDebug()) { ?>
-    <?php foreach ($traces as $index => $trace) { ?>
+    <?php foreach (($traces ?? []) as $index => $trace) { ?>
         <div class="exception">
             <div class="message">
                 <div class="info">

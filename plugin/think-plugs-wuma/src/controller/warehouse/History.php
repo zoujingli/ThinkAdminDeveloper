@@ -49,9 +49,11 @@ class History extends Controller
             $this->title = '仓库库存历史';
         }, function (QueryHelper $query) {
             // 操作单号搜索
-            $db = PluginWumaWarehouseOrderData::mQuery()->like('code')->dateBetween('create_time')->db();
+            $db = PluginWumaWarehouseOrderData::mQuery();
+            $db->like('code');
+            $db->dateBetween('create_time');
             if (!empty($db->getOptions()['where'] ?? [])) {
-                $query->whereRaw("ddid in {$db->field('id')->buildSql()}");
+                $query->whereRaw("ddid in {$db->db()->field('id')->buildSql()}");
             }
 
             // 防伪编码解析
@@ -59,7 +61,8 @@ class History extends Controller
                 $this->get['minAlias'] = CodeService::code2min($this->get['encode']);
             }
             // 数据查询应用
-            $query->with(['main'])->equal('code#min,code#minAlias');
+            $query->with(['main']);
+            $query->equal('code#min,code#minAlias');
         });
     }
 

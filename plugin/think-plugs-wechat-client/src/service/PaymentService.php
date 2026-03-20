@@ -96,12 +96,12 @@ class PaymentService
                 'appid' => $config['appid'],
                 'mchid' => $config['mch_id'],
                 'payer' => ['openid' => $openid],
-                'amount' => ['total' => intval($pAmount * 100), 'currency' => 'CNY'],
+                'amount' => ['total' => (int)round((float)$pAmount * 100), 'currency' => 'CNY'],
                 'notify_url' => static::withNotifyUrl($pCode),
                 'description' => empty($pRemark) ? $oName : ($oName . '-' . $pRemark),
                 'out_trade_no' => $pCode,
             ];
-            $tradeType = static::tradeTypes[$pType] ?? '';
+            $tradeType = self::tradeTypes[$pType] ?? '';
             if (in_array($pType, [static::WECHAT_WAP, static::WECHAT_QRC])) {
                 unset($data['payer']);
             }

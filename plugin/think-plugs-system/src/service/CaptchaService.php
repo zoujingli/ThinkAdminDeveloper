@@ -83,7 +83,8 @@ class CaptchaService extends Service
      */
     public function config(array $config = []): CaptchaService
     {
-        return $this->initialize($config);
+        $this->initialize($config);
+        return $this;
     }
 
     /**

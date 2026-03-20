@@ -119,7 +119,7 @@ abstract class ExpressService
      */
     public static function query(string $express, string $number): array
     {
-        return static::getInterface()->doRequest('api.auth.express/query', [
+        return self::getInterface()->doRequest('api.auth.express/query', [
             'type' => 'free', 'express' => $express, 'number' => $number,
         ]);
     }
@@ -130,7 +130,7 @@ abstract class ExpressService
      */
     public static function company(): array
     {
-        return static::getInterface()->doRequest('api.auth.express/getCompany');
+        return self::getInterface()->doRequest('api.auth.express/getCompany');
     }
 
     /**

@@ -29,6 +29,7 @@ use think\db\BaseQuery;
 use think\db\exception\DataNotFoundException;
 use think\db\exception\DbException;
 use think\db\exception\ModelNotFoundException;
+use think\db\PDOConnection;
 use think\db\Query;
 use think\exception\HttpResponseException;
 use think\Model;
@@ -132,6 +133,9 @@ class QueryHelper extends Helper
     public function autoSortQuery(BaseQuery|Model|string $dbQuery, string $field = 'sort'): Query
     {
         $query = QueryFactory::build($dbQuery);
+        if (!$query instanceof Query) {
+            throw new \InvalidArgumentException('QueryHelper only supports relational Query instances.');
+        }
         if ($this->app->request->isPost() && $this->app->request->post('action') === 'sort') {
             SystemContext::instance()->isLogin() or $this->class->error('请重新登录！');
             if (method_exists($query, 'getTableFields') && in_array($field, $query->getTableFields(), true)) {
@@ -278,6 +282,29 @@ class QueryHelper extends Helper
     }
 
     /**
+     * 仅查询已软删除的数据.
+     * @return $this
+     */
+    public function onlyTrashed(): QueryHelper
+    {
+        $field = strval($this->query->getOption('deleteTime', 'delete_time'));
+        $condition = ['not null', ''];
+        $softDelete = $this->query->getOption('soft_delete');
+        if (is_array($softDelete) && isset($softDelete[0])) {
+            $field = strval($softDelete[0]);
+            $softCondition = $softDelete[1] ?? null;
+            if (is_array($softCondition) && isset($softCondition[0])) {
+                $operator = strtolower(strval($softCondition[0]));
+                if ($operator === '=' && array_key_exists(1, $softCondition)) {
+                    $condition = ['<>', $softCondition[1]];
+                }
+            }
+        }
+        $this->query->useSoftDelete($field, $condition);
+        return $this;
+    }
+
+    /**
      * 设置时间戳区间查询.
      * @param array|string $fields 查询字段
      * @param string $split 输入分隔符
@@ -303,10 +330,11 @@ class QueryHelper extends Helper
     {
         $table = $this->query->getTable();
         $ctype = strtolower($this->query->getConfig('type'));
-        if ($ctype === 'mysql') {
-            $this->query->getConnection()->execute("truncate table `{$table}`");
-        } elseif (in_array($ctype, ['sqlsrv', 'oracle', 'pgsql'])) {
-            $this->query->getConnection()->execute("truncate table {$table}");
+        $connection = $this->query->getConnection();
+        if ($ctype === 'mysql' && $connection instanceof PDOConnection) {
+            $connection->execute("truncate table `{$table}`");
+        } elseif (in_array($ctype, ['sqlsrv', 'oracle', 'pgsql'], true) && $connection instanceof PDOConnection) {
+            $connection->execute("truncate table {$table}");
         } else {
             try {
                 $this->query->newQuery()->whereRaw('1=1')->delete();
@@ -353,11 +381,11 @@ class QueryHelper extends Helper
                 $result = ['msg' => '', 'code' => 0, 'count' => count($data), 'data' => $data];
             } else {
                 $cfg = ['list_rows' => $get['limit'], 'query' => $get];
-                $data = $this->query->paginate($cfg, static::getCount($this->query))->toArray();
+                $data = $this->query->paginate($cfg, self::getCount($this->query))->toArray();
                 $result = ['msg' => '', 'code' => 0, 'count' => $data['total'], 'data' => $data['data']];
             }
             if ($this->class->callback('_page_filter', $result['data'], $result) !== false) {
-                static::xssFilter($result['data']);
+                self::xssFilter($result['data']);
                 throw new HttpResponseException(json($result));
             }
             return $result;
@@ -399,7 +427,7 @@ class QueryHelper extends Helper
             } elseif (isset($get['page']) && is_numeric($get['page'])) {
                 $config['page'] = max(1, intval($get['page']));
             }
-            $data = ($paginate = $this->query->paginate($config, static::getCount($this->query, $total)))->toArray();
+            $data = ($paginate = $this->query->paginate($config, self::getCount($this->query, $total)))->toArray();
             $result = ['page' => ['limit' => $data['per_page'], 'total' => $data['total'], 'pages' => $data['last_page'], 'current' => $data['current_page']], 'list' => $data['data']];
             $select = "<select onchange='location.href=this.options[this.selectedIndex].value'>";
             if (in_array($limit, $limits, true)) {
@@ -482,12 +510,11 @@ class QueryHelper extends Helper
 
     /**
      * 查询对象数量统计。
-     * @param BaseQuery|Query $query
      * @param bool|int $total
      * @return bool|int|string
      * @throws DbException
      */
-    private static function getCount($query, $total = false)
+    private static function getCount(Query $query, $total = false)
     {
         if ($total === true || is_numeric($total)) {
             return $total;
@@ -511,7 +538,7 @@ class QueryHelper extends Helper
     {
         foreach ($items as &$item) {
             if (is_array($item)) {
-                static::xssFilter($item);
+                self::xssFilter($item);
             } elseif (is_string($item)) {
                 $item = htmlspecialchars($item, ENT_QUOTES);
             }

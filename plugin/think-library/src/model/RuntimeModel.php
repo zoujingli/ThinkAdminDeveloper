@@ -31,10 +31,17 @@ class RuntimeModel extends Model
 
     protected string $runtimeConnection = '';
 
-    public function __construct(string $name, array|object $data = [], string $connection = '')
+    public function __construct(array|object|string $data = [], array|object|string $name = '', string $connection = '')
     {
-        $this->runtimeName = $name;
-        $this->runtimeConnection = $connection;
+        if (is_string($data)) {
+            $this->runtimeName = $data;
+            $this->runtimeConnection = is_string($name) && $connection === '' ? $name : $connection;
+            $data = is_array($name) || is_object($name) ? $name : [];
+        } else {
+            $this->runtimeName = is_string($name) ? $name : '';
+            $this->runtimeConnection = $connection;
+        }
+
         parent::__construct($data);
     }
 

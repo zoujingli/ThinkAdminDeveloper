@@ -53,9 +53,10 @@ class Question extends Controller
             $helper->with(['bindUser']);
             $helper->like('name,content')->equal('status')->dateBetween('create_time');
             // 提交用户搜索
-            $db = PluginAccountUser::mQuery()->like('username')->field('id')->db();
+            $db = PluginAccountUser::mQuery();
+            $db->like('username');
             if (!empty($db->getOptions()['where'] ?? [])) {
-                $helper->whereRaw("unid in {$db->buildSql()}");
+                $helper->whereRaw("unid in {$db->db()->field('id')->buildSql()}");
             }
         });
     }
@@ -67,7 +68,9 @@ class Question extends Controller
     public function edit()
     {
         $this->title = '编辑工单内容';
-        PluginWemallHelpQuestion::mQuery()->with(['bindUser', 'comments'])->mForm('form');
+        $query = PluginWemallHelpQuestion::mQuery();
+        $query->with(['bindUser', 'comments']);
+        $query->mForm('form');
     }
 
     /**

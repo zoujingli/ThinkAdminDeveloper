@@ -114,8 +114,8 @@ class AliPayment implements PaymentInterface
                 throw new Exception("支付类型[{$this->cfgType}]暂时不支持！");
             }
             $param = ['out_trade_no' => $payCode, 'total_amount' => $payAmount, 'subject' => $orderTitle];
-            if (!empty($orderRemark)) {
-                $param['body'] = $orderRemark;
+            if ($payRemark !== '') {
+                $param['body'] = $payRemark;
             }
             // 创建支付记录
             $data = $this->createAction($orderNo, $orderTitle, $orderAmount, $payCode, $payAmount);

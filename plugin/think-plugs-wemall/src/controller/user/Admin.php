@@ -61,7 +61,8 @@ class Admin extends Controller
                 $query->whereNotLike('path', "%,{$this->get['unid']},%");
                 $query->where(['entry_agent' => 1])->where('unid', '<>', $this->get['unid']);
             }
-            $query->with(['user', 'agent1', 'agent2', 'user1', 'user2'])->equal('level_code');
+            $query->with(['user', 'agent1', 'agent2', 'user1', 'user2']);
+            $query->equal('level_code');
             // 用户内容查询
             $user = PluginAccountUser::mQuery()->dateBetween('create_time');
             $user->equal('entry_agent')->like('code|phone|username|nickname#user');
@@ -85,7 +86,9 @@ class Admin extends Controller
      */
     public function edit()
     {
-        PluginWemallUserRelation::mQuery()->with('user')->mForm('form', 'unid');
+        $query = PluginWemallUserRelation::mQuery();
+        $query->with('user');
+        $query->mForm('form', 'unid');
     }
 
     /**

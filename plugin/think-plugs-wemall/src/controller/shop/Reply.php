@@ -61,7 +61,8 @@ class Reply extends Controller
             }
             // 数据过滤
             $query->like('order_no')->where(['status' => intval($this->type === 'index')]);
-            $query->with(['bindUser', 'bindGoods'])->dateBetween('create_time');
+            $query->with(['bindUser', 'bindGoods']);
+            $query->dateBetween('create_time');
         });
     }
 
@@ -71,7 +72,9 @@ class Reply extends Controller
      */
     public function edit()
     {
-        PluginWemallUserActionComment::mQuery()->with(['user', 'goods', 'orderinfo'])->mForm('form');
+        $query = PluginWemallUserActionComment::mQuery();
+        $query->with(['user', 'goods', 'orderinfo']);
+        $query->mForm('form');
     }
 
     /**

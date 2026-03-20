@@ -81,7 +81,9 @@ class Transfer extends Controller
             $this->transfer = UserTransfer::amount(0);
         }, static function (QueryHelper $query) {
             // 数据列表处理
-            $query->with(['user'])->equal('type,status')->dateBetween('create_time');
+            $query->with(['user']);
+            $query->equal('type,status');
+            $query->dateBetween('create_time');
             // 用户条件搜索
             $db = PluginAccountUser::mQuery()->like('phone|username|nickname#user')->db();
             if (!empty($db->getOptions()['where'] ?? [])) {

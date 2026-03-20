@@ -61,9 +61,9 @@ class WhExportService
      */
     public static function order(array $body, array $order)
     {
-        [$exists, $nones] = static::checkCodes($body);
+        [$exists, $nones] = self::checkCodes($body);
         // 写入出库详情数据
-        $count = static::insertData($body, $exists, $nones);
+        $count = self::insertData($body, $exists, $nones);
         // 检查物码数量是否超出
         if ($order['num_need'] - $order['num_used'] < $count) {
             throw new Exception('出库数据超出订单要求！');
@@ -104,11 +104,11 @@ class WhExportService
     public static function force(array $body, bool $verify = false)
     {
         // 写入出库数据
-        [$exists, $nones] = static::checkCodes($body);
+        [$exists, $nones] = self::checkCodes($body);
         if ($verify && count($exists) > 0) {
             throw new Exception('物码已出库！', 0, $exists);
         }
-        [$count, $virtual] = [static::insertData($body, $exists, $nones), count($nones)];
+        [$count, $virtual] = [self::insertData($body, $exists, $nones), count($nones)];
         // 更新出库订单数据
         PluginWumaWarehouseOrder::mk()->save([
             'code' => $body['code'],
@@ -255,6 +255,8 @@ class WhExportService
         $body['_unis'] = $unis;
         $body['_maps'] = $maps;
         $body['_count'] = $count;
+        $body['_exists'] = $exists;
+        $body['_nones'] = $nones;
 
         StockService::save($body);
         return $count;

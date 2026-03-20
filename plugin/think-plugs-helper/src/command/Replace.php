@@ -51,7 +51,7 @@ class Replace extends Command
      * @throws Exception
      * @throws DbException
      */
-    protected function execute(Input $input, Output $output)
+    protected function execute(Input $input, Output $output): int
     {
         $search = $input->getArgument('search');
         $repalce = $input->getArgument('replace');
@@ -65,7 +65,7 @@ class Replace extends Command
         foreach ($tables as $table) {
             $data = [];
             $this->setQueueMessage($total, ++$count, sprintf('准备替换数据表 %s', Str::studly($table)));
-            foreach ($this->app->db->table($table)->getFields() as $field => $attrs) {
+            foreach ($this->app->db->getFields($table) as $field => $attrs) {
                 if (preg_match('/char|text/', $attrs['type'])) {
                     $data[$field] = $this->app->db->raw(sprintf('REPLACE(`%s`,"%s","%s")', $field, $search, $repalce));
                 }
@@ -78,5 +78,6 @@ class Replace extends Command
             }
         }
         $this->setQueueSuccess("批量替换 {$total} 张数据表成功");
+        return 0;
     }
 }

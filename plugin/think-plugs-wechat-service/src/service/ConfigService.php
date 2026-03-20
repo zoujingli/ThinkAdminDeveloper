@@ -118,7 +118,7 @@ class ConfigService extends Service
      * @param string $oauthid 当前网页授权标识
      * @param string $source 当前网页授权URL地址(需包含域名的完整URL地址)
      * @param int $type 网页授权模式(0静默模式,1高级授权)
-     * @return array|bool
+     * @return array<string, array|string>
      */
     public function oauth(string $oauthid, string $source, int $type = 0): array
     {

@@ -583,7 +583,12 @@ final class AppService extends Service
      */
     public static function menus($plugin, bool $check = false, bool $normalize = false): array
     {
-        $current = self::get($plugin, true);
+        if (is_array($plugin)) {
+            $code = strval($plugin['code'] ?? '');
+            $current = $code === '' ? $plugin : array_replace(self::resolvePlugin($code, true) ?: [], $plugin);
+        } else {
+            $current = self::resolvePlugin($plugin, true);
+        }
         if (empty($current['service']) || !class_exists($current['service'])) {
             return [];
         }

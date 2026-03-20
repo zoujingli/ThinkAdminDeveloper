@@ -20,6 +20,7 @@ declare(strict_types=1);
 
 namespace plugin\worker\tests;
 
+use plugin\worker\model\SystemQueue;
 use plugin\worker\service\ProcessService;
 use plugin\worker\service\QueueService;
 use think\admin\Exception;
@@ -54,7 +55,7 @@ class QueueServiceTest extends SqliteIntegrationTestCase
             $this->assertSame($first->getCode(), $exception->getData());
         }
 
-        $this->assertSame(1, $this->connection()->table('system_queue')->count());
+        $this->assertSame(1, SystemQueue::mk()->count());
     }
 
     public function testResetClearsStaleRuntimeMetadataAndProgress(): void
@@ -71,7 +72,7 @@ class QueueServiceTest extends SqliteIntegrationTestCase
 
         $before = time();
         QueueService::instance([], true)->initialize($queue->getAttr('code'))->reset(30);
-        $after = $this->connection()->table('system_queue')->where('code', $queue->getAttr('code'))->find();
+        $after = SystemQueue::mk()->where('code', $queue->getAttr('code'))->findOrEmpty()->toArray();
         $progress = json_decode(strval($after['message'] ?? ''), true) ?: [];
 
         $this->assertSame(0, intval($after['exec_pid'] ?? 0));

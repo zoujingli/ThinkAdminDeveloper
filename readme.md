@@ -173,10 +173,10 @@ composer analyse
 配置说明：
 
 - 配置文件：`phpstan.neon`
-- 检查级别：`level 0`（最宽松，可逐步提升）
+- 检查级别：`level 3`（已开启更多真实异常检查）
 - 检查范围：`app/`, `config/`, `plugin/`
-- 已配置 ThinkPHP 框架函数兼容性规则
-- 排除目录：`runtime/`, `vendor/`, `tests/`
+- 通过 `scanFiles` 显式加载 ThinkPHP 与项目公共函数，通过 `bootstrapFiles` 加载 `tests/bootstrap.php`
+- 排除目录：`runtime/`, `vendor/`
 
 ### 代码风格
 

@@ -87,7 +87,7 @@ class QueueService extends Service implements QueueManagerInterface, QueueHandle
             $this->title = strval($this->record['title']);
         }
 
-        $this->msgsWriteDb = static::hasField('message');
+        $this->msgsWriteDb = self::hasField('message');
         return $this;
     }
 
@@ -162,7 +162,7 @@ class QueueService extends Service implements QueueManagerInterface, QueueHandle
             'outer_time' => 0,
             'status' => static::STATE_WAIT,
         ];
-        if (static::hasField('message')) {
+        if (self::hasField('message')) {
             $payload['message'] = null;
         }
 
@@ -189,7 +189,7 @@ class QueueService extends Service implements QueueManagerInterface, QueueHandle
             $loops = max(0, intval($legacyLoops ?? ($loops === 1 ? 0 : $loops)));
             $execHash = static::buildExecHash($title, $command, $data, $loops);
             $map = [['status', 'in', [static::STATE_WAIT, static::STATE_LOCK]]];
-            if (static::hasField('exec_hash')) {
+            if (self::hasField('exec_hash')) {
                 $map[] = ['exec_hash', '=', $execHash];
             } else {
                 $map[] = ['title', '=', $title];
@@ -217,7 +217,7 @@ class QueueService extends Service implements QueueManagerInterface, QueueHandle
                 'loops_time' => $loops,
                 'create_time' => date('Y-m-d H:i:s'),
             ];
-            if (static::hasField('exec_hash')) {
+            if (self::hasField('exec_hash')) {
                 $payload['exec_hash'] = $execHash;
             }
 
@@ -429,6 +429,6 @@ class QueueService extends Service implements QueueManagerInterface, QueueHandle
 
     private static function hasField(string $field): bool
     {
-        return in_array($field, static::tableFields(), true);
+        return in_array($field, self::tableFields(), true);
     }
 }

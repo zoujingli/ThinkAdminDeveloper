@@ -80,7 +80,8 @@ class Upload extends Controller
             } else {
                 $query->where($unid ? ['unid' => $unid] : ['uuid' => $uuid]);
             }
-            $query->where(['status' => 2, 'issafe' => 0])->in('xext#type');
+            $query->where(['status' => 2, 'issafe' => 0]);
+            $query->in('xext#type');
             $query->like('name,hash')->dateBetween('create_time')->order('id desc');
         });
     }
@@ -233,7 +234,6 @@ class Upload extends Controller
 
     /**
      * 获取文件对象
-     * @return UploadedFile|void
      */
     private function getFile(): UploadedFile
     {
@@ -256,8 +256,9 @@ class Upload extends Controller
      */
     private function initUnid(bool $check = true): array
     {
-        $uuid = SystemContext::getUserId();
-        [$unid, $exts] = SystemContext::withUploadUnid();
+        $context = SystemContext::instance();
+        $uuid = $context->getUserId();
+        [$unid, $exts] = $context->withUploadUnid();
         if ($check && empty($uuid) && empty($unid)) {
             $this->error('未登录，禁止使用文件上传！');
         } else {

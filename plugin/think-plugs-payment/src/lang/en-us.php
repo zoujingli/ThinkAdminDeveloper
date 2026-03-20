@@ -95,7 +95,6 @@ return array_merge($extra, [
     '支付类型' => 'Payment Type',
     '支付名称' => 'Payment Name',
     '终端授权' => 'Terminal Authorization',
-    '支付状态' => 'Payment Status',
 
     // 支付记录
     '订单内容' => 'Order Content',
@@ -114,7 +113,6 @@ return array_merge($extra, [
     '待审核' => 'Pending Review',
     '已拒绝' => 'Rejected',
     '已完成' => 'Completed',
-    '支付类型' => 'Payment Type',
     '支付时间' => 'Payment Time',
     '用户编号' => 'User Code',
     '支付行为数据' => 'Payment Behavior Data',

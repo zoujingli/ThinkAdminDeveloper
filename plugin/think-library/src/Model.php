@@ -22,19 +22,23 @@ namespace think\admin;
 
 use think\admin\helper\QueryHelper;
 use think\admin\model\QueryFactory;
-use think\db\Mongo;
-use think\db\Query;
+use think\db\BaseQuery;
 
 /**
  * 基础模型类。
  *
  * @class Model
+ * @phpstan-consistent-constructor
  * @mixin \think\db\Query
  * @method static bool mSave(array $data = [], string $field = '', mixed $where = [])
  * @method static bool mDelete(string $field = '', mixed $where = [])
  * @method static bool|array mForm(string $template = '', string $field = '', mixed $where = [], array $data = [])
  * @method static bool|int mUpdate(array $data = [], string $field = '', mixed $where = [])
  * @method static QueryHelper mQuery($input = null, callable $callable = null)
+ * @method $this onAdminSave(string $changeIds)
+ * @method $this onAdminUpdate(string $changeIds)
+ * @method $this onAdminInsert(string $changeIds)
+ * @method $this onAdminDelete(string $changeIds)
  */
 abstract class Model extends \think\Model
 {
@@ -104,18 +108,16 @@ abstract class Model extends \think\Model
 
     /**
      * 创建查询实例。
-     * @return Mongo|Query
      */
-    public static function mq(array $data = [])
+    public static function mq(array $data = []): BaseQuery
     {
         return QueryFactory::build(static::mk($data)->newQuery());
     }
 
     /**
      * 创建模型实例。
-     * @template t of static
      * @param mixed $data
-     * @return static|t
+     * @return static
      */
     public static function mk($data = [])
     {

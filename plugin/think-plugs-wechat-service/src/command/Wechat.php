@@ -78,5 +78,6 @@ class Wechat extends Command
                 }
             }
         } while ($offset < $data['total_count'] ?? 0);
+        return 0;
     }
 }

@@ -597,7 +597,7 @@ class PageBuilder
         $vars['title'] = $vars['title'] ?? $this->title;
         $vars['pageBuilder'] = $vars['pageBuilder'] ?? $this;
         $vars['pageSchema'] = $vars['pageSchema'] ?? $this->toArray();
-        foreach ($this->class as $k => $v) {
+        foreach (get_object_vars($this->class) as $k => $v) {
             $vars[$k] = $v;
         }
         $this->renderVars = $vars;

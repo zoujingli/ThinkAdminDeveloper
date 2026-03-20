@@ -62,5 +62,6 @@ class Users extends Command
             }
         }
         $this->setQueueSuccess("此次共处理 {$total} 个刷新操作。");
+        return 0;
     }
 }

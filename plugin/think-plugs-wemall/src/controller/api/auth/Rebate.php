@@ -42,11 +42,13 @@ class Rebate extends Auth
      */
     public function get()
     {
-        $query = PluginWemallUserRebate::mQuery()->where([
-            'unid' => $this->unid,
-        ]);
-        $query->equal('type,status')->like('name|code|order_no#keys')->whereRaw('amount>0');
-        $this->success('获取返佣统计', $query->order('id desc')->page(true, false, false, 15));
+        $query = PluginWemallUserRebate::mQuery();
+        $query->where(['unid' => $this->unid]);
+        $query->equal('type,status');
+        $query->like('name|code|order_no#keys');
+        $query->whereRaw('amount>0');
+        $query->order('id desc');
+        $this->success('获取返佣统计', $query->page(true, false, false, 15));
     }
 
     /**

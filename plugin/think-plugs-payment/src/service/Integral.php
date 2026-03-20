@@ -46,8 +46,6 @@ abstract class Integral
 {
     /**
      * 积分转换比率.
-     * @param float $integral
-     * @return float
      * @throws Exception
      */
     public static function ratio(string $integral = '1'): string
@@ -204,7 +202,7 @@ abstract class Integral
     public static function set(string $code, array $data): PluginPaymentIntegral
     {
         ($model = self::get($code))->save($data);
-        self::recount($model->getAttr('unid'));
+        self::recount(intval($model->getAttr('unid')));
         return PluginPaymentIntegral::mk()->withTrashed()->findOrEmpty($model->getKey());
     }
 }

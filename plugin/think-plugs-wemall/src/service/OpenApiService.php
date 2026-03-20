@@ -229,7 +229,8 @@ class OpenApiService extends Service
     {
         $url = rtrim($this->gateway, '/') . '/' . ltrim($uri, '/');
         $content = HttpClient::post($url, $this->signData($data)) ?: '';
-        if (!($result = json_decode($content, true)) || empty($result)) {
+        $result = json_decode($content, true);
+        if (!is_array($result) || $result === []) {
             throw new Exception(lang('接口请求响应格式异常！'));
         }
         if (empty($result['code'])) {

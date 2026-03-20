@@ -26,6 +26,7 @@ use think\admin\Exception;
 use think\console\Input;
 use think\console\Output;
 use think\db\exception\DbException;
+use think\db\Query;
 use think\Model;
 
 /**
@@ -45,7 +46,7 @@ class Clear extends Command
      * @throws Exception
      * @throws DbException
      */
-    protected function execute(Input $input, Output $output)
+    protected function execute(Input $input, Output $output): int
     {
         $query = WechatPaymentRecord::mq();
         $query->where(['payment_status' => 0]);
@@ -54,11 +55,15 @@ class Clear extends Command
         if (empty($total)) {
             $this->setQueueSuccess('无需清理24小时未支付！');
         }
+        if (!$query instanceof Query) {
+            return 0;
+        }
         /** @var Model $item */
         foreach ($query->cursor() as $item) {
             $this->setQueueMessage($total, ++$count, sprintf('开始清理 %s 支付单...', $item->getAttr('code')));
             $item->delete();
             $this->setQueueMessage($total, $count, sprintf('完成清理 %s 支付单！', $item->getAttr('code')), 1);
         }
+        return 0;
     }
 }

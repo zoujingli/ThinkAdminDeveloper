@@ -34,26 +34,26 @@ class StorageConfig
 
     public static function initialize(): void
     {
-        foreach (static::registry()['global'] ?? [] as $meta) {
-            static::hydrate($meta);
+        foreach (self::registry()['global'] ?? [] as $meta) {
+            self::hydrate($meta);
         }
-        foreach (static::registry()['drivers'] ?? [] as $driver) {
+        foreach (self::registry()['drivers'] ?? [] as $driver) {
             foreach ($driver['config'] ?? [] as $meta) {
-                static::hydrate($meta);
+                self::hydrate($meta);
             }
         }
     }
 
     public static function global(string $name, mixed $default = null): mixed
     {
-        $meta = static::registry()['global'][$name] ?? [];
-        return static::resolve($meta, $default);
+        $meta = self::registry()['global'][$name] ?? [];
+        return self::resolve($meta, $default);
     }
 
     public static function driver(string $driver, string $name, mixed $default = null): mixed
     {
-        $meta = static::registry()['drivers'][$driver]['config'][$name] ?? [];
-        return static::resolve($meta, $default);
+        $meta = self::registry()['drivers'][$driver]['config'][$name] ?? [];
+        return self::resolve($meta, $default);
     }
 
     public static function key(string $scope, string $name, ?string $driver = null): string
@@ -84,19 +84,19 @@ class StorageConfig
         if (!is_string($key) || $key === '') {
             return;
         }
-        $current = static::read($key);
-        if (!static::missing($current)) {
+        $current = self::read($key);
+        if (!self::missing($current)) {
             return;
         }
         foreach ((array)($meta['legacy'] ?? []) as $legacy) {
-            $legacyValue = static::read((string)$legacy);
-            if (!static::missing($legacyValue)) {
-                static::write($key, $legacyValue);
+            $legacyValue = self::read((string)$legacy);
+            if (!self::missing($legacyValue)) {
+                self::write($key, $legacyValue);
                 return;
             }
         }
-        if (array_key_exists('default', $meta) && !static::missing($meta['default'])) {
-            static::write($key, $meta['default']);
+        if (array_key_exists('default', $meta) && !self::missing($meta['default'])) {
+            self::write($key, $meta['default']);
         }
     }
 
@@ -104,18 +104,18 @@ class StorageConfig
     {
         $key = $meta['key'] ?? '';
         if (is_string($key) && $key !== '') {
-            $value = static::read($key);
-            if (!static::missing($value)) {
+            $value = self::read($key);
+            if (!self::missing($value)) {
                 return $value;
             }
         }
         foreach ((array)($meta['legacy'] ?? []) as $legacy) {
-            $value = static::read((string)$legacy);
-            if (!static::missing($value)) {
+            $value = self::read((string)$legacy);
+            if (!self::missing($value)) {
                 return $value;
             }
         }
-        if (array_key_exists('default', $meta) && !static::missing($meta['default'])) {
+        if (array_key_exists('default', $meta) && !self::missing($meta['default'])) {
             return $meta['default'];
         }
         return $default;

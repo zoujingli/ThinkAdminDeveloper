@@ -93,6 +93,6 @@ class PaymentResponse extends \stdClass
      */
     public static function mk(bool $status = true, string $message = '创建支付成功', array $record = [], array $params = []): PaymentResponse
     {
-        return new static($status, $message, $record, $params);
+        return new self($status, $message, $record, $params);
     }
 }

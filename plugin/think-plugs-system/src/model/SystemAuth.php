@@ -80,7 +80,7 @@ class SystemAuth extends Model
         $binds = [];
         $query = SystemNode::mk()->whereIn('auth', array_column($items, 'id'))->field('auth,node')->select()->toArray();
         foreach ($query as $item) {
-            if (!($code = static::resolveNodePlugin(strval($item['node'] ?? '')))) {
+            if (!($code = self::resolveNodePlugin(strval($item['node'] ?? '')))) {
                 continue;
             }
             if (!isset($binds[$item['auth']])) {

@@ -51,7 +51,7 @@ abstract class Base extends Controller
      * @param mixed|string $data 返回数据
      * @param int|mixed $code 返回代码
      */
-    public function error(mixed $info, mixed $data = '{-null-}', mixed $code = 0): void
+    public function error(mixed $info, mixed $data = '{-null-}', mixed $code = 0): never
     {
         if ($data === '{-null-}') {
             $data = new \stdClass();
@@ -67,7 +67,7 @@ abstract class Base extends Controller
      * @param mixed|string $data 返回数据
      * @param mixed $code 返回代码
      */
-    public function success(mixed $info, mixed $data = '{-null-}', mixed $code = 1): void
+    public function success(mixed $info, mixed $data = '{-null-}', mixed $code = 1): never
     {
         if ($data === '{-null-}') {
             $data = new \stdClass();

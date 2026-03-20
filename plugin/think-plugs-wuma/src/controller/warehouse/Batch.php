@@ -53,12 +53,14 @@ class Batch extends Controller
     {
         PluginWumaSourceAssign::mQuery()->layTable(function () {
             $this->title = '仓库批次出库';
-        }, static function (QueryHelper $query) {
+        }, function (QueryHelper $query) {
             $query->withoutField('items');
 
             $query->with(['coder', 'range' => function (Query $relation) {
                 $relation->with(['bindProduce']);
-            }])->like('batch,cbatch')->dateBetween('create_time');
+            }]);
+            $query->like('batch,cbatch');
+            $query->dateBetween('create_time');
 
             // 物码数值批次筛选
             if (isset($this->get['encode']) and $this->get['encode'] !== '') {
@@ -70,9 +72,10 @@ class Batch extends Controller
             }
             // 批量创建筛选规则
             foreach (['minValue' => 'min', 'encValue' => 'min', 'numValue' => 'min'] as $alias => $type) {
-                $db = PluginWumaCodeRuleRange::mQuery($this->get)->valueRange("range_start:range_after#{$alias}")->field('batch')->db();
+                $db = PluginWumaCodeRuleRange::mQuery($this->get);
+                $db->valueRange("range_start:range_after#{$alias}");
                 if (!empty($db->getOptions()['where'] ?? [])) {
-                    $query->whereRaw('cbatch in ' . $db->whereIn('code_type', str2arr($type))->buildSql());
+                    $query->whereRaw('cbatch in ' . $db->db()->field('batch')->whereIn('code_type', str2arr($type))->buildSql());
                 }
             }
         });
@@ -85,13 +88,15 @@ class Batch extends Controller
     public function edit()
     {
         $this->title = '按批次分区出库';
-        PluginWumaSourceAssign::mQuery()->with([
+        $query = PluginWumaSourceAssign::mQuery();
+        $query->with([
             'coder' => function ($relation) {
                 $relation->with(['rules']);
             }, 'range' => function ($relation) {
                 $relation->with(['bindProduce']);
             },
-        ])->mForm('form');
+        ]);
+        $query->mForm('form');
     }
 
     /**

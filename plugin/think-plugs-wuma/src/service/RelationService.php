@@ -154,7 +154,6 @@ class RelationService extends Service
     /**
      * 锁定赋码批次分区.
      * @param array $mins 小码，格式如：[min1,min2,min2]
-     * @return array|void
      * @throws DataNotFoundException
      * @throws DbException
      * @throws ModelNotFoundException
@@ -254,7 +253,7 @@ class RelationService extends Service
                 $ranges[] = [$v['range_start'], $v['range_after'], $v['lock'], $v['pbatch']];
             }
         }
-        [$ranges, $exists] = static::withMergeInput($ranges, $codes, $pbatch);
+        [$ranges, $exists] = self::withMergeInput($ranges, $codes, $pbatch);
         if (!empty($exists)) {
             throw new Exception('分区已锁且生产批次不匹配！', 0, $exists);
         }

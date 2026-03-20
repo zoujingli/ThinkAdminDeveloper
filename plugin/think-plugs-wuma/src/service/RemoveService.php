@@ -20,6 +20,11 @@ declare(strict_types=1);
 
 namespace plugin\wuma\service;
 
+use plugin\wuma\model\PluginWumaSalesOrder;
+use plugin\wuma\model\PluginWumaSalesOrderData;
+use plugin\wuma\model\PluginWumaSalesOrderDataMins;
+use plugin\wuma\model\PluginWumaSalesOrderDataNums;
+use plugin\wuma\model\PluginWumaSalesUserStock;
 use plugin\wuma\model\PluginWumaWarehouseOrder;
 use plugin\wuma\model\PluginWumaWarehouseOrderData;
 use plugin\wuma\model\PluginWumaWarehouseOrderDataMins;
@@ -44,7 +49,7 @@ class RemoveService extends Service
      */
     public static function inter(array $mins, array $codes = []): array
     {
-        return static::withRemove($mins, $codes, PluginWumaWarehouseOrder::interTypes);
+        return self::withRemove($mins, $codes, PluginWumaWarehouseOrder::interTypes);
     }
 
     /**
@@ -55,7 +60,7 @@ class RemoveService extends Service
      */
     public static function outer(array $mins, array $codes = []): array
     {
-        return static::withRemove($mins, $codes, PluginWumaWarehouseOrder::outerTypes);
+        return self::withRemove($mins, $codes, PluginWumaWarehouseOrder::outerTypes);
     }
 
     /**
@@ -66,7 +71,7 @@ class RemoveService extends Service
      */
     public static function returns(array $mins, array $codes = []): array
     {
-        return static::withRemove($mins, $codes, [6]);
+        return self::withRemove($mins, $codes, [6]);
     }
 
     /**
@@ -77,24 +82,24 @@ class RemoveService extends Service
      */
     public static function agent(array $mins, array $codes = []): array
     {
-        $codes = array_unique(array_merge($codes, AgentStockOrderData::mk()->where(static function (Query $query) use ($mins) {
-            $db = AgentStockOrderDataMins::mk()->distinct()->whereIn('code', $mins);
+        $codes = array_unique(array_merge($codes, PluginWumaSalesOrderData::mk()->where(static function (Query $query) use ($mins) {
+            $db = PluginWumaSalesOrderDataMins::mk()->distinct()->whereIn('code', $mins);
             $query->distinct()->whereRaw("id in {$db->field('ddid')->buildSql()}");
         })->column('code')));
 
-        $ddids = AgentStockOrderData::mk()->distinct()->whereIn('code', $codes)->column('id');
-        $xmins = AgentStockOrderDataMins::mk()->distinct()->whereIn('id', $ddids)->column('code');
-        $auids = AgentStockOrderDataMins::mk()->distinct()->whereIn('code', $xmins)->column('auid');
+        $ddids = PluginWumaSalesOrderData::mk()->distinct()->whereIn('code', $codes)->column('id');
+        $xmins = PluginWumaSalesOrderDataMins::mk()->distinct()->whereIn('ddid', $ddids)->column('code');
+        $auids = PluginWumaSalesOrderDataMins::mk()->distinct()->whereIn('code', $xmins)->column('auid');
 
-        AgentStockOrder::mk()->whereIn('code', $codes)->delete();
-        AgentStockOrderData::mk()->whereIn('code', $codes)->delete();
-        AgentStockOrderDataMins::mk()->whereIn('ddid', $ddids)->delete();
-        AgentStockOrderDataNums::mk()->whereIn('ddid', $ddids)->delete();
+        PluginWumaSalesOrder::mk()->whereIn('code', $codes)->delete();
+        PluginWumaSalesOrderData::mk()->whereIn('code', $codes)->delete();
+        PluginWumaSalesOrderDataMins::mk()->whereIn('ddid', $ddids)->delete();
+        PluginWumaSalesOrderDataNums::mk()->whereIn('ddid', $ddids)->delete();
 
         // 恢复批次数据及缓存统计
         RelationService::changeRelationLock($xmins, 0);
         foreach ($auids as $id) {
-            AgentStock::mk()->sync($id);
+            PluginWumaSalesUserStock::sync($id);
         }
         return array_unique(array_merge($mins, $xmins));
     }

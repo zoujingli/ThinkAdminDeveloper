@@ -85,9 +85,10 @@ class PluginWemallGoods extends Abs
      */
     public function items(): HasMany
     {
-        return $this->hasMany(PluginWemallGoodsItem::class, 'gcode', 'code')
-            ->withoutField('id,status,create_time,update_time')
-            ->where(['status' => 1]);
+        $relation = $this->hasMany(PluginWemallGoodsItem::class, 'gcode', 'code');
+        $relation->withoutField('id,status,create_time,update_time');
+        $relation->where(['status' => 1]);
+        return $relation;
     }
 
     /**
@@ -95,7 +96,9 @@ class PluginWemallGoods extends Abs
      */
     public function comments(): HasMany
     {
-        return $this->hasMany(PluginWemallUserActionComment::class, 'gcode', 'code')->with('bindUser');
+        $relation = $this->hasMany(PluginWemallUserActionComment::class, 'gcode', 'code');
+        $relation->with('bindUser');
+        return $relation;
     }
 
     /**
@@ -103,7 +106,10 @@ class PluginWemallGoods extends Abs
      */
     public function discount(): HasOne
     {
-        return $this->hasOne(PluginWemallConfigDiscount::class, 'id', 'discount_id')->where(['status' => 1])->field('id,name,items');
+        $relation = $this->hasOne(PluginWemallConfigDiscount::class, 'id', 'discount_id');
+        $relation->where(['status' => 1]);
+        $relation->field('id,name,items');
+        return $relation;
     }
 
     /**

@@ -44,7 +44,9 @@ class PluginWumaWarehouseOrderDataMins extends Model
      */
     public function main(): HasOne
     {
-        return $this->hasOne(PluginWumaWarehouseOrderData::class, 'id', 'ddid')->with('main');
+        $relation = $this->hasOne(PluginWumaWarehouseOrderData::class, 'id', 'ddid');
+        $relation->with('main');
+        return $relation;
     }
 
     /**

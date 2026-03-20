@@ -111,7 +111,7 @@ class SystemBase extends Model
 
         foreach ($items as &$item) {
             $meta = static::parseContent(strval($item['content'] ?? ''));
-            $codes = static::normalizePluginCodes($meta['plugin'] ?? ($meta['plugins'] ?? []));
+            $codes = self::normalizePluginCodes($meta['plugin'] ?? ($meta['plugins'] ?? []));
             $names = [];
             foreach ($codes as $code) {
                 $names[] = $titles[$code] ?? $code;
@@ -241,7 +241,7 @@ class SystemBase extends Model
     public static function packContent(string $text = '', $plugins = []): string
     {
         $text = trim($text);
-        $codes = static::normalizePluginCodes($plugins);
+        $codes = self::normalizePluginCodes($plugins);
         if ($text === '' && empty($codes)) {
             return '';
         }

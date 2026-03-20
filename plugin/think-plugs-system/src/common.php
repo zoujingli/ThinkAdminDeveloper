@@ -26,7 +26,7 @@ if (!function_exists('auth')) {
      */
     function auth(?string $node): bool
     {
-        return SystemContext::check($node);
+        return SystemContext::instance()->check($node);
     }
 }
 
@@ -39,7 +39,7 @@ if (!function_exists('system_user')) {
      */
     function system_user(?string $field = null, $default = null)
     {
-        return SystemContext::getUser($field, $default);
+        return SystemContext::instance()->getUser($field, $default);
     }
 }
 
@@ -67,10 +67,11 @@ if (!function_exists('sysconf')) {
      */
     function sysconf(string $name = '', $value = null)
     {
+        $context = SystemContext::instance();
         if (is_null($value) && is_string($name)) {
-            return SystemContext::getConfig($name);
+            return $context->getConfig($name);
         }
-        return SystemContext::setConfig($name, $value);
+        return $context->setConfig($name, $value);
     }
 }
 
@@ -84,10 +85,11 @@ if (!function_exists('sysdata')) {
      */
     function sysdata(string $name, $value = null)
     {
+        $context = SystemContext::instance();
         if (is_null($value)) {
-            return SystemContext::getData($name);
+            return $context->getData($name);
         }
-        return SystemContext::setData($name, $value);
+        return $context->setData($name, $value);
     }
 }
 
@@ -99,6 +101,6 @@ if (!function_exists('sysoplog')) {
      */
     function sysoplog(string $action, string $content): bool
     {
-        return SystemContext::setOplog($action, $content);
+        return SystemContext::instance()->setOplog($action, $content);
     }
 }

@@ -145,7 +145,7 @@ class CodeService
 
     /**
      * [业务] 大码转中码，仅前关联.
-     * @param mixed $max 大码数据
+     * @param string $max 大码数据
      * @param array $rule 配置数据
      * @param mixed $where 查件条件
      * @throws Exception
@@ -161,7 +161,7 @@ class CodeService
 
     /**
      * [业务] 中码转小码，仅前关联.
-     * @param mixed $mid 中码数据
+     * @param string $mid 中码数据
      * @param array $rule 配置数据
      * @param mixed $where 查件条件
      * @throws Exception
@@ -405,7 +405,7 @@ class CodeService
             $default = ['type' => $rule['type'], 'batch' => $rule['batch']];
             // 大码处理
             if (!empty($rule['max_length'])) {
-                $maxRangeStart = static::_boxStart($rule['max_length']);
+                $maxRangeStart = self::_boxStart($rule['max_length']);
                 if ($rule['type'] === 1) {
                     $maxRangeNumber = ceil($rule['number'] / ($rule['mid_min'] * $rule['max_mid']));
                 } else {
@@ -424,7 +424,7 @@ class CodeService
             }
             // 中码处理
             if (!empty($rule['mid_length'])) {
-                $midRangeStart = static::_boxStart($rule['mid_length']);
+                $midRangeStart = self::_boxStart($rule['mid_length']);
                 if ($rule['type'] === 1) {
                     $midRangeNumber = ceil($rule['number'] / $rule['mid_min']);
                 } else {
@@ -443,7 +443,7 @@ class CodeService
             }
             // 小码处理
             if (!empty($rule['min_length']) && $rule['number'] > 0) {
-                $minRangeStart = static::_minStart();
+                $minRangeStart = self::_minStart();
                 $minRangeAfter = bcsub(bcadd($minRangeStart, strval($rule['number'])), '1');
                 PluginWumaCodeRuleRange::mk()->insert(array_merge($default, [
                     'code_type' => 'min',

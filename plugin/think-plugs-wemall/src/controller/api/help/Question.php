@@ -43,10 +43,12 @@ class Question extends Auth
                 $query->with(['comments']);
             }
             $query->withoutField('sort,delete_time');
-            $query->equal('id,reply_st')->like('name');
+            $query->equal('id,reply_st');
+            $query->like('name');
             $query->where(['unid' => $this->unid, 'status' => [1, 2, 3, 4]]);
             $sort = ['new' => 'id desc', 'hot' => 'num_read desc'][input('sort', '_')] ?? 'sort desc,id desc';
-            $this->success('获取工单数据', $query->order($sort)->page(true, false, false, 10));
+            $query->order($sort);
+            $this->success('获取工单数据', $query->page(true, false, false, 10));
         });
     }
 

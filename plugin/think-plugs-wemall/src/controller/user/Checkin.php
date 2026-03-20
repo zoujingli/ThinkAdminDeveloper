@@ -63,7 +63,8 @@ class Checkin extends Controller
             $this->title = '用户签到管理';
         }, function (QueryHelper $query) {
             // 搜索数据表字段搜索
-            $query->with('user')->dateBetween('create_time');
+            $query->with('user');
+            $query->dateBetween('create_time');
             // 按用户资料搜索
             $user = PluginAccountUser::mQuery()->like('nickname|phone#user');
             if (!empty($user->getOptions()['where'] ?? [])) {

@@ -236,7 +236,6 @@ abstract class UserRebate
         if ($order->isEmpty() || $order->getAttr('status') < 6) {
             throw new Exception('订单状态异常！');
         }
-        /** @var PluginWemallUserRebate $item */
         $map = [['status', '=', 0], ['order_no', 'like', "{$order->getAttr('order_no')}%"]];
         foreach (PluginWemallUserRebate::mk()->where($map)->cursor() as $item) {
             $item->save(['status' => 1, 'remark' => '订单已确认收货！', 'confirm_time' => date('Y-m-d H:i:s')]);
@@ -421,7 +420,7 @@ abstract class UserRebate
      * @param int $unid 奖励用户
      * @param array $map 查询条件
      * @param string $name 奖励名称
-     * @param float $amount 奖励金额
+     * @param string $amount 奖励金额
      * @param int $layer 发放序号
      */
     private static function wRebate(int $unid, array $map, string $name, string $amount, int $layer = 0): bool

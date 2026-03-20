@@ -53,7 +53,9 @@ class Search extends Auth
     public function get()
     {
         PluginWemallUserActionSearch::mQuery(null, function (QueryHelper $query) {
-            $query->where(['unid' => $this->unid])->like('keys')->order('sort desc');
+            $query->where(['unid' => $this->unid]);
+            $query->like('keys');
+            $query->order('sort desc');
             [$page, $limit] = [intval(input('page', 1)), intval(input('limit', 10))];
             $this->success('我的搜索记录！', $query->page($page, false, false, $limit));
         });

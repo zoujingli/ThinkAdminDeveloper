@@ -53,9 +53,11 @@ class SystemUser extends Model
 
     public function userinfo(): HasOne
     {
-        return $this->hasOne(SystemBase::class, 'code', 'usertype')->where([
+        $relation = $this->hasOne(SystemBase::class, 'code', 'usertype');
+        $relation->where([
             'type' => '身份权限', 'status' => 1,
         ]);
+        return $relation;
     }
 
     public function getHeadimgAttr($value): string

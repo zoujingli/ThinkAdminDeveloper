@@ -150,7 +150,7 @@ final class JwtToken
     public static function fetch(Controller $class, array $vars = [])
     {
         $ignore = array_keys(get_class_vars(Controller::class));
-        foreach ($class as $name => $value) {
+        foreach (get_object_vars($class) as $name => $value) {
             if (!in_array($name, $ignore, true)) {
                 if (is_array($value) || is_numeric($value) || is_string($value) || is_bool($value) || is_null($value)) {
                     $vars[$name] = $value;

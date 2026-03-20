@@ -127,7 +127,7 @@ abstract class PosterService extends Service
                 } else {
                     if (preg_match('|^rgba\(\s*([\d.]+),\s*([\d.]+),\s*([\d.]+),\s*([\d.]+)\)$|', $item['color'], $matchs)) {
                         [, $r, $g, $b, $a] = $matchs;
-                        $black = imagecolorallocatealpha($target, intval($r), intval($g), intval($b), (1 - $a) * 127);
+                        $black = imagecolorallocatealpha($target, intval($r), intval($g), intval($b), intval((1 - (float)$a) * 127));
                     } else {
                         $black = imagecolorallocate($target, 0x00, 0x00, 0x00);
                     }
@@ -135,8 +135,13 @@ abstract class PosterService extends Service
                 }
             }
         }
-        ob_start() && imagepng($target) && ($image = ob_get_contents());
-        ob_end_clean() && imagedestroy($target) && imagedestroy($source);
+        ob_start();
+        imagepng($target);
+        $imageData = ob_get_contents();
+        ob_end_clean();
+        imagedestroy($target);
+        imagedestroy($source);
+        $image = is_string($imageData) ? $imageData : '';
         return sprintf('data:image/png;base64,%s', base64_encode($image));
     }
 

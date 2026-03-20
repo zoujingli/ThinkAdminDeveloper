@@ -42,10 +42,6 @@ class ArchitectureBoundaryTest extends TestCase
         $this->assertFileExists($this->path('plugin/think-library/src/service/QueueService.php'));
         $this->assertFileExists($this->path('plugin/think-library/src/service/RuntimeService.php'));
         $this->assertFileExists($this->path('plugin/think-library/src/service/JwtToken.php'));
-        $this->assertFileExists($this->path('plugin/think-library/src/service/FaviconBuilder.php'));
-        $this->assertFileExists($this->path('plugin/think-library/src/service/ImageSliderVerify.php'));
-        $this->assertFileExists($this->path('plugin/think-library/src/service/JsonRpcHttpClient.php'));
-        $this->assertFileExists($this->path('plugin/think-library/src/service/JsonRpcHttpServer.php'));
         $this->assertFileExists($this->path('plugin/think-library/src/service/NodeService.php'));
         $this->assertFileExists($this->path('plugin/think-library/src/service/AppService.php'));
         $this->assertFileExists($this->path('plugin/think-library/src/helper/Helper.php'));
@@ -66,6 +62,10 @@ class ArchitectureBoundaryTest extends TestCase
         $this->assertFileDoesNotExist($this->path('plugin/think-library/src/service/ProcessService.php'));
         $this->assertFileDoesNotExist($this->path('plugin/think-library/src/runtime/ProcessService.php'));
         $this->assertFileDoesNotExist($this->path('plugin/think-library/src/runtime/RuntimeService.php'));
+        $this->assertFileExists($this->path('plugin/think-library/src/service/FaviconBuilder.php'));
+        $this->assertFileExists($this->path('plugin/think-library/src/service/ImageSliderVerify.php'));
+        $this->assertFileExists($this->path('plugin/think-library/src/service/JsonRpcHttpClient.php'));
+        $this->assertFileExists($this->path('plugin/think-library/src/service/JsonRpcHttpServer.php'));
         $this->assertFileDoesNotExist($this->path('plugin/think-library/src/extend/JwtToken.php'));
         $this->assertFileDoesNotExist($this->path('plugin/think-library/src/extend/FaviconBuilder.php'));
         $this->assertFileDoesNotExist($this->path('plugin/think-library/src/extend/ImageSliderVerify.php'));
@@ -152,6 +152,7 @@ class ArchitectureBoundaryTest extends TestCase
         $this->assertFileDoesNotExist($this->path('plugin/think-plugs-system/src/service/RbacAccess.php'));
         $this->assertFileDoesNotExist($this->path('plugin/think-plugs-system/src/runtime/SystemContext.php'));
         $this->assertFileDoesNotExist($this->path('plugin/think-plugs-system/src/system/SystemService.php'));
+        $this->assertFileDoesNotExist($this->path('plugin/think-plugs-system/src/service/FaviconBuilder.php'));
     }
 
     public function testSystemPluginSourceDirectoriesStayStandardized(): void
@@ -180,6 +181,9 @@ class ArchitectureBoundaryTest extends TestCase
         $this->assertFileExists($this->path('plugin/think-plugs-storage/src/service/StorageManager.php'));
         $this->assertFileExists($this->path('plugin/think-plugs-storage/src/service/StorageAuthorize.php'));
         $this->assertFileExists($this->path('plugin/think-plugs-storage/src/service/LocalStorage.php'));
+
+        $composer = json_decode(file_get_contents($this->path('plugin/think-plugs-storage/composer.json')) ?: '', true);
+        $this->assertSame(['plugin\storage\\' => 'src'], $composer['autoload']['psr-4'] ?? []);
     }
 
     public function testAccountPluginSourceDirectoriesStayStandardized(): void
@@ -190,6 +194,7 @@ class ArchitectureBoundaryTest extends TestCase
         sort($dirs);
 
         $this->assertSame(['controller', 'lang', 'model', 'service', 'view'], $dirs);
+        $this->assertFileDoesNotExist($this->path('plugin/think-plugs-account/src/service/ImageSliderVerify.php'));
     }
 
     public function testCenterPluginSourceDirectoriesStayStandardized(): void
@@ -234,6 +239,7 @@ class ArchitectureBoundaryTest extends TestCase
         $this->assertFileExists($this->path('plugin/think-plugs-helper/src/command/DbMigrateStruct.php'));
         $this->assertFileExists($this->path('plugin/think-plugs-helper/src/command/DbModelStruct.php'));
         $this->assertFileExists($this->path('plugin/think-plugs-helper/src/command/DbBackupStruct.php'));
+        $this->assertFileExists($this->path('plugin/think-plugs-helper/src/service/PluginMenuService.php'));
         $this->assertFileExists($this->path('plugin/think-plugs-helper/src/service/PluginRegistry.php'));
         $this->assertFileExists($this->path('plugin/think-plugs-helper/src/service/PhinxExtend.php'));
         $this->assertFileExists($this->path('plugin/think-plugs-helper/src/service/ExpressService.php'));
@@ -252,6 +258,7 @@ class ArchitectureBoundaryTest extends TestCase
         $this->assertFileDoesNotExist($this->path('plugin/think-plugs-wechat-service/src/ConfigService.php'));
         $this->assertFileExists($this->path('plugin/think-plugs-wechat-service/src/service/AuthService.php'));
         $this->assertFileExists($this->path('plugin/think-plugs-wechat-service/src/service/ConfigService.php'));
+        $this->assertFileDoesNotExist($this->path('plugin/think-plugs-wechat-service/src/service/JsonRpcHttpServer.php'));
         $this->assertFileExists($this->path('plugin/think-plugs-wechat-service/src/service/PublishHandle.php'));
         $this->assertFileExists($this->path('plugin/think-plugs-wechat-service/src/service/ReceiveHandle.php'));
     }
@@ -264,6 +271,7 @@ class ArchitectureBoundaryTest extends TestCase
         sort($dirs);
 
         $this->assertSame(['command', 'controller', 'lang', 'model', 'service', 'view'], $dirs);
+        $this->assertFileDoesNotExist($this->path('plugin/think-plugs-wechat-client/src/service/JsonRpcHttpClient.php'));
     }
 
     public function testPaymentPluginSourceDirectoriesStayStandardized(): void
@@ -360,6 +368,8 @@ class ArchitectureBoundaryTest extends TestCase
             'think\admin\runtime\RuntimeTools',
             'think\admin\runtime\Route',
             'think\admin\runtime\Url',
+            'think\admin\service\PluginService',
+            'think\admin\service\ProcessService',
             'think\admin\auth\CaptchaService',
             'think\admin\auth\CacheSession',
             'think\admin\auth\RequestTokenService',

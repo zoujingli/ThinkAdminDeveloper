@@ -315,6 +315,14 @@ abstract class Plugin extends Service
     public function boot(): void {}
 
     /**
+     * 获取当前插件服务实例。
+     */
+    protected static function plugin(): static
+    {
+        return app(static::class);
+    }
+
+    /**
      * 解析 Composer 配置.
      */
     private function resolveComposerManifest(\ReflectionClass $ref): array
@@ -419,13 +427,5 @@ abstract class Plugin extends Service
         }
 
         return $result;
-    }
-
-    /**
-     * 获取当前插件服务实例。
-     */
-    private static function plugin(): static
-    {
-        return app(static::class);
     }
 }

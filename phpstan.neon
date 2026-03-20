@@ -1,5 +1,5 @@
 parameters:
-    level: 0
+    level: 3
     paths:
         - app/
         - config/
@@ -7,24 +7,14 @@ parameters:
     excludePaths:
         - */runtime/*
         - */vendor/*
-        - */tests/*
-        - plugin/think-plugs-account/src/controller/api/Wxapp.php
-        - plugin/think-plugs-storage/src/controller/Config.php
-        - plugin/think-plugs-storage/src/controller/api/Upload.php
-    ignoreErrors:
-        # 忽略 ThinkPHP 框架函数未定义的错误
-        - '#Function (env|request|input|url|json|cache|config|cookie|date|dump|halt|lang|model|redirect|session|token|validate|widget|xml|view|response|download|app|display) not found\.#'
-        # 忽略未定义变量的错误（动态变量）
-        - '#Undefined variable: \$#'
-        # 忽略未找到的类常量
-        - '#Access to undefined constant#'
-        # 忽略模板类型未引用的错误
-        - '#Template type .* is not referenced in a parameter\.#'
-        # 忽略不安全的 new static() 使用
-        - '#Unsafe usage of new static\(\)\.#'
-        # 忽略数组重复键的错误（语言文件特性）
-        - '#Array has \d+ duplicate keys with value#'
-        # 忽略未找到的类（动态类）
-        - '#Call to static method .* on an unknown class#'
-        # 忽略静态调用实例方法的错误（框架设计如此）
-        - '#Static call to instance method#'
+    scanFiles:
+        - vendor/topthink/framework/src/helper.php
+        - vendor/topthink/think-orm/src/helper.php
+        - vendor/topthink/think-validate/src/helper.php
+        - plugin/think-library/src/common.php
+        - plugin/think-plugs-center/src/common.php
+        - plugin/think-plugs-system/src/common.php
+        - plugin/think-plugs-worker/src/common.php
+        - plugin/think-plugs-wemall/src/common.php
+    bootstrapFiles:
+        - tests/bootstrap.php

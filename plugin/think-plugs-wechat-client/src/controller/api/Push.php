@@ -328,7 +328,7 @@ class Push extends Controller
 
     /**
      * 消息数据生成.
-     * @param mixed $type 消息类型
+     * @param string $type 消息类型
      * @param array $data 消息内容
      * @throws InvalidDecryptException
      */

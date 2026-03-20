@@ -59,7 +59,7 @@ class WhImportService
     public static function order(array $body, array $order)
     {
         // 写入库详情数据
-        $count = static::insertData($body, static::checkCodes($body));
+        $count = self::insertData($body, self::checkCodes($body));
         // 检查物码数量是否超出
         if ($order['num_need'] - $order['num_used'] < $count) {
             throw new Exception('入库数量超出！');
@@ -84,7 +84,7 @@ class WhImportService
      */
     public static function force(array $body)
     {
-        $count = static::insertData($body, static::checkCodes($body));
+        $count = self::insertData($body, self::checkCodes($body));
         // 更新入库订单数据
         PluginWumaWarehouseOrder::mk()->save([
             'code' => $body['code'],

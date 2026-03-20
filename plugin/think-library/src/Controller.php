@@ -76,7 +76,7 @@ class Controller extends \stdClass
      * @param mixed $data 返回数据
      * @param mixed $code 返回代码
      */
-    public function error(mixed $info, mixed $data = '{-null-}', mixed $code = 0): void
+    public function error(mixed $info, mixed $data = '{-null-}', mixed $code = 0): never
     {
         $this->success($info, $data, $code);
     }
@@ -87,7 +87,7 @@ class Controller extends \stdClass
      * @param mixed $data 返回数据
      * @param mixed $code 返回代码
      */
-    public function success(mixed $info, mixed $data = '{-null-}', mixed $code = 1): void
+    public function success(mixed $info, mixed $data = '{-null-}', mixed $code = 1): never
     {
         if ($data === '{-null-}') {
             $data = new \stdClass();
@@ -120,7 +120,7 @@ class Controller extends \stdClass
      */
     public function fetch(string $tpl = '', array $vars = [], ?string $node = null): void
     {
-        foreach ($this as $name => $value) {
+        foreach (get_object_vars($this) as $name => $value) {
             $vars[$name] = $value;
         }
         throw new HttpResponseException(view($tpl, $vars));

@@ -19,8 +19,7 @@
   },
   "autoload": {
     "psr-4": {
-      "plugin\\storage\\": "src",
-      "think\\admin\\storage\\": "src/storage"
+      "plugin\\storage\\": "src"
     }
   },
   "autoload-dev": {

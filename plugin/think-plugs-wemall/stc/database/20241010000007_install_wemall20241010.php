@@ -113,7 +113,7 @@ class InstallWemall20241010 extends Migrator
         // 创建数据表对象
         $table = $this->table('plugin_wemall_config_coupon', [
             'engine' => 'InnoDB', 'collation' => 'utf8mb4_general_ci', 'comment' => '商城-配置-卡券',
-        ], true);
+        ]);
         // 创建或更新数据表
         PhinxExtend::upgrade($table, [
             ['type', 'integer', ['limit' => 1, 'default' => 1, 'null' => true, 'comment' => '类型(0通用券,1商品券)']],

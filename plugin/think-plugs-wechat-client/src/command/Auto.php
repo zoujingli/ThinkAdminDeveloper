@@ -61,7 +61,7 @@ class Auto extends Command
      * @throws DbException
      * @throws ModelNotFoundException
      */
-    protected function execute(Input $input, Output $output)
+    protected function execute(Input $input, Output $output): int
     {
         $code = $input->getArgument('autocode');
         $this->openid = $input->getArgument('openid');
@@ -81,6 +81,7 @@ class Auto extends Command
 
         // 发送微信客服消息
         $this->buildMessage($data->toArray());
+        return 0;
     }
 
     /**

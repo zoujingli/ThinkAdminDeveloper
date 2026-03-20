@@ -38,7 +38,7 @@ class AutoService extends Service
     public static function register(string $openid)
     {
         foreach (WechatAuto::mk()->where(['status' => 1])->order('time asc')->cursor() as $vo) {
-            [$name, $time] = ["推送客服消息 {$vo['code']}#{$openid}", static::parseTimeString($vo['time'])];
+            [$name, $time] = ["推送客服消息 {$vo['code']}#{$openid}", self::parseTimeString($vo['time'])];
             QueueService::register($name, "xadmin:fansmsg {$openid} {$vo['code']}", $time);
         }
     }

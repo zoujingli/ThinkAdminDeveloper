@@ -52,7 +52,10 @@ class Code extends Controller
         }, function (QueryHelper $query) {
             // 物码数据筛选
             $query->where(['status' => intval($this->type === 'index')]);
-            $query->with(['rules'])->equal('type#mtype')->like('batch')->dateBetween('create_time');
+            $query->with(['rules']);
+            $query->equal('type#mtype');
+            $query->like('batch');
+            $query->dateBetween('create_time');
             // 物码数值批次筛选
             if (isset($this->get['encode']) && $this->get['encode'] !== '') {
                 if (is_numeric($this->get['encode'])) {
@@ -64,9 +67,10 @@ class Code extends Controller
             // 批量创建筛选规则
             foreach (['minValue#min', 'boxValue#max,mid', 'encValue#min', 'numValue#min'] as $rule) {
                 [$alias, $types] = explode('#', $rule);
-                $db = PluginWumaCodeRuleRange::mQuery($this->get)->valueRange("range_start:range_after#{$alias}")->field('batch')->db();
+                $db = PluginWumaCodeRuleRange::mQuery($this->get);
+                $db->valueRange("range_start:range_after#{$alias}");
                 if (!empty($db->getOptions()['where'] ?? [])) {
-                    $query->whereRaw("batch in {$db->whereIn('code_type', str2arr($types))->buildSql()}");
+                    $query->whereRaw("batch in {$db->db()->field('batch')->whereIn('code_type', str2arr($types))->buildSql()}");
                 }
             }
         });

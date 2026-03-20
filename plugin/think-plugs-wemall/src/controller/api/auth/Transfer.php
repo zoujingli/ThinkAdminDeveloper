@@ -138,8 +138,12 @@ class Transfer extends Auth
      */
     public function get()
     {
-        $query = PluginWemallUserTransfer::mQuery()->where(['unid' => $this->unid]);
-        $result = $query->like('date,code,code#keys')->in('status')->order('id desc')->page(true, false, false, 10);
+        $query = PluginWemallUserTransfer::mQuery();
+        $query->where(['unid' => $this->unid]);
+        $query->like('date,code,code#keys');
+        $query->in('status');
+        $query->order('id desc');
+        $result = $query->page(true, false, false, 10);
         // 统计历史数据
         $map = [['unid', '=', $this->unid], ['status', '>', 0]];
         [$total, $count, $locks, $usable] = UserRebate::recount($this->unid);

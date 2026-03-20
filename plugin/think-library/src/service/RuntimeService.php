@@ -126,7 +126,7 @@ final class RuntimeService
 
     /**
      * 设置动态配置.
-     * @param null|mixed $mode 支持模式
+     * @param null|string $mode 支持模式
      * @param null|array $appmap 历史保留参数（已停用）
      * @param null|array $domain 历史保留参数（已停用）
      * @return bool 是否调试模式

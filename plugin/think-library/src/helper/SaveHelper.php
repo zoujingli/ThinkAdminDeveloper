@@ -23,6 +23,7 @@ namespace think\admin\helper;
 use think\admin\model\QueryFactory;
 use think\db\BaseQuery;
 use think\db\exception\DbException;
+use think\db\Query;
 use think\Model;
 
 /**
@@ -42,6 +43,9 @@ class SaveHelper extends Helper
     public function init(BaseQuery|Model|string $dbQuery, array $edata = [], string $field = '', $where = [])
     {
         $query = QueryFactory::build($dbQuery);
+        if (!$query instanceof Query) {
+            throw new \InvalidArgumentException('SaveHelper only supports relational Query instances.');
+        }
         $field = $field ?: ($query->getPk() ?: 'id');
         $edata = $edata ?: $this->app->request->post();
         $value = $this->app->request->post($field);

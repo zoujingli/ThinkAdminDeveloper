@@ -67,11 +67,14 @@ class Integral extends Controller
             $this->integralTotal = PluginPaymentIntegral::mk()->where($map)->whereRaw('amount>0')->sum('amount');
             $this->integralCount = PluginPaymentIntegral::mk()->where($map)->whereRaw('amount<0')->sum('amount');
         }, function (QueryHelper $query) {
-            $db = PluginAccountUser::mQuery()->like('email|nickname|username|phone#user')->db();
+            $userQuery = PluginAccountUser::mQuery();
+            $userQuery->like('email|nickname|username|phone#user');
+            $db = $userQuery->db();
             if (!empty($db->getOptions()['where'] ?? [])) {
                 $query->whereRaw("unid in {$db->field('id')->buildSql()}");
             }
-            $query->with(['user'])->like('code,remark')->dateBetween('create_time');
+            $query->with(['user']);
+            $query->like('code,remark')->dateBetween('create_time');
             $query->where(['cancel' => intval($this->type !== 'index')]);
         });
     }

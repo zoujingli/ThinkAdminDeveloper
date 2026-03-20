@@ -88,12 +88,12 @@ class WechatPaymentV3 extends WechatPayment
         try {
             $this->checkLeaveAmount($orderNo, $payAmount, $orderAmount);
             [$payCode] = [Payment::withPaymentCode(), $this->withUserUnid($account)];
-            $body = empty($orderRemark) ? $orderTitle : ($orderTitle . '-' . $orderRemark);
+            $body = $payRemark === '' ? $orderTitle : ($orderTitle . '-' . $payRemark);
             $data = [
                 'appid' => $this->config['appid'],
                 'mchid' => $this->config['mch_id'],
                 'payer' => ['openid' => $this->withUserField($account, 'openid')],
-                'amount' => ['total' => intval($payAmount * 100), 'currency' => 'CNY'],
+                'amount' => ['total' => (int)round((float)$payAmount * 100), 'currency' => 'CNY'],
                 'notify_url' => $this->withNotifyUrl($payCode),
                 'description' => $body,
                 'out_trade_no' => $payCode,

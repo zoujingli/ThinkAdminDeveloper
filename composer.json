@@ -75,7 +75,7 @@
       "@test:smoke",
       "@test:unit"
     ],
-    "analyse": "phpstan analyse --memory-limit 2G -l 0 -c phpstan.neon ./app ./config ./plugin"
+    "analyse": "phpstan analyse --memory-limit 2G -c phpstan.neon ./app ./config ./plugin"
   },
   "repositories": [
     {

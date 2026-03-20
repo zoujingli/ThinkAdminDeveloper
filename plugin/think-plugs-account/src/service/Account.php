@@ -76,8 +76,8 @@ abstract class Account
         $jwtData = [];
         if ($isjwt && is_string($token) && strlen($token) > 32) {
             $jwtData = JwtToken::verify($token);
-            static::verifyJwtPayload($jwtData);
-            static::verifyTokenSession($jwtData);
+            self::verifyJwtPayload($jwtData);
+            self::verifyTokenSession($jwtData);
             [$type, $token] = [$type ?: ($jwtData['type'] ?? ''), $jwtData['token'] ?? $token];
             if (($jwtData['type'] ?? '') !== $type) {
                 throw new Exception('授权不匹配！');
@@ -206,7 +206,7 @@ abstract class Account
     public static function requestToken(?Request $request = null): string
     {
         $token = RequestTokenService::accountToken($request);
-        static::upgradeLegacyCookieToken($request);
+        self::upgradeLegacyCookieToken($request);
         return $token;
     }
 
@@ -232,16 +232,16 @@ abstract class Account
      */
     public static function bindSession(?string $sessionId = null): string
     {
-        $sessionId = trim(strval($sessionId ?: static::currentSessionId()));
+        $sessionId = trim(strval($sessionId ?: self::currentSessionId()));
         if ($sessionId === '') {
             $sessionId = CodeToolkit::uuid();
         }
 
-        $scope = static::sessionScope($sessionId);
+        $scope = self::sessionScope($sessionId);
         if (CacheSession::exists($scope)) {
-            CacheSession::touch(static::expire(), $scope);
+            CacheSession::touch(self::expire(), $scope);
         } else {
-            CacheSession::put([], static::expire(), $scope);
+            CacheSession::put([], self::expire(), $scope);
         }
 
         sysvar('plugin_account_user_session_id', $sessionId);
@@ -256,7 +256,7 @@ abstract class Account
     {
         return JwtToken::token([
             'typ' => self::TOKEN_TYPE,
-            'sid' => static::bindSession($sessionId),
+            'sid' => self::bindSession($sessionId),
             'jti' => CodeToolkit::uuid(),
             'type' => $type,
             'token' => $token,
@@ -269,9 +269,9 @@ abstract class Account
      */
     public static function destroySession(?string $sessionId = null): void
     {
-        $sessionId = trim(strval($sessionId ?: static::currentSessionId()));
+        $sessionId = trim(strval($sessionId ?: self::currentSessionId()));
         if ($sessionId !== '') {
-            CacheSession::destroy(static::sessionScope($sessionId));
+            CacheSession::destroy(self::sessionScope($sessionId));
         }
         sysvar('plugin_account_user_session_id', '');
     }
@@ -283,11 +283,11 @@ abstract class Account
     {
         $token = RequestTokenService::normalizeToken($token);
         if ($token === '') {
-            static::forgetTokenCookie();
+            self::forgetTokenCookie();
             return '';
         }
 
-        cookie(static::getTokenCookie(), RequestTokenService::encodeCookieToken($token), ['expire' => static::expire()]);
+        cookie(self::getTokenCookie(), RequestTokenService::encodeCookieToken($token), ['expire' => self::expire()]);
         return $token;
     }
 
@@ -306,9 +306,9 @@ abstract class Account
     public static function token(string $token = '', ?string &$type = null): AccountInterface
     {
         $data = JwtToken::verify($token);
-        static::verifyJwtPayload($data);
-        static::verifyTokenSession($data);
-        return static::mk($type = $data['type'] ?? '-', $data['token'] ?? '-');
+        self::verifyJwtPayload($data);
+        self::verifyTokenSession($data);
+        return self::mk($type = $data['type'] ?? '-', $data['token'] ?? '-');
     }
 
     /**
@@ -391,12 +391,12 @@ abstract class Account
             return;
         }
 
-        $scope = static::sessionScope($sessionId);
+        $scope = self::sessionScope($sessionId);
         if (!CacheSession::exists($scope)) {
             throw new Exception('登录已超时！', 401);
         }
 
-        CacheSession::touch(static::expire(), $scope);
+        CacheSession::touch(self::expire(), $scope);
         sysvar('plugin_account_user_session_id', $sessionId);
     }
 
@@ -407,10 +407,10 @@ abstract class Account
     private static function upgradeLegacyCookieToken(?Request $request = null): void
     {
         $request = $request ?: Library::$sapp->request;
-        $rawToken = strval($request->cookie(static::getTokenCookie(), ''));
+        $rawToken = strval($request->cookie(self::getTokenCookie(), ''));
         $decodedToken = RequestTokenService::capture($request)->accountCookieToken();
         if (RequestTokenService::shouldUpgradeCookieToken($rawToken, $decodedToken)) {
-            static::syncTokenCookie($decodedToken);
+            self::syncTokenCookie($decodedToken);
         }
     }
 

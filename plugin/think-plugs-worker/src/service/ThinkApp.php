@@ -125,8 +125,13 @@ class ThinkApp extends App
 
         $handler = $this->make(Handle::class);
         $handler->report($exception);
-        $response = $handler->render($this->request, $exception);
-        $connection->close($this->marshalResponse(new WorkerResponse(), $response, ''));
+        try {
+            $response = $handler->render($this->request, $exception);
+            $connection->close($this->marshalResponse(new WorkerResponse(), $response, ''));
+        } catch (\Throwable $renderException) {
+            $handler->report($renderException);
+            $connection->close($this->fallbackExceptionResponse($exception, $renderException));
+        }
     }
 
     private function collectGarbage(): void
@@ -139,5 +144,39 @@ class ThinkApp extends App
         if (function_exists('gc_mem_caches')) {
             gc_mem_caches();
         }
+    }
+
+    /**
+     * Build a plain-text fallback response when exception rendering itself fails.
+     */
+    private function fallbackExceptionResponse(\Throwable $exception, ?\Throwable $renderException = null): WorkerResponse
+    {
+        $response = new WorkerResponse();
+        $response->withStatus(500);
+        $response->withHeaders([
+            'Content-Type' => 'text/plain; charset=utf-8',
+            'Server' => 'x-server',
+        ]);
+
+        $lines = [
+            sprintf('%s: %s', $exception::class, $exception->getMessage()),
+        ];
+
+        if ($this->isDebug()) {
+            $lines[] = sprintf('at %s:%d', $exception->getFile(), $exception->getLine());
+            $lines[] = $exception->getTraceAsString();
+            if ($renderException !== null && $renderException !== $exception) {
+                $lines[] = '';
+                $lines[] = sprintf(
+                    'While rendering exception: %s: %s',
+                    $renderException::class,
+                    $renderException->getMessage()
+                );
+                $lines[] = sprintf('at %s:%d', $renderException->getFile(), $renderException->getLine());
+                $lines[] = $renderException->getTraceAsString();
+            }
+        }
+
+        return $response->withBody(implode(PHP_EOL, $lines));
     }
 }

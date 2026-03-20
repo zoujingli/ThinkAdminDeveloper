@@ -27,6 +27,8 @@ class WechatPaymentRefund extends Model
 {
     public function record(): HasOne
     {
-        return $this->hasOne(WechatPaymentRecord::class, 'code', 'record_code')->with('bindfans');
+        $relation = $this->hasOne(WechatPaymentRecord::class, 'code', 'record_code');
+        $relation->with('bindfans');
+        return $relation;
     }
 }

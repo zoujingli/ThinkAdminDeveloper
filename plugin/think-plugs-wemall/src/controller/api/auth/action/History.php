@@ -60,13 +60,16 @@ class History extends Auth
     {
         PluginWemallUserActionHistory::mQuery(null, function (QueryHelper $query) {
             // 搜索商品信息
-            $db = PluginWemallGoods::mQuery()->like('name#keys');
-            $query->whereRaw("gcode in {$db->field('code')->buildSql()}");
+            $db = PluginWemallGoods::mQuery();
+            $db->like('name#keys');
+            $query->whereRaw("gcode in {$db->db()->field('code')->buildSql()}");
             // 关联商品信息
-            $query->order('sort desc')->with(['goods' => function (Query $query) {
+            $query->order('sort desc');
+            $query->with(['goods' => function (Query $query) {
                 $query->field('code,name,cover,stock_sales,stock_virtual,price_selling,status');
             }]);
-            $query->where(['unid' => $this->unid])->like('gcode');
+            $query->where(['unid' => $this->unid]);
+            $query->like('gcode');
             [$page, $limit] = [intval(input('page', 1)), intval(input('limit', 10))];
             $this->success('我的访问记录！', $query->page($page, false, false, $limit));
         });

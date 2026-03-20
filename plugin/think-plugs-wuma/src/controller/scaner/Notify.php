@@ -95,7 +95,7 @@ class Notify extends Controller
     {
         PluginWumaSourceQueryNotify::mQuery()->layTable(function () {
             $this->title = '窜货区域管理';
-        }, static function (QueryHelper $helper) {
+        }, function (QueryHelper $helper) {
             $helper->field('*,count(distinct code) total,count(1) query');
             $helper->like('agent_prov#prov,agent_city#city,agent_area#area');
 

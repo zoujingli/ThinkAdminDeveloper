@@ -62,7 +62,7 @@ flowchart LR
 
 ```mermaid
 flowchart TD
-    SV["service<br/>AppService / ModuleService / NodeService / PluginService / RuntimeService / QueueService / ProcessService / Storage / JwtToken"]
+    SV["service<br/>AppService / NodeService / RuntimeService / QueueService / CacheSession / JwtToken"]
     RT["runtime<br/>SystemContext / NullSystemContext / RequestContext / RequestTokenService"]
     MW["middleware<br/>MultAccess"]
     RO["route<br/>Route / Url"]
@@ -83,6 +83,7 @@ flowchart TD
 - `ThinkPlugsSystem` 同时承载系统后台壳层和 `system_*` 核心数据，不再拆分独立 `Admin` 插件。
 - `ThinkPlugsWorker` 提供 `ProcessService / QueueService` 的真实实现，`ThinkLibrary` 只保留门面。
 - `ThinkPlugsStorage` 拥有 `system_file` 迁移和上传链路，不反向依赖 `Worker`。
+- `FaviconBuilder / ImageSliderVerify / JsonRpcHttpClient / JsonRpcHttpServer` 这类跨组件基础能力保留在 `ThinkLibrary`，业务插件只消费，不重复实现。
 
 ## 目录规范
 

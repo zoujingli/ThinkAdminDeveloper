@@ -190,8 +190,6 @@ return array_merge($extra, [
     '已启动' => 'Started',
     '未启动' => 'Stopped',
     // 数据字典管理
-    '数据编码' => 'Code',
-    '数据名称' => 'Name',
     '操作账号' => 'User',
     '操作节点' => 'Node',
     '操作行为' => 'Action',
@@ -237,8 +235,6 @@ return array_merge($extra, [
     '添加用户' => 'Add User',
     '最后登录' => 'Last Login Time',
     '头像' => 'Head',
-    '登录账号' => 'Username',
-    '用户名称' => 'Nickname',
     '登录次数' => 'Login Times',
     '系统用户' => 'System User',
     '密 码' => 'Password',
@@ -268,7 +264,6 @@ return array_merge($extra, [
     '批量恢复' => 'Batch Restore',
     '编辑用户' => 'Edit User',
     '设置密码' => 'Set Password',
-    '角色身份' => 'Role Identity',
     '全部菜单' => 'All Menus',
 
     // 权限管理

@@ -4,7 +4,7 @@ use plugin\helper\service\PhinxExtend;
 use plugin\system\model\SystemConfig;
 use plugin\system\model\SystemMenu;
 use plugin\system\model\SystemUser;
-use think\admin\service\ProcessService;
+use plugin\worker\service\ProcessService;
 use think\helper\Str;
 use think\migration\Migrator;
 

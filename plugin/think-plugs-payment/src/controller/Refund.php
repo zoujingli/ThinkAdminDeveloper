@@ -64,8 +64,11 @@ class Refund extends Controller
                 $this->title = '支付行为管理';
             }
         }, static function (QueryHelper $query) {
-            $query->with(['user', 'record'])->like('order_no|order_name#orderinfo')->dateBetween('create_time');
-            $db = PluginAccountUser::mQuery()->like('email|nickname|username|phone#userinfo')->db();
+            $query->with(['user', 'record']);
+            $query->like('order_no|order_name#orderinfo')->dateBetween('create_time');
+            $userQuery = PluginAccountUser::mQuery();
+            $userQuery->like('email|nickname|username|phone#userinfo');
+            $db = $userQuery->db();
             if (!empty($db->getOptions()['where'] ?? [])) {
                 $query->whereRaw("unid in {$db->field('id')->buildSql()}");
             }

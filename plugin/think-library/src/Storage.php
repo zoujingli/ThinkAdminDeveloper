@@ -212,7 +212,7 @@ abstract class Storage
      * 获取存储组件管理器.
      * @throws Exception
      */
-    private static function manager(): object
+    protected static function manager(): object
     {
         $class = 'plugin\storage\service\StorageManager';
         if (class_exists($class)) {

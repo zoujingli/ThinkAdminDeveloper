@@ -97,7 +97,7 @@ class Wechat extends Controller
                 if (isset($fansinfo['headimgurl'])) {
                     $data['headimg'] = $fansinfo['headimgurl'];
                 }
-                $result['userinfo'] = Account::mk(static::type)->set($data, true);
+                $result['userinfo'] = Account::mk(self::type)->set($data, true);
                 Account::syncTokenCookie(strval($result['userinfo']['token'] ?? ''));
                 // 返回数据给前端
                 $script[] = "window.WeChatOpenid='{$result['openid']}'";
@@ -118,7 +118,7 @@ class Wechat extends Controller
      */
     protected function initialize()
     {
-        if (Account::field(static::type)) {
+        if (Account::field(self::type)) {
             $this->wechat = WechatService::instance();
             $this->source = input('source') ?: $this->request->server('http_referer', $this->request->url(true));
         } else {

@@ -31,6 +31,7 @@ use think\admin\Service;
 use think\admin\service\FaviconBuilder;
 use think\admin\service\NodeService;
 use think\admin\Storage;
+use think\db\PDOConnection;
 use think\db\Query;
 use think\Model;
 
@@ -81,7 +82,7 @@ class SystemService extends Service
      */
     public static function set(string $name, $value = '')
     {
-        [$type, $field] = static::parseRule($name);
+        [$type, $field] = self::parseRule($name);
         if (is_array($value)) {
             $count = 0;
             foreach ($value as $kk => $vv) {
@@ -114,7 +115,7 @@ class SystemService extends Service
                 });
                 sysvar($keys, $config);
             }
-            [$type, $field, $outer] = static::parseRule($name);
+            [$type, $field, $outer] = self::parseRule($name);
             if (empty($name)) {
                 return $config;
             }
@@ -192,7 +193,11 @@ class SystemService extends Service
      */
     public static function getTables(): array
     {
-        $tables = Library::$sapp->db->getTables();
+        $connection = Library::$sapp->db->connect();
+        if (!$connection instanceof PDOConnection) {
+            return [[], 0, 0];
+        }
+        $tables = $connection->getTables();
         return [$tables, count($tables), 0];
     }
 
@@ -215,10 +220,18 @@ class SystemService extends Service
                 throw new Exception("待复制的数据表 {$from} 不存在！");
             }
             if (!in_array($create, $tables)) {
-                Library::$sapp->db->connect()->query("CREATE TABLE IF NOT EXISTS {$create} (LIKE {$from})");
+                $connection = Library::$sapp->db->connect();
+                if (!$connection instanceof PDOConnection) {
+                    throw new Exception('当前数据库连接不支持复制数据表结构');
+                }
+                $connection->execute("CREATE TABLE IF NOT EXISTS {$create} (LIKE {$from})");
                 if ($copy) {
-                    $sql1 = Library::$sapp->db->name($from)->where($where)->buildSql(false);
-                    Library::$sapp->db->connect()->query("INSERT INTO {$create} {$sql1}");
+                    $query = Library::$sapp->db->name($from)->where($where);
+                    if (!$query instanceof Query) {
+                        throw new Exception('无法构建数据表复制查询');
+                    }
+                    $sql1 = $query->buildSql(false);
+                    $connection->execute("INSERT INTO {$create} {$sql1}");
                 }
             }
         } catch (\Exception $exception) {
@@ -297,7 +310,7 @@ class SystemService extends Service
             'action' => lang($action),
             'content' => lang($content),
             'geoip' => Library::$sapp->request->ip() ?: '127.0.0.1',
-            'username' => strval(SystemContext::getUser('username', '-')) ?: '-',
+            'username' => strval(SystemContext::instance()->getUser('username', '-')) ?: '-',
             'create_time' => date('Y-m-d H:i:s'),
         ];
     }
@@ -335,7 +348,7 @@ class SystemService extends Service
             if (!preg_match('#^https?://#i', $icon)) {
                 throw new Exception(lang('无效的原文件地址！'));
             }
-            [$file, $temporary] = static::resolveFaviconFile($icon);
+            [$file, $temporary] = self::resolveFaviconFile($icon);
             if (empty($file) || !is_file($file)) {
                 return false;
             }
@@ -361,7 +374,7 @@ class SystemService extends Service
      */
     private static function resolveFaviconFile(string $icon): array
     {
-        if ($file = static::resolveUploadFile($icon)) {
+        if ($file = self::resolveUploadFile($icon)) {
             return [$file, false];
         }
         $body = Storage::curlGet($icon);

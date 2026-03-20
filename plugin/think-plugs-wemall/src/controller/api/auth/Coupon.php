@@ -43,8 +43,10 @@ class Coupon extends Auth
     public function get()
     {
         PluginWemallConfigCoupon::mQuery(null, function (QueryHelper $query) {
-            $query->equal('type,id#coid')->where(['status' => 1]);
-            $this->success('获取卡券', $query->order('sort desc,id desc')->page(intval(input('page')), false, false, 20));
+            $query->equal('type,id#coid');
+            $query->where(['status' => 1]);
+            $query->order('sort desc,id desc');
+            $this->success('获取卡券', $query->page(intval(input('page')), false, false, 20));
         });
     }
 
@@ -70,8 +72,10 @@ class Coupon extends Auth
     public function mine()
     {
         PluginWemallUserCoupon::mQuery(null, function (QueryHelper $query) {
-            $query->with('coupon')->equal('type,coid,status');
-            $this->success('我的卡券', $query->order('id desc')->page(intval(input('page')), false, false, 20));
+            $query->with('coupon');
+            $query->equal('type,coid,status');
+            $query->order('id desc');
+            $this->success('我的卡券', $query->page(intval(input('page')), false, false, 20));
         });
     }
 
@@ -91,7 +95,8 @@ class Coupon extends Auth
         }
         PluginWemallConfigCoupon::mQuery(null, function (QueryHelper $query) use ($data, $gcodes) {
             $query->where(['status' => 1]);
-            if (bccomp(strval($data['amount']), '0.00', 2) > 0) {
+            $amount = strval($data['amount']);
+            if (bccomp($amount, '0.00', 2) > 0) {
                 $query->where('limit_amount', '<=', $amount);
             }
             $query->where(function (Query $query) use ($gcodes) {
@@ -113,7 +118,8 @@ class Coupon extends Auth
                     $query->where(['status' => 1]);
                 }]);
             }
-            $this->success('查询卡券！', $query->order('amount desc')->page(intval(input('page')), false, false, 30));
+            $query->order('amount desc');
+            $this->success('查询卡券！', $query->page(intval(input('page')), false, false, 30));
         });
     }
 

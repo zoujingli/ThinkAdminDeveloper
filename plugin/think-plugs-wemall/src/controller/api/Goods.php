@@ -136,7 +136,9 @@ class Goods extends Controller
     public function comments()
     {
         PluginWemallUserActionComment::mQuery(null, function (QueryHelper $query) {
-            $query->with(['bindUser'])->equal('gcode')->order('id desc');
+            $query->with(['bindUser']);
+            $query->equal('gcode');
+            $query->order('id desc');
             $this->success('获取评论成功！', $query->page(intval(input('page', 1)), false, false, 30));
         });
     }
@@ -169,7 +171,8 @@ class Goods extends Controller
     public function hotkeys()
     {
         PluginWemallUserActionSearch::mQuery(null, function (QueryHelper $query) {
-            $query->whereTime('sort', '-30 days')->like('keys');
+            $query->whereTime('sort', '-30 days');
+            $query->like('keys');
             $query->field('keys')->group('keys')->cache(true, 60)->order('sort desc');
             $this->success('获取搜索热词！', ['keys' => $query->limit(0, 15)->column('keys')]);
         });

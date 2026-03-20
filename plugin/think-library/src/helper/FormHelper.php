@@ -27,6 +27,7 @@ use think\db\BaseQuery;
 use think\db\exception\DataNotFoundException;
 use think\db\exception\DbException;
 use think\db\exception\ModelNotFoundException;
+use think\db\Query;
 use think\Model;
 
 /**
@@ -51,6 +52,9 @@ class FormHelper extends Helper
     public function init($dbQuery, string $template = '', string $field = '', $where = [], array $edata = [])
     {
         $query = QueryFactory::build($dbQuery);
+        if (!$query instanceof Query) {
+            throw new \InvalidArgumentException('FormHelper only supports relational Query instances.');
+        }
         $field = $field ?: ($query->getPk() ?: 'id');
         $value = $edata[$field] ?? input($field);
         if ($this->app->request->isGet()) {

@@ -139,7 +139,6 @@ class Wxapp extends Controller
 
     /**
      * 获取小程序码
-     * @return Response|void
      */
     public function qrcode(): Response
     {
@@ -152,9 +151,8 @@ class Wxapp extends Controller
             $result = $this->wxapp->createMiniPath($data['path'], intval($data['size']));
             if ($data['type'] === 'base64') {
                 $this->success('生成小程序码', ['base64' => 'data:image/png;base64,' . base64_encode($result)]);
-            } else {
-                return response($result)->contentType('image/png');
             }
+            return response($result)->contentType('image/png');
         } catch (HttpResponseException $exception) {
             throw $exception;
         } catch (\Exception $exception) {

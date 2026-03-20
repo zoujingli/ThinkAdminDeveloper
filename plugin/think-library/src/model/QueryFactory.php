@@ -38,18 +38,18 @@ class QueryFactory
     public static function build(BaseQuery|Model|string $query): BaseQuery|Mongo|Query
     {
         if (is_string($query)) {
-            if (static::isSubquery($query)) {
+            if (self::isSubquery($query)) {
                 $query = Library::$sapp->db->table($query);
             } else {
-                return static::triggerBeforeEvent(ModelFactory::build($query)->db());
+                return self::triggerBeforeEvent(ModelFactory::build($query)->db());
             }
         }
         if ($query instanceof Model) {
-            return static::triggerBeforeEvent($query->db());
+            return self::triggerBeforeEvent($query->db());
         }
         if ($query instanceof BaseQuery && !$query->getModel()) {
             // 子查询不挂载模型，实体表查询则补齐运行时模型。
-            if (!static::isSubquery($query->getTable())) {
+            if (!self::isSubquery($query->getTable())) {
                 $name = $query->getConfig('name') ?: '';
                 if (is_string($name) && strlen($name) > 0) {
                     $name = config("database.connections.{$name}") ? $name : '';
@@ -57,7 +57,7 @@ class QueryFactory
                 $query->model(ModelFactory::build($query->getName(), [], $name));
             }
         }
-        return static::triggerBeforeEvent($query);
+        return self::triggerBeforeEvent($query);
     }
 
     /**

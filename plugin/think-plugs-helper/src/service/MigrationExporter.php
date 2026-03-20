@@ -26,6 +26,7 @@ use Doctrine\DBAL\Schema\Column;
 use Doctrine\DBAL\Schema\Index;
 use Doctrine\DBAL\Schema\Table;
 use Doctrine\DBAL\Types\Type;
+use Doctrine\DBAL\Types\Types;
 use think\App;
 use think\console\Output;
 
@@ -173,21 +174,21 @@ PHP;
 
     private function mapType(Column $column): string
     {
-        $name = $column->getType()->getName();
+        $name = Type::lookupName($column->getType());
 
         return match ($name) {
-            Type::BIGINT => 'biginteger',
-            Type::SMALLINT => 'smallinteger',
-            Type::INTEGER => 'integer',
-            Type::BOOLEAN => 'boolean',
-            Type::FLOAT => 'float',
-            Type::DECIMAL => 'decimal',
-            Type::DATE_MUTABLE, Type::DATE_IMMUTABLE => 'date',
-            Type::TIME_MUTABLE, Type::TIME_IMMUTABLE => 'time',
-            Type::DATETIME_MUTABLE, Type::DATETIME_IMMUTABLE, Type::DATETIMETZ_MUTABLE, Type::DATETIMETZ_IMMUTABLE => 'datetime',
-            Type::TEXT => 'text',
-            Type::BLOB, Type::BINARY => 'blob',
-            Type::JSON => 'json',
+            Types::BIGINT => 'biginteger',
+            Types::SMALLINT => 'smallinteger',
+            Types::INTEGER => 'integer',
+            Types::BOOLEAN => 'boolean',
+            Types::FLOAT => 'float',
+            Types::DECIMAL => 'decimal',
+            Types::DATE_MUTABLE, Types::DATE_IMMUTABLE => 'date',
+            Types::TIME_MUTABLE, Types::TIME_IMMUTABLE => 'time',
+            Types::DATETIME_MUTABLE, Types::DATETIME_IMMUTABLE, Types::DATETIMETZ_MUTABLE, Types::DATETIMETZ_IMMUTABLE => 'datetime',
+            Types::TEXT => 'text',
+            Types::BLOB, Types::BINARY => 'blob',
+            Types::JSON => 'json',
             default => 'string',
         };
     }

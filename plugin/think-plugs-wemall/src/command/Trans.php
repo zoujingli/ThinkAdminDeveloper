@@ -101,6 +101,7 @@ class Trans extends Command
             }
         }
         $this->setQueueSuccess(sprintf('此次共处理 %d 笔提现操作, 其中有 %d 笔处理失败。', $total, $error));
+        return 0;
     }
 
     /**
@@ -121,7 +122,7 @@ class Trans extends Command
                 [
                     'openid' => $model->getAttr('openid'),
                     'out_detail_no' => $model->getAttr('code'),
-                    'transfer_amount' => intval($amount * 100),
+                    'transfer_amount' => intval($amount),
                     'transfer_remark' => '自商户收入的提现',
                 ],
             ],

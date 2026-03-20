@@ -42,8 +42,10 @@ class PluginWumaWarehouseRelation extends AbstractPrivate
      */
     public function mids(): HasMany
     {
-        $many = $this->hasMany(PluginWumaWarehouseRelationData::class, 'max', 'max');
-        return $many->whereRaw('max>0')->field('max,mid,locked');
+        $relation = $this->hasMany(PluginWumaWarehouseRelationData::class, 'max', 'max');
+        $relation->whereRaw('max>0');
+        $relation->field('max,mid,locked');
+        return $relation;
     }
 
     /**
@@ -51,7 +53,9 @@ class PluginWumaWarehouseRelation extends AbstractPrivate
      */
     public function mins(): HasMany
     {
-        $many = $this->hasMany(PluginWumaWarehouseRelationData::class, 'mid', 'mid');
-        return $many->whereRaw('mid>0')->field('mid,min,locked,encode,number');
+        $relation = $this->hasMany(PluginWumaWarehouseRelationData::class, 'mid', 'mid');
+        $relation->whereRaw('mid>0');
+        $relation->field('mid,min,locked,encode,number');
+        return $relation;
     }
 }

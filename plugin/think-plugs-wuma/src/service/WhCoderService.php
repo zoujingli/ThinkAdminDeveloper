@@ -22,6 +22,7 @@ namespace plugin\wuma\service;
 
 use plugin\wuma\model\PluginWumaCodeRule;
 use plugin\wuma\model\PluginWumaCodeRuleRange;
+use plugin\wuma\model\PluginWumaSalesOrderDataMins;
 use plugin\wuma\model\PluginWumaSourceAssign;
 use plugin\wuma\model\PluginWumaSourceAssignItem;
 use plugin\wuma\model\PluginWumaWarehouseOrderDataMins;
@@ -61,7 +62,8 @@ class WhCoderService extends Service
             }
         }
         // 检查替换码是否存在
-        if ($replace && ($reps = static::recheck($mincodes)) && !empty($reps)) {
+        $reps = $replace ? static::recheck($mincodes) : [];
+        if ($reps !== []) {
             foreach ($reps as $min) {
                 $exists[$min] = $mins[$min];
             }
@@ -92,7 +94,8 @@ class WhCoderService extends Service
             }
         }
         // 检查替换码是否存在
-        if ($replace && ($reps = static::recheck($mincodes)) && !empty($reps)) {
+        $reps = $replace ? static::recheck($mincodes) : [];
+        if ($reps !== []) {
             foreach ($reps as $min) {
                 $exists[$min] = $mins[$min];
             }
@@ -120,28 +123,26 @@ class WhCoderService extends Service
             if (empty($state)) {
                 throw new Exception('物码范围无效！', 0, array_values(array_diff($items, $nums)));
             }
-            if ($relation) {
-                foreach ($nums as $num) {
-                    if (isset($codes[$min = CodeService::num2min($num)])) {
-                        throw new Exception('存在包含关系，', 0, [$num, strstr($codes[$min], '#', true)]);
-                    }
+            foreach ($nums as $num) {
+                $min = CodeService::num2min($num);
+                if ($relation && isset($codes[$min])) {
+                    throw new Exception('存在包含关系，', 0, [$num, strstr(strval($codes[$min] ?? ''), '#', true)]);
                 }
+                $codes[$min] = "{$num}#NUM";
             }
-            $codes[$min] = "{$num}#NUM";
         }
         if (!empty($body['encs']) && count($items = static::replace(array_unique(str2arr($body['encs'])))) > 0) {
             [$state, $encs] = CodeService::checkValid([], $items, 'encode', 'min');
             if (empty($state)) {
                 throw new Exception('物码范围无效！', 0, array_values(array_diff($items, $encs)));
             }
-            if ($relation) {
-                foreach ($encs as $enc) {
-                    if (isset($codes[$min = CodeService::enc2min($enc)])) {
-                        throw new Exception('存在包含关系！', 0, [$enc, strstr($codes[$min], '#', true)]);
-                    }
+            foreach ($encs as $enc) {
+                $min = CodeService::enc2min($enc);
+                if ($relation && isset($codes[$min])) {
+                    throw new Exception('存在包含关系！', 0, [$enc, strstr(strval($codes[$min] ?? ''), '#', true)]);
                 }
+                $codes[$min] = "{$enc}#ENC";
             }
-            $codes[$min] = "{$enc}#ENC";
         }
         if (!empty($body['mins']) && count($items = array_unique(str2arr($body['mins']))) > 0) {
             [$state, $mins] = CodeService::checkValid([], $items, 'min', 'min');
@@ -196,7 +197,8 @@ class WhCoderService extends Service
         }
         // 检查是否存在替换码
         if ($replace) {
-            if (($reps = static::recheck(array_keys($codes))) && !empty($reps)) {
+            $reps = static::recheck(array_keys($codes));
+            if ($reps !== []) {
                 [$v, $t] = explode('#', $codes[$reps[0]]);
                 throw new Exception('存在替换标签', 0, [$v, $t]);
             }
@@ -314,7 +316,7 @@ class WhCoderService extends Service
 
         // 出货代理数据读取
         $map = ['code' => $code, 'status' => 1];
-        $auid = AgentStockOrderDataMins::mk()->where($map)->order('id desc')->value('auid', 0);
+        $auid = PluginWumaSalesOrderDataMins::mk()->where($map)->order('id desc')->value('auid', 0);
         return [$item['produce']['gcode'], $item['produce']['gspec'], $auid];
     }
 }

@@ -26,6 +26,8 @@ class PluginWemallOrderSender extends AbsUser
 {
     public function main(): HasOne
     {
-        return $this->hasOne(PluginWemallOrder::class, 'order_no', 'order_no')->with(['items']);
+        $relation = $this->hasOne(PluginWemallOrder::class, 'order_no', 'order_no');
+        $relation->with(['items']);
+        return $relation;
     }
 }

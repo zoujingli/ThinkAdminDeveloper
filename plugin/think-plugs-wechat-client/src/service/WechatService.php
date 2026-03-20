@@ -45,77 +45,77 @@ use WeChat\Exceptions\LocalCacheException;
  * 微信接口调度服务
  * @class WechatService
  *
- * @method \WeChat\Card WeChatCard() static 微信卡券管理
- * @method \WeChat\Custom WeChatCustom() static 微信客服消息
- * @method \WeChat\Limit WeChatLimit() static 接口调用频次限制
- * @method \WeChat\Media WeChatMedia() static 微信素材管理
- * @method \WeChat\Draft WeChatDraft() static 微信草稿箱管理
- * @method \WeChat\Menu WeChatMenu() static 微信菜单管理
- * @method \WeChat\Oauth WeChatOauth() static 微信网页授权
- * @method \WeChat\Pay WeChatPay() static 微信支付商户
- * @method \WeChat\Product WeChatProduct() static 微信商店管理
- * @method \WeChat\Qrcode WeChatQrcode() static 微信二维码管理
- * @method \WeChat\Receive WeChatReceive() static 微信推送管理
- * @method \WeChat\Scan WeChatScan() static 微信扫一扫接入管理
- * @method \WeChat\Script WeChatScript() static 微信前端支持
- * @method \WeChat\Shake WeChatShake() static 微信揺一揺周边
- * @method \WeChat\Tags WeChatTags() static 微信用户标签管理
- * @method \WeChat\Template WeChatTemplate() static 微信模板消息
- * @method \WeChat\User WeChatUser() static 微信粉丝管理
- * @method \WeChat\Wifi WeChatWifi() static 微信门店WIFI管理
- * @method \WeChat\Freepublish WeChatFreepublish() static 发布能力
+ * @method static \WeChat\Card WeChatCard() 微信卡券管理
+ * @method static \WeChat\Custom WeChatCustom() 微信客服消息
+ * @method static \WeChat\Limit WeChatLimit() 接口调用频次限制
+ * @method static \WeChat\Media WeChatMedia() 微信素材管理
+ * @method static \WeChat\Draft WeChatDraft() 微信草稿箱管理
+ * @method static \WeChat\Menu WeChatMenu() 微信菜单管理
+ * @method static \WeChat\Oauth WeChatOauth() 微信网页授权
+ * @method static \WeChat\Pay WeChatPay() 微信支付商户
+ * @method static \WeChat\Product WeChatProduct() 微信商店管理
+ * @method static \WeChat\Qrcode WeChatQrcode() 微信二维码管理
+ * @method static \WeChat\Receive WeChatReceive() 微信推送管理
+ * @method static \WeChat\Scan WeChatScan() 微信扫一扫接入管理
+ * @method static \WeChat\Script WeChatScript() 微信前端支持
+ * @method static \WeChat\Shake WeChatShake() 微信揺一揺周边
+ * @method static \WeChat\Tags WeChatTags() 微信用户标签管理
+ * @method static \WeChat\Template WeChatTemplate() 微信模板消息
+ * @method static \WeChat\User WeChatUser() 微信粉丝管理
+ * @method static \WeChat\Wifi WeChatWifi() 微信门店WIFI管理
+ * @method static \WeChat\Freepublish WeChatFreepublish() 发布能力
  *
  * ----- WeMini -----
- * @method \WeMini\Account WeMiniAccount() static 小程序账号管理
- * @method \WeMini\Basic WeMiniBasic() static 小程序基础信息设置
- * @method \WeMini\Code WeMiniCode() static 小程序代码管理
- * @method \WeMini\Domain WeMiniDomain() static 小程序域名管理
- * @method \WeMini\Tester WeMinitester() static 小程序成员管理
- * @method \WeMini\User WeMiniUser() static 小程序帐号管理
- *                                   --------------------
- * @method \WeMini\Crypt WeMiniCrypt() static 小程序数据加密处理
- * @method \WeMini\Delivery WeMiniDelivery() static 小程序即时配送
- * @method \WeMini\Guide WeMiniGuide() static 小程序导购助手
- * @method \WeMini\Image WeMiniImage() static 小程序图像处理
- * @method \WeMini\Live WeMiniLive() static 小程序直播接口
- * @method \WeMini\Logistics WeMiniLogistics() static 小程序物流助手
- * @method \WeMini\Newtmpl WeMiniNewtmpl() static 公众号小程序订阅消息支持
- * @method \WeMini\Message WeMiniMessage() static 小程序动态消息
- * @method \WeMini\Operation WeMiniOperation() static 小程序运维中心
- * @method \WeMini\Ocr WeMiniOcr() static 小程序ORC服务
- * @method \WeMini\Plugs WeMiniPlugs() static 小程序插件管理
- * @method \WeMini\Poi WeMiniPoi() static 小程序地址管理
- * @method \WeMini\Qrcode WeMiniQrcode() static 小程序二维码管理
- * @method \WeMini\Security WeMiniSecurity() static 小程序内容安全
- * @method \WeMini\Soter WeMiniSoter() static 小程序生物认证
- * @method \WeMini\Template WeMiniTemplate() static 小程序模板消息支持
- * @method \WeMini\Total WeMiniTotal() static 小程序数据接口
- * @method \WeMini\Scheme WeMiniScheme() static 小程序URL-Scheme
- * @method \WeMini\Search WeMiniSearch() static 小程序搜索
- * @method \WeMini\Shipping WeMiniShipping() static 小程序发货信息管理服务
+ * @method static \WeMini\Account WeMiniAccount() 小程序账号管理
+ * @method static \WeMini\Basic WeMiniBasic() 小程序基础信息设置
+ * @method static \WeMini\Code WeMiniCode() 小程序代码管理
+ * @method static \WeMini\Domain WeMiniDomain() 小程序域名管理
+ * @method static \WeMini\Tester WeMinitester() 小程序成员管理
+ * @method static \WeMini\User WeMiniUser() 小程序帐号管理
+ *                                          --------------------
+ * @method static \WeMini\Crypt WeMiniCrypt() 小程序数据加密处理
+ * @method static \WeMini\Delivery WeMiniDelivery() 小程序即时配送
+ * @method static \WeMini\Guide WeMiniGuide() 小程序导购助手
+ * @method static \WeMini\Image WeMiniImage() 小程序图像处理
+ * @method static \WeMini\Live WeMiniLive() 小程序直播接口
+ * @method static \WeMini\Logistics WeMiniLogistics() 小程序物流助手
+ * @method static \WeMini\Newtmpl WeMiniNewtmpl() 公众号小程序订阅消息支持
+ * @method static \WeMini\Message WeMiniMessage() 小程序动态消息
+ * @method static \WeMini\Operation WeMiniOperation() 小程序运维中心
+ * @method static \WeMini\Ocr WeMiniOcr() 小程序ORC服务
+ * @method static \WeMini\Plugs WeMiniPlugs() 小程序插件管理
+ * @method static \WeMini\Poi WeMiniPoi() 小程序地址管理
+ * @method static \WeMini\Qrcode WeMiniQrcode() 小程序二维码管理
+ * @method static \WeMini\Security WeMiniSecurity() 小程序内容安全
+ * @method static \WeMini\Soter WeMiniSoter() 小程序生物认证
+ * @method static \WeMini\Template WeMiniTemplate() 小程序模板消息支持
+ * @method static \WeMini\Total WeMiniTotal() 小程序数据接口
+ * @method static \WeMini\Scheme WeMiniScheme() 小程序URL-Scheme
+ * @method static \WeMini\Search WeMiniSearch() 小程序搜索
+ * @method static \WeMini\Shipping WeMiniShipping() 小程序发货信息管理服务
  *
  * ----- WePay -----
- * @method \WePay\Bill WePayBill() static 微信商户账单及评论
- * @method \WePay\Order WePayOrder() static 微信商户订单
- * @method \WePay\Refund WePayRefund() static 微信商户退款
- * @method \WePay\Coupon WePayCoupon() static 微信商户代金券
- * @method \WePay\Custom WePayCustom() static 微信扩展上报海关
- * @method \WePay\ProfitSharing WePayProfitSharing() static 微信分账
- * @method \WePay\Redpack WePayRedpack() static 微信红包支持
- * @method \WePay\Transfers WePayTransfers() static 微信商户打款到零钱
- * @method \WePay\TransfersBank WePayTransfersBank() static 微信商户打款到银行卡
+ * @method static \WePay\Bill WePayBill() 微信商户账单及评论
+ * @method static \WePay\Order WePayOrder() 微信商户订单
+ * @method static \WePay\Refund WePayRefund() 微信商户退款
+ * @method static \WePay\Coupon WePayCoupon() 微信商户代金券
+ * @method static \WePay\Custom WePayCustom() 微信扩展上报海关
+ * @method static \WePay\ProfitSharing WePayProfitSharing() 微信分账
+ * @method static \WePay\Redpack WePayRedpack() 微信红包支持
+ * @method static \WePay\Transfers WePayTransfers() 微信商户打款到零钱
+ * @method static \WePay\TransfersBank WePayTransfersBank() 微信商户打款到银行卡
  *
  * ----- WePayV3 -----
- * @method \WePayV3\Order WePayV3Order() static 直连商户|订单支付接口
- * @method \WePayV3\Transfers WePayV3Transfers() static 微信商家转账到零钱
- * @method \WePayV3\ProfitSharing WePayV3ProfitSharing() static 微信商户分账
+ * @method static \WePayV3\Order WePayV3Order() 直连商户|订单支付接口
+ * @method static \WePayV3\Transfers WePayV3Transfers() 微信商家转账到零钱
+ * @method static \WePayV3\ProfitSharing WePayV3ProfitSharing() 微信商户分账
  *
  * ----- WeOpen -----
- * @method \WeOpen\Login WeOpenLogin() static 第三方微信登录
- * @method \WeOpen\Service WeOpenService() static 第三方服务
+ * @method static \WeOpen\Login WeOpenLogin() 第三方微信登录
+ * @method static \WeOpen\Service WeOpenService() 第三方服务
  *
  * ----- ThinkService -----
- * @method mixed ThinkServiceConfig() static 平台服务配置
+ * @method static mixed ThinkServiceConfig() 平台服务配置
  */
 class WechatService extends Service
 {
@@ -126,7 +126,7 @@ class WechatService extends Service
      */
     public static function __callStatic(string $name, array $arguments)
     {
-        [$type, $base, $class] = static::parseName($name);
+        [$type, $base, $class] = self::parseName($name);
         if ("{$type}{$base}" !== $name) {
             throw new Exception("抱歉，实例 {$name} 不符合规则！");
         }
@@ -287,7 +287,7 @@ class WechatService extends Service
                 $params['oauthid'] = $oauthid;
                 $location = strstr("{$source}?", '?', true) . '?' . http_build_query($params);
                 $oauthurl = $wechat->getOauthRedirect($location, $appid, $isfull ? 'snsapi_userinfo' : 'snsapi_base');
-                throw new HttpResponseException(static::createRedirect($oauthurl, $redirect));
+                throw new HttpResponseException(self::createRedirect($oauthurl, $redirect));
             }
             if (($token = $wechat->getOauthAccessToken($getVars['code'])) && isset($token['openid'])) {
                 $openid = $token['openid'];
@@ -302,14 +302,14 @@ class WechatService extends Service
                         $userinfo['is_snapshotuser'] = 0;
                         // 缓存用户信息
                         Library::$sapp->cache->set("{$oauthid}_fansinfo", $userinfo, 3600);
-                        empty($userinfo) || FansService::set($userinfo, $appid);
+                        FansService::set($userinfo, $appid);
                     } else {
                         $userinfo['is_snapshotuser'] = 1;
                     }
                 }
             }
             if ($getVars['rcode']) {
-                throw new HttpResponseException(static::createRedirect(debase64url($getVars['rcode']), $redirect));
+                throw new HttpResponseException(self::createRedirect(debase64url($getVars['rcode']), $redirect));
             }
             if ((empty($isfull) && !empty($openid)) || (!empty($isfull) && !empty($openid) && !empty($userinfo))) {
                 return ['openid' => $openid, 'fansinfo' => $userinfo];
@@ -327,7 +327,7 @@ class WechatService extends Service
                 empty($result['token']['is_snapshotuser']) && empty($userinfo) || FansService::set($userinfo, $appid);
                 return ['openid' => $openid, 'fansinfo' => $userinfo];
             }
-            throw new HttpResponseException(static::createRedirect($result['url'], $redirect));
+            throw new HttpResponseException(self::createRedirect($result['url'], $redirect));
         }
     }
 

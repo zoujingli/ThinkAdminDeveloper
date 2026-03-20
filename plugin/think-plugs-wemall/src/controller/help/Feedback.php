@@ -55,9 +55,10 @@ class Feedback extends Controller
             $query->like('name,phone,content')->dateBetween('create_time');
             $query->where(['status' => intval($this->type === 'index')]);
             // 提交用户搜索
-            $db = PluginAccountUser::mQuery()->like('username')->field('id')->db();
+            $db = PluginAccountUser::mQuery();
+            $db->like('username');
             if (!empty($db->getOptions()['where'] ?? [])) {
-                $query->whereRaw("unid in {$db->buildSql()}");
+                $query->whereRaw("unid in {$db->db()->field('id')->buildSql()}");
             }
         });
     }

@@ -24,6 +24,7 @@ use plugin\wuma\model\PluginWumaWarehouseUser;
 use think\admin\Controller;
 use think\admin\helper\FormBuilder;
 use think\admin\helper\QueryHelper;
+use think\admin\service\AppService;
 use think\db\exception\DataNotFoundException;
 use think\db\exception\DbException;
 use think\db\exception\ModelNotFoundException;

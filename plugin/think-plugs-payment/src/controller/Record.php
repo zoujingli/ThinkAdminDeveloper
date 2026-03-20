@@ -56,11 +56,14 @@ class Record extends Controller
                 $this->title = '支付行为管理';
             }
         }, static function (QueryHelper $query) {
-            $db = PluginAccountUser::mQuery()->like('email|nickname|username|phone#userinfo')->db();
+            $userQuery = PluginAccountUser::mQuery();
+            $userQuery->like('email|nickname|username|phone#userinfo');
+            $db = $userQuery->db();
             if (!empty($db->getOptions()['where'] ?? [])) {
                 $query->whereRaw("unid in {$db->field('id')->buildSql()}");
             }
-            $query->with(['user'])->like('order_no|order_name#orderinfo')->dateBetween('create_time');
+            $query->with(['user']);
+            $query->like('order_no|order_name#orderinfo')->dateBetween('create_time');
         });
     }
 

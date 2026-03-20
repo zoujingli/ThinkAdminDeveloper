@@ -23,6 +23,7 @@ namespace think\admin\helper;
 use think\admin\model\QueryFactory;
 use think\db\BaseQuery;
 use think\db\exception\DbException;
+use think\db\Query;
 use think\Model;
 use think\model\concern\SoftDelete;
 
@@ -39,6 +40,9 @@ class DeleteHelper extends Helper
     public function init(BaseQuery|Model|string $dbQuery, string $field = '', mixed $where = [])
     {
         $query = QueryFactory::build($dbQuery);
+        if (!$query instanceof Query) {
+            throw new \InvalidArgumentException('DeleteHelper only supports relational Query instances.');
+        }
         $field = $field ?: ($query->getPk() ?: 'id');
         $value = $this->app->request->post($field);
 
@@ -76,7 +80,7 @@ class DeleteHelper extends Helper
         }
     }
 
-    private function deleteRecords(BaseQuery $query, ?Model $model = null): bool
+    private function deleteRecords(Query $query, ?Model $model = null): bool
     {
         if ($model instanceof Model && $this->usesSoftDelete($model)) {
             $result = false;

@@ -496,7 +496,7 @@ class FormBuilder
         $vars['formBuilder'] = $vars['formBuilder'] ?? $this;
         $vars['formSchema'] = $vars['formSchema'] ?? $this->toArray();
         $vars['formRules'] = $vars['formRules'] ?? $this->getValidateRules();
-        foreach ($this->class as $k => $v) {
+        foreach (get_object_vars($this->class) as $k => $v) {
             $vars[$k] = $v;
         }
         throw new HttpResponseException(display($html, $vars));

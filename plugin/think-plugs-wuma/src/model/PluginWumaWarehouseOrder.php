@@ -63,7 +63,9 @@ class PluginWumaWarehouseOrder extends AbstractPrivate
      */
     public function goods(): HasOne
     {
-        return $this->hasOne(PluginWemallGoodsItem::class, 'ghash', 'ghash')->with('bindGoods');
+        $relation = $this->hasOne(PluginWemallGoodsItem::class, 'ghash', 'ghash');
+        $relation->with('bindGoods');
+        return $relation;
     }
 
     /**

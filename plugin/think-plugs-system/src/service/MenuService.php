@@ -41,7 +41,7 @@ class MenuService extends Service
      */
     public static function getList(bool $force = false, ?string $plugin = null): array
     {
-        $plugin = static::pluginCode($plugin);
+        $plugin = self::pluginCode($plugin);
         $keys = 'think.admin.menus' . ($plugin === '' ? '' : ".{$plugin}");
         $nodes = sysvar($keys) ?: [];
         if (empty($force) && count($nodes) > 0) {
@@ -49,7 +49,7 @@ class MenuService extends Service
         }
         $nodes = [];
         foreach (NodeService::getMethods($force) as $node => $method) {
-            if ($method['ismenu'] && static::allowNode($node, $plugin)) {
+            if ($method['ismenu'] && self::allowNode($node, $plugin)) {
                 $nodes[] = ['node' => $node, 'title' => self::lang($method['title'])];
             }
         }
@@ -62,7 +62,7 @@ class MenuService extends Service
      */
     public static function getAuths(bool $force = false, ?string $plugin = null): array
     {
-        $plugin = static::pluginCode($plugin);
+        $plugin = self::pluginCode($plugin);
         $keys = 'think.admin.auths' . ($plugin === '' ? '' : ".{$plugin}");
         $nodes = sysvar($keys) ?: [];
         if (empty($force) && count($nodes) > 0) {
@@ -71,7 +71,7 @@ class MenuService extends Service
 
         $nodes = [];
         foreach (NodeService::getMethods($force) as $node => $method) {
-            if ($method['isauth'] && substr_count($node, '/') >= 2 && static::allowNode($node, $plugin)) {
+            if ($method['isauth'] && substr_count($node, '/') >= 2 && self::allowNode($node, $plugin)) {
                 $nodes[] = ['node' => $node, 'title' => $method['title']];
             }
         }
@@ -105,11 +105,11 @@ class MenuService extends Service
     public static function getRoots(?string $plugin = null): array
     {
         $roots = [];
-        foreach (static::filterTree(static::loadTree(), $plugin) as $menu) {
+        foreach (self::filterTree(self::loadTree(), $plugin) as $menu) {
             $roots[$menu['id']] = [
                 'id' => $menu['id'],
                 'pid' => $menu['pid'],
-                'title' => static::lang(strval($menu['title'] ?? '')),
+                'title' => self::lang(strval($menu['title'] ?? '')),
             ];
         }
         return $roots;
@@ -120,7 +120,7 @@ class MenuService extends Service
      */
     public static function getParents(?string $plugin = null): array
     {
-        $items = static::filterTree(static::loadTree(false), $plugin);
+        $items = self::filterTree(self::loadTree(false), $plugin);
         $items = ArrayTree::arr2table(array_merge($items, [[
             'id' => '0', 'pid' => '-1', 'url' => '#', 'title' => '顶部菜单',
         ]]));
@@ -139,15 +139,15 @@ class MenuService extends Service
      */
     public static function filterTree(array $menus, ?string $plugin = null): array
     {
-        if (($plugin = static::pluginCode($plugin)) === '') {
+        if (($plugin = self::pluginCode($plugin)) === '') {
             return $menus;
         }
 
         foreach ($menus as $key => &$menu) {
             if (!empty($menu['sub'])) {
-                $menu['sub'] = static::filterTree($menu['sub'], $plugin);
+                $menu['sub'] = self::filterTree($menu['sub'], $plugin);
             }
-            if (static::detectPlugin($menu) !== $plugin && empty($menu['sub'])) {
+            if (self::detectPlugin($menu) !== $plugin && empty($menu['sub'])) {
                 unset($menus[$key]);
             }
         }
@@ -160,14 +160,14 @@ class MenuService extends Service
      */
     public static function detectPlugin(array $menu): string
     {
-        if (!empty($menu['node']) && ($code = static::pluginByNode(strval($menu['node'])))) {
+        if (!empty($menu['node']) && ($code = self::pluginByNode(strval($menu['node'])))) {
             return $code;
         }
-        if (!empty($menu['url']) && ($code = static::pluginByUrl(strval($menu['url'])))) {
+        if (!empty($menu['url']) && ($code = self::pluginByUrl(strval($menu['url'])))) {
             return $code;
         }
         foreach ((array)($menu['sub'] ?? []) as $sub) {
-            if ($code = static::detectPlugin($sub)) {
+            if ($code = self::detectPlugin($sub)) {
                 return $code;
             }
         }
@@ -189,7 +189,7 @@ class MenuService extends Service
         foreach ($menus as &$menu) {
             $menu['title'] = self::lang($menu['title']);
         }
-        return static::filter(ArrayTree::arr2tree($menus));
+        return self::filter(ArrayTree::arr2tree($menus));
     }
 
     /**
@@ -206,7 +206,7 @@ class MenuService extends Service
      */
     private static function allowNode(string $node, string $plugin = ''): bool
     {
-        return $plugin === '' || static::pluginByNode($node) === $plugin;
+        return $plugin === '' || self::pluginByNode($node) === $plugin;
     }
 
     /**
@@ -235,7 +235,7 @@ class MenuService extends Service
 
         $path = trim(strval(parse_url($url, PHP_URL_PATH) ?: $url), '\/');
         $path = preg_replace('/\.[a-zA-Z0-9]+$/', '', $path);
-        return static::pluginByNode($path ?: '');
+        return self::pluginByNode($path ?: '');
     }
 
     /**
@@ -270,7 +270,7 @@ class MenuService extends Service
     {
         foreach ($menus as $key => &$menu) {
             if (!empty($menu['sub'])) {
-                $menu['sub'] = static::filter($menu['sub']);
+                $menu['sub'] = self::filter($menu['sub']);
             }
             if (!empty($menu['sub'])) {
                 $menu['url'] = '#';

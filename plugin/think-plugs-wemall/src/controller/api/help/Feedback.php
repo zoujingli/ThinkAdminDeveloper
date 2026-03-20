@@ -38,8 +38,11 @@ class Feedback extends Auth
     public function get()
     {
         PluginWemallHelpFeedback::mQuery(null, function (QueryHelper $query) {
-            $query->where(['unid' => $this->unid])->like('content#keys')->equal('id');
-            $this->success('获取反馈意见', $query->order('sort desc,id desc')->page(true, false, false, 10));
+            $query->where(['unid' => $this->unid]);
+            $query->like('content#keys');
+            $query->equal('id');
+            $query->order('sort desc,id desc');
+            $this->success('获取反馈意见', $query->page(true, false, false, 10));
         });
     }
 

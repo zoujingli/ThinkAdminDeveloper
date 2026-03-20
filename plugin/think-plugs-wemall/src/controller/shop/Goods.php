@@ -66,7 +66,9 @@ class Goods extends Controller
             $this->enableBalance = ConfigService::get('enable_balance');
             $this->enableIntegral = ConfigService::get('enable_integral');
         }, function (QueryHelper $query) {
-            $query->withoutField('specs,content')->like('code|name#name')->like('marks,cates', ',');
+            $query->withoutField('specs,content');
+            $query->like('code|name#name');
+            $query->like('marks,cates', ',');
             $query->equal('status,level_upgrade,delivery_code,rebate_type')->dateBetween('create_time');
             $query->where(['status' => intval($this->type === 'index')]);
         });

@@ -24,7 +24,7 @@ use plugin\helper\service\IndexNameService;
 use plugin\system\service\SystemService;
 use think\admin\service\RuntimeService;
 use think\console\Command;
-use think\facade\Db;
+use think\db\PDOConnection;
 
 class DbIndexStruct extends Command
 {
@@ -50,7 +50,8 @@ class DbIndexStruct extends Command
      */
     public function handle(): void
     {
-        if (strtolower(strval($this->app->db->connect()->getConfig('type', ''))) !== 'mysql') {
+        $connection = $this->app->db->connect();
+        if (strtolower(strval($connection->getConfig('type') ?: '')) !== 'mysql' || !$connection instanceof PDOConnection) {
             $this->output->writeln('Skip index sync: current database driver does not support SHOW INDEX rename flow.');
             return;
         }
@@ -60,7 +61,7 @@ class DbIndexStruct extends Command
             $this->output->writeln(sprintf('[%s/%s] 开始处理表 %s', $count++, $total, $table));
 
             $indexes = [];
-            foreach (Db::query(sprintf('SHOW INDEX FROM `%s`', $table)) as $index) {
+            foreach ($connection->query(sprintf('SHOW INDEX FROM `%s`', $table)) as $index) {
                 $keyName = strval($index['Key_name'] ?? '');
                 if ($keyName === '' || $keyName === 'PRIMARY') {
                     continue;
@@ -84,7 +85,7 @@ class DbIndexStruct extends Command
                     continue;
                 }
 
-                Db::execute(sprintf('ALTER TABLE `%s` RENAME INDEX `%s` TO `%s`', $table, $keyName, $newName));
+                $connection->execute(sprintf('ALTER TABLE `%s` RENAME INDEX `%s` TO `%s`', $table, $keyName, $newName));
                 $existingNames[$newName] = true;
                 ++$count;
             }

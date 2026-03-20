@@ -263,11 +263,6 @@ class TxcosStorage implements StorageInterface
         }
         // 4.生成 HeaderList, HttpHeaders
         [$headerList, $httpHeaders] = ['', ''];
-        if (!empty($header)) {
-            uksort($header, 'strnatcasecmp');
-            $headerList = join(';', array_keys($header));
-            $httpHeaders = http_build_query($header);
-        }
         // 5.生成 HttpString
         $httpString = strtolower($method) . "\n/{$parse_url['path']}\n{$httpParameters}\n{$httpHeaders}\n";
         // 6.生成 StringToSign

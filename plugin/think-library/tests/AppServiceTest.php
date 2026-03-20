@@ -18,28 +18,36 @@ declare(strict_types=1);
  * +----------------------------------------------------------------------
  */
 
-namespace plugin\wemall\controller\api\help;
+namespace think\admin\tests;
 
-use plugin\wemall\model\PluginWemallHelpProblem;
-use think\admin\Controller;
-use think\admin\helper\QueryHelper;
+use PHPUnit\Framework\TestCase;
+use think\admin\service\AppService;
+use think\admin\service\RuntimeService;
+use think\App;
 
 /**
- * 常见问题数据接口.
- * @class Problem
+ * @internal
+ * @coversNothing
  */
-class Problem extends Controller
+class AppServiceTest extends TestCase
 {
-    /**
-     * 获取反馈意见
-     */
-    public function get()
+    protected function setUp(): void
     {
-        PluginWemallHelpProblem::mQuery(null, function (QueryHelper $query) {
-            $query->like('name');
-            $query->equal('id');
-            $query->order('sort desc,id desc');
-            $this->success('获取反馈意见', $query->page(true, false, false, 10));
-        });
+        $app = new App(TEST_PROJECT_ROOT);
+        RuntimeService::init($app);
+        $app->initialize();
+        AppService::clear();
+    }
+
+    public function testMenusAcceptPluginDefinitionArray(): void
+    {
+        $plugin = AppService::resolvePlugin('system', true);
+
+        $this->assertIsArray($plugin);
+        $this->assertNotSame([], $plugin);
+        $this->assertSame(
+            AppService::menus('system', false, true),
+            AppService::menus($plugin, false, true)
+        );
     }
 }

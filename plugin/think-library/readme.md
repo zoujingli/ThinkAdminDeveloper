@@ -12,7 +12,7 @@
 
 - `ThinkLibrary` 是整个仓库的核心基础库，负责定义统一的控制器基类、模型基类、插件基类、命令基类和框架级公共能力。
 - 它承载的是“框架级通用能力”，包括插件优先路由、上下文门面、模型与查询标准化、存储/会话/JWT/RPC 门面和通用工具。
-- 组件聚焦于框架级通用能力，不再承载存储驱动、守护进程、发布导出、物流短信等非核心实现。
+- 组件聚焦于框架级通用能力，不再承载存储驱动、守护进程、发布导出、物流短信等非核心实现；但跨组件通用的安全校验、通信协议和图标构建能力仍可留在基础库。
 - 组件目标是作为所有插件共享的核心层，而不是再继续堆放具体业务逻辑。
 
 ## 架构说明
@@ -42,7 +42,7 @@
 当前核心实现已经按职责收敛到这些域：
 
 - `service`
-  负责 `AppService / ModuleService / NodeService / PluginService`、`Storage / CacheSession / JwtToken`、`RuntimeService / QueueService / ProcessService` 等门面能力。
+  负责 `AppService / NodeService / CacheSession / JwtToken / RuntimeService / QueueService` 等基础门面能力。
 - `runtime`
   只保留 `SystemContext / NullSystemContext / RequestContext / RequestTokenService` 这类上下文对象。
 - `route`
@@ -57,6 +57,7 @@
   负责 `StorageInterface`、队列运行时与处理器等基础契约，是其他组件实现标准的入口。
 - `helper`
   负责表单构建、查询、分页和列表表格输出等控制器辅助类。
+- `ImageSliderVerify / FaviconBuilder / JsonRpcHttpClient / JsonRpcHttpServer` 作为跨组件公共能力统一保留在 `service`
 
 ## 依赖关系
 

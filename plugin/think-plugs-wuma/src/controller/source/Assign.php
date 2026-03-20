@@ -76,9 +76,10 @@ class Assign extends Controller
             // 批量创建筛选规则
             foreach (['min#minValue', 'min#encValue', 'min#numValue'] as $rule) {
                 [$type, $alias] = explode('#', $rule);
-                $db = PluginWumaCodeRuleRange::mQuery($this->get)->valueRange("range_start:range_after#{$alias}")->field('batch')->db();
+                $db = PluginWumaCodeRuleRange::mQuery($this->get);
+                $db->valueRange("range_start:range_after#{$alias}");
                 if (!empty($db->getOptions()['where'] ?? [])) {
-                    $query->whereRaw("cbatch in {$db->whereIn('code_type', str2arr($type))->buildSql()}");
+                    $query->whereRaw("cbatch in {$db->db()->field('batch')->whereIn('code_type', str2arr($type))->buildSql()}");
                 }
             }
         });

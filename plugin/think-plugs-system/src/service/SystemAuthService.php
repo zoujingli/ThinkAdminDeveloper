@@ -131,7 +131,7 @@ class SystemAuthService extends Service
      */
     public static function getUser(?string $field = null, $default = null)
     {
-        $user = static::currentUser();
+        $user = self::currentUser();
         return is_null($field) ? $user : ($user[$field] ?? $default);
     }
 
@@ -141,7 +141,7 @@ class SystemAuthService extends Service
     public static function login(array $user): array
     {
         RequestContext::instance()->clearAuth();
-        return static::bindUser(static::normalizeUser($user), true);
+        return self::bindUser(self::normalizeUser($user), true);
     }
 
     /**
@@ -157,9 +157,9 @@ class SystemAuthService extends Service
      */
     public static function logout(): void
     {
-        if (($sid = static::resolveLogoutSessionId()) !== '') {
-            static::destroySession($sid);
-        } elseif (($uid = static::resolveLogoutUserId()) > 0) {
+        if (($sid = self::resolveLogoutSessionId()) !== '') {
+            self::destroySession($sid);
+        } elseif (($uid = self::resolveLogoutUserId()) > 0) {
             SystemService::setData(self::TOKEN_INVALIDATE_PREFIX . $uid, time());
         }
         static::forget();
@@ -170,15 +170,15 @@ class SystemAuthService extends Service
      */
     public static function buildToken(?array $user = null): string
     {
-        $user = $user ?: static::currentUser();
+        $user = $user ?: self::currentUser();
         if (empty($user['id']) || empty($user['password'])) {
             return '';
         }
-        $sessionId = static::bindSession();
+        $sessionId = self::bindSession();
         $payload = [
             'typ' => self::TOKEN_TYPE,
             'uid' => intval($user['id']),
-            'pwd' => static::passwordDigest(strval($user['password'])),
+            'pwd' => self::passwordDigest(strval($user['password'])),
             'sid' => $sessionId,
             'jti' => CodeToolkit::uuid(),
         ];
@@ -211,7 +211,7 @@ class SystemAuthService extends Service
         if (($data['typ'] ?? '') !== self::TOKEN_TYPE || empty($data['uid'])) {
             throw new Exception('登录状态已失效，请重新登录！');
         }
-        static::verifySession($data);
+        self::verifySession($data);
 
         $user = SystemUser::mk()->where(['id' => intval($data['uid'])])->findOrEmpty()->toArray();
 
@@ -221,16 +221,16 @@ class SystemAuthService extends Service
         if (empty($user['status'])) {
             throw new Exception('账号已经被禁用，请联系管理员！');
         }
-        if (($invalidAt = static::getTokenInvalidAt(intval($user['id']))) > 0 && intval($data['iat'] ?? 0) <= $invalidAt) {
+        if (($invalidAt = self::getTokenInvalidAt(intval($user['id']))) > 0 && intval($data['iat'] ?? 0) <= $invalidAt) {
             throw new Exception('登录状态已失效，请重新登录！');
         }
-        if (static::passwordDigest(strval($user['password'])) !== strval($data['pwd'] ?? '')) {
+        if (self::passwordDigest(strval($user['password'])) !== strval($data['pwd'] ?? '')) {
             throw new Exception('登录状态已失效，请重新登录！');
         }
 
         $context->setToken($token);
         $context->setSessionId(strval($data['sid'] ?? ''));
-        return static::bindUser($user, $force);
+        return self::bindUser($user, $force);
     }
 
     /**
@@ -239,7 +239,7 @@ class SystemAuthService extends Service
     public static function requestToken(?Request $request = null): string
     {
         $token = RequestTokenService::systemToken($request);
-        static::upgradeLegacyCookieToken($request);
+        self::upgradeLegacyCookieToken($request);
         return $token;
     }
 
@@ -496,7 +496,7 @@ class SystemAuthService extends Service
      */
     public static function apply(bool $force = false): array
     {
-        $user = static::currentUser();
+        $user = self::currentUser();
         if (empty($user['id'])) {
             return [];
         }
@@ -585,7 +585,7 @@ class SystemAuthService extends Service
      */
     private static function bindUser(array $user, bool $force = false): array
     {
-        $user = static::normalizeUser($user);
+        $user = self::normalizeUser($user);
         if (!isset($user['nodes']) || $force) {
             $user['nodes'] = [];
             if (!empty($user['id']) && $user['username'] !== static::getSuperName() && count($aids = str2arr(strval($user['authorize'] ?? ''))) > 0) {
@@ -703,7 +703,7 @@ class SystemAuthService extends Service
         $rawToken = strval($request->cookie(static::getTokenCookie(), ''));
         $decodedToken = RequestTokenService::capture($request)->systemCookieToken();
         if (RequestTokenService::shouldUpgradeCookieToken($rawToken, $decodedToken)) {
-            static::syncTokenCookie($decodedToken);
+            self::syncTokenCookie($decodedToken);
         }
     }
 

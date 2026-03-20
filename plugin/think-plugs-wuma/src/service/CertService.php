@@ -52,7 +52,7 @@ class CertService extends Service
                 [$x, $y] = [intval($tw * $item['point']['x'] / 100), intval($th * $item['point']['y'] / 100)];
                 if (preg_match('|^rgba\(\s*([\d.]+),\s*([\d.]+),\s*([\d.]+),\s*([\d.]+)\)$|', $item['color'], $matchs)) {
                     [, $r, $g, $b, $a] = $matchs;
-                    $black = imagecolorallocatealpha($target, intval($r), intval($g), intval($b), (1 - $a) * 127);
+                    $black = imagecolorallocatealpha($target, intval($r), intval($g), intval($b), intval((1 - (float)$a) * 127));
                 } else {
                     $black = imagecolorallocate($target, 0x00, 0x00, 0x00);
                 }

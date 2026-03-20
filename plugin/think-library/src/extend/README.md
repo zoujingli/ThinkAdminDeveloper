@@ -31,10 +31,10 @@
 | `DataExtend`    | `ArrayTree`                 | 树结构和树表转换                      |
 | `ToolsExtend`   | `FileTools`                 | 文件扫描、复制、删除                    |
 | `HttpExtend`    | `HttpClient`                | 基础 HTTP 请求                    |
-| `ImageVerify`   | `service/ImageSliderVerify` | 拼图滑块验证                        |
-| `JsonRpcClient` | `service/JsonRpcHttpClient` | JSON-RPC 客户端                  |
-| `JsonRpcServer` | `service/JsonRpcHttpServer` | JSON-RPC 服务端                  |
-| `FaviconExtend` | `service/FaviconBuilder`    | favicon 生成                    |
+| `ImageVerify`   | `service/ImageSliderVerify` | 拼图滑块验证 |
+| `JsonRpcClient` | `service/JsonRpcHttpClient` | JSON-RPC 客户端 |
+| `JsonRpcServer` | `service/JsonRpcHttpServer` | JSON-RPC 服务端 |
+| `FaviconExtend` | `service/FaviconBuilder` | favicon 生成 |
 | `JwtExtend`     | `service/JwtToken`          | JWT 编码、签名、校验                  |
 | `VirtualModel`  | `RuntimeModel`              | 运行时模型构建，统一由 `ModelFactory` 调用 |
 

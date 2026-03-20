@@ -39,14 +39,17 @@ class PluginWemallOrder extends AbsUser
 
     public function payment(): HasOne
     {
-        return $this->hasOne(PluginPaymentRecord::class, 'order_no', 'order_no')->where([
-            'payment_status' => 1,
-        ]);
+        $relation = $this->hasOne(PluginPaymentRecord::class, 'order_no', 'order_no');
+        $relation->where(['payment_status' => 1]);
+        return $relation;
     }
 
     public function payments(): HasMany
     {
-        return $this->hasMany(PluginPaymentRecord::class, 'order_no', 'order_no')->order('id desc')->withoutField('payment_notify');
+        $relation = $this->hasMany(PluginPaymentRecord::class, 'order_no', 'order_no');
+        $relation->order('id desc');
+        $relation->withoutField('payment_notify');
+        return $relation;
     }
 
     public function address(): HasOne

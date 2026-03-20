@@ -85,10 +85,7 @@ final class JsonRpcHttpServer
                 }
                 $params = [];
                 foreach ($method->getParameters() as $parameter) {
-                    $type = $parameter->getType();
-                    if ($type instanceof \ReflectionType) {
-                        $type = $type->getName();
-                    }
+                    $type = $this->normalizeReflectionType($parameter->getType());
                     $params[] = ($type ? "{$type} $" : '$') . $parameter->getName();
                 }
                 $params = count($params) > 0 ? join(', ', $params) : '';
@@ -102,6 +99,7 @@ final class JsonRpcHttpServer
 
     /**
      * 执行 RPC 方法调用。
+     *
      * @param mixed $object
      */
     private function dispatchRequest($object, array $request): array
@@ -144,11 +142,29 @@ final class JsonRpcHttpServer
 
     /**
      * 构建成功响应。
+     *
      * @param mixed $id
      * @param mixed $result
      */
     private function successResponse($id, $result): array
     {
         return ['jsonrpc' => '2.0', 'id' => $id, 'result' => $result, 'error' => null];
+    }
+
+    /**
+     * 标准化反射类型名称，兼容联合类型与交叉类型。
+     */
+    private function normalizeReflectionType(?\ReflectionType $type): string
+    {
+        if ($type instanceof \ReflectionNamedType) {
+            return $type->getName();
+        }
+        if ($type instanceof \ReflectionUnionType) {
+            return implode('|', array_map(fn (\ReflectionNamedType $item) => $item->getName(), $type->getTypes()));
+        }
+        if ($type instanceof \ReflectionIntersectionType) {
+            return implode('&', array_map(fn (\ReflectionNamedType $item) => $item->getName(), $type->getTypes()));
+        }
+        return '';
     }
 }

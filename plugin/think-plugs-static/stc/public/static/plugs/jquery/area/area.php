@@ -14,7 +14,6 @@ new class() {
 
     /**
      * 初始化百度地址行政数据
-     * @return void
      */
     protected function initBd(): array
     {
@@ -59,7 +58,7 @@ new class() {
         foreach ($data as $item) {
             [$k1, $k2, $k3] = str_split($item['code'], 2);
             // 整合省份数据
-            if ($k2 + $k3 == 0) {
+            if ((intval($k2) + intval($k3)) == 0) {
                 $this->tree[$k1] = $item;
             }
             // 整合城市

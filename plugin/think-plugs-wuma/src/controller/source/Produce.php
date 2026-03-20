@@ -62,16 +62,18 @@ class Produce extends Controller
             }
 
             // 产品搜索查询
-            $db1 = PluginWemallGoods::mQuery()->like('code|name#gname')->db();
+            $db1 = PluginWemallGoods::mQuery();
+            $db1->like('code|name#gname');
             if (!empty($db1->getOptions()['where'] ?? [])) {
-                $db2 = PluginWemallGoodsItem::mk()->whereRaw("gcode in {$db1->field('code')->buildSql()}");
+                $db2 = PluginWemallGoodsItem::mk()->whereRaw("gcode in {$db1->db()->field('code')->buildSql()}");
                 $query->whereRaw("ghash in {$db2->field('ghash')->buildSql()}");
             }
 
             // 溯源模板查询
-            $db = PluginWumaSourceTemplate::mQuery()->field('code')->like('code|name#tname')->db();
+            $db = PluginWumaSourceTemplate::mQuery();
+            $db->like('code|name#tname');
             if (!empty($db->getOptions()['where'] ?? [])) {
-                $query->whereRaw("tcode in {$db->buildSql()}");
+                $query->whereRaw("tcode in {$db->db()->field('code')->buildSql()}");
             }
         });
     }

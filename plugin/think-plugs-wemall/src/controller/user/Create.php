@@ -52,7 +52,9 @@ class Create extends Controller
             $this->title = '会员用户管理';
         }, function (QueryHelper $query) {
             $query->equal('agent_entry')->dateBetween('create_time');
-            $query->with(['agent', 'user'])->like('name|phone#user')->dateBetween('create_time');
+            $query->with(['agent', 'user']);
+            $query->like('name|phone#user');
+            $query->dateBetween('create_time');
             $query->where(['status' => intval($this->type === 'index')]);
         });
     }

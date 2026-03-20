@@ -85,7 +85,7 @@ class WechatPaymentV2 extends WechatPayment
         try {
             $this->checkLeaveAmount($orderNo, $payAmount, $orderAmount);
             [$payCode] = [Payment::withPaymentCode(), $this->withUserUnid($account)];
-            $body = empty($orderRemark) ? $orderTitle : ($orderTitle . '-' . $orderRemark);
+            $body = $payRemark === '' ? $orderTitle : ($orderTitle . '-' . $payRemark);
             $data = [
                 'body' => $body,
                 'openid' => $this->withUserField($account, 'openid'),

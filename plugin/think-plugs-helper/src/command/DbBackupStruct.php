@@ -27,6 +27,7 @@ use think\admin\Library;
 use think\admin\service\RuntimeService;
 use think\console\Command;
 use think\console\input\Option;
+use think\db\Query;
 
 /**
  * 数据库备份.
@@ -97,7 +98,10 @@ class DbBackupStruct extends Command
         foreach ($this->getBkTables($force) as $table) {
             $total = 0;
             if (!empty($fields = $this->app->db->getFields($table))) {
-                $query = $this->app->db->table($table)->order(in_array('id', $fields) ? 'id' : array_values($fields)[0]);
+                $query = $this->app->db->table($table)->order(in_array('id', $fields, true) ? 'id' : array_values($fields)[0]);
+                if (!$query instanceof Query) {
+                    continue;
+                }
                 in_array('ssid', $fields) && $query = $query->where('ssid', '0');
                 if (in_array('delete_time', $fields, true)) {
                     $query = $query->whereNull('delete_time');

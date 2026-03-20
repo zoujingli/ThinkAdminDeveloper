@@ -47,7 +47,8 @@ class Device extends Controller
             $this->types = Account::types(1);
         }, function (QueryHelper $query) {
             $query->where(['status' => intval($this->type === 'index')]);
-            $query->with('user')->equal('type#utype')->like('phone,nickname,username')->dateBetween('create_time');
+            $query->with('user');
+            $query->equal('type#utype')->like('phone,nickname,username')->dateBetween('create_time');
         });
     }
 

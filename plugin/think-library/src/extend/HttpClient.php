@@ -45,9 +45,9 @@ class HttpClient
     public static function request(string $method, string $location, array $options = [])
     {
         $curl = curl_init();
-        static::applyCommonOptions($curl, $options);
-        static::applyRequestOptions($curl, $method, $options);
-        curl_setopt($curl, CURLOPT_URL, static::appendQuery($location, $options['query'] ?? null));
+        self::applyCommonOptions($curl, $options);
+        self::applyRequestOptions($curl, $method, $options);
+        curl_setopt($curl, CURLOPT_URL, self::appendQuery($location, $options['query'] ?? null));
         $content = curl_exec($curl);
         curl_close($curl);
         return $content;
@@ -104,7 +104,7 @@ class HttpClient
      */
     private static function applyCommonOptions($curl, array $options): void
     {
-        curl_setopt($curl, CURLOPT_USERAGENT, $options['agent'] ?? static::getUserAgent());
+        curl_setopt($curl, CURLOPT_USERAGENT, $options['agent'] ?? self::getUserAgent());
         curl_setopt($curl, CURLOPT_AUTOREFERER, true);
         curl_setopt($curl, CURLOPT_FOLLOWLOCATION, true);
         curl_setopt($curl, CURLOPT_RETURNTRANSFER, true);

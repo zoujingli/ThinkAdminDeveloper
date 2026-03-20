@@ -49,15 +49,21 @@ class Refund extends Controller
         WechatPaymentRefund::mQuery()->layTable(function () {
             $this->title = '支付退款管理';
         }, function (QueryHelper $query) {
-            $query->like('code|refund_trade#refund')->withoutField('refund_notify');
+            $query->like('code|refund_trade#refund');
+            $query->withoutField('refund_notify');
             $query->with(['record' => function (Query $query) {
                 $query->withoutField('payment_notify');
             }]);
             if (($this->get['order'] ?? '') . ($this->get['nickname'] ?? '') . ($this->get['payment'] ?? '') . ($this->get['refund'] ?? '') !== '') {
-                $db1 = WechatFans::mQuery()->field('openid')->like('openid|nickname#nickname')->db();
-                $db2 = WechatPaymentRecord::mQuery()->like('order_code|order_name#order,code|payment_trade#payment');
+                $fansQuery = WechatFans::mQuery();
+                $fansQuery->field('openid');
+                $fansQuery->like('openid|nickname#nickname');
+                $db1 = $fansQuery->db();
+                $db2 = WechatPaymentRecord::mQuery();
+                $db2->like('order_code|order_name#order,code|payment_trade#payment');
                 $db2->whereRaw("openid in {$db1->buildSql()}");
-                $query->whereRaw("record_code in {$db2->field('code')->db()->buildSql()}");
+                $db2->field('code');
+                $query->whereRaw("record_code in {$db2->db()->buildSql()}");
             }
         });
     }

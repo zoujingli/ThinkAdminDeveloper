@@ -17,9 +17,10 @@
             <file>plugin/think-library/tests/MigrationOwnershipTest.php</file>
             <file>plugin/think-library/tests/FormBuilderTest.php</file>
             <file>plugin/think-library/tests/PageBuilderTest.php</file>
-            <file>plugin/think-library/tests/ProcessServiceTest.php</file>
+            <file>plugin/think-library/tests/RequestTokenServiceTest.php</file>
             <file>plugin/think-plugs-helper/tests/PublishTest.php</file>
             <file>plugin/think-plugs-helper/tests/IndexNameServiceTest.php</file>
+            <file>plugin/think-plugs-helper/tests/PluginMenuServiceTest.php</file>
             <file>plugin/think-plugs-system/tests/ApiSystemControllerTest.php</file>
             <file>plugin/think-plugs-system/tests/ApiQueueControllerTest.php</file>
             <file>plugin/think-plugs-system/tests/AuthControllerTest.php</file>
