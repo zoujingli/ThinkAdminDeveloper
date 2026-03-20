@@ -90,7 +90,7 @@ class BalancePayment implements PaymentInterface
             }
             $record = static::syncRefund($pcode, $rcode, $amount, $reason);
             $remark = "来自订单 {$record->getAttr('order_no')} 退回余额";
-            BalanceService::create($record->getAttr('unid'), $rcode, '账号余额退款', strval($amount), $remark, true);
+            BalanceService::create(intval($record->getAttr('unid')), $rcode, '账号余额退款', strval($amount), $remark, true);
             return [1, '发起退款成功！'];
         } catch (\Exception $exception) {
             throw new Exception($exception->getMessage(), $exception->getCode());

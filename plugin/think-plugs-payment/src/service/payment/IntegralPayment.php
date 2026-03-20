@@ -95,7 +95,7 @@ class IntegralPayment implements PaymentInterface
                 strval($record->getAttr('payment_amount')),
                 2
             );
-            IntegralService::create($record->getAttr('unid'), $rcode, '账号积分退还', strval($integral), $remark, true);
+            IntegralService::create(intval($record->getAttr('unid')), $rcode, '账号积分退还', strval($integral), $remark, true);
             return [1, '发起退款成功！'];
         } catch (\Exception $exception) {
             throw new Exception($exception->getMessage(), $exception->getCode());
