@@ -53,6 +53,7 @@ class PublishTest extends TestCase
     public function testDiscoverWorkspacePackagesFindsLocalPluginComposer(): void
     {
         $command = new Publish();
+        function_exists('test_reset_model_makers') && test_reset_model_makers();
         $app = new App($this->root);
         RuntimeService::init($app);
         $command->setApp($app);
@@ -217,6 +218,7 @@ class PublishTest extends TestCase
     private function newCommand(): Publish
     {
         $command = new Publish();
+        function_exists('test_reset_model_makers') && test_reset_model_makers();
         $app = new App($this->root);
         RuntimeService::init($app);
         $app->config->set([

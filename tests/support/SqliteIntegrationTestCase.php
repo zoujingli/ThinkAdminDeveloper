@@ -59,6 +59,8 @@ abstract class SqliteIntegrationTestCase extends TestCase
 
     protected string $sandboxPath;
 
+    protected string $connectionName;
+
     private ?array $accountTypesSnapshot = null;
 
     protected function setUp(): void
@@ -67,6 +69,7 @@ abstract class SqliteIntegrationTestCase extends TestCase
 
         $this->sandboxPath = sys_get_temp_dir() . '/thinkadmin-sqlite-' . md5(static::class . microtime(true) . uniqid('', true));
         $this->databaseFile = $this->sandboxPath . '/database.sqlite';
+        $this->connectionName = 'sqlite_' . md5($this->sandboxPath);
 
         if (!is_dir($this->sandboxPath)) {
             mkdir($this->sandboxPath, 0777, true);
@@ -102,7 +105,7 @@ abstract class SqliteIntegrationTestCase extends TestCase
 
     protected function connection(): ConnectionInterface
     {
-        return $this->app->db->connect('sqlite');
+        return $this->app->db->connect($this->connectionName, true);
     }
 
     protected function executeStatements(array $statements): void
@@ -983,8 +986,7 @@ SQL,
 
     protected function createSystemUserFixture(array $overrides = []): SystemUser
     {
-        $user = SystemUser::mk();
-        $user->save(array_merge([
+        $data = array_merge([
             'usertype' => '',
             'username' => 'admin-' . random_int(1000, 9999),
             'password' => $this->hashSystemPassword('123456'),
@@ -1003,7 +1005,12 @@ SQL,
             'delete_time' => null,
             'create_time' => date('Y-m-d H:i:s'),
             'update_time' => date('Y-m-d H:i:s'),
-        ], $overrides));
+        ], $overrides);
+        $user = SystemUser::mk();
+        if (isset($data['id']) && is_numeric($data['id'])) {
+            $user = SystemUser::mk()->withTrashed()->findOrEmpty(intval($data['id']));
+        }
+        $user->save($data);
 
         return $user->refresh();
     }
@@ -1105,8 +1112,7 @@ SQL,
 
     protected function createSystemQueueFixture(array $overrides = []): SystemQueue
     {
-        $queue = SystemQueue::mk();
-        $queue->save(array_merge([
+        $data = array_merge([
             'code' => 'Q' . strtoupper(substr(md5(uniqid('', true)), 0, 15)),
             'title' => '测试任务',
             'command' => 'xadmin:test queue',
@@ -1121,7 +1127,9 @@ SQL,
             'message' => '',
             'status' => 1,
             'create_time' => date('Y-m-d H:i:s'),
-        ], $overrides));
+        ], $overrides);
+        $queue = SystemQueue::mk()->where(['code' => $data['code']])->findOrEmpty();
+        $queue->save($data);
 
         return $queue->refresh();
     }
@@ -1191,6 +1199,7 @@ SQL,
 
     private function bootApplication(): void
     {
+        function_exists('test_reset_model_makers') && test_reset_model_makers();
         $this->app = new App(TEST_PROJECT_ROOT);
         RuntimeService::init($this->app);
 
@@ -1220,11 +1229,11 @@ SQL,
         ], 'log');
         $this->app->config->set(['jwtkey' => 'integration-test-jwt'], 'app');
         $this->app->config->set([
-            'default' => 'sqlite',
+            'default' => $this->connectionName,
             'auto_timestamp' => true,
             'datetime_format' => 'Y-m-d H:i:s',
             'connections' => [
-                'sqlite' => [
+                $this->connectionName => [
                     'type' => 'sqlite',
                     'database' => $this->databaseFile,
                     'charset' => 'utf8',
@@ -1240,7 +1249,7 @@ SQL,
             ],
         ], 'database');
         $this->app->db->setConfig($this->app->config);
-        $this->app->db->connect('sqlite', true);
+        $this->app->db->connect($this->connectionName, true);
 
         $this->context = new TestSystemContext();
         Container::getInstance()->instance(SystemContextInterface::class, $this->context);

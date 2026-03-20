@@ -34,3 +34,12 @@ defined('SYSTEM_TEST_PROJECT_ROOT') || define('SYSTEM_TEST_PROJECT_ROOT', $proje
 
 defined('WORKER_TEST_PACKAGE_ROOT') || define('WORKER_TEST_PACKAGE_ROOT', $projectRoot . '/plugin/think-plugs-worker');
 defined('WORKER_TEST_PROJECT_ROOT') || define('WORKER_TEST_PROJECT_ROOT', $projectRoot);
+
+if (!function_exists('test_reset_model_makers')) {
+    function test_reset_model_makers(): void
+    {
+        $reflection = new ReflectionProperty(\think\Model::class, '_maker');
+        $reflection->setAccessible(true);
+        $reflection->setValue([]);
+    }
+}

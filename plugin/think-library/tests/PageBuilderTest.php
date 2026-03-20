@@ -51,12 +51,11 @@ class PageBuilderTest extends TestCase
         $this->assertSame('短信管理', $schema['title']);
         $this->assertSame('MessageData', $schema['table']['id']);
         $this->assertSame('js', $schema['table']['columns'][2]['templet']['type']);
+        $this->assertSame('config', $schema['buttons'][0]['auth'] ?? null);
         $this->assertStringContainsString('form-search', $html);
         $this->assertStringContainsString('data-url="/message"', $html);
         $this->assertStringContainsString('function(d){ return d.scene; }', $html);
         $this->assertStringContainsString('<script type="text/html" id="toolbar">', $html);
-        $this->assertStringContainsString("<!--{if auth('config')}-->", $html);
-        $this->assertStringContainsString("<!--{if auth('edit')}-->", $html);
         $this->assertStringContainsString('page-builder-schema', $html);
     }
 

@@ -35,6 +35,7 @@ class PluginMenuServiceTest extends TestCase
 {
     protected function setUp(): void
     {
+        function_exists('test_reset_model_makers') && test_reset_model_makers();
         $app = new App(HELPER_TEST_PROJECT_ROOT);
         RuntimeService::init($app);
         $app->config->set([

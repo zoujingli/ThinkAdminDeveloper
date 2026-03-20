@@ -118,5 +118,6 @@ class CommonFunctionsTest extends TestCase
         if (function_exists('sysvar')) {
             sysvar('', '');
         }
+        function_exists('test_reset_model_makers') && test_reset_model_makers();
     }
 }

@@ -146,7 +146,7 @@ class ApiSystemControllerTest extends SqliteIntegrationTestCase
         $this->assertStringContainsString('javascript:location.reload()', strval($result['data'] ?? ''));
         $this->assertCount(1, $console->calls);
         $this->assertSame('optimize:schema', $console->calls[0]['command']);
-        $this->assertSame(['--connection=sqlite'], $console->calls[0]['parameters']);
+        $this->assertSame(['--connection=' . $this->connectionName], $console->calls[0]['parameters']);
         $this->assertStringContainsString('mode = product', file_get_contents($this->runtimeEnvFile) ?: '');
         $this->assertTrue($oplog->isExists());
         $this->assertSame('系统运维管理', $oplog->getData('action'));
