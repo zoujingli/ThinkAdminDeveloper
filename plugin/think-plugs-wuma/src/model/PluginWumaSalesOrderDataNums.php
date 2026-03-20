@@ -29,7 +29,4 @@ namespace plugin\wuma\model;
  * @property int $uuid 鎵€灞炲搧鐗? * @property string $code 鐗╃爜鏁版嵁
  * @property string $type 鐗╃爜绫诲瀷
  */
-class PluginWumaSalesOrderDataNums extends AbstractPrivate
-{
-    protected $deleteTime = false;
-}
+class PluginWumaSalesOrderDataNums extends PlainPrivate {}

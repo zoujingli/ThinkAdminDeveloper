@@ -20,10 +20,13 @@ declare(strict_types=1);
 
 namespace plugin\wuma\model;
 
-use think\admin\Model;
 use think\model\concern\SoftDelete;
 
-abstract class AbstractPrivate extends Model
+abstract class AbstractPrivate extends PlainPrivate
 {
     use SoftDelete;
+
+    protected $deleteTime = 'delete_time';
+
+    protected $defaultSoftDelete;
 }

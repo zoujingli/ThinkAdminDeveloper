@@ -36,7 +36,4 @@ namespace plugin\wuma\model;
  * @property string $latlng 缁忕含搴? * @property string $prov 鎵€鍦ㄧ渷浠? * @property string $update_time 鏇存柊鏃堕棿
  * @class PluginWumaSourceQuery
  */
-class PluginWumaSourceQuery extends AbstractPrivate
-{
-    protected $deleteTime = false;
-}
+class PluginWumaSourceQuery extends PlainPrivate {}

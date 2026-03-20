@@ -31,7 +31,4 @@ namespace plugin\wuma\model;
  * @property string $create_time 鍒涘缓鏃堕棿
  * @property string $update_time 鏇存柊鏃堕棿
  */
-class PluginWumaSalesOrderData extends AbstractPrivate
-{
-    protected $deleteTime = false;
-}
+class PluginWumaSalesOrderData extends PlainPrivate {}

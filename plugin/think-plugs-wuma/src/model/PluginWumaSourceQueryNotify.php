@@ -41,7 +41,4 @@ namespace plugin\wuma\model;
  * @property string $update_time 鏇存柊鏃堕棿
  * @class PluginWumaSourceQueryNotify
  */
-class PluginWumaSourceQueryNotify extends AbstractPrivate
-{
-    protected $deleteTime = false;
-}
+class PluginWumaSourceQueryNotify extends PlainPrivate {}

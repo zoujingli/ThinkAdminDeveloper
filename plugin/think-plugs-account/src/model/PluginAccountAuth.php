@@ -36,15 +36,15 @@ use think\model\relation\HasOne;
  * @property PluginAccountBind $client
  * @class PluginAccountAuth
  */
-class PluginAccountAuth extends Abs
+class PluginAccountAuth extends PlainAbs
 {
-    protected $deleteTime = false;
-
     /**
      * 关联子账号.
      */
     public function client(): HasOne
     {
-        return $this->hasOne(PluginAccountBind::class, 'id', 'usid')->with(['user']);
+        $relation = $this->hasOne(PluginAccountBind::class, 'id', 'usid');
+        $relation->with(['user']);
+        return $relation;
     }
 }

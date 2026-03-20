@@ -20,16 +20,14 @@ declare(strict_types=1);
 
 namespace plugin\payment\model;
 
-use plugin\account\model\Abs;
+use plugin\account\model\PlainAbs;
 use plugin\account\model\PluginAccountBind;
 use plugin\account\model\PluginAccountUser;
 use plugin\payment\service\Payment;
 use think\model\relation\HasOne;
 
-class PluginPaymentRecord extends Abs
+class PluginPaymentRecord extends PlainAbs
 {
-    protected $deleteTime = false;
-
     public function user(): HasOne
     {
         return $this->hasOne(PluginAccountUser::class, 'id', 'unid');

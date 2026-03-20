@@ -35,16 +35,16 @@ use think\model\relation\HasOne;
  * @property PluginWumaWarehouseOrder $main
  * @class PluginWumaWarehouseOrderData
  */
-class PluginWumaWarehouseOrderData extends AbstractPrivate
+class PluginWumaWarehouseOrderData extends PlainPrivate
 {
-    protected $deleteTime = false;
-
     /**
      * 鍏宠仈璁㈠崟鏁版嵁.
      */
     public function main(): HasOne
     {
-        return $this->hasOne(PluginWumaWarehouseOrder::class, 'code', 'code')->with(['bindGoods', 'bindWarehouse']);
+        $relation = $this->hasOne(PluginWumaWarehouseOrder::class, 'code', 'code');
+        $relation->with(['bindGoods', 'bindWarehouse']);
+        return $relation;
     }
 
     /**

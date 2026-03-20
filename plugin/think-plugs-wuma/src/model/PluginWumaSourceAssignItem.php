@@ -34,17 +34,16 @@ use think\model\relation\HasOne;
  * @property PluginWumaSourceProduce $produce
  * @class PluginWumaSourceBatchAssignItem
  */
-class PluginWumaSourceAssignItem extends AbstractPrivate
+class PluginWumaSourceAssignItem extends PlainPrivate
 {
-    protected $deleteTime = false;
-
     /**
      * 鍏宠仈鐢熶骇妯℃澘鏁版嵁.
      */
     public function produce(): HasOne
     {
         $one = $this->hasOne(PluginWumaSourceProduce::class, 'batch', 'pbatch');
-        return $one->with(['bindGoods', 'bindTemplate']);
+        $one->with(['bindGoods', 'bindTemplate']);
+        return $one;
     }
 
     /**

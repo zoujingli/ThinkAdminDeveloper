@@ -35,10 +35,8 @@ use think\db\exception\ModelNotFoundException;
  * @property string $name 浠ｇ悊绾у埆鍚嶇О
  * @property string $remark 浠ｇ悊绾у埆鎻忚堪
  */
-class PluginWumaSalesUserLevel extends AbstractPrivate
+class PluginWumaSalesUserLevel extends PlainPrivate
 {
-    protected $deleteTime = false;
-
     /**
      * 鑾峰彇鎵€鏈夌瓑绾ф暟鎹?
      * @param mixed $map
