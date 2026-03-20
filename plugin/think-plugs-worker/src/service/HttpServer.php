@@ -21,6 +21,7 @@ declare(strict_types=1);
 namespace plugin\worker\service;
 
 use think\admin\service\RuntimeService;
+use think\exception\Handle;
 use think\Http;
 use Workerman\Connection\TcpConnection;
 use Workerman\Protocols\Http\Request as WorkerRequest;
@@ -76,6 +77,7 @@ class HttpServer extends Server
             'http' => ThinkHttp::class,
             'think\Cookie' => ThinkCookie::class,
             'think\Request' => ThinkRequest::class,
+            Handle::class => WorkerExceptionHandle::class,
             Http::class => ThinkHttp::class,
         ]);
 
