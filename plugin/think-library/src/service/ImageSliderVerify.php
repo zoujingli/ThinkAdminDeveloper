@@ -20,7 +20,6 @@ declare(strict_types=1);
 
 namespace think\admin\service;
 
-use plugin\storage\service\LocalStorage;
 use think\admin\extend\CodeToolkit;
 use think\admin\Library;
 
@@ -77,7 +76,14 @@ final class ImageSliderVerify
         $range = [$data['point'] - $diff, $data['point'] + $diff];
         $result = ['retry' => $retry, 'error' => 0, 'expire' => time() + $time, 'range' => $range];
         Library::$sapp->cache->set($code = CodeToolkit::uniqidNumber(16, 'V'), $result, $time);
-        return ['code' => $code, 'bgimg' => $data['bgimg'], 'water' => $data['water']];
+        return [
+            'code' => $code,
+            'bgimg' => $data['bgimg'],
+            'water' => $data['water'],
+            'width' => $data['width'],
+            'height' => $data['height'],
+            'piece_width' => $data['piece_width'],
+        ];
     }
 
     /**
@@ -145,6 +151,9 @@ final class ImageSliderVerify
             'point' => $srcX1,
             'bgimg' => 'data:image/png;base64,' . base64_encode($bgimg),
             'water' => 'data:image/png;base64,' . base64_encode($water),
+            'width' => $this->dstWidth,
+            'height' => $this->dstHeight,
+            'piece_width' => $this->picWidth,
         ];
     }
 
@@ -155,10 +164,11 @@ final class ImageSliderVerify
      */
     public static function cover(string $image, int $width, int $height)
     {
-        $local = LocalStorage::instance();
-        $name = Storage::name(join('#', func_get_args()), 'png', 'cache');
-        if ($local->has($name, true)) {
-            return imagecreatefromstring($local->get($name, true));
+        $file = self::coverFile($image, $width, $height);
+        if (is_file($file) && ($data = file_get_contents($file)) !== false) {
+            if (($cached = imagecreatefromstring($data)) !== false) {
+                return $cached;
+            }
         }
         [$w, $h] = getimagesize($image);
         if ($w > $h) {
@@ -172,8 +182,7 @@ final class ImageSliderVerify
         $srcim = imagecreatefromstring(file_get_contents($image));
         imagecopyresampled($newim, $srcim, 0, 0, $_sx, $_sy, $width, $height, $_sw, $_sh);
         imagedestroy($srcim);
-        $file = $local->path($name, true);
-        is_dir($path = dirname($file)) || mkdir($path, 0755, true);
+        is_dir($dir = dirname($file)) || mkdir($dir, 0755, true);
         imagepng($newim, $file);
         return $newim;
     }
@@ -203,6 +212,18 @@ final class ImageSliderVerify
         }
         Library::$sapp->cache->delete($code);
         return -1;
+    }
+
+    /**
+     * 生成裁剪缓存文件。
+     */
+    private static function coverFile(string $image, int $width, int $height): string
+    {
+        clearstatcache(true, $image);
+        $mtime = is_file($image) ? filemtime($image) : 0;
+        $size = is_file($image) ? filesize($image) : 0;
+        $hash = hash('sha256', "{$image}#{$mtime}#{$size}#{$width}#{$height}");
+        return runpath('runtime/slider/' . substr($hash, 0, 2) . '/' . $hash . '.png');
     }
 
     /**

@@ -3,7 +3,7 @@
 {block name='style'}
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1">
 <script>if (location.href.indexOf('#') > -1) location.replace(location.href.split('#')[0])</script>
-<link rel="stylesheet" href="__ROOT__/static/theme/css/login.css">
+<link rel="stylesheet" href="__ROOT__/static/theme/css/login.css?at={:is_file(syspath('public/static/theme/css/login.css')) ? filemtime(syspath('public/static/theme/css/login.css')) : date('YmdHis')}">
 {/block}
 
 {block name="body"}
@@ -16,8 +16,10 @@
         </a>
         {/notempty}
     </div>
-    <form data-login-form onsubmit="return false" method="post" class="layui-anim layui-anim-upbit" autocomplete="off">
+    <form data-login-form data-login-token="{$loginToken}" data-login-password-key="{$loginPasswordKey}" data-login-slider="{:url('system/login/slider',[],false)}" data-login-check="{:url('system/login/check',[],false)}" onsubmit="return false" method="post" class="layui-anim layui-anim-upbit" autocomplete="off">
         <h2 class="notselect">{:sysconf('login_name')?:'系统管理'}</h2>
+        <input type="hidden" name="token" value="{$loginToken}">
+        <input type="hidden" name="password_mode" value="plain">
         <ul>
             <li class="username">
                 <label class="label-required-null">
@@ -32,11 +34,24 @@
                 </label>
             </li>
             <li class="verify layui-hide">
-                <label class="inline-block relative label-required-null">
-                    <i class="layui-icon layui-icon-picture-fine"></i>
-                    <input class="layui-input" required pattern="^\S{4,}$" name="verify" maxlength="4" autocomplete="off" vali-name="验证码" placeholder="验证码">
-                </label>
-                <label data-captcha="{:url('system/login/captcha',[],false)}" data-field-verify="verify" data-field-uniqid="uniqid" data-captcha-type="{$captchaType}" data-captcha-token="{$captchaToken}"></label>
+                <input type="hidden" name="uniqid" value="">
+                <input type="hidden" name="verify" value="">
+                <div class="slider-title">检测到登录错误后，需要先完成滑块验证</div>
+                <div class="slider-panel" data-login-slider-panel>
+                    <div class="slider-stage">
+                        <img class="slider-bg" data-slider-bg alt="login-bg">
+                        <img class="slider-piece" data-slider-piece alt="slider-piece">
+                    </div>
+                    <div class="slider-bar">
+                        <div class="slider-bar-track" data-slider-track></div>
+                        <div class="slider-bar-text" data-slider-message>请按住滑块，拖动完成验证</div>
+                        <span class="slider-handle" data-slider-handle><i class="layui-icon layui-icon-slider"></i></span>
+                    </div>
+                    <div class="slider-actions">
+                        <span data-slider-status>首次登录无需验证</span>
+                        <a href="javascript:void(0)" data-slider-refresh>刷新拼图</a>
+                    </div>
+                </div>
             </li>
             <li class="text-center padding-top-20">
                 <button type="submit" class="layui-btn layui-disabled full-width" data-form-loaded="立即登入">正在载入</button>
@@ -53,5 +68,5 @@
 {/block}
 
 {block name='script'}
-<script src="__ROOT__/static/login.js"></script>
+<script src="__ROOT__/static/login.js?at={:is_file(syspath('public/static/login.js')) ? filemtime(syspath('public/static/login.js')) : date('YmdHis')}"></script>
 {/block}

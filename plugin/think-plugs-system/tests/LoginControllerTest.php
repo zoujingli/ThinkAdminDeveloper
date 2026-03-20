@@ -41,55 +41,59 @@ use think\Request;
  */
 class LoginControllerTest extends SqliteIntegrationTestCase
 {
-    public function testCaptchaReturnsCodeAndUniqidForFreshToken(): void
+    public function testFailedLoginRequiresSliderVerification(): void
     {
-        $type = 'LoginCaptcha';
-        $token = 'login-page-token-1';
+        $ticket = $this->loginPageTicket();
 
-        $result = $this->callActionController('captcha', [
-            'type' => $type,
-            'token' => $token,
-        ]);
-
-        $this->assertSame(1, intval($result['code'] ?? 0));
-        $this->assertSame('生成验证码成功', $result['info'] ?? '');
-        $this->assertMatchesRegularExpression('/^[A-Z0-9]{4}$/', strval($result['data']['code'] ?? ''));
-        $this->assertStringStartsWith('captcha', strval($result['data']['uniqid'] ?? ''));
-        $this->assertStringStartsWith('data:image/png;base64,', strval($result['data']['image'] ?? ''));
-        $this->assertSame([
-            'type' => $type,
-            'token' => $token,
-        ], $this->app->cache->get($this->captchaMapKey(strval($result['data']['uniqid'] ?? '')), []));
-    }
-
-    public function testFailedLoginMarksCaptchaAndNextCaptchaHidesCode(): void
-    {
-        $type = 'LoginCaptcha';
-        $token = 'login-page-token-2';
-
-        $captcha = $this->callActionController('captcha', [
-            'type' => $type,
-            'token' => $token,
-        ]);
-
-        $failed = $this->callActionController('index', [
+        $result = $this->callActionController('index', [
             'username' => 'missing-user',
-            'password' => 'wrong-password',
-            'verify' => strval($captcha['data']['code'] ?? ''),
-            'uniqid' => strval($captcha['data']['uniqid'] ?? ''),
+            'password' => $this->encryptLoginPassword('wrong-password', $ticket['public_key']),
+            'password_mode' => 'rsa',
+            'token' => $ticket['token'],
         ]);
-        $nextCaptcha = $this->callActionController('captcha', [
-            'type' => $type,
-            'token' => $token,
+        $slider = $this->callActionController('slider', [
+            'token' => $ticket['token'],
         ]);
 
-        $this->assertSame(0, intval($failed['code'] ?? 1));
-        $this->assertSame('登录账号或密码错误，请重新输入!', $failed['info'] ?? '');
-        $this->assertArrayNotHasKey('code', $nextCaptcha['data'] ?? []);
-        $this->assertSame('1', strval($this->app->cache->get($this->captchaFailKey($type, $token), 0)));
+        $this->assertSame(0, intval($result['code'] ?? 1));
+        $this->assertSame('登录账号或密码错误，请重新输入!', $result['info'] ?? '');
+        $this->assertTrue(boolval($result['data']['need_verify'] ?? false));
+        $this->assertSame('1', strval($this->app->cache->get($this->verifyFailKey($ticket['token']), 0)));
+
+        $this->assertSame(1, intval($slider['code'] ?? 0));
+        $this->assertSame('生成拼图成功', $slider['info'] ?? '');
+        $this->assertStringStartsWith('V', strval($slider['data']['uniqid'] ?? ''));
+        $this->assertStringStartsWith('data:image/png;base64,', strval($slider['data']['bgimg'] ?? ''));
+        $this->assertStringStartsWith('data:image/png;base64,', strval($slider['data']['water'] ?? ''));
+        $this->assertSame(600, intval($slider['data']['width'] ?? 0));
+        $this->assertSame(100, intval($slider['data']['piece_width'] ?? 0));
     }
 
-    public function testIndexLogsInUserUpdatesStatsAndWritesOplog(): void
+    public function testFreshEncryptedLoginSucceedsWithoutSlider(): void
+    {
+        $user = $this->createSystemUserFixture([
+            'id' => 9051,
+            'username' => 'fresh-user',
+            'password' => $this->hashSystemPassword('secret123'),
+            'status' => 1,
+        ]);
+        $ticket = $this->loginPageTicket();
+
+        $result = $this->callActionController('index', [
+            'username' => 'fresh-user',
+            'password' => $this->encryptLoginPassword('secret123', $ticket['public_key']),
+            'password_mode' => 'rsa',
+            'token' => $ticket['token'],
+        ]);
+
+        $user = $user->refresh();
+        $this->assertSame(1, intval($result['code'] ?? 0));
+        $this->assertSame('登录成功', $result['info'] ?? '');
+        $this->assertSame(1, intval($user->getData('login_num')));
+        $this->assertFalse($this->app->cache->has($this->verifyFailKey($ticket['token'])));
+    }
+
+    public function testIndexLogsInUserUpdatesStatsAndWritesOplogAfterSliderVerification(): void
     {
         $user = $this->createSystemUserFixture([
             'id' => 9101,
@@ -97,16 +101,30 @@ class LoginControllerTest extends SqliteIntegrationTestCase
             'password' => $this->hashSystemPassword('secret123'),
             'status' => 1,
         ]);
-        $captcha = $this->callActionController('captcha', [
-            'type' => 'LoginCaptcha',
-            'token' => 'login-page-token-3',
+        $ticket = $this->loginPageTicket();
+
+        $failed = $this->callActionController('index', [
+            'username' => 'tester',
+            'password' => $this->encryptLoginPassword('wrong-password', $ticket['public_key']),
+            'password_mode' => 'rsa',
+            'token' => $ticket['token'],
+        ]);
+        $slider = $this->callActionController('slider', [
+            'token' => $ticket['token'],
+        ]);
+        $verify = $this->sliderVerifyValue(strval($slider['data']['uniqid'] ?? ''));
+        $checked = $this->callActionController('check', [
+            'uniqid' => strval($slider['data']['uniqid'] ?? ''),
+            'verify' => $verify,
         ]);
 
         $result = $this->callActionController('index', [
             'username' => 'tester',
-            'password' => 'secret123',
-            'verify' => strval($captcha['data']['code'] ?? ''),
-            'uniqid' => strval($captcha['data']['uniqid'] ?? ''),
+            'password' => $this->encryptLoginPassword('secret123', $ticket['public_key']),
+            'password_mode' => 'rsa',
+            'token' => $ticket['token'],
+            'verify' => $verify,
+            'uniqid' => strval($slider['data']['uniqid'] ?? ''),
         ]);
 
         $user = $user->refresh();
@@ -115,6 +133,10 @@ class LoginControllerTest extends SqliteIntegrationTestCase
         $sessionId = RequestContext::instance()->sessionId();
         $queuedCookie = strval($this->app->cookie->getCookie()[SystemAuthService::getTokenCookie()][0] ?? '');
 
+        $this->assertSame(0, intval($failed['code'] ?? 1));
+        $this->assertSame('登录账号或密码错误，请重新输入!', $failed['info'] ?? '');
+        $this->assertSame(1, intval($checked['code'] ?? 0));
+        $this->assertSame(1, intval($checked['data']['state'] ?? 0));
         $this->assertSame(1, intval($result['code'] ?? 0));
         $this->assertSame('登录成功', $result['info'] ?? '');
         $this->assertStringContainsString('/system', strval($result['data'] ?? ''));
@@ -130,7 +152,8 @@ class LoginControllerTest extends SqliteIntegrationTestCase
         $this->assertSame('系统用户登录', $oplog->getData('action'));
         $this->assertSame('登录系统后台成功', $oplog->getData('content'));
         $this->assertSame('tester', $oplog->getData('username'));
-        $this->assertFalse($this->app->cache->has($this->captchaMapKey(strval($captcha['data']['uniqid'] ?? ''))));
+        $this->assertFalse($this->app->cache->has(strval($slider['data']['uniqid'] ?? '')));
+        $this->assertFalse($this->app->cache->has($this->verifyFailKey($ticket['token'])));
         $this->assertStringStartsWith('enc:', $queuedCookie);
         $this->assertNotSame(strval($result['token'] ?? ''), $queuedCookie);
         $this->assertSame(strval($result['token'] ?? ''), RequestTokenService::decodeCookieToken($queuedCookie));
@@ -255,11 +278,17 @@ class LoginControllerTest extends SqliteIntegrationTestCase
 
         $this->assertStringContainsString('<title>系统登录', $content);
         $this->assertStringContainsString('管理后台登录', $content);
-        $this->assertStringContainsString('data-captcha-type="LoginCaptcha"', $content);
+        $this->assertMatchesRegularExpression('/data-login-token="[^"]+"/', $content);
+        $this->assertMatchesRegularExpression('/data-login-password-key="[^"]+"/', $content);
+        $this->assertMatchesRegularExpression('/data-login-slider="[^"]*system\/login\/slider[^"]*"/', $content);
+        $this->assertMatchesRegularExpression('/data-login-check="[^"]*system\/login\/check[^"]*"/', $content);
         $this->assertStringContainsString('background-image:url(/static/theme/img/login/bg1.jpg)', $content);
         $this->assertStringContainsString('data-bg-transition="/static/theme/img/login/bg1.jpg,/static/theme/img/login/bg2.jpg"', $content);
         $this->assertStringContainsString('ThinkAdmin Test', $content);
         $this->assertStringContainsString('Copyright Test', $content);
+        $this->assertSame('no-store, no-cache, must-revalidate, max-age=0', strval($response->getHeader('Cache-Control')));
+        $this->assertSame('no-cache', strval($response->getHeader('Pragma')));
+        $this->assertSame('0', strval($response->getHeader('Expires')));
         $this->assertSame('https://admin.example.com', $siteHost);
     }
 
@@ -331,13 +360,39 @@ class LoginControllerTest extends SqliteIntegrationTestCase
         $property->setValue($request, $data);
     }
 
-    private function captchaMapKey(string $uniqid): string
+    private function loginPageTicket(): array
     {
-        return 'think.admin.login.captcha.map.' . hash('sha256', $uniqid);
+        $response = $this->callPageResponse('index', [], 'GET', true);
+        $content = $response->getContent();
+        return [
+            'content' => $content,
+            'token' => $this->extractHtmlAttribute($content, 'data-login-token'),
+            'public_key' => $this->extractHtmlAttribute($content, 'data-login-password-key'),
+        ];
     }
 
-    private function captchaFailKey(string $type, string $token): string
+    private function extractHtmlAttribute(string $content, string $attribute): string
     {
-        return 'think.admin.login.captcha.fail.' . hash('sha256', "{$type}:{$token}");
+        preg_match('/' . preg_quote($attribute, '/') . '="([^"]+)"/', $content, $matches);
+        return html_entity_decode(strval($matches[1] ?? ''), ENT_QUOTES);
+    }
+
+    private function encryptLoginPassword(string $password, string $publicKey): string
+    {
+        $this->assertNotSame('', $publicKey);
+        $pem = "-----BEGIN PUBLIC KEY-----\n" . trim(chunk_split($publicKey, 64, "\n")) . "\n-----END PUBLIC KEY-----\n";
+        $this->assertTrue(openssl_public_encrypt($password, $encrypted, $pem, OPENSSL_PKCS1_OAEP_PADDING));
+        return base64_encode($encrypted);
+    }
+
+    private function sliderVerifyValue(string $uniqid): string
+    {
+        $range = $this->app->cache->get($uniqid, [])['range'] ?? [0, 0];
+        return (string)intval((intval($range[0] ?? 0) + intval($range[1] ?? 0)) / 2);
+    }
+
+    private function verifyFailKey(string $token): string
+    {
+        return 'think.admin.login.verify.fail.' . hash('sha256', $token);
     }
 }
