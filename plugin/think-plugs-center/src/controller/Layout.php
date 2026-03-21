@@ -49,23 +49,27 @@ class Layout extends Controller
     {
         $encode = strval($this->request->get('encode', ''));
         if (empty($code = decode($encode))) {
-            return $this->fetchError('应用插件不能为空！');
+            $this->fetchError('应用插件不能为空！');
+            return;
         }
 
         AppService::activatePlugin($code);
         $this->plugin = AppService::get($code, true);
         if (empty($this->plugin)) {
-            return $this->fetchError('插件未安装！');
+            $this->fetchError('插件未安装！');
+            return;
         }
 
         $rawMenus = AppService::menus($this->plugin, false, true);
         if (empty($rawMenus)) {
-            return $this->fetchError('插件未配置菜单！');
+            $this->fetchError('插件未配置菜单！');
+            return;
         }
 
         $menus = AppService::menus($this->plugin, true, true);
         if (empty($menus)) {
-            return $this->fetchError('当前账号没有可用菜单，请联系管理员授权后再试。');
+            $this->fetchError('当前账号没有可用菜单，请联系管理员授权后再试。');
+            return;
         }
 
         foreach ($menus as $k1 => &$one) {
