@@ -36,6 +36,8 @@ class TestSystemContext implements SystemContextInterface
 
     private bool $login = false;
 
+    private array $nodes = [];
+
     public function buildToken(): string
     {
         return '';
@@ -63,7 +65,10 @@ class TestSystemContext implements SystemContextInterface
 
     public function check(?string $node = ''): bool
     {
-        return false;
+        if ($this->super) {
+            return true;
+        }
+        return $node !== null && in_array($node, $this->nodes, true);
     }
 
     public function getUser(?string $field = null, $default = null)
@@ -138,6 +143,12 @@ class TestSystemContext implements SystemContextInterface
         $this->userId = intval($user['id'] ?? 0);
         $this->login = $login;
         $this->super = $super;
+        return $this;
+    }
+
+    public function setNodes(array $nodes = []): self
+    {
+        $this->nodes = array_values(array_unique(array_filter(array_map('strval', $nodes))));
         return $this;
     }
 }
