@@ -25,13 +25,22 @@ use think\admin\Library;
 use think\exception\HttpResponseException;
 
 /**
- * PageBuilder 原始 JS 片段包装.
- * @internal
+ * 页面构建器原始 JS 片段包装类
+ * 
+ * 用于包装不需要转义的原始 JavaScript 代码
+ * 
+ * @internal 内部使用
+ * @class PageBuilderRaw
+ * @package think\admin\helper
  */
-final class PageBuilderRaw
 {
     public string $value;
 
+    /**
+     * PageBuilderRaw 构造函数
+     * 
+     * @param string $value 原始 JavaScript 代码
+     */
     public function __construct(string $value)
     {
         $this->value = $value;
@@ -39,8 +48,12 @@ final class PageBuilderRaw
 }
 
 /**
- * 轻量列表页视图构建器。
+ * 列表页面视图构建器
+ * 
+ * 用于快速构建数据列表页面，支持表格展示、搜索筛选、操作按钮等功能
+ * 
  * @class PageBuilder
+ * @package think\admin\helper
  */
 class PageBuilder
 {
@@ -183,7 +196,9 @@ class PageBuilder
     private $renderVars = [];
 
     /**
-     * 构造函数.
+     * PageBuilder 构造函数
+     * 
+     * @param Controller $class 当前控制器实例
      */
     public function __construct(Controller $class)
     {
