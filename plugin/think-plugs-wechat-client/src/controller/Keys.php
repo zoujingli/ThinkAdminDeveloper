@@ -146,7 +146,7 @@ class Keys extends Controller
     {
         foreach ($data as &$vo) {
             $vo['type'] = $this->types[$vo['type']] ?? $vo['type'];
-            $vo['qrc'] = sysuri('plugin-wechat-client/keys/index') . "?action=qrc&keys={$vo['keys']}";
+            $vo['qrc'] = sysuri('wechat-client/keys/index') . "?action=qrc&keys={$vo['keys']}";
         }
     }
 

@@ -130,7 +130,7 @@ class ConfigService extends Service
         }
         $mode = empty($type) ? 'snsapi_base' : 'snsapi_userinfo';
         $params = ['mode' => $type, 'oauthid' => $oauthid, 'enurl' => enbase64url($source)];
-        $location = apiuri('plugin-wechat-service/push/oauth', [], false, true) . '?' . http_build_query($params);
+        $location = apiuri('wechat-service/push/oauth', [], false, true) . '?' . http_build_query($params);
         $oauthurl = AuthService::WeOpenService()->getOauthRedirect($this->appid, $location, $mode);
         return ['openid' => $openid, 'token' => $token, 'fans' => $fans, 'url' => $oauthurl];
     }

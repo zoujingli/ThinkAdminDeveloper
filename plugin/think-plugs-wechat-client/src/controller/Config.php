@@ -39,7 +39,7 @@ class Config extends Controller
      */
     public function options()
     {
-        $this->thrNotify = apiuri('plugin-wechat-client/push/index', [], false, true);
+        $this->thrNotify = apiuri('wechat-client/push/index', [], false, true);
         if ($this->request->isGet()) {
             try {
                 // 生成微信授权链接
