@@ -120,8 +120,8 @@ class FormBuilder
     private $formAttrs = [];
 
     /**
-     * 构造函数
-     * 
+     * 构造函数.
+     *
      * @param string $type 页面类型 (form/add/edit 等)
      * @param string $mode 页面模式 (modal/default 等)
      * @param Controller $class 控制器实例
@@ -134,11 +134,10 @@ class FormBuilder
     }
 
     /**
-     * 创建表单生成器实例
-     * 
+     * 创建表单生成器实例.
+     *
      * @param string $type 页面类型 (form=add/edit 等)
      * @param string $mode 页面模式 (modal=弹窗，default=默认)
-     * @return FormBuilder
      */
     public static function mk(string $type = 'form', string $mode = 'modal'): self
     {
@@ -147,7 +146,7 @@ class FormBuilder
 
     /**
      * 设置表单提交地址
-     * 
+     *
      * @param string $url 提交地址
      * @return $this
      */
@@ -158,8 +157,8 @@ class FormBuilder
     }
 
     /**
-     * 设置表单变量名称
-     * 
+     * 设置表单变量名称.
+     *
      * @param string $name 变量名称 (如 'vo', 'data' 等)
      * @return $this
      */
@@ -171,8 +170,8 @@ class FormBuilder
     }
 
     /**
-     * 设置表单属性
-     * 
+     * 设置表单属性.
+     *
      * @param array $attrs 表单属性数组
      * @return $this
      */
@@ -183,8 +182,8 @@ class FormBuilder
     }
 
     /**
-     * 添加页面脚本
-     * 
+     * 添加页面脚本.
+     *
      * @param string $script JavaScript 脚本代码
      * @return $this
      */
@@ -198,10 +197,10 @@ class FormBuilder
     }
 
     /**
-     * 使用收集到的规则验证请求数据
-     * 
+     * 使用收集到的规则验证请求数据.
+     *
      * @param mixed $input 输入数据 (默认为空，自动从请求获取)
-     * @param callable|null $callable 自定义验证回调
+     * @param null|callable $callable 自定义验证回调
      * @return array 验证后的数据
      */
     public function validate($input = '', ?callable $callable = null): array
@@ -210,8 +209,8 @@ class FormBuilder
     }
 
     /**
-     * 获取可直接用于 _vali 的请求规则
-     * 
+     * 获取可直接用于 _vali 的请求规则.
+     *
      * @return array 验证规则数组
      */
     public function getRequestRules(): array

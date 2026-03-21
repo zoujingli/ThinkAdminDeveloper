@@ -25,35 +25,11 @@ use think\admin\Library;
 use think\exception\HttpResponseException;
 
 /**
- * 页面构建器原始 JS 片段包装类
- * 
- * 用于包装不需要转义的原始 JavaScript 代码
- * 
- * @internal 内部使用
- * @class PageBuilderRaw
- * @package think\admin\helper
- */
-{
-    public string $value;
-
-    /**
-     * PageBuilderRaw 构造函数
-     * 
-     * @param string $value 原始 JavaScript 代码
-     */
-    public function __construct(string $value)
-    {
-        $this->value = $value;
-    }
-}
-
-/**
- * 列表页面视图构建器
- * 
+ * 列表页面视图构建器.
+ *
  * 用于快速构建数据列表页面，支持表格展示、搜索筛选、操作按钮等功能
- * 
+ *
  * @class PageBuilder
- * @package think\admin\helper
  */
 class PageBuilder
 {
@@ -196,8 +172,8 @@ class PageBuilder
     private $renderVars = [];
 
     /**
-     * PageBuilder 构造函数
-     * 
+     * PageBuilder 构造函数.
+     *
      * @param Controller $class 当前控制器实例
      */
     public function __construct(Controller $class)
@@ -215,11 +191,14 @@ class PageBuilder
     }
 
     /**
-     * 创建原始 JS 片段.
+     * 创建原始 JS 片段包装对象
+     *
+     * @param string $script JavaScript 代码
+     * @return array 返回包装数组
      */
-    public static function raw(string $script): PageBuilderRaw
+    public static function raw(string $script): array
     {
-        return new PageBuilderRaw($script);
+        return ['__raw__' => $script];
     }
 
     /**
@@ -690,8 +669,8 @@ class PageBuilder
      */
     private function normalizeSchemaValue($value)
     {
-        if ($value instanceof PageBuilderRaw) {
-            return ['type' => 'js', 'code' => $value->value];
+        if (is_array($value) && isset($value['__raw__'])) {
+            return ['type' => 'js', 'code' => $value['__raw__']];
         }
         if (is_array($value)) {
             $result = [];
@@ -971,8 +950,8 @@ class PageBuilder
      */
     private function encodeJs($value): string
     {
-        if ($value instanceof PageBuilderRaw) {
-            return $value->value;
+        if (is_array($value) && isset($value['__raw__'])) {
+            return $value['__raw__'];
         }
         if (is_array($value)) {
             $items = [];

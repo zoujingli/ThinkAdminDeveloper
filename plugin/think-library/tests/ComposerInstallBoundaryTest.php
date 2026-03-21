@@ -220,7 +220,7 @@ class ComposerInstallBoundaryTest extends TestCase
             $matched = false;
             foreach ($autoload as $namespace => $directory) {
                 $namespace = trim(strval($namespace), '\\');
-                $directory = trim(strval($directory), '\\/');
+                $directory = trim(strval($directory), '\/');
                 if ($namespace === '' || $directory === '') {
                     continue;
                 }

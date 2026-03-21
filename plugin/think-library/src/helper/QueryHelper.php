@@ -65,11 +65,11 @@ class QueryHelper extends Helper
     }
 
     /**
-     * QueryHelper 魔术方法调用
-     * 
+     * QueryHelper 魔术方法调用.
+     *
      * 支持链式调用 Query 类的所有方法
      * 如果方法名以 _ 开头或返回 Query 对象，则返回当前实例
-     * 
+     *
      * @param string $name 调用方法名称
      * @param array $args 调用参数内容
      * @return $this|mixed 返回当前实例或查询结果
@@ -89,15 +89,15 @@ class QueryHelper extends Helper
     }
 
     /**
-     * 快捷助手调用钩子
-     * 
+     * 快捷助手调用钩子.
+     *
      * 根据方法名调用对应的 Helper 类
      * 支持的快捷方法：mForm, mSave, mQuery, mDelete, mUpdate
-     * 
+     *
      * @param Model|Query|string $model 模型对象或查询
      * @param string $method 方法名称
      * @param array $args 方法参数
-     * @param callable|null $nohook 未匹配时的回调函数
+     * @param null|callable $nohook 未匹配时的回调函数
      * @return false|int|mixed|QueryHelper 返回处理结果
      */
     public static function make(Model|Query|string $model, string $method = 'init', array $args = [], ?callable $nohook = null): mixed
@@ -118,7 +118,7 @@ class QueryHelper extends Helper
 
     /**
      * 获取当前数据库查询对象
-     * 
+     *
      * @return Query 返回当前的 Query 对象
      */
     public function db(): Query
@@ -127,8 +127,8 @@ class QueryHelper extends Helper
     }
 
     /**
-     * 初始化查询构建器
-     * 
+     * 初始化查询构建器.
+     *
      * @param BaseQuery|Model|string $dbQuery 数据库查询对象或模型
      * @param null|array|string $input 输入数据（默认为空，自动从请求获取）
      * @param null|callable $callable 初始化回调函数
@@ -144,10 +144,10 @@ class QueryHelper extends Helper
 
     /**
      * 绑定排序并返回查询对象
-     * 
+     *
      * 自动根据请求参数绑定排序字段
      * 支持 POST 请求的拖拽排序功能
-     * 
+     *
      * @param BaseQuery|Model|string $dbQuery 数据库查询对象或模型
      * @param string $field 默认排序字段
      * @return Query 返回处理后的 Query 对象
