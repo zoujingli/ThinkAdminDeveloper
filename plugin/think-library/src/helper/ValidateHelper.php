@@ -23,25 +23,30 @@ namespace think\admin\helper;
 use think\Validate;
 
 /**
- * 快捷输入验证器.
+ * 数据验证助手
+ * 
+ * 用于快速验证用户输入数据，支持多种验证规则和自定义错误提示
+ * 
  * @class ValidateHelper
+ * @package think\admin\helper
  */
 class ValidateHelper extends Helper
 {
     /**
-     * 快捷输入并验证（ 支持 规则 # 别名 ）.
-     * @param array $rules 验证规则（ 验证信息数组 ）
-     * @param array|string $input 输入内容 ( post. 或 get. )
-     * @param null|callable $callable 异常处理操作
-     * @return array|void
-     *
-     * age.require => message // 最大值限定
-     * age.between:1,120 => message // 范围限定
-     * name.require => message // 必填内容
-     * name.default => 100 // 获取并设置默认值
-     * region.value => value // 固定字段数值内容
-     *
-     * 更多规则参照 ThinkPHP 官方的验证类
+     * 验证并获取输入数据
+     * 
+     * 支持多种验证规则：
+     * - age.require => message // 最大值限定
+     * - age.between:1,120 => message // 范围限定
+     * - name.require => message // 必填内容
+     * - name.default => 100 // 获取并设置默认值
+     * - region.value => value // 固定字段数值内容
+     * 
+     * @param array $rules 验证规则数组（键为字段。规则，值为错误提示）
+     * @param array|string $input 输入内容（默认为空，自动从请求获取，可指定 post/get 等）
+     * @param callable|null $callable 验证失败时的回调函数（接收错误信息和数据）
+     * @return array 验证通过的数据数组
+     * @throws \think\admin\Exception 验证失败时抛出异常
      */
     public function init(array $rules, array|string $input = '', ?callable $callable = null)
     {
