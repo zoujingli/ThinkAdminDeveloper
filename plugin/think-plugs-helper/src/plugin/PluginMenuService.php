@@ -18,7 +18,7 @@ declare(strict_types=1);
  * +----------------------------------------------------------------------
  */
 
-namespace plugin\helper\service;
+namespace plugin\helper\plugin;
 
 use think\admin\Exception;
 use think\admin\Plugin;

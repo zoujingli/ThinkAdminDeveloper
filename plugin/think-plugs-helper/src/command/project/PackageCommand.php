@@ -18,9 +18,9 @@ declare(strict_types=1);
  * +----------------------------------------------------------------------
  */
 
-namespace plugin\helper\command;
+namespace plugin\helper\command\project;
 
-use plugin\helper\service\PhinxExtend;
+use plugin\helper\migration\PhinxExtend;
 use plugin\system\service\SystemService;
 use think\admin\Command;
 use think\admin\Exception;
@@ -31,10 +31,9 @@ use think\db\exception\DbException;
 use think\db\exception\ModelNotFoundException;
 
 /**
- * 生成数据安装包.
- * @class Package
+ * 生成系统安装包命令。
  */
-class Package extends Command
+class PackageCommand extends Command
 {
     /**
      * 系统指定配置.

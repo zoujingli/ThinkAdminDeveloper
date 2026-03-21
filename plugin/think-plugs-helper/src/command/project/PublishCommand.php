@@ -18,7 +18,7 @@ declare(strict_types=1);
  * +----------------------------------------------------------------------
  */
 
-namespace plugin\helper\command;
+namespace plugin\helper\command\project;
 
 use think\admin\extend\FileTools;
 use think\admin\service\AppService;
@@ -29,10 +29,9 @@ use think\console\input\Option;
 use think\console\Output;
 
 /**
- * 组件发布指令。
- * @class Publish
+ * 组件资源发布命令。
  */
-class Publish extends Command
+class PublishCommand extends Command
 {
     /**
      * 插件迁移发布清单文件。

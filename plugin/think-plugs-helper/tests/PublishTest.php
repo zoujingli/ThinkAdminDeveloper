@@ -21,7 +21,7 @@ declare(strict_types=1);
 namespace plugin\helper\tests;
 
 use PHPUnit\Framework\TestCase;
-use plugin\helper\command\Publish;
+use plugin\helper\command\project\PublishCommand;
 use think\admin\service\RuntimeService;
 use think\App;
 use think\console\Command;
@@ -52,7 +52,7 @@ class PublishTest extends TestCase
 
     public function testDiscoverWorkspacePackagesFindsLocalPluginComposer(): void
     {
-        $command = new Publish();
+        $command = new PublishCommand();
         function_exists('test_reset_model_makers') && test_reset_model_makers();
         $app = new App($this->root);
         RuntimeService::init($app);
@@ -215,9 +215,9 @@ class PublishTest extends TestCase
         }
     }
 
-    private function newCommand(): Publish
+    private function newCommand(): PublishCommand
     {
-        $command = new Publish();
+        $command = new PublishCommand();
         function_exists('test_reset_model_makers') && test_reset_model_makers();
         $app = new App($this->root);
         RuntimeService::init($app);
@@ -235,7 +235,7 @@ class PublishTest extends TestCase
     /**
      * @param array<string, string> $sources
      */
-    private function invokeSyncMigrations(Publish $command, array $sources, bool $force = false): void
+    private function invokeSyncMigrations(PublishCommand $command, array $sources, bool $force = false): void
     {
         $property = new \ReflectionProperty(Command::class, 'output');
         $property->setAccessible(true);

@@ -230,19 +230,18 @@ class ArchitectureBoundaryTest extends TestCase
         }));
         sort($dirs);
 
-        $this->assertSame(['command', 'service'], $dirs);
+        $this->assertSame(['command', 'database', 'integration', 'migration', 'model', 'plugin', 'service'], $dirs);
         $this->assertDirectoryDoesNotExist($this->path('plugin/think-plugs-helper/src/support'));
-        $this->assertDirectoryDoesNotExist($this->path('plugin/think-plugs-helper/src/integration'));
-        $this->assertFileDoesNotExist($this->path('plugin/think-plugs-helper/src/DbMigrateStruct.php'));
-        $this->assertFileDoesNotExist($this->path('plugin/think-plugs-helper/src/DbModelStruct.php'));
-        $this->assertFileDoesNotExist($this->path('plugin/think-plugs-helper/src/DbBackupStruct.php'));
-        $this->assertFileExists($this->path('plugin/think-plugs-helper/src/command/DbMigrateStruct.php'));
-        $this->assertFileExists($this->path('plugin/think-plugs-helper/src/command/DbModelStruct.php'));
-        $this->assertFileExists($this->path('plugin/think-plugs-helper/src/command/DbBackupStruct.php'));
-        $this->assertFileExists($this->path('plugin/think-plugs-helper/src/service/PluginMenuService.php'));
-        $this->assertFileExists($this->path('plugin/think-plugs-helper/src/service/PluginRegistry.php'));
-        $this->assertFileExists($this->path('plugin/think-plugs-helper/src/service/PhinxExtend.php'));
-        $this->assertFileExists($this->path('plugin/think-plugs-helper/src/service/ExpressService.php'));
+        $this->assertFileDoesNotExist($this->path('plugin/think-plugs-helper/src/command/DbMigrateStruct.php'));
+        $this->assertFileDoesNotExist($this->path('plugin/think-plugs-helper/src/command/DbModelStruct.php'));
+        $this->assertFileDoesNotExist($this->path('plugin/think-plugs-helper/src/command/DbBackupStruct.php'));
+        $this->assertFileExists($this->path('plugin/think-plugs-helper/src/command/database/MigrateCommand.php'));
+        $this->assertFileExists($this->path('plugin/think-plugs-helper/src/command/database/ModelCommand.php'));
+        $this->assertFileExists($this->path('plugin/think-plugs-helper/src/command/database/BackupCommand.php'));
+        $this->assertFileExists($this->path('plugin/think-plugs-helper/src/plugin/PluginMenuService.php'));
+        $this->assertFileExists($this->path('plugin/think-plugs-helper/src/plugin/PluginRegistry.php'));
+        $this->assertFileExists($this->path('plugin/think-plugs-helper/src/migration/PhinxExtend.php'));
+        $this->assertFileExists($this->path('plugin/think-plugs-helper/src/integration/ExpressService.php'));
     }
 
     public function testWechatServicePluginSourceDirectoriesStayStandardized(): void

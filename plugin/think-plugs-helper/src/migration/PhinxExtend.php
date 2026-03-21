@@ -18,11 +18,13 @@ declare(strict_types=1);
  * +----------------------------------------------------------------------
  */
 
-namespace plugin\helper\service;
+namespace plugin\helper\migration;
 
 use Phinx\Db\Adapter\AdapterInterface;
 use Phinx\Db\Adapter\MysqlAdapter;
 use Phinx\Db\Table;
+use plugin\helper\database\IndexNameService;
+use plugin\helper\plugin\PluginMenuService;
 use plugin\system\model\SystemMenu;
 use plugin\worker\service\ProcessService;
 use think\admin\extend\ArrayTree;
@@ -166,7 +168,7 @@ class PhinxExtend
         $br = "\r\n";
         $content = self::_build2table($tables, true, $force);
         $content = substr($content, strpos($content, "\n") + 1);
-        $content = '<?php' . "{$br}{$br}use plugin\\helper\\support\\PhinxExtend;{$br}use think\\migration\\Migrator;{$br}{$br}@set_time_limit(0);{$br}@ini_set('memory_limit', '-1');{$br}{$br}class {$class} extends Migrator{$br}{{$br}{$content}}{$br}";
+        $content = '<?php' . "{$br}{$br}use plugin\\helper\\migration\\PhinxExtend;{$br}use think\\migration\\Migrator;{$br}{$br}@set_time_limit(0);{$br}@ini_set('memory_limit', '-1');{$br}{$br}class {$class} extends Migrator{$br}{{$br}{$content}}{$br}";
         return ['file' => self::nextFile($class), 'text' => $content];
     }
 

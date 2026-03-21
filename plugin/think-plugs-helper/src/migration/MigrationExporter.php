@@ -18,7 +18,7 @@ declare(strict_types=1);
  * +----------------------------------------------------------------------
  */
 
-namespace plugin\helper\service;
+namespace plugin\helper\migration;
 
 use Doctrine\DBAL\Connection;
 use Doctrine\DBAL\DriverManager;
@@ -27,6 +27,7 @@ use Doctrine\DBAL\Schema\Index;
 use Doctrine\DBAL\Schema\Table;
 use Doctrine\DBAL\Types\Type;
 use Doctrine\DBAL\Types\Types;
+use plugin\helper\plugin\PluginRegistry;
 use think\App;
 use think\console\Output;
 
@@ -95,7 +96,7 @@ PHP;
 
 declare(strict_types=1);
 
-use plugin\\helper\\service\\PhinxExtend;
+use plugin\\helper\\migration\\PhinxExtend;
 use think\\migration\\Migrator;
 
 @set_time_limit(0);

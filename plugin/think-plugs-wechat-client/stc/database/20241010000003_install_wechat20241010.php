@@ -17,7 +17,7 @@ declare(strict_types=1);
  * | Github Repository: https://github.com/zoujingli/ThinkAdmin
  * +----------------------------------------------------------------------
  */
-use plugin\helper\service\PhinxExtend;
+use plugin\helper\migration\PhinxExtend;
 use plugin\wechat\client\Service;
 use think\migration\Migrator;
 

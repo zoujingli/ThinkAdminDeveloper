@@ -18,14 +18,17 @@ declare(strict_types=1);
  * +----------------------------------------------------------------------
  */
 
-namespace plugin\helper\command;
+namespace plugin\helper\command\database;
 
-use plugin\helper\service\MigrationExporter;
+use plugin\helper\migration\MigrationExporter;
 use think\admin\service\RuntimeService;
 use think\console\Command;
 use think\console\input\Option;
 
-class DbMigrateStruct extends Command
+/**
+ * 根据当前数据库生成插件迁移脚本命令。
+ */
+class MigrateCommand extends Command
 {
     public function configure(): void
     {

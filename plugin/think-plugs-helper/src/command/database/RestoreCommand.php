@@ -18,7 +18,7 @@ declare(strict_types=1);
  * +----------------------------------------------------------------------
  */
 
-namespace plugin\helper\command;
+namespace plugin\helper\command\database;
 
 use Doctrine\DBAL\Exception;
 use Doctrine\DBAL\Schema\Comparator;
@@ -29,9 +29,8 @@ use think\console\input\Option;
 
 /**
  * 数据库结构与数据恢复命令。
- * 支持恢复 Doctrine Schema 结构及按行压缩备份的数据。
  */
-class DbRestoreStruct extends DbBackupStruct
+class RestoreCommand extends BackupCommand
 {
     /**
      * 配置命令参数。

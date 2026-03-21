@@ -1,6 +1,6 @@
 <?php
 
-use plugin\helper\service\PhinxExtend;
+use plugin\helper\migration\PhinxExtend;
 use plugin\system\model\SystemConfig;
 use plugin\system\model\SystemMenu;
 use plugin\system\model\SystemUser;

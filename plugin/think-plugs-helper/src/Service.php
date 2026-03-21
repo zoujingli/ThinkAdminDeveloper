@@ -20,32 +20,35 @@ declare(strict_types=1);
 
 namespace plugin\helper;
 
-use plugin\helper\command\Database;
-use plugin\helper\command\DbBackupStruct;
-use plugin\helper\command\DbIndexStruct;
-use plugin\helper\command\DbMigrateStruct;
-use plugin\helper\command\DbModelStruct;
-use plugin\helper\command\DbRestoreStruct;
-use plugin\helper\command\Package;
-use plugin\helper\command\Publish;
-use plugin\helper\command\Replace;
-use plugin\helper\command\Sysmenu;
+use plugin\helper\command\database\BackupCommand;
+use plugin\helper\command\database\DatabaseCommand;
+use plugin\helper\command\database\IndexCommand;
+use plugin\helper\command\database\MigrateCommand;
+use plugin\helper\command\database\ModelCommand;
+use plugin\helper\command\database\ReplaceCommand;
+use plugin\helper\command\database\RestoreCommand;
+use plugin\helper\command\project\PackageCommand;
+use plugin\helper\command\project\PublishCommand;
+use plugin\helper\command\system\MenuResetCommand;
 
 class Service extends \think\Service
 {
+    /**
+     * 注册开发期与交付期工具命令。
+     */
     public function boot()
     {
         $this->commands([
-            Publish::class,
-            Package::class,
-            Database::class,
-            Replace::class,
-            Sysmenu::class,
-            DbMigrateStruct::class,
-            DbModelStruct::class,
-            DbIndexStruct::class,
-            DbBackupStruct::class,
-            DbRestoreStruct::class,
+            PublishCommand::class,
+            PackageCommand::class,
+            DatabaseCommand::class,
+            ReplaceCommand::class,
+            MenuResetCommand::class,
+            MigrateCommand::class,
+            ModelCommand::class,
+            IndexCommand::class,
+            BackupCommand::class,
+            RestoreCommand::class,
         ]);
     }
 }

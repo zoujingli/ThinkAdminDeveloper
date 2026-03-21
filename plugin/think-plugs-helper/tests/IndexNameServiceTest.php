@@ -21,7 +21,7 @@ declare(strict_types=1);
 namespace plugin\helper\tests;
 
 use PHPUnit\Framework\TestCase;
-use plugin\helper\service\IndexNameService;
+use plugin\helper\database\IndexNameService;
 
 /**
  * @internal

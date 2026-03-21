@@ -18,7 +18,7 @@ declare(strict_types=1);
  * +----------------------------------------------------------------------
  */
 
-namespace plugin\helper\command;
+namespace plugin\helper\command\system;
 
 use plugin\system\model\SystemMenu;
 use think\admin\Command;
@@ -30,10 +30,9 @@ use think\db\exception\DbException;
 use think\db\exception\ModelNotFoundException;
 
 /**
- * 重置并清理系统菜单.
- * @class Sysmenu
+ * 重置并清理系统菜单命令。
  */
-class Sysmenu extends Command
+class MenuResetCommand extends Command
 {
     /**
      * 指令任务配置.

@@ -18,21 +18,20 @@ declare(strict_types=1);
  * +----------------------------------------------------------------------
  */
 
-namespace plugin\helper\command;
+namespace plugin\helper\command\database;
 
 use Ergebnis\Classy\Constructs;
-use plugin\helper\service\NormalizedModelGenerator;
+use plugin\helper\model\NormalizedModelGenerator;
 use think\admin\extend\FileTools;
 use think\console\input\Argument;
 use think\console\input\Option;
 use think\console\Output;
-use think\ide\console\ModelCommand;
+use think\ide\console\ModelCommand as ThinkIdeModelCommand;
 
 /**
- * 创建模型注释.
- * @class ModelGen
+ * 创建模型注释命令。
  */
-class DbModelStruct extends ModelCommand
+class ModelCommand extends ThinkIdeModelCommand
 {
     public function handle()
     {

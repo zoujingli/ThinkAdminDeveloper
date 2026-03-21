@@ -17,7 +17,7 @@ declare(strict_types=1);
  * | Github Repository: https://github.com/zoujingli/ThinkAdmin
  * +----------------------------------------------------------------------
  */
-use plugin\helper\command\Publish;
+use plugin\helper\command\project\PublishCommand;
 use think\admin\service\RuntimeService;
 use think\App;
 use think\console\Input;
@@ -85,7 +85,7 @@ function runPublishSmoke(string $projectRoot): void
             ],
         ], 'cache');
 
-        $command = new Publish();
+        $command = new PublishCommand();
         $command->setApp($app);
 
         $code = $command->run(new Input([]), new Output('buffer'));

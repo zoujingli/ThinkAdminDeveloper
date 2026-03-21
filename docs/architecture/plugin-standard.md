@@ -13,7 +13,7 @@
 
 - `think\admin\Plugin`
 - `AppService`
-- `plugin\helper\service\PluginMenuService`
+- `plugin\helper\plugin\PluginMenuService`
 - `PhinxExtend`
 - Composer 元数据
 - 架构边界测试
@@ -81,7 +81,7 @@
 按职责不同允许少量变体：
 
 - `worker`：`command / model / service`
-- `helper`：`command / service`
+- `helper`：`command / database / integration / migration / model / plugin / service`
 - `storage`：`controller / model / service / view`
 
 除非确有必要，不再新增这些模糊目录：

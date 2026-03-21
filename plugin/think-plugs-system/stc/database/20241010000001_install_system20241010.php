@@ -18,7 +18,7 @@ declare(strict_types=1);
  * +----------------------------------------------------------------------
  */
 use Phinx\Db\Table;
-use plugin\helper\service\PhinxExtend;
+use plugin\helper\migration\PhinxExtend;
 use plugin\system\Service;
 use think\migration\Migrator;
 

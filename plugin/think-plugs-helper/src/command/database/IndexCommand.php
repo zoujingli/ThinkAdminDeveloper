@@ -18,15 +18,15 @@ declare(strict_types=1);
  * +----------------------------------------------------------------------
  */
 
-namespace plugin\helper\command;
+namespace plugin\helper\command\database;
 
-use plugin\helper\service\IndexNameService;
+use plugin\helper\database\IndexNameService;
 use plugin\system\service\SystemService;
 use think\admin\service\RuntimeService;
 use think\console\Command;
 use think\db\PDOConnection;
 
-class DbIndexStruct extends Command
+class IndexCommand extends Command
 {
     /**
      * 配置索引同步命令。

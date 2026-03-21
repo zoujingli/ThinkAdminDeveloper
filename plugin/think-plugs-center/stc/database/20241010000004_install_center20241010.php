@@ -18,7 +18,7 @@ declare(strict_types=1);
  * +----------------------------------------------------------------------
  */
 use plugin\center\Service;
-use plugin\helper\service\PhinxExtend;
+use plugin\helper\migration\PhinxExtend;
 use think\migration\Migrator;
 
 @set_time_limit(0);

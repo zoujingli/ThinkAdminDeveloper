@@ -18,7 +18,7 @@ declare(strict_types=1);
  * +----------------------------------------------------------------------
  */
 
-namespace plugin\helper\service;
+namespace plugin\helper\model;
 
 use think\db\Query;
 use think\ide\ModelGenerator;

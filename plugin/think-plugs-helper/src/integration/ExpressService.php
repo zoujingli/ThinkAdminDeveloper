@@ -18,7 +18,7 @@ declare(strict_types=1);
  * +----------------------------------------------------------------------
  */
 
-namespace plugin\helper\service;
+namespace plugin\helper\integration;
 
 use think\admin\extend\CodeToolkit;
 use think\admin\extend\HttpClient;

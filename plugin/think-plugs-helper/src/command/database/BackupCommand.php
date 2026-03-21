@@ -18,7 +18,7 @@ declare(strict_types=1);
  * +----------------------------------------------------------------------
  */
 
-namespace plugin\helper\command;
+namespace plugin\helper\command\database;
 
 use Doctrine\DBAL\Connection;
 use Doctrine\DBAL\DriverManager;
@@ -30,9 +30,9 @@ use think\console\input\Option;
 use think\db\Query;
 
 /**
- * 数据库备份.
+ * 数据库备份命令。
  */
-class DbBackupStruct extends Command
+class BackupCommand extends Command
 {
     /**
      * 配置命令参数。

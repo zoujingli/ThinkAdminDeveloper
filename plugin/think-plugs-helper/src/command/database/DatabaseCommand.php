@@ -18,7 +18,7 @@ declare(strict_types=1);
  * +----------------------------------------------------------------------
  */
 
-namespace plugin\helper\command;
+namespace plugin\helper\command\database;
 
 use plugin\system\service\SystemService;
 use think\admin\Command;
@@ -29,10 +29,9 @@ use think\console\Output;
 use think\db\PDOConnection;
 
 /**
- * 数据库修复优化指令.
- * @class Database
+ * 数据库修复优化命令。
  */
-class Database extends Command
+class DatabaseCommand extends Command
 {
     /**
      * 指令任务配置.

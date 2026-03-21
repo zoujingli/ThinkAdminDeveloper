@@ -18,7 +18,7 @@ declare(strict_types=1);
  * +----------------------------------------------------------------------
  */
 
-namespace plugin\helper\command;
+namespace plugin\helper\command\database;
 
 use plugin\system\service\SystemService;
 use think\admin\Command;
@@ -30,10 +30,9 @@ use think\db\exception\DbException;
 use think\helper\Str;
 
 /**
- * 数据库字符替换.
- * @class Replace
+ * 数据库字符替换命令。
  */
-class Replace extends Command
+class ReplaceCommand extends Command
 {
     /**
      * 指令任务配置.

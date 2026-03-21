@@ -21,7 +21,7 @@ declare(strict_types=1);
 namespace plugin\helper\tests;
 
 use PHPUnit\Framework\TestCase;
-use plugin\helper\service\PluginMenuService;
+use plugin\helper\plugin\PluginMenuService;
 use plugin\system\Service;
 use think\admin\Exception;
 use think\admin\service\RuntimeService;
