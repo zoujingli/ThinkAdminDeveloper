@@ -339,7 +339,7 @@ think-plugs-helper/
 
 **命名空间**: `plugin\center\`
 
-**访问前缀**: `plugin-center`
+**访问前缀**: `center`
 
 **核心功能**:
 - 插件列表展示

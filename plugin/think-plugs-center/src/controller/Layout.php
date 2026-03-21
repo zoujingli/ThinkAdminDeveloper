@@ -98,7 +98,7 @@ class Layout extends Controller
             $this->menus[] = [
                 'id' => 9999999,
                 'url' => system_uri(Service::getAppCode() . '/index/index', ['from' => 'force']),
-                'node' => 'plugin-center/index/index',
+                'node' => 'center/index/index',
                 'title' => '返回首页',
             ];
         }
@@ -132,7 +132,7 @@ class Layout extends Controller
             [
                 'id' => 9999999,
                 'url' => $this->returnUrl,
-                'node' => 'plugin-center/index/index',
+                'node' => 'center/index/index',
                 'title' => '返回插件中心',
             ],
         ];

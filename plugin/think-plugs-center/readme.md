@@ -22,9 +22,9 @@
 - 不创建独立业务表，只消费系统菜单和配置数据。
 
 ## 主要入口
-- `plugin-center/index/index`
-- `plugin-center/layout`
-- `plugin-center/layout/setDefaultApp`
+- `center/index/index`
+- `center/layout`
+- `center/layout/setDefaultApp`
 
 ## 安装
 ```bash
@@ -33,9 +33,9 @@ php think xadmin:publish --migrate
 ```
 
 ## 运行说明
-- 访问 `#/plugin-center.html` 时，若已配置默认应用，会优先跳转默认应用。
-- 访问 `#/plugin-center.html?from=force` 时，会强制展示插件中心列表。
-- 插件布局页使用 `plugin-center/layout?encode=...` 打开。
+- 访问 `#/center.html` 时，若已配置默认应用，会优先跳转默认应用。
+- 访问 `#/center.html?from=force` 时，会强制展示插件中心列表。
+- 插件布局页使用 `#/center/layout?encode=...` 打开。
 
 ## 数据依赖
 - `system_menu`
