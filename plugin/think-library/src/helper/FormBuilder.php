@@ -120,9 +120,11 @@ class FormBuilder
     private $formAttrs = [];
 
     /**
-     * Constructer.
-     * @param string $type 页面类型
-     * @param string $mode 页面模式
+     * 构造函数
+     * 
+     * @param string $type 页面类型 (form/add/edit 等)
+     * @param string $mode 页面模式 (modal/default 等)
+     * @param Controller $class 控制器实例
      */
     public function __construct(string $type, string $mode, Controller $class)
     {
@@ -132,9 +134,11 @@ class FormBuilder
     }
 
     /**
-     * 创建表单生成器.
-     * @param string $type 页面类型
-     * @param string $mode 页面模式
+     * 创建表单生成器实例
+     * 
+     * @param string $type 页面类型 (form=add/edit 等)
+     * @param string $mode 页面模式 (modal=弹窗，default=默认)
+     * @return FormBuilder
      */
     public static function mk(string $type = 'form', string $mode = 'modal'): self
     {
@@ -142,7 +146,9 @@ class FormBuilder
     }
 
     /**
-     * 设置表单地址
+     * 设置表单提交地址
+     * 
+     * @param string $url 提交地址
      * @return $this
      */
     public function setAction(string $url): self
@@ -152,7 +158,9 @@ class FormBuilder
     }
 
     /**
-     * 设置变量名称.
+     * 设置表单变量名称
+     * 
+     * @param string $name 变量名称 (如 'vo', 'data' 等)
      * @return $this
      */
     public function setVariable(string $name): self
@@ -163,7 +171,9 @@ class FormBuilder
     }
 
     /**
-     * 设置表单属性.
+     * 设置表单属性
+     * 
+     * @param array $attrs 表单属性数组
      * @return $this
      */
     public function setFormAttrs(array $attrs): self
@@ -173,7 +183,9 @@ class FormBuilder
     }
 
     /**
-     * 添加页面脚本.
+     * 添加页面脚本
+     * 
+     * @param string $script JavaScript 脚本代码
      * @return $this
      */
     public function addScript(string $script): self
@@ -186,8 +198,11 @@ class FormBuilder
     }
 
     /**
-     * 使用收集到的规则验证请求数据.
-     * @param mixed $input
+     * 使用收集到的规则验证请求数据
+     * 
+     * @param mixed $input 输入数据 (默认为空，自动从请求获取)
+     * @param callable|null $callable 自定义验证回调
+     * @return array 验证后的数据
      */
     public function validate($input = '', ?callable $callable = null): array
     {
@@ -195,7 +210,9 @@ class FormBuilder
     }
 
     /**
-     * 获取可直接用于 _vali 的请求规则.
+     * 获取可直接用于 _vali 的请求规则
+     * 
+     * @return array 验证规则数组
      */
     public function getRequestRules(): array
     {

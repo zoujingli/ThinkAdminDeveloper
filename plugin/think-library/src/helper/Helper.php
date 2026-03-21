@@ -25,8 +25,14 @@ use think\App;
 use think\Container;
 
 /**
- * 控制器助手.
+ * 控制器助手基类
+ * 
+ * 为控制器提供通用的辅助功能，包括表单构建、查询构建、页面构建等
+ * 所有 Helper 类都继承自此类
+ * 
  * @class Helper
+ * @package think\admin\helper
+ * @abstract
  */
 abstract class Helper
 {
@@ -51,7 +57,10 @@ abstract class Helper
     public string $output;
 
     /**
-     * Helper constructor.
+     * Helper 构造函数
+     * 
+     * @param App $app 应用实例
+     * @param Controller $class 控制器实例
      */
     public function __construct(App $app, Controller $class)
     {
@@ -65,8 +74,10 @@ abstract class Helper
     }
 
     /**
-     * 实例对象反射.
-     * @param array $args
+     * 实例化 Helper 对象（支持依赖注入）
+     * 
+     * @param mixed ...$args 构造函数参数
+     * @return static
      */
     public static function instance(...$args): static
     {
