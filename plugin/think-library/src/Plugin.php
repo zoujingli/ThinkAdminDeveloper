@@ -170,23 +170,7 @@ abstract class Plugin extends Service
         }
 
         // 应用插件包名计算
-        if (empty($this->package) && ($path = $ref->getFileName())) {
-            for ($level = 1; $level <= 3; ++$level) {
-                if (is_file($file = dirname($path, $level) . '/composer.json')) {
-                    $this->package = json_decode(file_get_contents($file), true)['name'] ?? '';
-                    break;
-                }
-            }
-        }
-
-        // 应用插件计算名称及别名
-        $attr = explode('\\', $ref->getNamespaceName());
-        if ($attr[0] === NodeService::space()) {
-            array_shift($attr);
-        }
-
-        $this->appCode = $this->appCode ?: join('-', $attr);
-        if ($this->appCode === $this->appAlias) {
+        if ($this->appAlias !== '' && $this->appCode === $this->appAlias) {
             $this->appAlias = '';
         }
 
@@ -370,42 +354,24 @@ abstract class Plugin extends Service
         $app = (array)($manifest['extra']['xadmin']['app'] ?? []);
         $menu = (array)($manifest['extra']['xadmin']['menu'] ?? []);
 
-        $this->package = strval($manifest['name'] ?? $this->package);
-        $this->appCode = array_key_exists('code', $app) ? strval($app['code']) : $this->appCode;
-        $this->appName = array_key_exists('name', $app) ? strval($app['name']) : $this->appName;
-        $this->appAlias = array_key_exists('alias', $app) ? strval($app['alias']) : $this->appAlias;
-        $this->appPrefix = array_key_exists('prefix', $app) ? strval($app['prefix']) : $this->appPrefix;
-        if (array_key_exists('prefixes', $app)) {
-            $this->appPrefixes = (array)$app['prefixes'];
-        }
-        $this->appSpace = array_key_exists('space', $app) ? strval($app['space']) : $this->appSpace;
+        $this->package = strval($manifest['name'] ?? '');
+        $this->appCode = strval($app['code'] ?? '');
+        $this->appName = strval($app['name'] ?? '');
+        $this->appAlias = strval($app['alias'] ?? '');
+        $this->appPrefix = strval($app['prefix'] ?? '');
+        $this->appPrefixes = array_key_exists('prefixes', $app) ? (array)$app['prefixes'] : [];
+        $this->appSpace = array_key_exists('space', $app) ? strval($app['space']) : '';
         $this->appType = 'plugin';
-        $this->appDocument = array_key_exists('document', $app) ? strval($app['document']) : $this->appDocument;
-        $this->appDescription = array_key_exists('description', $app) ? strval($app['description']) : ($this->appDescription ?: strval($manifest['description'] ?? ''));
-        if (array_key_exists('platforms', $app)) {
-            $this->appPlatforms = (array)$app['platforms'];
-        } elseif (empty($this->appPlatforms)) {
-            $this->appPlatforms = [];
-        }
-        if (array_key_exists('license', $app)) {
-            $this->appLicense = (array)$app['license'];
-        } elseif (empty($this->appLicense)) {
-            $this->appLicense = (array)($manifest['license'] ?? []);
-        }
-        $this->appVersion = $this->appVersion ?: strval($manifest['version'] ?? '');
-        $this->appHomepage = $this->appHomepage ?: strval($manifest['homepage'] ?? '');
-        if (array_key_exists('root', $menu)) {
-            $this->appMenuRoot = (array)$menu['root'];
-        }
-        if (array_key_exists('exists', $menu)) {
-            $this->appMenuExists = (array)$menu['exists'];
-        }
-        if (array_key_exists('show', $menu)) {
-            $this->appMenuShow = boolval($menu['show']);
-        }
-        if (array_key_exists('items', $menu)) {
-            $this->appMenus = (array)$menu['items'];
-        }
+        $this->appDocument = strval($app['document'] ?? '');
+        $this->appDescription = array_key_exists('description', $app) ? strval($app['description']) : strval($manifest['description'] ?? '');
+        $this->appPlatforms = array_key_exists('platforms', $app) ? (array)$app['platforms'] : [];
+        $this->appLicense = array_key_exists('license', $app) ? (array)$app['license'] : (array)($manifest['license'] ?? []);
+        $this->appVersion = strval($manifest['version'] ?? '');
+        $this->appHomepage = strval($manifest['homepage'] ?? '');
+        $this->appMenuRoot = array_key_exists('root', $menu) ? (array)$menu['root'] : [];
+        $this->appMenuExists = array_key_exists('exists', $menu) ? (array)$menu['exists'] : [];
+        $this->appMenuShow = array_key_exists('show', $menu) ? boolval($menu['show']) : true;
+        $this->appMenus = array_key_exists('items', $menu) ? (array)$menu['items'] : [];
     }
 
     /**

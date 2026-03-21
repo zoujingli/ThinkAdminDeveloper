@@ -24,6 +24,7 @@ use think\admin\helper\QueryHelper;
 use think\admin\helper\ValidateHelper;
 use think\admin\Library;
 use think\admin\model\ModelFactory;
+use think\admin\route\Url;
 use think\admin\runtime\RequestContext;
 use think\admin\service\AppService;
 use think\admin\service\CacheSession;
@@ -129,7 +130,7 @@ if (!function_exists('sysuri')) {
      */
     function sysuri(string $url = '', array $vars = [], bool|string $suffix = true, bool|string $domain = false): string
     {
-        $target = \think\admin\route\Url::normalizeWebTarget($url);
+        $target = Url::normalizeWebTarget($url);
         return Library::$sapp->route->buildUrl($target, $vars)->suffix($suffix)->domain($domain)->build();
     }
 }

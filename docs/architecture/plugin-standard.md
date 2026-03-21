@@ -24,9 +24,41 @@
 - 标准服务类命名为 `plugin\\{name}\\Service`。
 
 ### 3. 元数据
-- `extra.xadmin.app` 描述插件编码、名称、前缀和文档地址。
+- `extra.xadmin.app` 只描述应用级元数据。
+  必填：`code`、`name`
+  可选：`prefix / prefixes / alias / space / document / description / platforms / license / icon / cover / super`
+- `version`、`homepage` 等标准包字段继续使用 Composer 顶层定义，不再放到 `extra.xadmin.app`。
 - `extra.xadmin.menu` 描述菜单显示、根节点、菜单项与存在性检测。
 - `extra.xadmin.migrate` 描述主迁移脚本信息。
+
+最小 `composer.json` 骨架：
+
+```json
+{
+  "type": "think-admin-plugin",
+  "name": "vendor/demo-plugin",
+  "description": "Demo Plugin for ThinkAdmin",
+  "autoload": {
+    "psr-4": {
+      "plugin\\\\demo\\\\": "src"
+    }
+  },
+  "extra": {
+    "think": {
+      "services": [
+        "plugin\\\\demo\\\\Service"
+      ]
+    },
+    "xadmin": {
+      "app": {
+        "code": "demo",
+        "name": "演示插件",
+        "prefix": "demo"
+      }
+    }
+  }
+}
+```
 
 ## 目录标准
 

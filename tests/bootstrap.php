@@ -17,6 +17,24 @@ declare(strict_types=1);
  * | Github Repository: https://github.com/zoujingli/ThinkAdmin
  * +----------------------------------------------------------------------
  */
+use think\Model;
+
+/**
+ * +----------------------------------------------------------------------
+ * | ThinkAdmin Plugin for ThinkAdminDeveloper
+ * +----------------------------------------------------------------------
+ * | Copyright (c) 2014~2026 ThinkAdmin [ thinkadmin.top ]
+ * +----------------------------------------------------------------------
+ * | Official Website: https://thinkadmin.top
+ * +----------------------------------------------------------------------
+ * | Licensed: https://mit-license.org
+ * | Disclaimer: https://thinkadmin.top/disclaimer
+ * | Vip Rights: https://thinkadmin.top/vip-introduce
+ * +----------------------------------------------------------------------
+ * | Gitee Repository: https://gitee.com/zoujingli/ThinkAdmin
+ * | Github Repository: https://github.com/zoujingli/ThinkAdmin
+ * +----------------------------------------------------------------------.
+ */
 $projectRoot = dirname(__DIR__);
 
 require $projectRoot . '/vendor/autoload.php';
@@ -38,7 +56,7 @@ defined('WORKER_TEST_PROJECT_ROOT') || define('WORKER_TEST_PROJECT_ROOT', $proje
 if (!function_exists('test_reset_model_makers')) {
     function test_reset_model_makers(): void
     {
-        $reflection = new ReflectionProperty(\think\Model::class, '_maker');
+        $reflection = new ReflectionProperty(Model::class, '_maker');
         $reflection->setAccessible(true);
         $reflection->setValue([]);
     }

@@ -48,7 +48,7 @@ class AppServiceTest extends TestCase
 
         $this->assertIsArray($plugin);
         $this->assertNotSame([], $plugin);
-        $this->assertSame('plugin\\system\\Service', $plugin['service'] ?? null);
+        $this->assertSame('plugin\system\Service', $plugin['service'] ?? null);
         $this->assertTrue(boolval($plugin['show'] ?? false));
         $this->assertFalse(method_exists($plugin['service'], 'menu'));
         $this->assertNotSame([], $menus);
