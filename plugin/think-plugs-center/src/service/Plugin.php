@@ -89,7 +89,7 @@ abstract class Plugin
                 'platforms' => $packer['platforms'] ?? [],
                 'plugmenus' => $menus,
                 'encode' => $encode,
-                'center' => sysuri("layout/{$encode}", [], false),
+                'center' => sysuri('index/layout', ['encode' => $encode], false),
             ];
         }
         return $data;

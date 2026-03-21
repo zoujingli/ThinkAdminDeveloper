@@ -46,7 +46,7 @@ if (!function_exists('plguri')) {
     function plguri(string $url = '', array $vars = [], $suffix = true, $domain = false): string
     {
         $encode = encode(RequestContext::instance()->pluginCode());
-        return sysuri("layout/{$encode}", [], false) . '#' . url($url, $vars, $suffix, $domain)->build();
+        return sysuri('index/layout', ['encode' => $encode], false) . '#' . url($url, $vars, $suffix, $domain)->build();
     }
 }
 
