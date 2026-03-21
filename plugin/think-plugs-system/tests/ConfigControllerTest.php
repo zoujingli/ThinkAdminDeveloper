@@ -53,7 +53,7 @@ class ConfigControllerTest extends SqliteIntegrationTestCase
 
         $this->assertSame(1, intval($result['code'] ?? 0));
         $this->assertSame('数据保存成功！', $result['info'] ?? '');
-        $this->assertStringContainsString('system/config/index', strval($result['data'] ?? ''));
+        $this->assertStringContainsString('system/config', strval($result['data'] ?? ''));
         $this->assertSame('测试后台', $configs['site_name'] ?? '');
         $this->assertSame('green-1', $configs['site_theme'] ?? '');
         $this->assertSame('Unit Test Copy', $configs['site_copy'] ?? '');

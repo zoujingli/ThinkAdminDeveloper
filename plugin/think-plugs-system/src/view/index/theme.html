@@ -3,18 +3,44 @@
 
         <div class="layui-form-item margin-bottom-5 label-required-prev">
             <div class="help-label"><b>后台配色方案</b>Theme Style</div>
-            <div class="layui-textarea think-bg-gray" style="min-height:unset">
+            <div class="help-block">统一为「标准 / 品牌侧栏 / 双栏导航」三种后台布局语义，新增皮肤可直接预览后保存生效。</div>
+
+            <div class="theme-choice-grid">
                 {foreach $themes as $k=>$v}
-                <label class="think-radio">
-                    {if isset($theme) and $theme eq $k}
-                    <input name="site_theme" type="radio" value="{$k}" lay-ignore checked> {$v}
-                    {else}
-                    <input name="site_theme" type="radio" value="{$k}" lay-ignore> {$v}
-                    {/if}
-                </label>
+                <div class="theme-choice-item">
+                    <label class="theme-choice-card{if isset($theme) and $theme eq $k} active{/if}" data-theme-card="{$k}" title="{$v.label} / {$k}">
+                        {if isset($theme) and $theme eq $k}
+                        <input name="site_theme" type="radio" value="{$k}" checked>
+                        {else}
+                        <input name="site_theme" type="radio" value="{$k}">
+                        {/if}
+
+                        <span class="theme-choice-check layui-icon layui-icon-ok"></span>
+                        <span class="theme-choice-preview {$v.layout}" style="--theme-accent:{$v.primary};--theme-header:{$v.header};--theme-side:{$v.side};--theme-surface:{$v.surface};--theme-body:{$v.body};">
+                            <span class="theme-choice-preview-header"></span>
+                            <span class="theme-choice-preview-side"></span>
+                            <span class="theme-choice-preview-side-alt"></span>
+                            <span class="theme-choice-preview-card theme-choice-preview-hero"></span>
+                            <span class="theme-choice-preview-card theme-choice-preview-panel"></span>
+                            <span class="theme-choice-preview-card theme-choice-preview-panel-right"></span>
+                            <span class="theme-choice-preview-line theme-choice-preview-tone"></span>
+                            <span class="theme-choice-preview-line theme-choice-preview-copy-1"></span>
+                            <span class="theme-choice-preview-line theme-choice-preview-copy-2"></span>
+                            <span class="theme-choice-preview-line theme-choice-preview-copy-3"></span>
+                            <span class="theme-choice-preview-line theme-choice-preview-copy-4"></span>
+                        </span>
+                        <span class="theme-choice-meta">
+                            <span class="theme-choice-title">{$v.label}</span>
+                            <span class="theme-choice-desc">
+                                <span class="theme-choice-layout">{$v.layout_label}</span>
+                            </span>
+                        </span>
+                    </label>
+                </div>
                 {/foreach}
             </div>
-            <p class="help-block">切换配色方案，需要保存成功后配色方案才会永久生效，下次登录也会有效哦 ~</p>
+
+            <p class="help-block">保存后立即写入当前账号主题；系统默认主题可在系统参数配置中设置，后续新用户登录也会继承。</p>
         </div>
     </div>
 
@@ -26,11 +52,12 @@
 </form>
 
 <script>
-    $('form#theme input[name=site_theme]').on('click', function () {
+    $('form#theme').on('change', 'input[name=site_theme]', function () {
         var alls = '', that = this, prox = 'layui-layout-theme-', curt = prox + that.value;
-        $('form#theme input[name=site_theme]').map(function () {
+        $('form#theme input[name=site_theme]').each(function () {
+            $(this).closest('[data-theme-card]').toggleClass('active', this === that);
             if (this.value !== that.value) alls += ' ' + prox + this.value;
         });
-        $('.layui-layout-body').removeClass(alls).addClass(curt)
+        $('.layui-layout-body').removeClass($.trim(alls)).addClass(curt);
     });
 </script>

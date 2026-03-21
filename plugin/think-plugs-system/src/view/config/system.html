@@ -19,9 +19,9 @@
                 <div class="help-label label-required-prev"><b>{:lang('后台默认配色')}</b>Theme Style</div>
                 <select class="layui-select" name="site_theme" lay-filter="SiteTheme">
                     {foreach $themes as $k=>$v}{if sysconf('base.site_theme') eq $k}
-                    <option selected value="{$k}">{$v}</option>
+                    <option selected value="{$k}">{$v.label}</option>
                     {else}
-                    <option value="{$k}">{$v}</option>
+                    <option value="{$k}">{$v.label}</option>
                     {/if}{/foreach}
                 </select>
             </div>

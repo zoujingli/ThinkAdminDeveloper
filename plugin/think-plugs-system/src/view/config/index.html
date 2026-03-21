@@ -15,7 +15,7 @@
 <div class="layui-card padding-20 shadow">
     <div class="layui-card-header notselect">
         <span class="help-label">
-            <b style="color:#333!important;">{:lang('运行模式')}</b>( {:lang('仅超级管理员可配置')} )
+            <b>{:lang('运行模式')}</b>( {:lang('仅超级管理员可配置')} )
         </span>
     </div>
     <div class="layui-card-body">
@@ -38,7 +38,7 @@
 <div class="layui-card padding-20 shadow">
     <div class="layui-card-header notselect">
         <span class="help-label">
-            <b style="color:#333!important;">{:lang('富编辑器')}</b>( {:lang('仅超级管理员可配置')} )
+            <b>{:lang('富编辑器')}</b>( {:lang('仅超级管理员可配置')} )
         </span>
     </div>
     <div class="layui-card-body layui-clear">
@@ -63,7 +63,7 @@
 <div class="layui-card padding-20 shadow">
     <div class="layui-card-header notselect">
         <span class="help-label">
-            <b style="color:#333!important;">{:lang('存储中心')}</b>( {:lang('由 ThinkPlugsStorage 独立承载')} )
+            <b>{:lang('存储中心')}</b>( {:lang('由 ThinkPlugsStorage 独立承载')} )
         </span>
     </div>
     <div class="layui-card-body">
@@ -88,7 +88,7 @@
 <div class="layui-card padding-20 shadow">
     <div class="layui-card-header notselect">
         <span class="help-label">
-            <b style="color:#333!important;">{:lang('系统参数')}</b>( {:lang('当前系统配置参数')} )
+            <b>{:lang('系统参数')}</b>( {:lang('当前系统配置参数')} )
         </span>
     </div>
     <div class="layui-card-body">
@@ -151,7 +151,7 @@
 <div class="layui-card padding-20 shadow">
     <div class="layui-card-header notselect">
         <span class="help-label">
-            <b style="color:#333!important;">{:lang('系统信息')}</b>( {:lang('仅开发模式可见')} )
+            <b>{:lang('系统信息')}</b>( {:lang('仅开发模式可见')} )
         </span>
     </div>
     <div class="layui-card-body">
@@ -188,41 +188,71 @@
 <div class="layui-card padding-20 shadow">
     <div class="layui-card-header notselect">
         <span class="help-label">
-            <b style="color:#333!important;">{:lang('应用插件')}</b>( {:lang('仅开发模式可见')} )
+            <b>{:lang('应用插件')}</b>( {:lang('仅开发模式可见')} )
         </span>
     </div>
     <div class="layui-card-body">
-        <table class="layui-table" lay-even>
-            <thead>
-            <tr>
-                <th class="nowrap text-center">{:lang('应用名称')}</th>
-                <th class="nowrap text-center">{:lang('插件名称')}</th>
-                <th class="nowrap text-center">{:lang('访问前缀')}</th>
-                <th class="nowrap text-left">{:lang('插件包名')}</th>
-                <th class="nowrap text-center">{:lang('插件版本')}</th>
-                <th class="nowrap text-center">{:lang('授权协议')}</th>
-            </tr>
-            </thead>
-            <tbody>
+        <div class="plugin-showcase-head">
+            <div class="plugin-showcase-summary">
+                <span class="plugin-showcase-count">{:count($plugins)}</span>
+                <span class="plugin-showcase-copy">{:lang('当前已加载插件，布局与配色会跟随后台主题同步变化。')}</span>
+            </div>
+        </div>
+        <div class="plugin-showcase-grid">
             {foreach $plugins as $key=>$plugin}
-            <tr>
-                <td class="nowrap text-center">{$key}</td>
-                <td class="nowrap text-center">{$plugin.name|lang}</td>
-                <td class="nowrap text-center">{if empty($plugin.prefixes)}-{else}{$plugin.prefixes|join='、',###}{/if}</td>
-                <td class="nowrap text-left">
-                    {if empty($plugin.install.document)}{$plugin.package}
-                    {else}<a target="_blank" href="{$plugin.install.document}">{$plugin.package}</a>{/if}
-                </td>
-                <td class="nowrap text-center">{$plugin.install.version|default='unknow'}</td>
-                <td class="nowrap text-center">
-                    {if empty($plugin.install.license)} -
-                    {elseif is_array($plugin.install.license)}{$plugin.install.license|join='、',###}
-                    {else}{$plugin.install.license|default='-'}{/if}
-                </td>
-            </tr>
+            <div class="plugin-showcase-card">
+                <div class="plugin-showcase-card-head">
+                    <div class="plugin-showcase-mark">{$key|substr=0,1}</div>
+                    <div class="plugin-showcase-titlebox">
+                        <div class="plugin-showcase-app">{$key}</div>
+                        <div class="plugin-showcase-name">{$plugin.name|lang}</div>
+                    </div>
+                    <span class="plugin-showcase-badge">{:lang('版本')} {$plugin.install.version|default='unknown'}</span>
+                </div>
+
+                <div class="plugin-showcase-card-body">
+                    <div class="plugin-showcase-item">
+                        <span class="plugin-showcase-label">{:lang('访问前缀')}</span>
+                        <div class="plugin-showcase-tags">
+                            {if empty($plugin.prefixes)}
+                            <span class="plugin-showcase-tag muted">{:lang('未暴露')}</span>
+                            {else}
+                            {foreach $plugin.prefixes as $prefix}
+                            <span class="plugin-showcase-tag">{$prefix}</span>
+                            {/foreach}
+                            {/if}
+                        </div>
+                    </div>
+
+                    <div class="plugin-showcase-item">
+                        <span class="plugin-showcase-label">{:lang('插件包名')}</span>
+                        <div class="plugin-showcase-package">
+                            {if empty($plugin.install.document)}
+                            <span>{$plugin.package}</span>
+                            {else}
+                            <a target="_blank" href="{$plugin.install.document}">{$plugin.package}</a>
+                            {/if}
+                        </div>
+                    </div>
+
+                    <div class="plugin-showcase-item split">
+                        <div class="plugin-showcase-metric">
+                            <span class="plugin-showcase-label">{:lang('授权协议')}</span>
+                            <span class="plugin-showcase-value">
+                                {if empty($plugin.install.license)}-
+                                {elseif is_array($plugin.install.license)}{$plugin.install.license|join='、',###}
+                                {else}{$plugin.install.license|default='-'}{/if}
+                            </span>
+                        </div>
+                        <div class="plugin-showcase-metric">
+                            <span class="plugin-showcase-label">{:lang('插件标识')}</span>
+                            <span class="plugin-showcase-value">{$key}</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
             {/foreach}
-            </tbody>
-        </table>
+        </div>
     </div>
 </div>
 {/notempty}

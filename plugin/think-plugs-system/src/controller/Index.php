@@ -68,7 +68,7 @@ class Index extends Controller
     {
         if ($this->request->isGet()) {
             $this->theme = SystemAuthService::getUserTheme();
-            $this->themes = Config::themes;
+            $this->themes = Config::themeCatalog;
             $this->fetch();
         } else {
             $data = $this->_vali(['site_theme.require' => '主题名称不能为空！']);
