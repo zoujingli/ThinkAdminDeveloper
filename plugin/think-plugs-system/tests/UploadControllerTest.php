@@ -115,7 +115,7 @@ class UploadControllerTest extends SqliteIntegrationTestCase
         $context = new PluginSystemContext();
         Container::getInstance()->instance(SystemContextInterface::class, $context);
         $this->app->instance(SystemContextInterface::class, $context);
-        $this->app->config->set(include TEST_PROJECT_ROOT . '/config/view.php', 'view');
+        $this->configureView();
     }
 
     private function callIndexController(array $query = [])

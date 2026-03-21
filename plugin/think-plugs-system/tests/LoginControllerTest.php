@@ -47,8 +47,8 @@ class LoginControllerTest extends SqliteIntegrationTestCase
 
         $result = $this->callActionController('index', [
             'username' => 'missing-user',
-            'password' => $this->encryptLoginPassword('wrong-password', $ticket['public_key']),
-            'password_mode' => 'rsa',
+            'password' => $this->encodeLoginPassword('wrong-password', $ticket),
+            'password_mode' => $ticket['password_mode'],
             'token' => $ticket['token'],
         ]);
         $slider = $this->callActionController('slider', [
@@ -81,8 +81,8 @@ class LoginControllerTest extends SqliteIntegrationTestCase
 
         $result = $this->callActionController('index', [
             'username' => 'fresh-user',
-            'password' => $this->encryptLoginPassword('secret123', $ticket['public_key']),
-            'password_mode' => 'rsa',
+            'password' => $this->encodeLoginPassword('secret123', $ticket),
+            'password_mode' => $ticket['password_mode'],
             'token' => $ticket['token'],
         ]);
 
@@ -105,8 +105,8 @@ class LoginControllerTest extends SqliteIntegrationTestCase
 
         $failed = $this->callActionController('index', [
             'username' => 'tester',
-            'password' => $this->encryptLoginPassword('wrong-password', $ticket['public_key']),
-            'password_mode' => 'rsa',
+            'password' => $this->encodeLoginPassword('wrong-password', $ticket),
+            'password_mode' => $ticket['password_mode'],
             'token' => $ticket['token'],
         ]);
         $slider = $this->callActionController('slider', [
@@ -120,8 +120,8 @@ class LoginControllerTest extends SqliteIntegrationTestCase
 
         $result = $this->callActionController('index', [
             'username' => 'tester',
-            'password' => $this->encryptLoginPassword('secret123', $ticket['public_key']),
-            'password_mode' => 'rsa',
+            'password' => $this->encodeLoginPassword('secret123', $ticket),
+            'password_mode' => $ticket['password_mode'],
             'token' => $ticket['token'],
             'verify' => $verify,
             'uniqid' => strval($slider['data']['uniqid'] ?? ''),
@@ -279,9 +279,10 @@ class LoginControllerTest extends SqliteIntegrationTestCase
         $this->assertStringContainsString('<title>系统登录', $content);
         $this->assertStringContainsString('管理后台登录', $content);
         $this->assertMatchesRegularExpression('/data-login-token="[^"]+"/', $content);
-        $this->assertMatchesRegularExpression('/data-login-password-key="[^"]+"/', $content);
+        $this->assertMatchesRegularExpression('/data-login-password-key="[^"]*"/', $content);
         $this->assertMatchesRegularExpression('/data-login-slider="[^"]*system\/login\/slider[^"]*"/', $content);
         $this->assertMatchesRegularExpression('/data-login-check="[^"]*system\/login\/check[^"]*"/', $content);
+        $this->assertMatchesRegularExpression('/name="password_mode" value="(plain|rsa)"/', $content);
         $this->assertStringContainsString('background-image:url(/static/theme/img/login/bg1.jpg)', $content);
         $this->assertStringContainsString('data-bg-transition="/static/theme/img/login/bg1.jpg,/static/theme/img/login/bg2.jpg"', $content);
         $this->assertStringContainsString('ThinkAdmin Test', $content);
@@ -304,9 +305,9 @@ class LoginControllerTest extends SqliteIntegrationTestCase
         $context = new PluginSystemContext();
         Container::getInstance()->instance(SystemContextInterface::class, $context);
         $this->app->instance(SystemContextInterface::class, $context);
-        $this->app->config->set(array_merge(include TEST_PROJECT_ROOT . '/config/view.php', [
+        $this->configureView([
             'view_path' => TEST_PROJECT_ROOT . '/plugin/think-plugs-system/src/view' . DIRECTORY_SEPARATOR,
-        ]), 'view');
+        ]);
     }
 
     private function callActionController(string $action, array $payload = [], string $method = 'POST'): array
@@ -368,13 +369,29 @@ class LoginControllerTest extends SqliteIntegrationTestCase
             'content' => $content,
             'token' => $this->extractHtmlAttribute($content, 'data-login-token'),
             'public_key' => $this->extractHtmlAttribute($content, 'data-login-password-key'),
+            'password_mode' => $this->extractInputValue($content, 'password_mode', 'plain'),
         ];
     }
 
     private function extractHtmlAttribute(string $content, string $attribute): string
     {
-        preg_match('/' . preg_quote($attribute, '/') . '="([^"]+)"/', $content, $matches);
+        preg_match('/' . preg_quote($attribute, '/') . '="([^"]*)"/', $content, $matches);
         return html_entity_decode(strval($matches[1] ?? ''), ENT_QUOTES);
+    }
+
+    private function extractInputValue(string $content, string $name, string $default = ''): string
+    {
+        preg_match('/name="' . preg_quote($name, '/') . '" value="([^"]*)"/', $content, $matches);
+        return html_entity_decode(strval($matches[1] ?? $default), ENT_QUOTES);
+    }
+
+    private function encodeLoginPassword(string $password, array $ticket): string
+    {
+        if (strtolower(strval($ticket['password_mode'] ?? 'plain')) !== 'rsa') {
+            return $password;
+        }
+
+        return $this->encryptLoginPassword($password, strval($ticket['public_key'] ?? ''));
     }
 
     private function encryptLoginPassword(string $password, string $publicKey): string

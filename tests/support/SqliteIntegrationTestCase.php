@@ -116,6 +116,32 @@ abstract class SqliteIntegrationTestCase extends TestCase
         }
     }
 
+    protected function configureView(array $overrides = []): void
+    {
+        $config = [
+            'type' => 'Think',
+            'auto_rule' => 1,
+            'view_dir_name' => 'view',
+            'view_path' => '',
+            'view_suffix' => 'html',
+            'view_depr' => DIRECTORY_SEPARATOR,
+            'tpl_cache' => false,
+            'tpl_begin' => '{',
+            'tpl_end' => '}',
+            'taglib_begin' => '{',
+            'taglib_end' => '}',
+            'strip_space' => true,
+            'default_filter' => 'htmlentities=###,ENT_QUOTES',
+        ];
+
+        $configFile = TEST_PROJECT_ROOT . '/config/view.php';
+        if (is_file($configFile)) {
+            $config = array_merge($config, include $configFile);
+        }
+
+        $this->app->config->set(array_merge($config, $overrides), 'view');
+    }
+
     protected function createAccountTables(): void
     {
         $this->executeStatements([
