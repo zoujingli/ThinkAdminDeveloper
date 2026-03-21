@@ -36,7 +36,7 @@ class SoftDeleteBoundaryTest extends TestCase
         $this->projectRoot = TEST_PROJECT_ROOT;
     }
 
-    public function testLegacySoftDeleteSyncMigrationsAreRetiredToNoops(): void
+    public function testLegacySoftDeleteSyncMigrationsHaveBeenRemoved(): void
     {
         $paths = [
             'plugin/think-plugs-account/stc/database/20260319000011_sync_account_soft_delete20260319.php',
@@ -51,9 +51,7 @@ class SoftDeleteBoundaryTest extends TestCase
 
         foreach ($paths as $path) {
             $file = $this->path($path);
-            $this->assertFileExists($file);
-            $content = file_get_contents($file) ?: '';
-            $this->assertStringContainsString('Reserved no-op migration', $content);
+            $this->assertFileDoesNotExist($file);
         }
     }
 

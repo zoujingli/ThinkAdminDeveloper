@@ -65,6 +65,29 @@ class MigrationOwnershipTest extends TestCase
         $this->assertFileDoesNotExist($this->path('plugin/think-plugs-system/stc/database/20241010000011_install_system20241010.php'));
     }
 
+    public function testEveryPluginKeepsOnlyOnePrimaryMigrationFile(): void
+    {
+        $plugins = [
+            'account',
+            'center',
+            'payment',
+            'storage',
+            'system',
+            'wechat-client',
+            'wechat-service',
+            'wemall',
+            'worker',
+            'wuma',
+        ];
+
+        foreach ($plugins as $plugin) {
+            $files = glob($this->path("plugin/think-plugs-{$plugin}/stc/database/*.php")) ?: [];
+            sort($files);
+            $this->assertCount(1, $files, "plugin {$plugin} should keep exactly one migration file");
+            $this->assertStringContainsString('_install_', basename($files[0]));
+        }
+    }
+
     public function testSharedMigrationTablesDoNotLeakToOtherPlugins(): void
     {
         $owners = [
