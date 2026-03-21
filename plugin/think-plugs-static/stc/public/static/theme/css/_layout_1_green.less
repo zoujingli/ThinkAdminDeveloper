@@ -4,7 +4,8 @@
 // +----------------------------------------------------------------------
 
 .layui-layout-theme-green-1 {
-  @mainActiveBack: #098 !important;
+  @mainAccent: #009688;
+  @mainActiveBack: @mainAccent !important;
   @mainNormalBack: rgba(0, 0, 0, 0.1) !important;
 
   @mainActionText: #FFFFFF !important;
@@ -22,6 +23,8 @@
   @leftBackColor: @mainActiveBack;
   @leftNormalBackColor: @mainNormalBack;
   @leftActiveBackColor: @mainActiveBack;
+
+  #themePalette(@mainAccent, #F1FBFA, #FFFFFF, #F4FDFB, #D4ECE7, #134E4A, #54706D, rgba(0, 150, 136, 0.12));
 
   @import (multiple)"_layout_1.less";
 }

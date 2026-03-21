@@ -206,15 +206,17 @@
 }
 
 .layui-btn-group {
-  border-color: @mainColor;
-  background-color: @mainColor;
+  border-color: fade(@mainColor, 20%);
+  background-color: var(--ta-surface, #fff);
 
   .layui-btn {
     &:hover:not(.layui-btn-active) {
       color: @mainColor;
+      background-color: fade(@mainColor, 10%);
     }
 
     &.layui-btn-active {
+      color: #fff;
       background-color: @mainColor
     }
   }

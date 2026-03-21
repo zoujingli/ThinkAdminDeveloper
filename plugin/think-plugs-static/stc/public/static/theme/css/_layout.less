@@ -286,7 +286,7 @@
     left: @LayoutLeftDefaSize;
     padding: 0;
     z-index: 111;
-    background: @BodyMainBackColor;
+    background: radial-gradient(circle at top right, var(--ta-accent-soft, rgba(0, 150, 136, 0.08)), transparent 24%), var(--ta-body-bg, @BodyMainBackColor);
 
     > .think-page-loader {
       left: @LayoutLeftDefaSize
@@ -321,8 +321,9 @@
         }
 
         > div > .layui-tab.layui-tab-card {
-          border: none;
-          box-shadow: @ShadowOuterMax;
+          border: 1px solid var(--ta-border-color, @BoxBorderColor);
+          border-radius: var(--ta-radius-md, @BoxBorderRadius);
+          box-shadow: var(--ta-shadow-sm, @ShadowOuterMax);
 
           & > .layui-tab-content.think-box-shadow {
             box-shadow: none;
@@ -336,15 +337,15 @@
         right: 0;
         z-index: 3;
         position: absolute;
-        box-shadow: @ShadowBodyTop;
+        box-shadow: var(--ta-shadow-xs, @ShadowBodyTop);
       }
 
       > .layui-card-header {
         top: @LayoutHeadTopHeight;
         left: @LayoutLeftDefaSize;
         box-sizing: border-box;
-        border-top: @BoxBottomLine;
-        border-bottom: 1px solid #fff !important;
+        border-top: 1px solid var(--ta-border-color, rgba(0, 0, 0, 0.10));
+        border-bottom: 1px solid var(--ta-border-color, #fff) !important;
         #notSelect();
 
         right: 0;
@@ -352,7 +353,7 @@
         z-index: 4;
         padding: 0 15px;
         position: fixed;
-        background: #FFF;
+        background: var(--ta-surface, #FFF);
         line-height: @LayoutBodyHeadHeight;
 
         > div {

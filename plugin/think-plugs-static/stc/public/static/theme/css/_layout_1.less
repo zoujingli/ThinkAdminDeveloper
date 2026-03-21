@@ -85,15 +85,17 @@
 }
 
 .layui-btn-group {
-  border-color: @mainActiveBack;
-  background-color: @mainActiveBack;
+  border-color: fade(@mainAccent, 20%);
+  background-color: var(--ta-surface, #fff);
 
   .layui-btn {
     &:hover:not(.layui-btn-active) {
       color: @mainActiveBack;
+      background-color: fade(@mainAccent, 10%);
     }
 
     &.layui-btn-active {
+      color: #fff;
       background-color: @mainActiveBack
     }
   }

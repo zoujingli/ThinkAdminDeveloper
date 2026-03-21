@@ -4,10 +4,13 @@
 // +----------------------------------------------------------------------
 
 .layui-layout-theme-green-2 {
+  @mainAccent: #009688;
 
   @iconWidth: 100px !important;
-  @mainColor: #098 !important;
-  @textColor: #098 !important;
+  @mainColor: @mainAccent !important;
+  @textColor: @mainAccent;
+
+  #themePalette(@mainAccent, #F1FBFA, #FFFFFF, #F4FDFB, #D4ECE7, #134E4A, #54706D, rgba(0, 150, 136, 0.12));
 
   @import (multiple)"_layout_2.less";
 }

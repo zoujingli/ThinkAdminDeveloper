@@ -57,6 +57,32 @@
 // 窗口页面背景颜色
 @BodyMainBackColor: #EFEFEF;
 
+// 鍚庡彴涓婚璁捐 token
+#themePalette(
+  @accent: #009688,
+  @bodyBg: #F4F7FB,
+  @surface: #FFFFFF,
+  @surfaceSoft: #F8FAFC,
+  @border: #E2E8F0,
+  @text: #1F2937,
+  @muted: #64748B,
+  @shadowTint: rgba(15, 23, 42, 0.10)
+) {
+  --ta-accent: @accent;
+  --ta-accent-soft: rgba(red(@accent), green(@accent), blue(@accent), 0.12);
+  --ta-accent-deep: rgba(red(@accent), green(@accent), blue(@accent), 0.22);
+  --ta-body-bg: @bodyBg;
+  --ta-surface: @surface;
+  --ta-surface-soft: @surfaceSoft;
+  --ta-border-color: @border;
+  --ta-text-color: @text;
+  --ta-text-muted: @muted;
+  --ta-radius-sm: 6px;
+  --ta-radius-md: 10px;
+  --ta-shadow-xs: 0 8px 20px @shadowTint;
+  --ta-shadow-sm: 0 14px 36px @shadowTint;
+}
+
 // 最小滚动样式
 #defaScrollbar() {
   height: 100%;

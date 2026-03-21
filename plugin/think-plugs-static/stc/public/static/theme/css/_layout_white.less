@@ -3,6 +3,12 @@
 
 // +----------------------------------------------------------------------
 
+@accentColor: #16A34A;
+
+.layui-layout-theme-white {
+  #themePalette(@accentColor, #F8FAFC, #FFFFFF, #F8FAFC, #E2E8F0, #0F172A, #64748B, rgba(15, 23, 42, 0.08));
+}
+
 .layui-layout-theme-white > .layui-layout-admin {
   > .layui-side {
     box-shadow: none;
@@ -42,7 +48,7 @@
           background: #fff;
 
           .layui-icon {
-            color: #090 !important;
+            color: @accentColor !important;
           }
         }
       }
@@ -60,13 +66,13 @@
             border-bottom: none !important;
 
             &:hover {
-              color: #090 !important;
+              color: @accentColor !important;
             }
           }
 
           .layui-this, &.layui-this {
             > a {
-              color: #090 !important;
+              color: @accentColor !important;
               background: none !important;
               font-weight: bold !important;
 
@@ -105,7 +111,7 @@
 
     .layui-nav-item {
       &.layui-this > a {
-        color: #090 !important;
+        color: @accentColor !important;
         font-weight: bold;
         background: none !important;
       }
@@ -114,7 +120,7 @@
         color: #333 !important;
 
         &:hover {
-          color: #090 !important;
+          color: @accentColor !important;
           background: none !important;
         }
       }
