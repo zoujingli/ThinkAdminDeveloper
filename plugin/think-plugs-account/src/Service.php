@@ -26,16 +26,4 @@ use think\admin\Plugin;
  * 插件注册服务
  * @class Service
  */
-class Service extends Plugin
-{
-    /**
-     * 定义插件名称.
-     */
-    protected string $appName = '账号管理';
-
-    /**
-     * 定义安装包名.
-     */
-    protected string $package = 'zoujingli/think-plugs-account';
-
-    }
+class Service extends Plugin {}

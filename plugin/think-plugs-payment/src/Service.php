@@ -1,19 +1,5 @@
 <?php
 
-// +----------------------------------------------------------------------
-// | Payment Plugin for ThinkAdmin
-// +----------------------------------------------------------------------
-// | 版权所有 2014~2025 ThinkAdmin [ thinkadmin.top ]
-// +----------------------------------------------------------------------
-// | 官方网站: https://thinkadmin.top
-// +----------------------------------------------------------------------
-// | 免责声明 ( https://thinkadmin.top/disclaimer )
-// | 会员特权 ( https://thinkadmin.top/vip-introduce )
-// +----------------------------------------------------------------------
-// | gitee 代码仓库：https://gitee.com/zoujingli/think-plugs-payment
-// | github 代码仓库：https://github.com/zoujingli/think-plugs-payment
-// +----------------------------------------------------------------------
-
 declare(strict_types=1);
 /**
  * +----------------------------------------------------------------------
@@ -46,17 +32,7 @@ use think\Request;
 class Service extends Plugin
 {
     /**
-     * 定义插件名称.
-     */
-    protected string $appName = '支付管理';
-
-    /**
-     * 定义安装包名.
-     */
-    protected string $package = 'zoujingli/think-plugs-payment';
-
-    /**
-     * 插件服务注册.
+     * 插件服务注册。
      */
     public function register(): void
     {
@@ -70,5 +46,4 @@ class Service extends Plugin
             }
         });
     }
-
-    }
+}

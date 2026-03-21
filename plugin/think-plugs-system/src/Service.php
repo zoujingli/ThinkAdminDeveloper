@@ -36,26 +36,6 @@ use think\middleware\LoadLangPack;
 class Service extends Plugin
 {
     /**
-     * 定义插件入口.
-     */
-    protected string $appCode = 'system';
-
-    /**
-     * 定义插件访问前缀.
-     */
-    protected string $appPrefix = 'system';
-
-    /**
-     * 定义插件名称.
-     */
-    protected string $appName = '系统管理';
-
-    /**
-     * 定义安装包名.
-     */
-    protected string $package = 'zoujingli/think-plugs-system';
-
-    /**
      * 注册系统基础服务。
      */
     public function register(): void
@@ -82,5 +62,4 @@ class Service extends Plugin
         }
         $this->app->middleware->add(RbacAccess::class, 'route');
     }
-
-    }
+}

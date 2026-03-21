@@ -20,7 +20,6 @@ declare(strict_types=1);
 
 namespace plugin\worker\service;
 
-use Throwable;
 use think\exception\Handle;
 
 /**
@@ -29,7 +28,7 @@ use think\exception\Handle;
  */
 class WorkerExceptionHandle extends Handle
 {
-    protected function getDebugMsg(Throwable $exception): array
+    protected function getDebugMsg(\Throwable $exception): array
     {
         return $this->normalizeValue(parent::getDebugMsg($exception));
     }

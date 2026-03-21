@@ -30,10 +30,6 @@ use think\admin\Plugin;
  */
 class Service extends Plugin
 {
-    protected string $appName = '防伪溯源';
-
-    protected string $package = 'zoujingli/think-plugs-wuma';
-
     public function register(): void
     {
         $this->commands([Create::class]);

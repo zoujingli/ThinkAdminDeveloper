@@ -41,16 +41,6 @@ use think\Request;
 class Service extends Plugin
 {
     /**
-     * 定义插件名称.
-     */
-    protected string $appName = '分销商城';
-
-    /**
-     * 定义安装包名.
-     */
-    protected string $package = 'zoujingli/think-plugs-wemall';
-
-    /**
      * 插件服务注册.
      */
     public function register(): void
@@ -158,5 +148,4 @@ class Service extends Plugin
             UserOrder::confirm($order);
         });
     }
-
-    }
+}

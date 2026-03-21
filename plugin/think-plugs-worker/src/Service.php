@@ -34,16 +34,6 @@ use think\admin\service\QueueService as QueueRuntime;
  */
 class Service extends Plugin
 {
-    /**
-     * 定义插件名称.
-     */
-    protected string $appName = '运行时服务';
-
-    /**
-     * 定义安装包名.
-     */
-    protected string $package = 'zoujingli/think-plugs-worker';
-
     public function register()
     {
         Library::load(__DIR__ . '/common.php');

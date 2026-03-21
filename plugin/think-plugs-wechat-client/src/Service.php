@@ -36,26 +36,6 @@ use think\Request;
 class Service extends Plugin
 {
     /**
-     * 定义插件入口.
-     */
-    protected string $appCode = 'plugin-wechat-client';
-
-    /**
-     * 定义插件访问前缀.
-     */
-    protected string $appPrefix = 'plugin-wechat-client';
-
-    /**
-     * 定义插件名称.
-     */
-    protected string $appName = '微信公众平台';
-
-    /**
-     * 定义安装包名.
-     */
-    protected string $package = 'zoujingli/think-plugs-wechat-client';
-
-    /**
      * 注册组件服务
      */
     public function register(): void
@@ -80,5 +60,4 @@ class Service extends Plugin
         $this->app->route->any('/api/plugin-wechat-client/payment/notify/:vars', $notify)->name('plugin-wechat-client-payment-notify');
         $this->app->route->any('/plugin-wxpay-notify/:vars', $notify)->name('plugin-wxpay-notify');
     }
-
-    }
+}

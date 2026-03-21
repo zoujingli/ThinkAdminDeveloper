@@ -29,12 +29,6 @@ use think\admin\Plugin;
  */
 class Service extends Plugin
 {
-    protected string $appName = '微信开放平台';
-
-    protected string $appCode = 'plugin-wechat-service';
-
-    protected string $package = 'zoujingli/think-plugs-wechat-service';
-
     public function register(): void
     {
         $this->commands([Wechat::class]);

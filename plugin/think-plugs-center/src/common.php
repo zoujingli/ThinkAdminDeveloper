@@ -33,6 +33,9 @@ declare(strict_types=1);
  * | github 代码仓库：https://github.com/zoujingli/ThinkAdmin
  * +----------------------------------------------------------------------.
  */
+use plugin\center\Service;
+use think\admin\Library;
+use think\admin\route\Url;
 use think\admin\runtime\RequestContext;
 
 if (!function_exists('plguri')) {
@@ -46,10 +49,10 @@ if (!function_exists('plguri')) {
     function plguri(string $url = '', array $vars = [], $suffix = true, $domain = false): string
     {
         $encode = encode(RequestContext::instance()->pluginCode());
-        $target = \think\admin\route\Url::normalizeWebTarget($url);
-        return sysuri('/' . \plugin\center\Service::getAppCode() . '/layout', ['encode' => $encode], false)
+        $target = Url::normalizeWebTarget($url);
+        return sysuri('/' . Service::getAppCode() . '/layout', ['encode' => $encode], false)
             . '#'
-            . \think\admin\Library::$sapp->route->buildUrl($target, $vars)->suffix($suffix)->domain($domain)->build();
+            . Library::$sapp->route->buildUrl($target, $vars)->suffix($suffix)->domain($domain)->build();
     }
 }
 

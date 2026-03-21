@@ -61,7 +61,7 @@ class File extends Controller
             $query->where([
                 'issafe' => 0,
                 'status' => 2,
-                'uuid'   => SystemContext::instance()->getUserId(),
+                'uuid' => SystemContext::instance()->getUserId(),
             ]);
         });
     }
@@ -86,7 +86,7 @@ class File extends Controller
 
         $data = $builder->validate();
         $data = [
-            'id'   => intval($this->request->post('id', 0)),
+            'id' => intval($this->request->post('id', 0)),
             'name' => strval($data['name'] ?? ''),
         ];
         SystemFile::mSave($data, '', $where);
@@ -182,24 +182,24 @@ class File extends Controller
     {
         return FormBuilder::mk()
             ->addTextInput('name', '文件名称', 'Name', true, '', null, [
-                'maxlength'      => 100,
+                'maxlength' => 100,
                 'required-error' => '文件名称不能为空！',
             ])
             ->addTextInput('size_display', '文件大小', 'Size', false, '', null, [
                 'readonly' => null,
-                'class'    => 'layui-bg-gray',
+                'class' => 'layui-bg-gray',
             ])
             ->addTextInput('type_display', '存储方式', 'Type', false, '', null, [
                 'readonly' => null,
-                'class'    => 'layui-bg-gray',
+                'class' => 'layui-bg-gray',
             ])
             ->addTextInput('hash', '文件哈希', 'Hash', false, '', null, [
                 'readonly' => null,
-                'class'    => 'layui-bg-gray',
+                'class' => 'layui-bg-gray',
             ])
             ->addTextInput('xurl', '文件链接', 'Link', false, '', null, [
                 'readonly' => null,
-                'class'    => 'layui-bg-gray',
+                'class' => 'layui-bg-gray',
             ])
             ->addSubmitButton()
             ->addCancelButton();

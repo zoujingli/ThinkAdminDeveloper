@@ -18,6 +18,8 @@ declare(strict_types=1);
  * +----------------------------------------------------------------------
  */
 use think\admin\Exception;
+use think\admin\Library;
+use think\admin\route\Url;
 use think\admin\runtime\SystemContext;
 
 if (!function_exists('auth')) {
@@ -53,10 +55,10 @@ if (!function_exists('system_uri')) {
      */
     function system_uri(string $url = '', array $vars = [], $suffix = true, $domain = false): string
     {
-        $target = \think\admin\route\Url::normalizeWebTarget($url);
+        $target = Url::normalizeWebTarget($url);
         return sysuri('system/index/index', [], $suffix, $domain)
             . '#'
-            . \think\admin\Library::$sapp->route->buildUrl($target, $vars)->suffix($suffix)->domain($domain)->build();
+            . Library::$sapp->route->buildUrl($target, $vars)->suffix($suffix)->domain($domain)->build();
     }
 }
 

@@ -29,6 +29,4 @@ use think\admin\Plugin;
  *
  * @class Service
  */
-class Service extends Plugin
-{
-}
+class Service extends Plugin {}

@@ -95,7 +95,7 @@ class FileControllerTest extends SqliteIntegrationTestCase
     private function bindAdminUser(): void
     {
         $this->context->setUser([
-            'id'       => 9101,
+            'id' => 9101,
             'username' => 'tester',
         ], true)->setNodes([
             'storage/file/index',
@@ -104,7 +104,7 @@ class FileControllerTest extends SqliteIntegrationTestCase
             'storage/file/distinct',
         ]);
         RequestContext::instance()->setAuth([
-            'id'       => 9101,
+            'id' => 9101,
             'username' => 'tester',
         ], '', true);
     }
