@@ -53,11 +53,12 @@
             "app": {
                 "name": "运行时服务",
                 "document": "https://thinkadmin.top/plugin/think-plugs-worker.html",
-                "description": "统一托管 ThinkAdmin 的 HTTP 与队列常驻进程，提供基于固定命令签名的跨平台进程管理能力。在 Linux / macOS 上优先使用 Workerman 守护化与信号重载，在 Windows 上通过 console.exe 启动独立后台 PHP 进程，并统一使用 xadmin:worker serve <service> 命令签名进行 start / stop / status / query / restart / check 管理。运行状态不再只依赖 pidFile，pid、进程扫描与健康检查会共同参与判断，避免因 runtime 文件丢失、误删或异常退出造成后续运维指令失效。",
+                "description": "提供 HTTP、队列和跨平台进程管理能力，统一托管 ThinkAdmin 常驻进程服务。",
                 "license": [
                     "Apache-2.0"
                 ],
-                "code": "worker"
+                "code": "worker",
+                "prefix": "worker"
             }
         }
     },

@@ -74,6 +74,7 @@
             "app": {
                 "name": "账号管理",
                 "document": "https://thinkadmin.top/plugin/think-plugs-account.html",
+                "description": "提供用户账号、终端账号和手机短信管理功能。",
                 "license": [
                     "VIP"
                 ],

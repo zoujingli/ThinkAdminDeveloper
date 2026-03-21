@@ -102,6 +102,7 @@
             "app": {
                 "name": "支付管理",
                 "document": "https://thinkadmin.top/plugin/think-plugs-payment.html",
+                "description": "提供支付配置、支付行为、支付退款和余额积分管理功能。",
                 "license": [
                     "VIP"
                 ],

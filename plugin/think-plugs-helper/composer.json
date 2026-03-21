@@ -41,6 +41,14 @@
       "services": [
         "plugin\\helper\\Service"
       ]
+    },
+    "xadmin": {
+      "app": {
+        "name": "开发者工具",
+        "description": "为 ThinkAdmin 提供开发辅助工具、代码生成与调试支持。",
+        "code": "helper",
+        "prefix": "helper"
+      }
     }
   }
 }

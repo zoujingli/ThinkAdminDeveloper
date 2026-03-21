@@ -14,7 +14,18 @@
     "php": "^8.1"
   },
   "extra": {
+    "think": {
+      "services": [
+        "plugin\\static\\Service"
+      ]
+    },
     "xadmin": {
+      "app": {
+        "name": "静态资源",
+        "description": "提供系统前端静态资源文件，包括样式、脚本和第三方组件。",
+        "code": "static",
+        "prefix": "static"
+      },
       "publish": {
         "init": {
           "stc/.env.example": ".env.example",

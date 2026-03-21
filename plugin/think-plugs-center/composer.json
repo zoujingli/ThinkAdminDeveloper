@@ -38,10 +38,10 @@
                 "root": {
                     "name": "插件入口",
                     "sort": 999,
-                    "node": "plugin-center/index/index"
+                    "node": "center/index/index"
                 },
                 "exists": {
-                    "url|node": "plugin-center/index/index"
+                    "url|node": "center/index/index"
                 }
             },
             "migrate": {
@@ -53,8 +53,9 @@
             "app": {
                 "name": "应用中心",
                 "document": "https://thinkadmin.top/plugin/think-plugs-center.html",
-                "code": "plugin-center",
-                "prefix": "plugin-center"
+                "description": "提供插件安装、管理和应用市场功能。",
+                "code": "center",
+                "prefix": "center"
             }
         }
     },

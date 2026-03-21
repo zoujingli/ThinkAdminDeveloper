@@ -46,12 +46,12 @@
                             {
                                 "name": "开放平台配置",
                                 "icon": "layui-icon layui-icon-set",
-                                "node": "plugin-wechat-service/config/index"
+                                "node": "wechat-service/config/index"
                             },
                             {
                                 "name": "公众号授权管理",
                                 "icon": "layui-icon layui-icon-dialogue",
-                                "node": "plugin-wechat-service/wechat/index"
+                                "node": "wechat-service/wechat/index"
                             }
                         ]
                     }
@@ -68,8 +68,8 @@
                     "wxapp",
                     "wechat"
                 ],
-                "code": "plugin-wechat-service",
-                "prefix": "plugin-wechat-service"
+                "code": "wechat-service",
+                "prefix": "wechat-service"
             }
         }
     }

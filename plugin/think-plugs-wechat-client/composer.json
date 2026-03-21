@@ -42,7 +42,7 @@
                     "sort": 200
                 },
                 "exists": {
-                    "url|node": "plugin-wechat-client/fans/index"
+                    "url|node": "wechat-client/fans/index"
                 },
                 "items": [
                     {
@@ -51,12 +51,12 @@
                             {
                                 "name": "微信接口配置",
                                 "icon": "layui-icon layui-icon-set",
-                                "node": "plugin-wechat-client/config/options"
+                                "node": "wechat-client/config/options"
                             },
                             {
                                 "name": "微信支付配置",
                                 "icon": "layui-icon layui-icon-rmb",
-                                "node": "plugin-wechat-client/config/payment"
+                                "node": "wechat-client/config/payment"
                             }
                         ]
                     },
@@ -66,27 +66,27 @@
                             {
                                 "name": "微信粉丝管理",
                                 "icon": "layui-icon layui-icon-username",
-                                "node": "plugin-wechat-client/fans/index"
+                                "node": "wechat-client/fans/index"
                             },
                             {
                                 "name": "微信图文管理",
                                 "icon": "layui-icon layui-icon-template-1",
-                                "node": "plugin-wechat-client/news/index"
+                                "node": "wechat-client/news/index"
                             },
                             {
                                 "name": "微信菜单配置",
                                 "icon": "layui-icon layui-icon-cellphone",
-                                "node": "plugin-wechat-client/menu/index"
+                                "node": "wechat-client/menu/index"
                             },
                             {
                                 "name": "回复规则管理",
                                 "icon": "layui-icon layui-icon-engine",
-                                "node": "plugin-wechat-client/keys/index"
+                                "node": "wechat-client/keys/index"
                             },
                             {
                                 "name": "关注自动回复",
                                 "icon": "layui-icon layui-icon-release",
-                                "node": "plugin-wechat-client/auto/index"
+                                "node": "wechat-client/auto/index"
                             }
                         ]
                     },
@@ -96,12 +96,12 @@
                             {
                                 "name": "微信支付行为",
                                 "icon": "layui-icon layui-icon-rmb",
-                                "node": "plugin-wechat-client/payment.record/index"
+                                "node": "wechat-client/payment.record/index"
                             },
                             {
                                 "name": "微信退款管理",
                                 "icon": "layui-icon layui-icon-engine",
-                                "node": "plugin-wechat-client/payment.refund/index"
+                                "node": "wechat-client/payment.refund/index"
                             }
                         ]
                     }
@@ -120,8 +120,8 @@
                     "wxapp",
                     "wechat"
                 ],
-                "code": "plugin-wechat-client",
-                "prefix": "plugin-wechat-client"
+                "code": "wechat-client",
+                "prefix": "wechat-client"
             }
         }
     },

@@ -25,6 +25,14 @@
       "services": [
         "plugin\\builder\\Service"
       ]
+    },
+    "xadmin": {
+      "app": {
+        "name": "PHAR 构建工具",
+        "description": "为 ThinkAdmin 项目提供 PHAR 打包构建能力。",
+        "code": "builder",
+        "prefix": "builder"
+      }
     }
   },
   "minimum-stability": "dev",
