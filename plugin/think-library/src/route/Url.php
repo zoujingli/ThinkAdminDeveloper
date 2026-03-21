@@ -45,6 +45,7 @@ declare(strict_types=1);
 namespace think\admin\route;
 
 use think\admin\Library;
+use think\admin\runtime\RequestContext;
 use think\admin\service\AppService;
 use think\admin\service\NodeService;
 use think\helper\Str;
@@ -101,6 +102,48 @@ class Url extends ThinkUrl
         $segments = self::shrinkWebSegments($segments, false);
         $target = join('/', $segments);
         $target = $target === '' ? '/' : '/' . ltrim($target, '/');
+
+        if (isset($info['query']) && $info['query'] !== '') {
+            $target .= '?' . $info['query'];
+        }
+        if (isset($info['fragment']) && $info['fragment'] !== '') {
+            $target .= '#' . $info['fragment'];
+        }
+
+        return $target;
+    }
+
+    /**
+     * 将 API 地址标准化为统一目标。
+     */
+    public static function normalizeApiTarget(string $url): string
+    {
+        if (
+            preg_match('#^(?:https?://|@|\[)#', $url)
+            || (strpos($url, '@') !== false && strpos($url, '\\') === false)
+        ) {
+            return $url;
+        }
+
+        $info = parse_url($url);
+        if (!is_array($info)) {
+            return $url;
+        }
+
+        $path = strval($info['path'] ?? '');
+        if ($path === '' && $url !== '') {
+            return $url;
+        }
+
+        $absolute = str_starts_with($path, '/');
+        $segments = array_values(array_filter(explode('/', trim(str_replace('\\', '/', $path), '/')), 'strlen'));
+        $apiPrefix = trim(AppService::pluginApiPrefix(), '/');
+        if ($apiPrefix !== '' && strcasecmp(strval($segments[0] ?? ''), $apiPrefix) === 0) {
+            array_shift($segments);
+        }
+
+        [$module, $controller, $action] = self::resolveApiSegments($segments, $absolute);
+        $target = '/' . trim("{$apiPrefix}/{$module}/{$controller}/{$action}", '/');
 
         if (isset($info['query']) && $info['query'] !== '') {
             $target .= '?' . $info['query'];
@@ -282,6 +325,67 @@ class Url extends ThinkUrl
         }
 
         return join('/', self::shrinkWebSegments($segments, true));
+    }
+
+    /**
+     * 解析 API 目标片段。
+     *
+     * @param array<int, string> $segments
+     * @return array{0:string,1:string,2:string}
+     */
+    private static function resolveApiSegments(array $segments, bool $absolute): array
+    {
+        $module = RequestContext::instance()->pluginCode() ?: (Library::$sapp->http->getName() ?: AppService::defaultAppCode());
+        $controller = Library::$sapp->request->controller();
+        $action = Library::$sapp->request->action(true);
+
+        if ($absolute) {
+            if (count($segments) >= 3) {
+                $module = array_shift($segments) ?: $module;
+                $controller = array_shift($segments) ?: $controller;
+                $action = join('/', $segments) ?: $action;
+            } elseif (count($segments) === 2) {
+                $module = $segments[0];
+                $controller = $segments[1];
+                $action = 'index';
+            } elseif (count($segments) === 1) {
+                $module = $segments[0];
+                $controller = 'index';
+                $action = 'index';
+            }
+        } else {
+            if (count($segments) >= 3) {
+                $module = array_shift($segments) ?: $module;
+                $controller = array_shift($segments) ?: $controller;
+                $action = join('/', $segments) ?: $action;
+            } elseif (count($segments) === 2) {
+                [$controller, $action] = $segments;
+            } elseif (count($segments) === 1) {
+                $action = $segments[0];
+            }
+        }
+
+        return [
+            Str::lower(trim(str_replace('\\', '/', strval($module)), '/')) ?: AppService::defaultAppCode(),
+            self::normalizeApiController(strval($controller)),
+            trim(str_replace('\\', '/', strval($action)), '/') ?: 'index',
+        ];
+    }
+
+    /**
+     * 标准化 API 控制器路径。
+     */
+    private static function normalizeApiController(string $controller): string
+    {
+        $controller = trim(str_replace(['.', '\\'], '/', $controller), '/');
+        $segments = array_values(array_filter(explode('/', $controller), 'strlen'));
+        if (($segments[0] ?? '') !== '' && strcasecmp($segments[0], 'api') === 0) {
+            array_shift($segments);
+        }
+
+        return join('/', array_map(static function (string $segment): string {
+            return Str::snake($segment);
+        }, $segments)) ?: 'index';
     }
 
     /**

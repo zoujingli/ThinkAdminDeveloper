@@ -88,8 +88,14 @@ class CommonFunctionsTest extends TestCase
 
         AppService::activatePlugin('system', 'system');
 
+        $this->assertSame('/api/system/upload/file', Url::normalizeApiTarget('upload/file'));
+        $this->assertSame('/api/system/upload/file?from=test', Url::normalizeApiTarget('/api/system/upload/file?from=test'));
+        $this->assertSame('/api/system/upload/index', Url::normalizeApiTarget('/system/upload'));
+        $this->assertSame('/api/system/upload/file', Url::normalizeApiTarget('api/upload/file'));
         $this->assertSame('/api/system/upload/file.html', apiuri('upload/file'));
         $this->assertSame('/api/system/upload/file.html', apiuri('/api/system/upload/file'));
+        $this->assertSame('/api/system/upload/index.html', apiuri('/system/upload'));
+        $this->assertSame('/api/system/upload/file.html', apiuri('api/upload/file'));
     }
 
     public function testXssSafeStripsScriptsAndNeutralizesInlineEvents(): void

@@ -25,14 +25,12 @@ use think\admin\helper\ValidateHelper;
 use think\admin\Library;
 use think\admin\model\ModelFactory;
 use think\admin\route\Url;
-use think\admin\runtime\RequestContext;
 use think\admin\service\AppService;
 use think\admin\service\CacheSession;
 use think\admin\service\RuntimeService;
 use think\admin\Storage;
 use think\db\BaseQuery;
 use think\db\Query;
-use think\helper\Str;
 use think\Model;
 
 if (!function_exists('p')) {
@@ -149,38 +147,7 @@ if (!function_exists('apiuri')) {
      */
     function apiuri(string $url = '', array $vars = [], bool|string $suffix = true, bool|string $domain = false): string
     {
-        if (preg_match('#^(?:https?://|/|@)#', $url)) {
-            return Library::$sapp->route->buildUrl($url, $vars)->suffix($suffix)->domain($domain)->build();
-        }
-
-        $attrs = $url === '' ? [] : array_values(array_filter(explode('/', trim($url, '/')), 'strlen'));
-        $module = RequestContext::instance()->pluginCode() ?: (Library::$sapp->http->getName() ?: AppService::defaultAppCode());
-        $controller = Library::$sapp->request->controller();
-        $action = Library::$sapp->request->action(true);
-
-        if (count($attrs) >= 3) {
-            $module = array_shift($attrs) ?: $module;
-            $controller = array_shift($attrs) ?: $controller;
-            $action = join('/', $attrs) ?: $action;
-        } elseif (count($attrs) === 2) {
-            [$controller, $action] = $attrs;
-        } elseif (count($attrs) === 1) {
-            $action = $attrs[0];
-        }
-
-        $module = Str::lower(trim(str_replace('\\', '/', $module), '/')) ?: AppService::defaultAppCode();
-        $controller = trim(str_replace(['.', '\\'], '/', $controller), '/');
-        $segments = array_values(array_filter(explode('/', $controller), 'strlen'));
-        if (($segments[0] ?? '') !== '' && strcasecmp($segments[0], 'api') === 0) {
-            array_shift($segments);
-        }
-        $controller = join('/', array_map(static function (string $segment): string {
-            return Str::snake($segment);
-        }, $segments)) ?: 'index';
-        $action = trim(str_replace('\\', '/', $action), '/') ?: 'index';
-
-        $apiPrefix = AppService::pluginApiPrefix();
-        $target = '/' . trim("{$apiPrefix}/{$module}/{$controller}/{$action}", '/');
+        $target = Url::normalizeApiTarget($url);
         return Library::$sapp->route->buildUrl($target, $vars)->suffix($suffix)->domain($domain)->build();
     }
 }
