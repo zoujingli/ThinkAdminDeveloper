@@ -121,7 +121,7 @@ Content-Type: application/json
 
 本组件包含单一安装脚本：
 
-- `stc/database/20241010000008_install_wuma20241010.php`
+- `stc/database/20241010000010_install_wuma20241010.php`
 
 迁移内容覆盖：
 

@@ -92,7 +92,7 @@ JSON-RPC 地址示例：
 
 本组件包含单一安装脚本：
 
-- `stc/database/20241010000004_install_wechat_service20241010.php`
+- `stc/database/20241010000009_install_wechat_service20241010.php`
 
 迁移内容包括：
 
