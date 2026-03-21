@@ -20,6 +20,7 @@ declare(strict_types=1);
 
 namespace plugin\center\service;
 
+use plugin\center\Service as CenterService;
 use think\admin\service\AppService;
 
 /**
@@ -28,21 +29,6 @@ use think\admin\service\AppService;
  */
 abstract class Plugin
 {
-    public const TYPE_MODULE = 'module';
-
-    public const TYPE_PLUGIN = 'plugin';
-
-    public const TYPE_SERVICE = 'service';
-
-    public const TYPE_LIBRARY = 'library';
-
-    public const types = [
-        self::TYPE_MODULE => '系统应用',
-        self::TYPE_PLUGIN => '功能插件',
-        self::TYPE_SERVICE => '基础服务',
-        self::TYPE_LIBRARY => '开发组件',
-    ];
-
     /**
      * 判断安装状态
      */
@@ -52,30 +38,23 @@ abstract class Plugin
     }
 
     /**
-     * 获取本地插件.
-     * @param ?string $type 插件类型
-     * @param bool $check 检查权限
+     * 获取可进入插件列表。
+     * @param bool $check 是否只返回已配置菜单且可见的插件
      */
-    public static function getLocalPlugs(?string $type = null, bool $check = false): array
+    public static function getLocalPlugs(bool $check = false): array
     {
         $data = [];
         foreach (AppService::all(true) as $code => $packer) {
             $install = (array)($packer['install'] ?? []);
-            $ptype = strval($packer['type'] ?? ($install['type'] ?? ''));
-            if (is_string($type) && $ptype !== $type) {
-                continue;
-            }
             // 插件菜单处理
             $menus = AppService::menus($packer, $check, false);
-            if ($check) {
-                if (empty($menus)) {
-                    continue;
-                }
+            if ($check && (empty($packer['show']) || empty($menus))) {
+                continue;
             }
             // 组件应用插件
             $encode = encode($code);
             $data[$packer['package']] = [
-                'type' => $ptype,
+                'type' => 'plugin',
                 'code' => $code,
                 'name' => $packer['name'] ?: ($install['name'] ?? ''),
                 'cover' => $install['cover'] ?? '',
@@ -89,7 +68,7 @@ abstract class Plugin
                 'platforms' => $packer['platforms'] ?? [],
                 'plugmenus' => $menus,
                 'encode' => $encode,
-                'center' => sysuri('index/layout', ['encode' => $encode], false),
+                'center' => sysuri('/' . CenterService::getAppCode() . '/layout', ['encode' => $encode], false),
             ];
         }
         return $data;

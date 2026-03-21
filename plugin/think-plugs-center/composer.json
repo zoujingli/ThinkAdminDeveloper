@@ -1,69 +1,65 @@
 {
-  "type": "think-admin-plugin",
-  "name": "zoujingli/think-plugs-center",
-  "version": "8.0.x-dev",
-  "license": "Apache-2.0",
-  "homepage": "https://thinkadmin.top",
-  "description": "Plugin Center for ThinkAdmin",
-  "authors": [
-    {
-      "name": "Anyon",
-      "email": "zoujingli@qq.com"
-    }
-  ],
-  "require": {
-    "php": "^8.1",
-    "ext-json": "*",
-    "zoujingli/think-plugs-helper": "^8.0",
-    "zoujingli/think-library": "^8.0",
-    "zoujingli/think-plugs-system": "^8.0"
-  },
-  "autoload": {
-    "files": [
-      "src/common.php"
-    ],
-    "psr-4": {
-      "plugin\\center\\": "src"
-    }
-  },
-  "extra": {
-    "think": {
-      "services": [
-        "plugin\\center\\Service"
-      ]
-    },
-    "xadmin": {
-      "service": {
-        "code": "plugin-center",
-        "prefix": "plugin-center",
-        "type": "service",
-        "name": "应用中心"
-      },
-      "menu": {
-        "root": {
-          "name": "插件入口",
-          "sort": 999,
-          "node": "plugin-center/index/index"
-        },
-        "exists": {
-          "url|node": "plugin-center/index/index"
+    "type": "think-admin-plugin",
+    "name": "zoujingli/think-plugs-center",
+    "version": "8.0.x-dev",
+    "license": "Apache-2.0",
+    "homepage": "https://thinkadmin.top",
+    "description": "Plugin Center for ThinkAdmin",
+    "authors": [
+        {
+            "name": "Anyon",
+            "email": "zoujingli@qq.com"
         }
-      },
-      "migrate": {
-        "file": "20241010000004_install_center20241010.php",
-        "class": "InstallCenter20241010",
-        "name": "CenterPlugin",
-        "export_empty": true
-      }
+    ],
+    "require": {
+        "php": "^8.1",
+        "ext-json": "*",
+        "zoujingli/think-plugs-helper": "^8.0",
+        "zoujingli/think-library": "^8.0",
+        "zoujingli/think-plugs-system": "^8.0"
     },
+    "autoload": {
+        "files": [
+            "src/common.php"
+        ],
+        "psr-4": {
+            "plugin\\center\\": "src"
+        }
+    },
+    "extra": {
+        "think": {
+            "services": [
+                "plugin\\center\\Service"
+            ]
+        },
+        "xadmin": {
+            "menu": {
+                "show": false,
+                "root": {
+                    "name": "插件入口",
+                    "sort": 999,
+                    "node": "plugin-center/index/index"
+                },
+                "exists": {
+                    "url|node": "plugin-center/index/index"
+                }
+            },
+            "migrate": {
+                "file": "20241010000004_install_center20241010.php",
+                "class": "InstallCenter20241010",
+                "name": "CenterPlugin",
+                "export_empty": true
+            },
+            "app": {
+                "name": "应用中心",
+                "document": "https://thinkadmin.top/plugin/think-plugs-center.html",
+                "code": "plugin-center",
+                "prefix": "plugin-center"
+            }
+        }
+    },
+    "minimum-stability": "dev",
     "config": {
-      "type": "service",
-      "name": "插件应用管理",
-      "document": "https://thinkadmin.top/plugin/think-plugs-center.html"
+        "sort-packages": true
     }
-  },
-  "minimum-stability": "dev",
-  "config": {
-    "sort-packages": true
-  }
 }

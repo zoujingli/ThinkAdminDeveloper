@@ -46,7 +46,10 @@ if (!function_exists('plguri')) {
     function plguri(string $url = '', array $vars = [], $suffix = true, $domain = false): string
     {
         $encode = encode(RequestContext::instance()->pluginCode());
-        return sysuri('index/layout', ['encode' => $encode], false) . '#' . url($url, $vars, $suffix, $domain)->build();
+        $target = \think\admin\route\Url::normalizeWebTarget($url);
+        return sysuri('/' . \plugin\center\Service::getAppCode() . '/layout', ['encode' => $encode], false)
+            . '#'
+            . \think\admin\Library::$sapp->route->buildUrl($target, $vars)->suffix($suffix)->domain($domain)->build();
     }
 }
 

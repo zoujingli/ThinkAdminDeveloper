@@ -23,31 +23,12 @@ namespace plugin\center;
 use think\admin\Plugin;
 
 /**
- * 组件注册服务
+ * Plugin service registration.
+ *
+ * Metadata is loaded from composer.json `extra.xadmin.*`.
+ *
  * @class Service
  */
 class Service extends Plugin
 {
-    /**
-     * 定义插件名称.
-     */
-    protected string $appName = '应用中心';
-
-    /**
-     * 定义插件入口.
-     */
-    protected string $appCode = 'plugin-center';
-
-    /**
-     * 定义安装包名.
-     */
-    protected string $package = 'zoujingli/think-plugs-center';
-
-    /**
-     * 定义插件菜单.
-     */
-    public static function menu(): array
-    {
-        return [];
-    }
 }
