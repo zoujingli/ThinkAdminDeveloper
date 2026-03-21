@@ -60,6 +60,7 @@ class ComposerInstallBoundaryTest extends TestCase
 
     public function testPluginComposerMetadataUsesXadminAppOnly(): void
     {
+        $allowed = ['code', 'name', 'prefix', 'prefixes', 'alias', 'space', 'document', 'description', 'platforms', 'license', 'icon', 'cover', 'super'];
         $legacy = [];
         $missing = [];
         $invalid = [];
@@ -93,8 +94,8 @@ class ComposerInstallBoundaryTest extends TestCase
             if (trim(strval($app['code'] ?? '')) === '' || trim(strval($app['name'] ?? '')) === '') {
                 $missing[] = str_replace(TEST_PROJECT_ROOT . '/', '', $file) . ' missing code/name';
             }
-            foreach (['type', 'version', 'homepage'] as $key) {
-                if (array_key_exists($key, $app)) {
+            foreach (array_keys($app) as $key) {
+                if (!in_array($key, $allowed, true)) {
                     $invalid[] = str_replace(TEST_PROJECT_ROOT . '/', '', $file) . " contains unsupported xadmin.app.{$key}";
                 }
             }

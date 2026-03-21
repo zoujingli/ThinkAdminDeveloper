@@ -1,153 +1,80 @@
 # Plugin-First Refactor
 
 ## 相关文档
-
 - [插件标准](./plugin-standard.md)
 - [路由调度标准](./route-dispatch-standard.md)
 - [软删除标准](./soft-delete-standard.md)
 
 ## 目标
-
-项目已经切换到 ThinkPHP 8.1 的插件优先架构，当前运行原则为：
-
-- `plugin/*` 是主模块形态
-- `app/*` 保留本地多应用形态
-- 默认本地应用是 `app/index`
-- 当 `/x/...` 命中已注册插件前缀时进入插件
-- 当 `/x/...` 命中本地应用首段时进入对应本地应用
-- Web 页面标准入口为 `/{plugin}/...`
-- API 标准入口为 `/api/{plugin}/{controller}/{action}`
-- 根目录全局路由可以显式声明目标本地应用或插件
-- 当 `/x/...` 未命中显式规则时回退到默认本地应用
-- `_plugin / X-Plugin-App` 只保留为可选调试开关，默认关闭
+- `plugin/*` 作为主业务承载目录。
+- `app/*` 仅保留本地多应用和过渡代码。
+- 页面入口统一为 `/{plugin}/...`。
+- 接口入口统一为 `/api/{plugin}/{controller}/{action}`。
+- 路由分发优先命中插件，再命中本地应用，最后回退到默认本地应用。
+- `_plugin` 与 `X-Plugin-App` 只保留为调试开关，默认关闭。
 
 ## 组件边界
 
-当前总图见：[plugin-boundaries.md](./plugin-boundaries.md)
-
 ### ThinkLibrary
-
-负责核心运行时与基础设施：
-
-- 插件发现、插件元数据解析、URL 前缀绑定、本地多应用回退
-- `Controller`、`Model`、`QueryHelper`、`Storage` 门面和公共工具
-- JWT 认证、任务协议契约、基础命令
-- 不再承载后台守护进程和数据库脚本导出
+- 提供 `Controller`、`Model`、`Plugin`、`Command` 等基础类型。
+- 负责插件发现、元数据读取、URL 构建、运行时上下文与路由适配。
+- 负责通用会话、JWT、RPC、Storage 门面与标准契约。
+- 不承载后台壳层、守护进程与发布导出能力。
 
 ### ThinkPlugsSystem
-
-负责系统后台与共享系统能力：
-
-- `system_auth / system_auth_node / system_menu / system_user`
-- `system_config / system_data / system_base / system_oplog`
-- 后台登录、权限菜单、后台用户、系统配置、日志、文件、队列入口
-- 共享系统配置、扩展数据、字典与日志服务
+- 负责后台登录、首页、权限菜单、用户、系统配置、日志等后台壳层能力。
+- 持有 `system_auth`、`system_auth_node`、`system_menu`、`system_user`。
+- 持有 `system_config`、`system_data`、`system_base`、`system_oplog`。
 
 ### ThinkPlugsWorker
-
-负责标准运行时：
-
-- Workerman `http` 托管
-- Workerman `queue` 调度
-- 双平台进程状态查询与控制
-- `xadmin:worker` 统一入口
-
-### ThinkPlugsHelper
-
-负责开发与安装期工具：
-
-- Model 注释生成
-- 数据库结构导出
-- 插件迁移打包
-- `xadmin:publish`
-- `xadmin:package`
+- 负责 Workerman 常驻进程、HTTP 托管、队列调度与运行控制。
+- 提供 `xadmin:worker` 统一入口。
+- 持有 `system_queue`。
 
 ### ThinkPlugsStorage
+- 负责驱动注册、配置协议、上传授权、上传接口与文件管理。
+- 提供 `storage/config/*`、`storage/file/*` 与 `/api/storage/upload/*`。
+- 持有 `system_file`。
 
-负责标准存储中心：
+### ThinkPlugsHelper
+- 负责迁移导出、安装包生成、菜单校验、发布命令和开发辅助工具。
+- 提供 `xadmin:publish`、`xadmin:package`、`xadmin:helper:*`。
 
-- 驱动注册中心与统一配置协议
-- 本地、OSS、COS、Qiniu、Upyun、Alist 等驱动适配
-- 上传授权与上传接口
-- 存储后台配置页和入口
+### 业务插件
+- `ThinkPlugsWechatClient`、`ThinkPlugsWechatService`、`ThinkPlugsPayment`、`ThinkPlugsWemall` 等只承载自己的业务模型、控制器和菜单。
+- 不再把公共基础能力回写到 `app/*` 或 `extend/*`。
 
-### ThinkPlugsWechatClient
-
-负责公众号标准平台：
-
-- 微信配置、菜单、粉丝、素材、关键字、支付与退款
-- 不再依赖 `app/wechat`
-
-### ThinkPlugsWechatService
-
-负责公众号开放平台：
-
-- 开放平台配置、第三方授权接入、远程 JSON-RPC 调度
-- 作为 `ThinkPlugsWechatClient` 的开放平台服务端
-
-## 当前已落地
-
-- 插件元数据统一收敛到 `extra.think.services / extra.xadmin.service / extra.xadmin.menu / extra.xadmin.migrate`
-- `MultAccess` 改为插件前缀优先、本地应用兼容、默认本地应用回退
-- 根目录全局路由支持显式声明目标本地应用或插件
-- `ThinkPlugsSystem` 与 `ThinkPlugsWechatClient` 改为插件直载
-- `ThinkPlugsStorage` 已独立成完整插件，包含驱动、配置页和上传入口
-- 后台认证已切换为纯 JWT / Token
-- 前端已统一为 `LayUI + $.module.use(...)`
-- `RequireJS` 已彻底移除
-- `extend` 根目录旧门面已清理，内部统一改用新分域实现
+## 当前状态
+- 插件元数据统一收敛到 `composer.json > extra.xadmin`。
+- `ThinkLibrary` 已支持插件优先分发、本地应用兼容和默认本地应用回退。
+- `ThinkPlugsSystem`、`ThinkPlugsStorage`、`ThinkPlugsWorker` 的共享表已明确归属。
+- 旧的根级门面与历史兼容目录已逐步收缩到最小集合。
+- 插件中心、存储中心、系统后台都已切换到插件化入口。
 
 ## 当前约定
 
 ### 插件注册
-
-- 插件服务统一命名为 `Service`
-- 插件前缀由 `Service` 属性和 `app.plugin.bindings` 共同决定
-- 插件菜单必须由 `Service::menu()` 和控制器 `@auth + @menu` 同步声明
+- 每个插件统一使用 `src/Service.php` 作为服务入口。
+- 服务类统一通过 `composer.json > extra.think.services` 注册。
+- 插件编码、前缀、菜单、迁移、说明文档统一写在 `extra.xadmin`。
 
 ### 运行时
+- 页面链接优先使用 `sysuri()`。
+- 标准接口链接优先使用 `apiuri()`。
+- 根目录全局路由优先使用 `Route::bindApp()`、`Route::bindPlugin()`、`Route::appGroup()`、`Route::pluginGroup()`。
+- 新代码不再依赖旧式三段路由推断目标应用。
 
-- `ThinkLibrary` 只保留运行时绑定和执行协议
-- `ThinkPlugsSystem` 负责系统后台壳层、认证权限和 `system_*` 核心表
-- `ThinkPlugsWorker` 负责守护进程生命周期
-- `ThinkPlugsHelper` 负责安装、发布和迁移导出
-- 新 API 入口直接映射现有 `controller/api/*`，旧的 `plugin/api.xxx/...` 仍保留兼容
+### 共享表归属
+- `system_auth`、`system_auth_node`、`system_menu`、`system_user` 归 `ThinkPlugsSystem`。
+- `system_config`、`system_data`、`system_base`、`system_oplog` 归 `ThinkPlugsSystem`。
+- `system_file` 归 `ThinkPlugsStorage`。
+- `system_queue` 归 `ThinkPlugsWorker`。
 
-### 双入口标准
-
-- 本地应用入口使用 `/{app}/{controller}/{action}`
-- 默认本地应用生成 URL 时可省略 `index`
-- 页面入口统一使用 `/{plugin}/...`
-- 接口入口统一使用 `/api/{plugin}/{controller}/{action}`
-- 页面链接优先使用 `sysuri()`
-- 接口链接优先使用 `apiuri()`
-- 根目录全局路由优先使用 `Route::bindApp()` / `Route::bindPlugin()`
-- 系统后台脚本会统一下发 `taSystem / taSystemApi / taStorage / taStorageApi / taApiPrefix`
-- 插件模板、静态脚本、上传脚本和公开预览页都应优先消费这组变量或 `apiuri()`
-
-示例：
-
-- `/index/index/index`
-- `/member/center/index`
-- `/system/index/index`
-- `/storage/config/index`
-- `/api/system/plugs/script`
-- `/api/storage/upload/index`
-- `/api/wechat/view/text`
-- `/api/plugin-wechat-service/client/jsonrpc`
-
-### 数据库脚本
-
-- 每个插件只保留一份最终安装脚本
-- 根目录 `database/migrations` 视为发布产物
-- 主来源以插件 `stc/database` 为准
-- `system_base / system_config / system_data / system_oplog` 归 `ThinkPlugsSystem`
-- `system_file` 归 `ThinkPlugsStorage`
-- `system_queue` 归 `ThinkPlugsWorker`
-- `system_auth / system_auth_node / system_menu / system_user` 归 `ThinkPlugsSystem`
+### 前端脚本变量
+- 系统脚本统一下发 `taSystem`、`taSystemApi`、`taStorage`、`taStorageApi`、`taApiPrefix`。
+- 插件模板、静态脚本、上传脚本和公开预览页都优先消费这组变量。
 
 ## 后续收尾
-
-1. 继续统一剩余文档模板和模块说明。
-2. 为 `System / Storage / Worker` 补一轮完整安装升级回归。
-3. 按 Win/Linux 再做一轮完整运行回归。
+1. 继续清理历史文档和模板中的旧路由示例。
+2. 持续补齐跨平台回归，覆盖 Windows 与 Linux。
+3. 新增插件时严格走 `plugin-standard.md` 中的准入规则。

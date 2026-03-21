@@ -1,94 +1,65 @@
 # ThinkPlugsSystem for ThinkAdmin
 
-**ThinkPlugsSystem** 是 ThinkAdmin 8 / ThinkPHP 8.1 的系统后台与共享系统能力组件，统一承载后台登录、权限菜单、系统用户，以及 `system_*` 共享数据表与服务。
-
 ## 版本基线
-
 - ThinkAdmin `8.x`
 - ThinkPHP `8.1+`
 - PHP `8.1+`
 
-## 组件职责
+## 组件说明
+`ThinkPlugsSystem` 是后台系统壳层，负责登录、权限、菜单、用户、系统配置、日志和系统级后台页面。
 
-- 后台壳层：登录、首页、系统配置、任务、日志、菜单、权限、用户、文件等后台页面
-- 认证权限：JWT 登录态、RBAC 权限校验、系统上下文实现
-- 系统共享表：`system_base`、`system_config`、`system_data`、`system_oplog`
-- 后台核心表：`system_auth`、`system_auth_node`、`system_menu`、`system_user`
+它负责“系统后台本身”，不再承担存储驱动实现和队列守护进程实现。
+
+## 主要职责
+- 提供系统登录、首页、权限、菜单、用户、日志、配置等页面。
+- 实现 JWT 登录态、RBAC 权限校验和系统上下文。
+- 维护系统共享表与后台核心表。
+- 提供系统级辅助函数与脚本变量。
+
+## 共享表归属
+- `system_auth`
+- `system_auth_node`
+- `system_menu`
+- `system_user`
+- `system_config`
+- `system_data`
+- `system_base`
+- `system_oplog`
 
 ## 组件边界
-
-- `ThinkLibrary` 只保留基础设施、契约、运行时门面和通用 Helper
-- `ThinkPlugsSystem` 负责系统后台入口和所有 `system_*` 核心模型/控制器
-- `ThinkPlugsStorage` 负责 `system_file`
-- `ThinkPlugsWorker` 负责 `system_queue`
-
-## 依赖关系
-
-- 必需：`zoujingli/think-library`
-- 必需：`zoujingli/think-plugs-helper`
-- 必需：`zoujingli/think-plugs-static`
-- 必需：`zoujingli/think-plugs-storage`
-- 必需：`zoujingli/think-plugs-worker`
-
-## 安装组件
-
-```bash
-composer require zoujingli/think-plugs-system
-
-php think xadmin:publish --migrate
-```
-
-## 主要迁移
-
-- `stc/database/20241010000001_install_system20241010.php`
+- `ThinkPlugsStorage` 负责 `system_file`。
+- `ThinkPlugsWorker` 负责 `system_queue`。
+- `ThinkLibrary` 只保留基础设施、契约、运行时门面和通用 Helper。
 
 ## 主要入口
-
-- `system/login/index`
-- `system/index/index`
-- `system/config/index`
-- `system/queue/index`
-- `system/oplog/index`
-- `system/base/index`
-- `system/file/index`
-- `system/menu/index`
-- `system/auth/index`
-- `system/user/index`
+- `/system/login`
+- `/system`
+- `/system/config`
+- `/system/menu`
+- `/system/auth`
+- `/system/user`
+- `/system/oplog`
+- `/system/queue`
+- `/system/file`
 
 ## 双入口标准
-
-`ThinkPlugsSystem` 同时承载后台页面入口和系统 API 入口：
-
 - Web 页面：`/system/...`
 - API 接口：`/api/system/...`
 
-典型示例：
-
-- `/system/index/index`
-- `/system/config/index`
-- `/system/queue/index`
-- `/api/system/plugs/script`
-- `/api/system/queue/status`
-- `/api/system/system/config`
-
-前端公共脚本会下发：
-
-- `taSystem`
-- `taSystemApi`
-- `taApiPrefix`
-- `taStorage`
-- `taStorageApi`
-
 ## 全局能力
-
 - 辅助函数：`auth`、`system_user`、`system_uri`
 - 系统函数：`sysconf`、`sysdata`、`sysoplog`
+- 前端变量：`taSystem`、`taSystemApi`、`taApiPrefix`、`taStorage`、`taStorageApi`
+
+## 安装
+```bash
+composer require zoujingli/think-plugs-system
+php think xadmin:publish --migrate
+```
 
 ## 平台说明
-
 - Windows 兼容
 - Linux 兼容
 
 ## 许可证
-
-`ThinkPlugsSystem` 基于 `MIT` 发布。
+`ThinkPlugsSystem` 基于 `Apache-2.0` 发布。
