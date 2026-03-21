@@ -10,19 +10,20 @@
 
 ## 详细描述
 
-- 这个仓库不是单一应用，而是围绕 ThinkAdmin 8 / ThinkPHP 8.1 组织的一组标准组件，覆盖核心库、运行时、后台平台和业务插件。
-- 目标不是维护旧版多应用项目，而是把系统重构成“插件优先、单应用兜底、服务注册标准化、组件边界清晰”的结构。
+- 这个仓库不是单一应用，而是围绕 ThinkAdmin 8 / ThinkPHP 8.1 组织的一组标准组件，覆盖核心库、运行时、后台平台、业务插件和本地多应用。
+- 目标不是维护旧版多应用项目，而是把系统重构成"插件优先、本地应用兼容、服务注册标准化、组件边界清晰"的结构。
 - 当前所有核心能力都已经按组件拆分：`ThinkLibrary` 提供核心层，`System` 提供系统后台与 `system_*` 核心能力，`Worker` 提供常驻运行时，`Storage` 提供存储中心，`Helper` 提供开发与交付工具，业务插件只承载各自业务域。
-- 因此这个仓库更适合作为组件化开发基线和业务插件宿主，而不是传统的单仓单应用模板。
+- 因此这个仓库更适合作为组件化开发基线和业务插件宿主，同时支持本地多应用扩展，而不是传统的单仓单应用模板。
 
 ## 架构说明
 
-- 核心层：`ThinkLibrary` 提供运行时、认证、任务契约、菜单节点、模型查询和基础工具。
-- 系统层：`ThinkPlugsSystem` 提供后台壳层、认证权限、系统用户，以及 `system_*` 共享配置、字典、扩展数据和操作日志。
-- 运行层：`ThinkPlugsWorker` 用 Workerman 托管 `http` 和 `queue` 两类常驻服务。
-- 平台层：`ThinkPlugsCenter`、`ThinkPlugsStorage`、`ThinkPlugsWechatClient`、`ThinkPlugsWechatService` 提供插件平台和标准能力入口。
-- 业务层：`ThinkPlugsAccount`、`ThinkPlugsPayment`、`ThinkPlugsWemall`、`ThinkPlugsWuma` 负责各自业务域。
-- 交付层：`ThinkPlugsHelper` 和 `ThinkPlugsStatic` 负责发布、迁移、安装包、静态资源和项目骨架。
+- **本地应用层**：`app/*` 提供本地多应用能力，`app/index` 为默认本地应用，支持按需扩展其他本地应用
+- **核心层**：`ThinkLibrary` 提供运行时、认证、任务契约、菜单节点、模型查询和基础工具。
+- **系统层**：`ThinkPlugsSystem` 提供后台壳层、认证权限、系统用户，以及 `system_*` 共享配置、字典、扩展数据和操作日志。
+- **运行层**：`ThinkPlugsWorker` 用 Workerman 托管 `http` 和 `queue` 两类常驻服务。
+- **平台层**：`ThinkPlugsCenter`、`ThinkPlugsStorage`、`ThinkPlugsWechatClient`、`ThinkPlugsWechatService` 提供插件平台和标准能力入口。
+- **业务层**：`ThinkPlugsAccount`、`ThinkPlugsPayment`、`ThinkPlugsWemall`、`ThinkPlugsWuma` 负责各自业务域。
+- **交付层**：`ThinkPlugsHelper` 和 `ThinkPlugsStatic` 负责发布、迁移、安装包、静态资源和项目骨架。
 
 ```mermaid
 flowchart TD
@@ -49,46 +50,114 @@ flowchart TD
 
 ### 核心组件
 
-- **ThinkLibrary**
-  核心基础库，负责运行时、JWT、任务协议、控制器和公共工具。
-- **ThinkPlugsSystem**
-  系统后台组件，负责登录、权限、菜单、用户和 `system_*` 核心能力。
-- **ThinkPlugsWorker**
-  Workerman 运行时组件，负责 `http` 和 `queue` 常驻服务，并提供基于固定命令签名的跨平台进程控制能力。Linux / macOS 优先走 Workerman 守护化与信号控制，Windows 通过 `console.exe` 启动后台 PHP 进程，`status / query / stop / restart / check` 不再只依赖 `pidFile`。
-- **ThinkPlugsHelper**
-  开发辅助组件，负责迁移导出、发布、安装包和注释生成。
-- **ThinkPlugsStorage**
-  存储中心组件，负责驱动注册、上传授权和标准化配置。
-- **ThinkPlugsStatic**
-  静态资源和项目骨架组件。
+- **ThinkLibrary** (`zoujingli/think-library`)
+  核心基础库，提供运行时、JWT 令牌、任务协议、标准控制器、模型扩展和公共工具。
+  - 命名空间：`think\admin\`
+  - 服务注册：`think\admin\Library`
+  - 主要功能：插件发现、路由适配、认证会话、队列契约、Storage 门面
+
+- **ThinkPlugsSystem** (`zoujingli/think-plugs-system`)
+  系统后台组件，提供后台壳层、认证权限、菜单用户和 `system_*` 核心能力。
+  - 命名空间：`plugin\system\`
+  - 服务注册：`plugin\system\Service`
+  - 数据表：`system_auth`, `system_auth_node`, `system_menu`, `system_user`, `system_config`, `system_data`, `system_base`, `system_oplog`
+  - 默认菜单：系统配置、系统数据、权限管理
+
+- **ThinkPlugsWorker** (`zoujingli/think-plugs-worker`)
+  Workerman 运行时组件，负责 `http` 和 `queue` 常驻服务，提供跨平台进程管理能力。
+  - 命名空间：`plugin\worker\`
+  - 服务注册：`plugin\worker\Service`
+  - 数据表：`system_queue`
+  - 命令入口：`php think xadmin:worker`
+  - 跨平台：Linux/macOS 使用 Workerman 守护进程，Windows 使用 console.exe
+
+- **ThinkPlugsHelper** (`zoujingli/think-plugs-helper`)
+  开发辅助组件，提供迁移工具、发布命令、安装包生成和开发辅助功能。
+  - 命名空间：`plugin\helper\`
+  - 服务注册：`plugin\helper\Service`
+  - 主要命令：`xadmin:publish`, `xadmin:package`, `xadmin:helper:*`
+
+- **ThinkPlugsStorage** (`zoujingli/think-plugs-storage`)
+  存储中心组件，统一管理存储驱动、上传授权和配置元数据。
+  - 命名空间：`plugin\storage\`
+  - 服务注册：`plugin\storage\Service`
+  - 数据表：`system_file`
+  - 支持驱动：本地存储、OSS、COS 等
+
+- **ThinkPlugsStatic** (`zoujingli/think-plugs-static`)
+  静态资源和项目骨架组件，提供前端静态文件、模板和项目初始化骨架。
+  - 无前缀，通过其他插件间接使用
+  - 主要功能：静态资源发布、项目骨架生成
 
 ### 平台插件
-- **ThinkPlugsCenter**
-  插件应用中心。
-- **ThinkPlugsWechatClient**
-  公众号标准平台。
-- **ThinkPlugsWechatService**
-  公众号开放平台。
+
+- **ThinkPlugsCenter** (`zoujingli/think-plugs-center`)
+  插件应用中心，提供插件安装、卸载、升级和管理功能。
+  - 命名空间：`plugin\center\`
+  - 服务注册：`plugin\center\Service`
+  - 访问前缀：`plugin-center`
+  - 菜单：隐藏（后台管理入口）
+
+- **ThinkPlugsWechatClient** (`zoujingli/think-plugs-wechat-client`)
+  微信公众号标准平台，提供公众号基础能力、菜单管理、消息推送等。
+  - 命名空间：`plugin\wechat\`
+  - 服务注册：`plugin\wechat\Service`
+  - 访问前缀：`wechat`
+  - 数据表：微信配置、菜单、消息记录等
+
+- **ThinkPlugsWechatService** (`zoujingli/think-plugs-wechat-service`)
+  微信公众号开放平台，提供第三方平台托管、授权管理等。
+  - 命名空间：`plugin\wechat\service\`
+  - 服务注册：`plugin\wechat\service\Service`
+  - 访问前缀：`plugin-wechat-service`
+  - 数据表：第三方授权、组件配置等
 
 ### 业务插件
 
-- **ThinkPlugsAccount**
-  多端账号体系。
-- **ThinkPlugsPayment**
-  支付中心。
-- **ThinkPlugsWemall**
-  分销商城。
-- **ThinkPlugsWuma**
-  一物一码与防伪溯源。
+- **ThinkPlugsAccount** (`zoujingli/think-plugs-account`)
+  多端账号体系，统一管理用户账号、终端设备和短信服务。
+  - 命名空间：`plugin\account\`
+  - 服务注册：`plugin\account\Service`
+  - 访问前缀：`account`
+  - 数据表：用户账号、终端绑定、短信记录等
+  - 许可证：VIP 授权
+  - 菜单：用户管理（用户账号、终端账号、短信管理）
+
+- **ThinkPlugsPayment** (`zoujingli/think-plugs-payment`)
+  支付中心，统一管理支付配置、交易记录、退款、余额和积分。
+  - 命名空间：`plugin\payment\`
+  - 服务注册：`plugin\payment\Service`
+  - 访问前缀：`payment`
+  - 数据表：支付配置、交易记录、退款记录、余额明细、积分明细
+  - 许可证：VIP 授权
+  - 菜单：支付管理（配置、交易、退款、余额、积分）
+
+- **ThinkPlugsWemall** (`zoujingli/think-plugs-wemall`)
+  分销商城系统，提供完整的电商管理能力。
+  - 命名空间：`plugin\wemall\`
+  - 服务注册：`plugin\wemall\Service`
+  - 访问前缀：`wemall`
+  - 数据表：商品、订单、用户、等级、代理、物流等
+  - 许可证：VIP 授权
+  - 菜单：商城配置、用户管理、商城管理、代理管理、帮助咨询
+
+- **ThinkPlugsWuma** (`zoujingli/think-plugs-wuma`)
+  一物一码与防伪溯源系统。
+  - 命名空间：`plugin\wuma\`
+  - 服务注册：`plugin\wuma\Service`
+  - 访问前缀：`wuma`
+  - 数据表：防伪码、溯源记录等
+  - 许可证：VIP 授权
 
 ## 当前架构约定
 
 ### 路由与应用
 
-- `app` 只保留一个 `single_app`
+- `app/*` 支持本地多应用，`app/index` 为默认本地应用
+- 本地应用入口：`/{app}/{controller}/{action}`（默认应用可省略首段）
 - 插件通过 URL 前缀注册访问入口
 - 请求首段命中插件前缀时切换到插件
-- 未命中插件前缀时回退到单应用
+- 未命中插件前缀时回退到本地应用
 - 动态插件切换默认关闭
 - 页面入口统一使用 `/{plugin}/...`
 - 接口入口统一使用 `/api/{plugin}/{controller}/{action}`
@@ -154,8 +223,8 @@ flowchart TD
 
 ### 目录
 
-- `app` 只保留单应用入口
-- 实际源码只维护在 `plugin/*/src`
+- `app/*` 支持本地多应用扩展，实际源码可维护在 `app/*/controller` 或 `plugin/*/src`
+- 核心业务源码优先维护在 `plugin/*/src`
 
 ## 开发工具
 
