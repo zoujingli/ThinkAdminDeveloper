@@ -95,7 +95,7 @@ flowchart TD
   插件应用中心，提供插件安装、卸载、升级和管理功能。
   - 命名空间：`plugin\center\`
   - 服务注册：`plugin\center\Service`
-  - 访问前缀：`plugin-center`
+  - 访问前缀：`center`
   - 菜单：隐藏（后台管理入口）
 
 - **ThinkPlugsWechatClient** (`zoujingli/think-plugs-wechat-client`)

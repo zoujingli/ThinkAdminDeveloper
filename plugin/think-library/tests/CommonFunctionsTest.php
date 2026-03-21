@@ -75,16 +75,16 @@ class CommonFunctionsTest extends TestCase
     public function testSysuriAndUrlBuildSupportShortWebPaths(): void
     {
         $this->assertSame('/system', Url::normalizeWebTarget('system/index/index'));
-        $this->assertSame('/plugin-center?from=force', Url::normalizeWebTarget('/plugin-center/index/index?from=force'));
-        $this->assertSame('/plugin-center/layout?encode=test', Url::normalizeWebTarget('/plugin-center/layout?encode=test'));
+        $this->assertSame('/center?from=force', Url::normalizeWebTarget('/center/index/index?from=force'));
+        $this->assertSame('/center/layout?encode=test', Url::normalizeWebTarget('/center/layout?encode=test'));
         $this->assertSame('/system.html', sysuri('system/index/index'));
         $this->assertSame('/system.html', sysuri('/system/index/index'));
         $this->assertSame('/system/login.html', sysuri('/system/login/index'));
-        $this->assertSame('/plugin-center/layout?encode=test', sysuri('/plugin-center/layout', ['encode' => 'test'], false));
-        $this->assertSame('/plugin-center.html?from=force', sysuri('/plugin-center/index/index', ['from' => 'force']));
-        $this->assertSame('/plugin-center.html', sysuri('/plugin-center/index/index'));
-        $this->assertSame('/plugin-center.html', url('plugin-center/index/index')->build());
-        $this->assertSame('/plugin-center.html', url('/plugin-center/index/index')->build());
+        $this->assertSame('/center/layout?encode=test', sysuri('/center/layout', ['encode' => 'test'], false));
+        $this->assertSame('/center.html?from=force', sysuri('/center/index/index', ['from' => 'force']));
+        $this->assertSame('/center.html', sysuri('/center/index/index'));
+        $this->assertSame('/center.html', url('center/index/index')->build());
+        $this->assertSame('/center.html', url('/center/index/index')->build());
 
         AppService::activatePlugin('system', 'system');
 
