@@ -171,6 +171,27 @@ class ApiQueueControllerTest extends SqliteIntegrationTestCase
         $this->assertSame(66, $result['data']['progress'] ?? null);
     }
 
+    public function testProgressReturnsFallbackSnapshotWhenMessageMissing(): void
+    {
+        $queue = $this->createSystemQueueFixture([
+            'code' => 'QUEUE_PROGRESS_002',
+            'status' => 2,
+            'exec_desc' => '正在执行',
+            'message' => null,
+        ]);
+
+        $result = $this->callActionController('progress', ['code' => $queue->getData('code')]);
+
+        $this->assertSame(1, intval($result['code'] ?? 0));
+        $this->assertSame('获取任务进度成功！', $result['info'] ?? '');
+        $this->assertSame('QUEUE_PROGRESS_002', $result['data']['code'] ?? null);
+        $this->assertSame(2, $result['data']['status'] ?? null);
+        $this->assertSame('>>> 正在执行 <<<', $result['data']['message'] ?? null);
+        $this->assertSame('0.00', $result['data']['progress'] ?? null);
+        $this->assertIsArray($result['data']['history'] ?? null);
+        $this->assertCount(1, $result['data']['history'] ?? []);
+    }
+
     protected function defineSchema(): void
     {
         $this->createSystemQueueTable();

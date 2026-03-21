@@ -70,22 +70,35 @@ layui.define(function (exports) {
             if (queue.doAjax === false || that.$box.length < 1) return false;
             $.form.load(tapiRoot + '/queue/progress', {code: code}, 'post', function (ret) {
                 if (ret.code) {
+                    let data = ret && typeof ret.data === 'object' && ret.data ? ret.data : {};
+                    let status = parseInt(data.status || '0');
+                    let progress = parseFloat(data.progress || '0.00');
+                    let message = typeof data.message === 'string' && data.message.length ? data.message : '>>> 等待任务状态更新 <<<';
+                    let history = Array.isArray(data.history) ? data.history : [];
                     let lines = [];
-                    for (let idx in ret.data.history) {
-                        let line = ret.data.history[idx], percent = '[ ' + line.progress + '% ] ';
-                        if (line.message.indexOf('javascript:') === -1) {
-                            lines.push(line.message.indexOf('>>>') > -1 ? line.message : percent + line.message);
+                    for (let idx in history) {
+                        let line = history[idx] || {}, text = String(line.message || ''), percent = '[ ' + (line.progress || '0.00') + '% ] ';
+                        if (!text.length) {
+                            continue;
+                        }
+                        if (text.indexOf('javascript:') === -1) {
+                            lines.push(text.indexOf('>>>') > -1 ? text : percent + text);
                         } else if (!that.SetCache(code, idx) && doScript !== false) {
                             that.SetCache(code, idx, 1)
-                            $.form.goto(line.message);
+                            $.form.goto(text);
                         }
                     }
-                    if (ret.data.status > 0) {
-                        that.SetState(parseInt(ret.data.status), ret.data.message);
-                        that.$percent.attr('lay-percent', (parseFloat(ret.data.progress || '0.00').toFixed(2)) + '%') && layui.element.render();
-                        that.$code.html('<p class="layui-elip">' + lines.join('</p><p class="layui-elip">') + '</p>').animate({scrollTop: that.$code[0].scrollHeight + 'px'}, 200);
-                        parseInt(ret.data.status) === 3 || parseInt(ret.data.status) === 4 || setTimeout(that.LoadProgress, Math.floor(Math.random() * 200));
+                    if (!isFinite(progress)) {
+                        progress = 0;
+                    }
+                    that.$code.html(lines.length ? '<p class="layui-elip">' + lines.join('</p><p class="layui-elip">') + '</p>' : '<p class="layui-elip color-desc">暂无执行日志</p>').animate({scrollTop: that.$code[0].scrollHeight + 'px'}, 200);
+                    if (status > 0) {
+                        that.SetState(status, message);
+                        that.$percent.attr('lay-percent', progress.toFixed(2) + '%') && layui.element.render();
+                        status === 3 || status === 4 || setTimeout(that.LoadProgress, Math.floor(Math.random() * 200));
                     } else {
+                        that.$title.html('<b class="color-desc">' + message + '</b>').addClass('text-center');
+                        that.$percent.attr('lay-percent', progress.toFixed(2) + '%') && layui.element.render();
                         setTimeout(that.LoadProgress, Math.floor(Math.random() * 500) + 200);
                     }
                     return false;

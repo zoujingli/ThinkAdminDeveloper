@@ -119,7 +119,64 @@ class Queue extends Controller
     {
         $input = $this->_vali(['code.require' => '任务编号不能为空！']);
         $this->app->db->setLog(new NullLogger()); /* 关闭数据库请求日志 */
-        $message = SystemQueue::mk()->where($input)->value('message', '');
-        $this->success('获取任务进度成功！', json_decode($message, true));
+        $queue = SystemQueue::mk()->where($input)->field(['code', 'status', 'exec_desc', 'message'])->findOrEmpty();
+
+        $data = [
+            'code' => $input['code'],
+            'status' => 0,
+            'message' => '>>> 等待任务状态更新 <<<',
+            'progress' => '0.00',
+            'history' => [],
+        ];
+
+        if ($queue->isExists()) {
+            $snapshot = json_decode((string)$queue->getAttr('message'), true);
+            $status = is_array($snapshot) && array_key_exists('status', $snapshot)
+                ? $snapshot['status']
+                : intval($queue->getAttr('status'));
+            $runtimeStatus = is_numeric($status) ? intval($status) : intval($queue->getAttr('status'));
+            $progress = is_array($snapshot) && array_key_exists('progress', $snapshot)
+                ? $snapshot['progress']
+                : ($runtimeStatus === 3 ? '100.00' : '0.00');
+            $history = is_array($snapshot['history'] ?? null) ? array_values($snapshot['history']) : [];
+            $message = trim(strval($snapshot['message'] ?? ''));
+
+            if ($message === '') {
+                $message = $this->defaultProgressMessage($runtimeStatus, trim(strval($queue->getAttr('exec_desc') ?: '')));
+            }
+
+            if ($history === [] && $message !== '') {
+                $history[] = [
+                    'message' => $message,
+                    'progress' => $progress,
+                    'datetime' => date('Y-m-d H:i:s'),
+                ];
+            }
+
+            $data = [
+                'code' => strval($queue->getAttr('code') ?: $input['code']),
+                'status' => $status,
+                'message' => $message,
+                'progress' => $progress,
+                'history' => $history,
+            ];
+        }
+
+        $this->success('获取任务进度成功！', $data);
+    }
+
+    protected function defaultProgressMessage(int $status, string $execDesc = ''): string
+    {
+        if ($execDesc !== '') {
+            return ">>> {$execDesc} <<<";
+        }
+
+        return match ($status) {
+            1 => '>>> 任务等待执行 <<<',
+            2 => '>>> 任务处理中 <<<',
+            3 => '>>> 任务处理完成 <<<',
+            4 => '>>> 任务处理失败 <<<',
+            default => '>>> 等待任务状态更新 <<<',
+        };
     }
 }

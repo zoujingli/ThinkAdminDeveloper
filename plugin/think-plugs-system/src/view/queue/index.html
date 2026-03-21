@@ -7,8 +7,8 @@
 <a data-table-id="QueueTable" class="layui-btn layui-btn-sm layui-btn-primary" data-queue="{:apiuri('system/plugs/optimize')}">{:lang('优化数据库')}</a>
 
 {if isset($iswin) and ($iswin or php_sapi_name() eq 'cli')}
-<button data-load='{:apiuri("system/queue/start")}' class='layui-btn layui-btn-sm layui-btn-primary'>{:lang('启动服务')}</button>
-<button data-load='{:apiuri("system/queue/stop")}' class='layui-btn layui-btn-sm layui-btn-primary'>{:lang('关闭服务')}</button>
+<button data-queue-service data-service-url='{:apiuri("system/queue/start")}' class='layui-btn layui-btn-sm layui-btn-primary'>{:lang('启动服务')}</button>
+<button data-queue-service data-service-url='{:apiuri("system/queue/stop")}' class='layui-btn layui-btn-sm layui-btn-primary'>{:lang('关闭服务')}</button>
 {/if}
 
 {if auth("clean")}
@@ -27,9 +27,8 @@
 <div class="think-box-notify" type="info">
 
     <!--{if isset($super) and $super}-->
-    <b>{:lang('服务状态')}：</b><b class="margin-right-5" data-queue-message><span class="color-desc">{:lang('检查中')}</span></b>
+    <b>{:lang('服务状态')}：</b><b class="margin-right-5 pointer" data-queue-message data-tips-text="{:lang('点击刷新服务状态')}"><span class="color-desc">{:lang('检查中')}</span></b>
     <b data-tips-text="{:lang('点击可复制【服务启动指令】')}" class="layui-icon pointer margin-right-20" data-copy="{$command|default=''}">&#xe633;</b>
-    <script>$('[data-queue-message]').load('{:apiuri("system/queue/status")}');</script>
     <!--{/if}-->
 
     <b>{:lang('任务统计')}：</b>{:lang('待处理 %s 个任务，处理中 %s 个任务，已完成 %s 个任务，已失败 %s 个任务。', [
@@ -50,6 +49,48 @@
 {block name='script'}
 <script>
     $(function () {
+        const queueStatusUrl = '{:apiuri("system/queue/status")}';
+        const $queueMessage = $('[data-queue-message]');
+        let queueStatusTimer = 0;
+        let queueStatusRequest = null;
+
+        const setQueueStatusText = function (text, color, tips) {
+            if ($queueMessage.length < 1) return;
+            $queueMessage
+                .attr('data-tips-text', tips || text)
+                .html('<span class="' + color + '">' + text + '</span>');
+        };
+        const loadQueueServiceStatus = function (times, delay) {
+            if ($queueMessage.length < 1) return;
+            clearTimeout(queueStatusTimer);
+            if (queueStatusRequest && queueStatusRequest.readyState !== 4) {
+                queueStatusRequest.abort();
+            }
+            queueStatusRequest = $.ajax({
+                url: $.menu.parseUri(queueStatusUrl),
+                type: 'GET',
+                success: function (html) {
+                    $queueMessage.attr('data-tips-text', '点击刷新服务状态').html(html);
+                    if (times > 1) {
+                        queueStatusTimer = setTimeout(function () {
+                            loadQueueServiceStatus(times - 1, delay);
+                        }, delay);
+                    }
+                },
+                error: function (xhr) {
+                    let tips = '服务状态获取失败，请点击重试';
+                    if (xhr && xhr.status) {
+                        tips = 'E' + xhr.status + ' - ' + tips;
+                    }
+                    setQueueStatusText('状态获取失败', 'color-red', tips);
+                    if (times > 1) {
+                        queueStatusTimer = setTimeout(function () {
+                            loadQueueServiceStatus(times - 1, Math.min(delay + 200, 1500));
+                        }, delay);
+                    }
+                }
+            });
+        };
         const formatQueueTime = function (value, emptyHtml) {
             const num = Number(value || 0);
             if (!isFinite(num) || num <= 0) return emptyHtml || '<span class="color-desc">未执行</span>';
@@ -72,6 +113,27 @@
             if (cost >= 1) return '，耗时 ' + cost.toFixed(2) + ' 秒' + suffix;
             return '，耗时 ' + Math.round(cost * 1000) + ' ms' + suffix;
         };
+        $('[data-queue-service]').off('click.queue-service').on('click.queue-service', function (event) {
+            event.preventDefault();
+            event.stopPropagation();
+            $.base.applyRuleValue(this, {}, function (data, elem, dset) {
+                setQueueStatusText('检查中', 'color-desc', '正在刷新服务状态');
+                $.form.load(dset.serviceUrl, data, 'get', function (ret) {
+                    if (ret && Number(ret.code) > 0) {
+                        loadQueueServiceStatus(6, 400);
+                    } else {
+                        loadQueueServiceStatus(2, 400);
+                    }
+                }, true, dset.tips, dset.time);
+            });
+            return false;
+        });
+        $queueMessage.off('click.queue-status').on('click.queue-status', function () {
+            setQueueStatusText('检查中', 'color-desc', '正在刷新服务状态');
+            loadQueueServiceStatus(2, 400);
+            return false;
+        });
+        loadQueueServiceStatus(2, 400);
         $('#QueueTable').layTable({
             even: true,
             height: 'full',
