@@ -21,6 +21,7 @@ declare(strict_types=1);
 namespace think\admin\tests;
 
 use PHPUnit\Framework\TestCase;
+use think\admin\route\Url;
 use think\admin\runtime\RequestContext;
 use think\admin\service\AppService;
 use think\admin\service\RuntimeService;
@@ -71,9 +72,19 @@ class CommonFunctionsTest extends TestCase
         }
     }
 
-    public function testSysuriSupportsAbsolutePathsAndApiuriBuildsPluginApiUrls(): void
+    public function testSysuriAndUrlBuildSupportShortWebPaths(): void
     {
-        $this->assertSame('/system/login/index.html', sysuri('/system/login/index'));
+        $this->assertSame('/system', Url::normalizeWebTarget('system/index/index'));
+        $this->assertSame('/plugin-center?from=force', Url::normalizeWebTarget('/plugin-center/index/index?from=force'));
+        $this->assertSame('/plugin-center/layout?encode=test', Url::normalizeWebTarget('/plugin-center/layout?encode=test'));
+        $this->assertSame('/system.html', sysuri('system/index/index'));
+        $this->assertSame('/system.html', sysuri('/system/index/index'));
+        $this->assertSame('/system/login.html', sysuri('/system/login/index'));
+        $this->assertSame('/plugin-center/layout?encode=test', sysuri('/plugin-center/layout', ['encode' => 'test'], false));
+        $this->assertSame('/plugin-center.html?from=force', sysuri('/plugin-center/index/index', ['from' => 'force']));
+        $this->assertSame('/plugin-center.html', sysuri('/plugin-center/index/index'));
+        $this->assertSame('/plugin-center.html', url('plugin-center/index/index')->build());
+        $this->assertSame('/plugin-center.html', url('/plugin-center/index/index')->build());
 
         AppService::activatePlugin('system', 'system');
 

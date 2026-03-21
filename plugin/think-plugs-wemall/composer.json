@@ -1,64 +1,248 @@
 {
-  "type": "think-admin-plugin",
-  "name": "zoujingli/think-plugs-wemall",
-  "version": "8.0.x-dev",
-  "license": "proprietary",
-  "homepage": "https://thinkadmin.top",
-  "description": "WeMall Plugin for ThinkAdmin",
-  "authors": [
-    {
-      "name": "Anyon",
-      "email": "zoujingli@qq.com"
-    }
-  ],
-  "require": {
-    "php": "^8.1",
-    "ext-json": "*",
-    "zoujingli/think-plugs-account": "^8.0",
-    "zoujingli/think-plugs-helper": "^8.0",
-    "zoujingli/think-plugs-payment": "^8.0",
-    "zoujingli/think-plugs-system": "^8.0",
-    "zoujingli/think-plugs-storage": "^8.0"
-  },
-  "autoload": {
-    "files": [
-      "./src/common.php"
+    "type": "think-admin-plugin",
+    "name": "zoujingli/think-plugs-wemall",
+    "version": "8.0.x-dev",
+    "license": "proprietary",
+    "homepage": "https://thinkadmin.top",
+    "description": "WeMall Plugin for ThinkAdmin",
+    "authors": [
+        {
+            "name": "Anyon",
+            "email": "zoujingli@qq.com"
+        }
     ],
-    "psr-4": {
-      "plugin\\wemall\\": "src"
-    }
-  },
-  "extra": {
-    "think": {
-      "services": [
-        "plugin\\wemall\\Service"
-      ]
+    "require": {
+        "php": "^8.1",
+        "ext-json": "*",
+        "zoujingli/think-plugs-account": "^8.0",
+        "zoujingli/think-plugs-helper": "^8.0",
+        "zoujingli/think-plugs-payment": "^8.0",
+        "zoujingli/think-plugs-system": "^8.0",
+        "zoujingli/think-plugs-storage": "^8.0"
     },
-    "xadmin": {
-      "service": {
-        "code": "wemall",
-        "prefix": "wemall",
-        "type": "module",
-        "name": "分销商城"
-      },
-      "migrate": {
-        "file": "20241010000007_install_wemall20241010.php",
-        "class": "InstallWemall20241010",
-        "name": "WemallPlugin"
-      }
+    "autoload": {
+        "files": [
+            "./src/common.php"
+        ],
+        "psr-4": {
+            "plugin\\wemall\\": "src"
+        }
     },
+    "extra": {
+        "think": {
+            "services": [
+                "plugin\\wemall\\Service"
+            ]
+        },
+        "xadmin": {
+            "migrate": {
+                "file": "20241010000007_install_wemall20241010.php",
+                "class": "InstallWemall20241010",
+                "name": "WemallPlugin"
+            },
+            "menu": {
+                "items": [
+                    {
+                        "name": "商城配置",
+                        "subs": [
+                            {
+                                "name": "数据统计报表",
+                                "icon": "layui-icon layui-icon-theme",
+                                "node": "wemall/base.report/index"
+                            },
+                            {
+                                "name": "系统通知管理",
+                                "icon": "layui-icon layui-icon-email",
+                                "node": "wemall/base.notify/index"
+                            },
+                            {
+                                "name": "商城参数管理",
+                                "icon": "layui-icon layui-icon-set",
+                                "node": "wemall/base.config/index"
+                            },
+                            {
+                                "name": "推广海报管理",
+                                "icon": "layui-icon layui-icon-carousel",
+                                "node": "wemall/base.poster/index"
+                            },
+                            {
+                                "name": "店铺页面装修",
+                                "icon": "layui-icon layui-icon-code-circle",
+                                "node": "wemall/base.design/index"
+                            },
+                            {
+                                "name": "快递公司管理",
+                                "icon": "layui-icon layui-icon-website",
+                                "node": "wemall/base.express.company/index"
+                            },
+                            {
+                                "name": "邮费模板管理",
+                                "icon": "layui-icon layui-icon-template-1",
+                                "node": "wemall/base.express.template/index"
+                            }
+                        ]
+                    },
+                    {
+                        "name": "用户管理",
+                        "subs": [
+                            {
+                                "name": "会员等级管理",
+                                "icon": "layui-icon layui-icon-water",
+                                "node": "wemall/base.level/index"
+                            },
+                            {
+                                "name": "会员折扣方案",
+                                "icon": "layui-icon layui-icon-engine",
+                                "node": "wemall/base.discount/index"
+                            },
+                            {
+                                "name": "会员用户管理",
+                                "icon": "layui-icon layui-icon-user",
+                                "node": "wemall/user.admin/index"
+                            },
+                            {
+                                "name": "创建会员用户",
+                                "icon": "layui-icon layui-icon-tabs",
+                                "node": "wemall/user.create/index"
+                            },
+                            {
+                                "name": "用户余额充值",
+                                "icon": "layui-icon layui-icon-rmb",
+                                "node": "wemall/user.recharge/index"
+                            }
+                        ]
+                    },
+                    {
+                        "name": "商城管理",
+                        "subs": [
+                            {
+                                "name": "商品数据管理",
+                                "icon": "layui-icon layui-icon-star",
+                                "node": "wemall/shop.goods/index"
+                            },
+                            {
+                                "name": "订单数据管理",
+                                "icon": "layui-icon layui-icon-template",
+                                "node": "wemall/shop.order/index"
+                            },
+                            {
+                                "name": "订单发货管理",
+                                "icon": "layui-icon layui-icon-transfer",
+                                "node": "wemall/shop.sender/index"
+                            },
+                            {
+                                "name": "售后订单管理",
+                                "icon": "layui-icon layui-icon-util",
+                                "node": "wemall/shop.refund/index"
+                            },
+                            {
+                                "name": "商品评论管理",
+                                "icon": "layui-icon layui-icon-util",
+                                "node": "wemall/shop.reply/index"
+                            }
+                        ]
+                    },
+                    {
+                        "name": "代理管理",
+                        "subs": [
+                            {
+                                "name": "代理等级管理",
+                                "icon": "layui-icon layui-icon-water",
+                                "node": "wemall/base.agent/index"
+                            },
+                            {
+                                "name": "代理返佣管理",
+                                "icon": "layui-icon layui-icon-transfer",
+                                "node": "wemall/user.rebate/index"
+                            },
+                            {
+                                "name": "代理提现管理",
+                                "icon": "layui-icon layui-icon-diamond",
+                                "node": "wemall/user.transfer/index"
+                            }
+                        ]
+                    },
+                    {
+                        "name": "帮助咨询",
+                        "subs": [
+                            {
+                                "name": "常见问题管理",
+                                "icon": "layui-icon layui-icon-star",
+                                "node": "wemall/help.problem/index"
+                            },
+                            {
+                                "name": "意见反馈管理",
+                                "icon": "layui-icon layui-icon-template",
+                                "node": "wemall/help.feedback/index"
+                            }
+                        ]
+                    },
+                    {
+                        "name": "用户管理",
+                        "subs": [
+                            {
+                                "name": "用户账号管理",
+                                "icon": "layui-icon layui-icon-user",
+                                "node": "account/master/index"
+                            },
+                            {
+                                "name": "终端账号管理",
+                                "icon": "layui-icon layui-icon-cellphone",
+                                "node": "account/device/index"
+                            },
+                            {
+                                "name": "手机短信管理",
+                                "icon": "layui-icon layui-icon-email",
+                                "node": "account/message/index"
+                            }
+                        ]
+                    },
+                    {
+                        "name": "支付管理",
+                        "subs": [
+                            {
+                                "name": "支付配置管理",
+                                "icon": "layui-icon layui-icon-set",
+                                "node": "payment/config/index"
+                            },
+                            {
+                                "name": "支付行为管理",
+                                "icon": "layui-icon layui-icon-edge",
+                                "node": "payment/record/index"
+                            },
+                            {
+                                "name": "支付退款管理",
+                                "icon": "layui-icon layui-icon-firefox",
+                                "node": "payment/refund/index"
+                            },
+                            {
+                                "name": "余额明细管理",
+                                "icon": "layui-icon layui-icon-rmb",
+                                "node": "payment/balance/index"
+                            },
+                            {
+                                "name": "积分明细管理",
+                                "icon": "layui-icon layui-icon-diamond",
+                                "node": "payment/integral/index"
+                            }
+                        ]
+                    }
+                ]
+            },
+            "app": {
+                "name": "分销商城",
+                "document": "https://thinkadmin.top/plugin/think-plugs-wemall.html",
+                "description": "分销商城管理模块，提供完整多端商城系统功能。",
+                "license": [
+                    "VIP"
+                ],
+                "code": "wemall",
+                "prefix": "wemall"
+            }
+        }
+    },
+    "minimum-stability": "dev",
     "config": {
-      "type": "module",
-      "name": "分销商城管理",
-      "document": "https://thinkadmin.top/plugin/think-plugs-wemall.html",
-      "description": "分销商城管理模块，提供完整多端商城系统功能。",
-      "license": [
-        "VIP"
-      ]
+        "sort-packages": true
     }
-  },
-  "minimum-stability": "dev",
-  "config": {
-    "sort-packages": true
-  }
 }

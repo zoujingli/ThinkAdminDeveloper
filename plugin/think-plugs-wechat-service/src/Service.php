@@ -39,18 +39,4 @@ class Service extends Plugin
     {
         $this->commands([Wechat::class]);
     }
-
-    public static function menu(): array
-    {
-        $code = self::getAppCode();
-        return [
-            [
-                'name' => '平台配置',
-                'subs' => [
-                    ['name' => '开放平台配置', 'icon' => 'layui-icon layui-icon-set', 'node' => "{$code}/config/index"],
-                    ['name' => '公众号授权管理', 'icon' => 'layui-icon layui-icon-dialogue', 'node' => "{$code}/wechat/index"],
-                ],
-            ],
-        ];
-    }
 }

@@ -53,7 +53,10 @@ if (!function_exists('system_uri')) {
      */
     function system_uri(string $url = '', array $vars = [], $suffix = true, $domain = false): string
     {
-        return sysuri('system/index/index', [], $suffix, $domain) . '#' . url($url, $vars)->build();
+        $target = \think\admin\route\Url::normalizeWebTarget($url);
+        return sysuri('system/index/index', [], $suffix, $domain)
+            . '#'
+            . \think\admin\Library::$sapp->route->buildUrl($target, $vars)->suffix($suffix)->domain($domain)->build();
     }
 }
 

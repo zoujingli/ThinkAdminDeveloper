@@ -119,8 +119,8 @@ if (!function_exists('sysuri')) {
     /**
      * 生成系统页面 URL。
      *
-     * 相对路径会按当前应用、控制器、操作自动补全，
-     * 绝对路径、命名路由和外部地址会直接交给路由器处理。
+     * 参数与 ThinkPHP `url()` 保持一致，
+     * 但会在构建前先把后台页面地址标准化为短链目标。
      *
      * @param string $url 路由地址
      * @param array $vars 路由参数
@@ -129,54 +129,8 @@ if (!function_exists('sysuri')) {
      */
     function sysuri(string $url = '', array $vars = [], bool|string $suffix = true, bool|string $domain = false): string
     {
-        if (preg_match('#^(?:https?://|/|@)#', $url)) {
-            return Library::$sapp->route->buildUrl($url, $vars)->suffix($suffix)->domain($domain)->build();
-        }
-
-        $attr = $url === '' ? [] : array_values(array_filter(explode('/', trim($url, '/')), 'strlen'));
-        if (count($attr) > 3) {
-            return Library::$sapp->route->buildUrl('/' . join('/', $attr), $vars)->suffix($suffix)->domain($domain)->build();
-        }
-        if (count($attr) < 3) {
-            $map = [
-                Library::$sapp->http->getName(),
-                Library::$sapp->request->controller(),
-                Library::$sapp->request->action(true),
-            ];
-            while (count($attr) < 3) {
-                array_unshift($attr, $map[2 - count($attr)] ?? 'index');
-            }
-        }
-
-        $attr[0] = Str::lower($attr[0]);
-        $attr[1] = Str::snake($attr[1]);
-        [$rcf, $tmp] = [Library::$sapp->config->get('route', []), uniqid('think_admin_replace_temp_vars_')];
-        $map = [
-            Str::lower(AppService::defaultAppCode()),
-            Str::snake($rcf['default_controller'] ?? ''),
-            Str::lower($rcf['default_action'] ?? ''),
-        ];
-
-        for ($idx = min(count($attr), count($map)) - 1; $idx >= 0; --$idx) {
-            if ($attr[$idx] === ($map[$idx] ?: 'index')) {
-                $attr[$idx] = $tmp;
-            } else {
-                break;
-            }
-        }
-
-        $url = Library::$sapp->route->buildUrl(join('/', $attr), $vars)->suffix($suffix)->domain($domain)->build();
-        $ext = is_string($suffix) ? ltrim($suffix, '.') : strval($rcf['url_html_suffix'] ?? 'html');
-        $pattern = $ext === ''
-            ? '#/' . preg_quote($tmp, '#') . '#'
-            : '#/' . preg_quote($tmp, '#') . '(\.' . preg_quote($ext, '#') . ')?#';
-        $old = parse_url($url, PHP_URL_PATH) ?: '';
-        $new = preg_replace($pattern, '', $old, -1, $count) ?? $old;
-        if ($count > 0 && $suffix && $new !== '' && $ext !== '' && $new !== Library::$sapp->request->baseUrl()) {
-            $new .= ".{$ext}";
-        }
-
-        return str_replace($old, $new ?: '/', $url);
+        $target = \think\admin\route\Url::normalizeWebTarget($url);
+        return Library::$sapp->route->buildUrl($target, $vars)->suffix($suffix)->domain($domain)->build();
     }
 }
 

@@ -39,7 +39,7 @@ final class PluginMenuService
     public static function menus(string $service): array
     {
         $service = self::resolveService($service);
-        return (array)$service::menu();
+        return (array)$service::getMenus();
     }
 
     /**

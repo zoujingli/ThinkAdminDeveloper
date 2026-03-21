@@ -184,6 +184,7 @@ function runInstallSmoke(string $projectRoot): void
 
         $configRows = intval($db->query('select count(*) from system_config')->fetchColumn());
         assertTrue($configRows >= 8, 'system_config seed rows should be initialized');
+        $db = null;
     } finally {
         removeTree($root);
     }
@@ -213,7 +214,7 @@ function createPluginPackage(string $root, string $code, string $name, string $s
         'description' => ucfirst($code),
         'extra' => [
             'think' => ['services' => [$service]],
-            'xadmin' => ['service' => ['code' => $code, 'name' => ucfirst($code)]],
+            'xadmin' => ['app' => ['code' => $code, 'name' => ucfirst($code)]],
         ],
     ], JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES));
 
@@ -235,10 +236,15 @@ function removeTree(string $path): void
     );
 
     foreach ($items as $item) {
-        $item->isDir() ? rmdir($item->getPathname()) : unlink($item->getPathname());
+        @chmod($item->getPathname(), 0777);
+        if ($item->isDir()) {
+            @rmdir($item->getPathname());
+        } else {
+            @unlink($item->getPathname());
+        }
     }
 
-    rmdir($path);
+    @rmdir($path);
 }
 
 function copyTree(string $source, string $target): void
@@ -271,18 +277,21 @@ function copyTree(string $source, string $target): void
         if ($item->isDir()) {
             is_dir($pathname) || mkdir($pathname, 0777, true);
         } else {
-            if (is_dir($item->getPathname())) {
-                copyTree($item->getPathname(), $pathname);
-                continue;
-            }
-            is_dir(dirname($pathname)) || mkdir(dirname($pathname), 0777, true);
-            copy($item->getPathname(), $pathname);
+            copyFile($item->getPathname(), $pathname);
         }
     }
 }
 
 function copyFile(string $source, string $target): void
 {
+    $real = realpath($source);
+    if ($real !== false && is_dir($real)) {
+        copyTree($real, $target);
+        return;
+    }
+    if ($real !== false && is_file($real)) {
+        $source = $real;
+    }
     if (is_dir($source)) {
         copyTree($source, $target);
         return;

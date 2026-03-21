@@ -81,39 +81,4 @@ class Service extends Plugin
         $this->app->route->any('/plugin-wxpay-notify/:vars', $notify)->name('plugin-wxpay-notify');
     }
 
-    /**
-     * 增加微信配置.
-     * @return array[]
-     */
-    public static function menu(): array
-    {
-        $code = static::getAppCode();
-        // 设置插件菜单
-        return [
-            [
-                'name' => '公众号平台',
-                'subs' => [
-                    ['name' => '微信接口配置', 'icon' => 'layui-icon layui-icon-set', 'node' => "{$code}/config/options"],
-                    ['name' => '微信支付配置', 'icon' => 'layui-icon layui-icon-rmb', 'node' => "{$code}/config/payment"],
-                ],
-            ],
-            [
-                'name' => '微信定制',
-                'subs' => [
-                    ['name' => '微信粉丝管理', 'icon' => 'layui-icon layui-icon-username', 'node' => "{$code}/fans/index"],
-                    ['name' => '微信图文管理', 'icon' => 'layui-icon layui-icon-template-1', 'node' => "{$code}/news/index"],
-                    ['name' => '微信菜单配置', 'icon' => 'layui-icon layui-icon-cellphone', 'node' => "{$code}/menu/index"],
-                    ['name' => '回复规则管理', 'icon' => 'layui-icon layui-icon-engine', 'node' => "{$code}/keys/index"],
-                    ['name' => '关注自动回复', 'icon' => 'layui-icon layui-icon-release', 'node' => "{$code}/auto/index"],
-                ],
-            ],
-            [
-                'name' => '微信支付',
-                'subs' => [
-                    ['name' => '微信支付行为', 'icon' => 'layui-icon layui-icon-rmb', 'node' => "{$code}/payment.record/index"],
-                    ['name' => '微信退款管理', 'icon' => 'layui-icon layui-icon-engine', 'node' => "{$code}/payment.refund/index"],
-                ],
-            ],
-        ];
     }
-}

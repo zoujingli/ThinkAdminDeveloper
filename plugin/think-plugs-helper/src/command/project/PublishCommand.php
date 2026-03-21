@@ -421,21 +421,20 @@ class PublishCommand extends Command
     private function normalizePackageMeta(array $package): array
     {
         $type = strval($package['type'] ?? '');
-        $config = (array)($package['extra']['config'] ?? []);
-        $service = (array)($package['extra']['xadmin']['service'] ?? []);
+        $app = (array)($package['extra']['xadmin']['app'] ?? []);
 
         return [
-            'type' => strval($service['type'] ?? ($config['type'] ?? ($type === 'think-admin-plugin' ? 'plugin' : 'library'))),
-            'name' => strval($service['name'] ?? ($config['name'] ?? ($package['name'] ?? ''))),
-            'icon' => strval($config['icon'] ?? ''),
-            'cover' => strval($config['cover'] ?? ''),
-            'super' => boolval($config['super'] ?? false),
-            'license' => (array)($service['license'] ?? ($config['license'] ?? ($package['license'] ?? []))),
-            'version' => strval($service['version'] ?? ($config['version'] ?? ($package['version'] ?? ''))),
-            'homepage' => strval($service['homepage'] ?? ($config['homepage'] ?? ($package['homepage'] ?? ''))),
-            'document' => strval($service['document'] ?? ($config['document'] ?? ($package['document'] ?? ''))),
-            'platforms' => (array)($service['platforms'] ?? ($config['platforms'] ?? [])),
-            'description' => strval($service['description'] ?? ($config['description'] ?? ($package['description'] ?? ''))),
+            'type' => $type === 'think-admin-plugin' ? 'plugin' : strval($app['type'] ?? 'library'),
+            'name' => strval($app['name'] ?? ($package['name'] ?? '')),
+            'icon' => strval($app['icon'] ?? ''),
+            'cover' => strval($app['cover'] ?? ''),
+            'super' => boolval($app['super'] ?? false),
+            'license' => (array)($app['license'] ?? ($package['license'] ?? [])),
+            'version' => strval($package['version'] ?? ''),
+            'homepage' => strval($package['homepage'] ?? ''),
+            'document' => strval($app['document'] ?? ($package['document'] ?? '')),
+            'platforms' => (array)($app['platforms'] ?? []),
+            'description' => strval($app['description'] ?? ($package['description'] ?? '')),
         ];
     }
 }

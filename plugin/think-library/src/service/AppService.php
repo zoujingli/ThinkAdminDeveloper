@@ -593,7 +593,7 @@ final class AppService extends Service
             return [];
         }
 
-        $menus = (array)$current['service']::menu();
+        $menus = (array)$current['service']::getMenus();
         return ($check || $normalize) ? self::normalizeMenus($menus, $check) : $menus;
     }
 
@@ -902,6 +902,7 @@ final class AppService extends Service
             'license' => (array)($plugin['license'] ?? []),
             'version' => strval($plugin['version'] ?? ''),
             'homepage' => strval($plugin['homepage'] ?? ''),
+            'show' => !array_key_exists('show', $plugin) || !empty($plugin['show']),
         ];
     }
 

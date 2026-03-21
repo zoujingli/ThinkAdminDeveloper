@@ -83,36 +83,4 @@ class Service extends Plugin
         $this->app->middleware->add(RbacAccess::class, 'route');
     }
 
-    /**
-     * 定义插件中心菜单.
-     */
-    public static function menu(): array
-    {
-        return [
-            [
-                'name' => '系统配置',
-                'subs' => [
-                    ['name' => '系统参数配置', 'icon' => 'layui-icon layui-icon-set', 'node' => 'system/config/index'],
-                    ['name' => '动态页面构建', 'icon' => 'layui-icon layui-icon-template-1', 'node' => 'system/builder/index'],
-                    ['name' => '系统菜单管理', 'icon' => 'layui-icon layui-icon-layouts', 'node' => 'system/menu/index'],
-                ],
-            ],
-            [
-                'name' => '系统数据',
-                'subs' => [
-                    ['name' => '系统任务管理', 'icon' => 'layui-icon layui-icon-log', 'node' => 'system/queue/index'],
-                    ['name' => '系统日志管理', 'icon' => 'layui-icon layui-icon-form', 'node' => 'system/oplog/index'],
-                    ['name' => '数据字典管理', 'icon' => 'layui-icon layui-icon-code-circle', 'node' => 'system/base/index'],
-                    ['name' => '系统文件管理', 'icon' => 'layui-icon layui-icon-carousel', 'node' => 'system/file/index'],
-                ],
-            ],
-            [
-                'name' => '权限管理',
-                'subs' => [
-                    ['name' => '系统权限管理', 'icon' => 'layui-icon layui-icon-vercode', 'node' => 'system/auth/index'],
-                    ['name' => '系统用户管理', 'icon' => 'layui-icon layui-icon-username', 'node' => 'system/user/index'],
-                ],
-            ],
-        ];
     }
-}

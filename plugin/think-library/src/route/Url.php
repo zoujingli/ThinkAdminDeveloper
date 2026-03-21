@@ -44,8 +44,10 @@ declare(strict_types=1);
 
 namespace think\admin\route;
 
+use think\admin\Library;
 use think\admin\service\AppService;
 use think\admin\service\NodeService;
+use think\helper\Str;
 use think\route\Url as ThinkUrl;
 
 /**
@@ -54,6 +56,62 @@ use think\route\Url as ThinkUrl;
  */
 class Url extends ThinkUrl
 {
+    /**
+     * 将后台页面地址标准化为短链目标。
+     */
+    public static function normalizeWebTarget(string $url): string
+    {
+        if (
+            preg_match('#^(?:https?://|@|\[)#', $url)
+            || (strpos($url, '@') !== false && strpos($url, '\\') === false)
+        ) {
+            return $url;
+        }
+
+        $info = parse_url($url);
+        if (!is_array($info)) {
+            return $url;
+        }
+
+        $path = strval($info['path'] ?? '');
+        if ($path === '' && $url !== '') {
+            return $url;
+        }
+
+        $absolute = str_starts_with($path, '/');
+        $segments = array_values(array_filter(explode('/', trim(str_replace('\\', '/', $path), '/')), 'strlen'));
+        if (!$absolute && count($segments) < 3) {
+            $map = [
+                Library::$sapp->http->getName(),
+                Library::$sapp->request->controller(),
+                Library::$sapp->request->action(true),
+            ];
+            while (count($segments) < 3) {
+                array_unshift($segments, $map[2 - count($segments)] ?? 'index');
+            }
+        }
+
+        if (isset($segments[0])) {
+            $segments[0] = Str::lower($segments[0]);
+        }
+        if (isset($segments[1])) {
+            $segments[1] = Str::snake($segments[1]);
+        }
+
+        $segments = self::shrinkWebSegments($segments, false);
+        $target = join('/', $segments);
+        $target = $target === '' ? '/' : '/' . ltrim($target, '/');
+
+        if (isset($info['query']) && $info['query'] !== '') {
+            $target .= '?' . $info['query'];
+        }
+        if (isset($info['fragment']) && $info['fragment'] !== '') {
+            $target .= '#' . $info['fragment'];
+        }
+
+        return $target;
+    }
+
     /**
      * Build URL.
      */
@@ -144,7 +202,8 @@ class Url extends ThinkUrl
          * 这里不再沿用旧多应用模式的“去掉当前应用前缀”或“强制回落 index.php”逻辑，
          * 否则会导致插件绝对链接丢失前缀，或者在 Worker 环境生成不可访问的 /index.php/... 地址。
          */
-        $url = rtrim($file, '/') . '/' . ltrim($url, '/');
+        $path = self::normalizeWebPath(ltrim($url, '/'));
+        $url = rtrim($file, '/') . '/' . ltrim($path, '/');
         // URL后缀
         if (substr($url, -1) == '/' || $url == '') {
             $suffix = '';
@@ -205,5 +264,90 @@ class Url extends ThinkUrl
             }
         }
         return $url;
+    }
+
+    /**
+     * 标准页面路径短链压缩。
+     */
+    private static function normalizeWebPath(string $path): string
+    {
+        $path = trim(str_replace('\\', '/', $path), '/');
+        if ($path === '') {
+            return '';
+        }
+
+        $segments = array_values(array_filter(explode('/', $path), 'strlen'));
+        if ($segments === []) {
+            return '';
+        }
+
+        return join('/', self::shrinkWebSegments($segments, true));
+    }
+
+    /**
+     * 判断是否属于标准应用/插件页面路径。
+     *
+     * @param array<int, string> $segments
+     */
+    private static function supportsShortWebPath(array $segments): bool
+    {
+        $first = Str::lower(strval($segments[0] ?? ''));
+        if ($first === '') {
+            return false;
+        }
+
+        if ($first === Str::lower(AppService::defaultAppCode() ?: 'index')) {
+            return true;
+        }
+
+        if (AppService::localApp($first) !== null) {
+            return true;
+        }
+
+        if (AppService::resolvePluginPrefix($first) !== null) {
+            return true;
+        }
+
+        return AppService::resolvePlugin($first) !== null;
+    }
+
+    /**
+     * 按默认应用/控制器/方法收缩页面路径。
+     *
+     * @param array<int, string> $segments
+     * @return array<int, string>
+     */
+    private static function shrinkWebSegments(array $segments, bool $strict): array
+    {
+        if ($segments === []) {
+            return [];
+        }
+
+        $apiPrefix = trim(AppService::pluginApiPrefix(), '/');
+        if ($apiPrefix !== '' && strcasecmp($segments[0], $apiPrefix) === 0) {
+            return $segments;
+        }
+
+        if ($strict && !self::supportsShortWebPath($segments)) {
+            return $segments;
+        }
+
+        $defaultAction = Str::lower(strval(Library::$sapp->route->config('default_action') ?: 'index'));
+        $defaultController = Str::snake(strval(Library::$sapp->route->config('default_controller') ?: 'index'));
+        $defaultApp = Str::lower(AppService::defaultAppCode() ?: 'index');
+
+        if (count($segments) >= 2 && Str::lower(end($segments) ?: '') === $defaultAction) {
+            array_pop($segments);
+        }
+
+        if (count($segments) === 2 && Str::snake($segments[1]) === $defaultController) {
+            array_pop($segments);
+        }
+
+        if (count($segments) === 1 && Str::lower($segments[0]) === $defaultApp) {
+            array_pop($segments);
+        }
+
+        return $segments;
     }
 }

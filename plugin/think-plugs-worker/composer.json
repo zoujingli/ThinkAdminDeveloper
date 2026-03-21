@@ -1,73 +1,68 @@
 {
-  "type": "think-admin-plugin",
-  "name": "zoujingli/think-plugs-worker",
-  "version": "8.0.x-dev",
-  "license": "Apache-2.0",
-  "homepage": "https://thinkadmin.top",
-  "description": "Standard HTTP, queue, and cross-platform process manager for ThinkAdmin",
-  "authors": [
-    {
-      "name": "Anyon",
-      "email": "zoujingli@qq.com"
-    }
-  ],
-  "require": {
-    "php": "^8.1",
-    "symfony/process": "^6.0|^7.0",
-    "workerman/workerman": "^5.1.9",
-    "zoujingli/think-library": "^8.0"
-  },
-  "require-dev": {
-    "phpunit/phpunit": "^10.0"
-  },
-  "autoload": {
-    "files": [
-      "src/common.php"
-    ],
-    "psr-4": {
-      "plugin\\worker\\": "src"
-    }
-  },
-  "autoload-dev": {
-    "psr-4": {
-      "plugin\\worker\\tests\\": "tests/"
-    }
-  },
-  "extra": {
-    "think": {
-      "services": [
-        "plugin\\worker\\Service"
-      ]
-    },
-    "xadmin": {
-      "service": {
-        "code": "worker",
-        "type": "service",
-        "name": "运行时服务"
-      },
-      "migrate": {
-        "file": "20241010000008_install_worker20241010.php",
-        "class": "InstallWorker20241010",
-        "name": "WorkerPlugin"
-      },
-      "publish": {
-        "init": {
-          "stc/worker.php": "config/worker.php"
+    "type": "think-admin-plugin",
+    "name": "zoujingli/think-plugs-worker",
+    "version": "8.0.x-dev",
+    "license": "Apache-2.0",
+    "homepage": "https://thinkadmin.top",
+    "description": "Standard HTTP, queue, and cross-platform process manager for ThinkAdmin",
+    "authors": [
+        {
+            "name": "Anyon",
+            "email": "zoujingli@qq.com"
         }
-      }
+    ],
+    "require": {
+        "php": "^8.1",
+        "symfony/process": "^6.0|^7.0",
+        "workerman/workerman": "^5.1.9",
+        "zoujingli/think-library": "^8.0"
     },
+    "require-dev": {
+        "phpunit/phpunit": "^10.0"
+    },
+    "autoload": {
+        "files": [
+            "src/common.php"
+        ],
+        "psr-4": {
+            "plugin\\worker\\": "src"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "plugin\\worker\\tests\\": "tests/"
+        }
+    },
+    "extra": {
+        "think": {
+            "services": [
+                "plugin\\worker\\Service"
+            ]
+        },
+        "xadmin": {
+            "migrate": {
+                "file": "20241010000008_install_worker20241010.php",
+                "class": "InstallWorker20241010",
+                "name": "WorkerPlugin"
+            },
+            "publish": {
+                "init": {
+                    "stc/worker.php": "config/worker.php"
+                }
+            },
+            "app": {
+                "name": "运行时服务",
+                "document": "https://thinkadmin.top/plugin/think-plugs-worker.html",
+                "description": "统一托管 ThinkAdmin 的 HTTP 与队列常驻进程，提供基于固定命令签名的跨平台进程管理能力。在 Linux / macOS 上优先使用 Workerman 守护化与信号重载，在 Windows 上通过 console.exe 启动独立后台 PHP 进程，并统一使用 xadmin:worker serve <service> 命令签名进行 start / stop / status / query / restart / check 管理。运行状态不再只依赖 pidFile，pid、进程扫描与健康检查会共同参与判断，避免因 runtime 文件丢失、误删或异常退出造成后续运维指令失效。",
+                "license": [
+                    "Apache-2.0"
+                ],
+                "code": "worker"
+            }
+        }
+    },
+    "minimum-stability": "dev",
     "config": {
-      "type": "service",
-      "name": "标准 HTTP 与队列运行时服务",
-      "document": "https://thinkadmin.top/plugin/think-plugs-worker.html",
-      "description": "统一托管 ThinkAdmin 的 HTTP 与队列常驻进程，提供基于固定命令签名的跨平台进程管理能力。在 Linux / macOS 上优先使用 Workerman 守护化与信号重载，在 Windows 上通过 console.exe 启动独立后台 PHP 进程，并统一使用 xadmin:worker serve <service> 命令签名进行 start / stop / status / query / restart / check 管理。运行状态不再只依赖 pidFile，pid、进程扫描与健康检查会共同参与判断，避免因 runtime 文件丢失、误删或异常退出造成后续运维指令失效。",
-      "license": [
-        "Apache-2.0"
-      ]
+        "sort-packages": true
     }
-  },
-  "minimum-stability": "dev",
-  "config": {
-    "sort-packages": true
-  }
 }

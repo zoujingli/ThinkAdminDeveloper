@@ -38,22 +38,4 @@ class Service extends Plugin
      */
     protected string $package = 'zoujingli/think-plugs-account';
 
-    /**
-     * 定义插件菜单.
-     * @return array[]
-     */
-    public static function menu(): array
-    {
-        $code = static::getAppCode();
-        return [
-            [
-                'name' => '用户管理',
-                'subs' => [
-                    ['name' => '用户账号管理', 'icon' => 'layui-icon layui-icon-user', 'node' => "{$code}/master/index"],
-                    ['name' => '终端账号管理', 'icon' => 'layui-icon layui-icon-cellphone', 'node' => "{$code}/device/index"],
-                    ['name' => '手机短信管理', 'icon' => 'layui-icon layui-icon-email', 'node' => "{$code}/message/index"],
-                ],
-            ],
-        ];
     }
-}

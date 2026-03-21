@@ -1,66 +1,215 @@
 {
-  "type": "think-admin-plugin",
-  "name": "zoujingli/think-plugs-wuma",
-  "version": "8.0.x-dev",
-  "license": "proprietary",
-  "homepage": "https://thinkadmin.top",
-  "description": "Wuma Plugin for ThinkAdmin",
-  "authors": [
-    {
-      "name": "Anyon",
-      "email": "zoujingli@qq.com"
-    }
-  ],
-  "require": {
-    "php": "^8.1",
-    "ext-gd": "*",
-    "ext-json": "*",
-    "ext-bcmath": "*",
-    "zoujingli/think-plugs-helper": "^8.0",
-    "zoujingli/think-plugs-storage": "^8.0",
-    "zoujingli/think-plugs-system": "^8.0",
-    "zoujingli/think-plugs-worker": "^8.0",
-    "zoujingli/think-plugs-wemall": "^8.0"
-  },
-  "require-dev": {
-    "phpunit/phpunit": "^9.5|^10.0"
-  },
-  "autoload": {
-    "psr-4": {
-      "plugin\\wuma\\": "src"
-    }
-  },
-  "extra": {
-    "think": {
-      "services": [
-        "plugin\\wuma\\Service"
-      ]
+    "type": "think-admin-plugin",
+    "name": "zoujingli/think-plugs-wuma",
+    "version": "8.0.x-dev",
+    "license": "proprietary",
+    "homepage": "https://thinkadmin.top",
+    "description": "Wuma Plugin for ThinkAdmin",
+    "authors": [
+        {
+            "name": "Anyon",
+            "email": "zoujingli@qq.com"
+        }
+    ],
+    "require": {
+        "php": "^8.1",
+        "ext-gd": "*",
+        "ext-json": "*",
+        "ext-bcmath": "*",
+        "zoujingli/think-plugs-helper": "^8.0",
+        "zoujingli/think-plugs-storage": "^8.0",
+        "zoujingli/think-plugs-system": "^8.0",
+        "zoujingli/think-plugs-worker": "^8.0",
+        "zoujingli/think-plugs-wemall": "^8.0"
     },
-    "xadmin": {
-      "service": {
-        "code": "wuma",
-        "prefix": "wuma",
-        "type": "module",
-        "name": "防伪溯源"
-      },
-      "migrate": {
-        "file": "20241010000010_install_wuma20241010.php",
-        "class": "InstallWuma20241010",
-        "name": "WumaPlugin"
-      }
+    "require-dev": {
+        "phpunit/phpunit": "^9.5|^10.0"
     },
+    "autoload": {
+        "psr-4": {
+            "plugin\\wuma\\": "src"
+        }
+    },
+    "extra": {
+        "think": {
+            "services": [
+                "plugin\\wuma\\Service"
+            ]
+        },
+        "xadmin": {
+            "migrate": {
+                "file": "20241010000010_install_wuma20241010.php",
+                "class": "InstallWuma20241010",
+                "name": "WumaPlugin"
+            },
+            "menu": {
+                "items": [
+                    {
+                        "name": "物码管理",
+                        "subs": [
+                            {
+                                "name": "物码批次管理",
+                                "icon": "layui-icon layui-icon-app",
+                                "node": "wuma/code/index"
+                            }
+                        ]
+                    },
+                    {
+                        "name": "防伪溯源",
+                        "subs": [
+                            {
+                                "name": "溯源模板管理",
+                                "icon": "layui-icon layui-icon-template-1",
+                                "node": "wuma/source.template/index"
+                            },
+                            {
+                                "name": "生产批次管理",
+                                "icon": "layui-icon layui-icon-diamond",
+                                "node": "wuma/source.produce/index"
+                            },
+                            {
+                                "name": "赋码批次管理",
+                                "icon": "layui-icon layui-icon-templeate-1",
+                                "node": "wuma/source.assign/index"
+                            },
+                            {
+                                "name": "区块链授权证书",
+                                "icon": "layui-icon layui-icon-vercode",
+                                "node": "wuma/source.certificate/index"
+                            },
+                            {
+                                "name": "区块链内容管理",
+                                "icon": "layui-icon layui-icon-vercode",
+                                "node": "wuma/source.blockchain/index"
+                            }
+                        ]
+                    },
+                    {
+                        "name": "窜货监控",
+                        "subs": [
+                            {
+                                "name": "扫码查询管理(开发中)",
+                                "icon": "layui-icon layui-icon-template",
+                                "node": "wuma/scaner.query/index"
+                            },
+                            {
+                                "name": "扫码明细管理(开发中)",
+                                "icon": "layui-icon layui-icon-template",
+                                "node": "wuma/scaner.notify/index"
+                            },
+                            {
+                                "name": "窜货代理管理(开发中)",
+                                "icon": "layui-icon layui-icon-template",
+                                "node": "wuma/scaner.notify/agent"
+                            },
+                            {
+                                "name": "窜货区域管理(开发中)",
+                                "icon": "layui-icon layui-icon-location",
+                                "node": "wuma/scaner.notify/area"
+                            },
+                            {
+                                "name": "数据实时监测(开发中)",
+                                "icon": "layui-icon layui-icon-chart",
+                                "node": "wuma/scaner.protal/index"
+                            }
+                        ]
+                    },
+                    {
+                        "name": "库存调度",
+                        "subs": [
+                            {
+                                "name": "总部仓库管理",
+                                "icon": "layui-icon layui-icon-component",
+                                "node": "wuma/warehouse/index"
+                            },
+                            {
+                                "name": "仓库账号管理",
+                                "icon": "layui-icon layui-icon-user",
+                                "node": "wuma/warehouse.user/index"
+                            },
+                            {
+                                "name": "入库数据管理",
+                                "icon": "layui-icon layui-icon-template",
+                                "node": "wuma/warehouse.inter/index"
+                            },
+                            {
+                                "name": "出库数据管理",
+                                "icon": "layui-icon layui-icon-template",
+                                "node": "wuma/warehouse.outer/index"
+                            },
+                            {
+                                "name": "仓库库存统计",
+                                "icon": "layui-icon layui-icon-theme",
+                                "node": "wuma/warehouse.stock/index"
+                            },
+                            {
+                                "name": "标签关联管理",
+                                "icon": "layui-icon layui-icon-senior",
+                                "node": "wuma/warehouse.relation/index"
+                            },
+                            {
+                                "name": "标签替换管理",
+                                "icon": "layui-icon layui-icon-slider",
+                                "node": "wuma/warehouse.replace/index"
+                            },
+                            {
+                                "name": "仓库标签历史",
+                                "icon": "layui-icon layui-icon-console",
+                                "node": "wuma/warehouse.history/index"
+                            }
+                        ]
+                    },
+                    {
+                        "name": "代理管理",
+                        "subs": [
+                            {
+                                "name": "平台参数配置(开发中)",
+                                "icon": "layui-icon layui-icon-component",
+                                "node": "wuma/sales.config/index"
+                            },
+                            {
+                                "name": "代理等级管理",
+                                "icon": "layui-icon layui-icon-component",
+                                "node": "wuma/sales.level/index"
+                            },
+                            {
+                                "name": "代理用户管理",
+                                "icon": "layui-icon layui-icon-component",
+                                "node": "wuma/sales.user/index"
+                            },
+                            {
+                                "name": "代理库存管理",
+                                "icon": "layui-icon layui-icon-component",
+                                "node": "wuma/sales.stock/index"
+                            },
+                            {
+                                "name": "标签流转历史(开发中)",
+                                "icon": "layui-icon layui-icon-component",
+                                "node": "wuma/sales.history/index"
+                            },
+                            {
+                                "name": "调货记录管理",
+                                "icon": "layui-icon layui-icon-component",
+                                "node": "wuma/sales.order/index"
+                            }
+                        ]
+                    }
+                ]
+            },
+            "app": {
+                "name": "防伪溯源",
+                "document": "https://thinkadmin.top/plugin/think-plugs-wuma.html",
+                "description": "防伪溯源管理模块，提供标签生成及出入库管理。",
+                "license": [
+                    "FEE"
+                ],
+                "code": "wuma",
+                "prefix": "wuma"
+            }
+        }
+    },
+    "minimum-stability": "dev",
     "config": {
-      "type": "module",
-      "name": "物码标签管理",
-      "document": "https://thinkadmin.top/plugin/think-plugs-wuma.html",
-      "description": "防伪溯源管理模块，提供标签生成及出入库管理。",
-      "license": [
-        "FEE"
-      ]
+        "sort-packages": true
     }
-  },
-  "minimum-stability": "dev",
-  "config": {
-    "sort-packages": true
-  }
 }

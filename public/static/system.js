@@ -566,14 +566,21 @@ $(function () {
             }
         };
         /*! 以 HASH 打开新网页 */
-        this.href = function (url, elem, hash) {
+        this.href = function (url, elem, hash, base, current, parser) {
             this.isMenu = !!(elem && elem.dataset.menuNode);
             if (this.isMenu) layui.sessionData('pages', null);
             if (typeof url !== 'string' || url === '#' || url === '') {
                 return this.isMenu && $('[data-menu-node^="' + elem.dataset.menuNode + '-"]:first').trigger('click');
             }
             hash = hash || $.menu.parseUri(url, elem);
-            this.isRedirect = url.indexOf('#') > -1 && url.split('#', 2)[0] !== location.pathname;
+            base = url.indexOf('#') > -1 ? url.split('#', 2)[0] : '';
+            current = location.pathname + location.search;
+            if (/^(https?:)?(\/\/|\\\\)/i.test(base)) {
+                parser = document.createElement('a');
+                parser.href = base;
+                base = parser.pathname + parser.search;
+            }
+            this.isRedirect = base.length > 0 && base !== current;
             this.isRedirect ? location.href = url.split('#', 2)[0] + '#' + hash : location.hash = hash;
         };
         /*! 加载 HTML 到 BODY 位置 */
@@ -628,9 +635,11 @@ $(function () {
             return $menu.length ? $menu.get(0).dataset.menuNode : (/^m-/.test(node || '') ? node : '');
         };
         /*! 完整 URL 转 URI 地址 */
-        this.parseUri = function (uri, elem, vars, temp, attrs) {
+        this.parseUri = function (uri, elem, vars, temp, attrs, target) {
             vars = {}, attrs = [], elem = elem || document.createElement('a');
-            if (uri.indexOf('?') > -1) uri.split('?')[1].split('&').forEach(function (item) {
+            target = typeof uri === 'string' ? uri : '';
+            target = target.indexOf('#') > -1 ? target.split('#', 2)[1] : target;
+            if (target.indexOf('?') > -1) target.split('?')[1].split('&').forEach(function (item) {
                 if (item.indexOf('=') > -1 && (temp = item.split('=')) && typeof temp[0] === 'string' && temp[0].length > 0) {
                     vars[temp[0]] = encodeURIComponent(decodeURIComponent(temp[1].replace(/%2B/ig, '%20')));
                 }

@@ -102,6 +102,7 @@ class PublishTest extends TestCase
         $this->assertContains('plugin\worker\Service', $services);
         $this->assertSame('System', $versions['vendor/system-plugin']['name']);
         $this->assertSame('plugin', $versions['vendor/storage-plugin']['type']);
+        $this->assertSame('plugin', $versions['vendor/worker-plugin']['type']);
         $this->assertFileExists($this->root . '/database/migrations/20241010000002_install_storage20241010.php');
         $this->assertFileExists($this->root . '/database/migrations/20241010000008_install_worker20241010.php');
         $this->assertFileExists($this->root . '/database/migrations/20241010000001_install_system20241010.php');
@@ -205,7 +206,7 @@ class PublishTest extends TestCase
             'description' => ucfirst($code),
             'extra' => [
                 'think' => ['services' => [$service]],
-                'xadmin' => ['service' => ['code' => $code, 'name' => ucfirst($code)]],
+                'xadmin' => ['app' => ['code' => $code, 'name' => ucfirst($code)]],
             ],
         ], JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES));
 

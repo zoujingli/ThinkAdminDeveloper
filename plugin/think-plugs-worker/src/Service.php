@@ -57,9 +57,4 @@ class Service extends Plugin
             'xadmin:queue' => Queue::class,
         ]);
     }
-
-    public static function menu(): array
-    {
-        return [];
-    }
 }
