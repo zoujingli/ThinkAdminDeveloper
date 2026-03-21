@@ -325,8 +325,9 @@ class InstallWuma20241010 extends Migrator
             ['vir_count', 'biginteger', ['limit' => 20, 'default' => 0, 'null' => true, 'comment' => '虚拟出货']],
             ['num_total', 'biginteger', ['limit' => 20, 'default' => 0, 'null' => true, 'comment' => '累计库存']],
             ['num_count', 'biginteger', ['limit' => 20, 'default' => 0, 'null' => true, 'comment' => '累计出货']],
+            ['delete_time', 'datetime', ['default' => null, 'null' => true, 'comment' => '删除时间']],
         ], [
-            'auid', 'ghash',
+            'auid', 'ghash', 'delete_time',
         ], true);
     }
 
