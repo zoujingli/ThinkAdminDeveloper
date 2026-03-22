@@ -35,7 +35,6 @@ class BaseBuilder
      * @param array $types 类型列表
      * @param array $pluginGroups 插件分组
      * @param string $requestUrl 请求 URL
-     * @return PageBuilder
      */
     public static function buildIndexPage(string $type, array $types, array $pluginGroups, string $requestUrl): PageBuilder
     {
@@ -89,7 +88,6 @@ SCRIPT);
     /**
      * 构建类型选项.
      * @param array $types 类型列表
-     * @return array
      */
     public static function buildTypeOptions(array $types): array
     {
@@ -103,7 +101,6 @@ SCRIPT);
 
     /**
      * 构建插件选项.
-     * @return array
      */
     public static function buildPluginOptions(): array
     {
@@ -121,7 +118,6 @@ SCRIPT);
     /**
      * 构建插件分组选项.
      * @param array $groups 插件分组
-     * @return array
      */
     private static function buildPluginGroupOptions(array $groups): array
     {
@@ -137,7 +133,6 @@ SCRIPT);
 
     /**
      * 渲染类型标签页.
-     * @return string
      */
     private static function renderTypeTabs(): string
     {
@@ -156,7 +151,6 @@ HTML;
 
     /**
      * 渲染插件模板.
-     * @return string
      */
     private static function renderPluginTemplate(): string
     {
