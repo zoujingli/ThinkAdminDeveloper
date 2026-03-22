@@ -21,7 +21,7 @@ declare(strict_types=1);
 namespace plugin\wemall\controller\user;
 
 use plugin\account\model\PluginAccountUser;
-use plugin\system\service\SystemAuthService;
+use plugin\system\service\AuthService;
 use plugin\wemall\model\PluginWemallUserTransfer;
 use plugin\wemall\service\UserTransfer;
 use think\admin\Controller;
@@ -124,7 +124,7 @@ class Transfer extends Controller
                 }
                 $data['trade_time'] = date('Y-m-d H:i:s');
                 $data['change_time'] = date('Y-m-d H:i:s');
-                $data['change_desc'] = ($data['remark'] ?: '线下打款成功') . ' By ' . SystemAuthService::getUserName();
+                $data['change_desc'] = ($data['remark'] ?: '线下打款成功') . ' By ' . AuthService::getUserName();
             }
             if (PluginWemallUserTransfer::mk()->strict(false)->where($map)->update($data) !== false) {
                 $this->success('操作成功');

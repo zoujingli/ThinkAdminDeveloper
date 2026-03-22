@@ -22,7 +22,7 @@ namespace plugin\wemall\controller\shop;
 
 use plugin\payment\model\PluginPaymentRecord;
 use plugin\payment\service\Payment;
-use plugin\system\service\SystemAuthService;
+use plugin\system\service\AuthService;
 use plugin\wemall\model\PluginWemallOrderRefund;
 use plugin\wemall\service\UserCoupon;
 use plugin\wemall\service\UserOrder;
@@ -154,7 +154,7 @@ class Refund extends Controller
                         unset($data['payment_amount'], $data['balance_amount'], $data['integral_amount']);
                     }
                     // 后台操作人
-                    $data['admin_by'] = SystemAuthService::getUserId();
+                    $data['admin_by'] = AuthService::getUserId();
                     // 更新售后数据
                     $refund->save($data);
                     // 同步订单状态

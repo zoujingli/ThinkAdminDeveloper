@@ -20,7 +20,7 @@ declare(strict_types=1);
 
 namespace plugin\wuma\service;
 
-use plugin\system\service\SystemAuthService;
+use plugin\system\service\AuthService;
 use plugin\wuma\model\PluginWumaWarehouseOrder;
 use plugin\wuma\model\PluginWumaWarehouseOrderData;
 use plugin\wuma\model\PluginWumaWarehouseOrderDataMins;
@@ -166,7 +166,7 @@ class WhImportService
         [$count, $maps, $unis] = WhCoderService::code2count($codes);
         // 创建入库订单数据
         ($dataModel = PluginWumaWarehouseOrderData::mk())->save(array_merge([
-            'code' => $body['code'], 'number' => $count, 'create_by' => SystemAuthService::getUserId(),
+            'code' => $body['code'], 'number' => $count, 'create_by' => AuthService::getUserId(),
         ], $extra));
         $ddid = $dataModel->getAttr('id');
         // 组装入库真实数据

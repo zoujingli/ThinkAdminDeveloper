@@ -23,7 +23,7 @@ namespace plugin\payment\controller;
 use plugin\account\model\PluginAccountUser;
 use plugin\payment\model\PluginPaymentRecord;
 use plugin\payment\service\Payment;
-use plugin\system\service\SystemAuthService;
+use plugin\system\service\AuthService;
 use think\admin\Controller;
 use think\admin\extend\CodeToolkit;
 use think\admin\helper\FormBuilder;
@@ -94,7 +94,7 @@ class Record extends Controller
         if ($action->getAttr('payment_status') === 1) {
             $this->success('该凭证已审核！');
         }
-        $data['audit_user'] = SystemAuthService::getUserId();
+        $data['audit_user'] = AuthService::getUserId();
         $data['audit_time'] = date('Y-m-d H:i:s');
         $data['audit_remark'] = $data['remark'];
         $data['payment_time'] = date('Y-m-d H:i:s');

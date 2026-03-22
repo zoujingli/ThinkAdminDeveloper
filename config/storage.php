@@ -17,4 +17,4 @@ declare(strict_types=1);
  * | Github Repository: https://github.com/zoujingli/ThinkAdmin
  * +----------------------------------------------------------------------
  */
-return include dirname(__DIR__) . '/plugin/think-plugs-system/src/storage/config.php';
+return include dirname(__DIR__) . '/plugin/think-plugs-system/src/storage/extra/config.php';

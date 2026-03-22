@@ -21,7 +21,7 @@ declare(strict_types=1);
 namespace plugin\wemall\controller\help;
 
 use plugin\account\model\PluginAccountUser;
-use plugin\system\service\SystemAuthService;
+use plugin\system\service\AuthService;
 use plugin\wemall\model\PluginWemallHelpQuestion;
 use plugin\wemall\model\PluginWemallHelpQuestionX;
 use think\admin\Controller;
@@ -107,7 +107,7 @@ class Question extends Controller
             PluginWemallHelpQuestionX::mk()->save([
                 'ccid' => $data['id'],
                 'content' => $data['content'],
-                'reply_by' => SystemAuthService::getUserId(),
+                'reply_by' => AuthService::getUserId(),
             ]);
             unset($data['content']);
         }

@@ -21,7 +21,7 @@ declare(strict_types=1);
 namespace plugin\wemall\controller\help;
 
 use plugin\account\model\PluginAccountUser;
-use plugin\system\service\SystemAuthService;
+use plugin\system\service\AuthService;
 use plugin\wemall\model\PluginWemallHelpFeedback;
 use plugin\wemall\model\PluginWemallHelpProblem;
 use think\admin\Controller;
@@ -134,7 +134,7 @@ class Feedback extends Controller
     {
         if ($this->request->isPost() && !empty($data['reply'])) {
             $data['reply_st'] = 1;
-            $data['reply_by'] = SystemAuthService::instance()->getUserId();
+            $data['reply_by'] = AuthService::instance()->getUserId();
             if (($data['reply_time'] ?? '-') !== '-') {
                 $data['reply_time'] = date('Y-m-d H:i:s');
             }

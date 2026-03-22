@@ -20,7 +20,7 @@ declare(strict_types=1);
 
 namespace plugin\wechat\client\controller;
 
-use plugin\system\service\SystemAuthService;
+use plugin\system\service\AuthService;
 use plugin\wechat\client\model\WechatNews;
 use plugin\wechat\client\model\WechatNewsArticle;
 use plugin\wechat\client\service\MediaService;
@@ -70,7 +70,7 @@ class News extends Controller
             $this->fetch('form');
         } else {
             $update = [
-                'create_by' => SystemAuthService::getUserId(),
+                'create_by' => AuthService::getUserId(),
                 'article_id' => $this->_buildArticle($this->request->post('data', [])),
             ];
             if (WechatNews::mk()->save($update) !== false) {
