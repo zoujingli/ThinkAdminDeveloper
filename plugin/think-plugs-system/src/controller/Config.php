@@ -99,40 +99,35 @@ class Config extends Controller
     {
         StorageConfig::initialize();
         $this->title = '系统参数配置';
+        $this->site = $this->siteConfig();
+        $this->runtime = $this->runtimeConfig();
+        $this->storage = StorageConfig::viewData();
         $this->files = Storage::types();
-        $this->storageDriver = strtolower((string)StorageConfig::global('driver', 'local'));
+        $this->storageDriver = strtolower((string)StorageConfig::global('default_driver', 'local'));
         $this->storageName = $this->files[$this->storageDriver] ?? $this->storageDriver;
-        $this->storageEditable = SystemAuthService::isSuper()
-            || SystemAuthService::check('storage/config/index')
-            || SystemAuthService::check('storage/config/storage');
-        $this->plugins = AppService::all(true);
+        $this->storageEditable = $this->canManageStorage();
+        $this->plugins = $this->configPlugins();
         $this->issuper = SystemAuthService::isSuper();
         $this->systemid = ProcessService::getRunVar('uni');
         $this->framework = AppService::getPluginLibrarys('topthink/framework');
         $this->thinkadmin = AppService::getPluginLibrarys('zoujingli/think-library');
         if (SystemAuthService::isSuper() && UserService::verifyPassword('admin', strval(SystemAuthService::getUser('password', '')))) {
             $url = url('system/index/pass', ['id' => SystemAuthService::getUserId()]);
-            $this->showErrorMessage = lang("超级管理员账号的密码未修改，建议立即<a data-modal='%s'>修改密码</a>！", [$url]);
+            $this->showErrorMessage = lang("默认超管密码仍未修改，<a data-modal='%s'>立即修改</a>。", [$url]);
         }
-        uasort($this->plugins, static function ($a, $b) {
-            if ($a['space'] === $b['space']) {
-                return 0;
-            }
-            return $a['space'] > $b['space'] ? 1 : -1;
-        });
+        [$this->pluginLeft, $this->pluginRight] = $this->splitPluginColumns($this->plugins);
         $this->fetch();
     }
 
-    /**
-     * 修改系统参数.
-     * @auth true
-     * @throws \think\admin\Exception
-     */
     public function system()
     {
         if ($this->request->isGet()) {
             $this->title = '修改系统参数';
-            $theme = strval(sysconf('base.site_theme') ?: 'default');
+            $this->site = $this->siteConfig();
+            $this->security = $this->securityConfig();
+            $this->runtime = $this->runtimeConfig();
+            $this->siteLoginImagesText = join('|', $this->site['login_background_images']);
+            $theme = strval($this->site['theme'] ?? 'default');
             if (!isset(static::themeCatalog[$theme])) {
                 $theme = 'default';
             }
@@ -140,41 +135,347 @@ class Config extends Controller
             $this->siteThemeKey = $theme;
             $this->siteThemeLabel = static::themeCatalog[$theme]['label'];
             $this->pluginCenter = PluginCenterService::getConfig();
-            $this->pluginCenterApps = PluginCenterService::getSelectableApps();
             $this->fetch();
-        } else {
-            $post = $this->request->post();
-            unset($post['xpath']);
-            PluginCenterService::setConfig([
-                'enabled' => intval($post['plugin_center_enabled'] ?? 1),
-                'show_menu' => intval($post['plugin_center_show_menu'] ?? 1),
-                'default' => strval($post['plugin_center_default'] ?? ''),
-            ]);
-            unset($post['plugin_center_enabled'], $post['plugin_center_show_menu'], $post['plugin_center_default']);
-            // 修改网站 ICON 图标，替换 public/favicon.ico
-            if (preg_match('#^https?://#', $post['site_icon'] ?? '')) {
-                try {
-                    SystemService::setFavicon($post['site_icon'] ?? '');
-                } catch (\Exception $exception) {
-                    trace_file($exception);
-                }
-            }
-            // 数据数据到系统配置表
-            foreach ($post as $k => $v) {
-                sysconf($k, $v);
-            }
-            sysoplog('系统配置管理', '修改系统参数成功');
-            $this->success('数据保存成功！', system_uri('system/config/index'));
+            return;
         }
+
+        $post = $this->request->post();
+        $site = $this->normalizeSiteConfig((array)($post['site'] ?? []));
+        $security = $this->normalizeSecurityConfig((array)($post['security'] ?? []));
+        $runtime = $this->normalizeRuntimeConfig((array)($post['runtime'] ?? []));
+        if (preg_match('#^https?://#', $site['browser_icon'] ?? '')) {
+            try {
+                SystemService::setFavicon($site['browser_icon'] ?? '');
+            } catch (\Exception $exception) {
+                trace_file($exception);
+            }
+        }
+        sysdata('system.site', $site);
+        sysdata('system.security', $security);
+        sysdata('system.runtime', $runtime);
+        PluginCenterService::setConfig((array)($post['plugin_center'] ?? []));
+        sysoplog('系统参数配置', '更新系统参数');
+        $this->success('系统参数保存成功。', system_uri('system/config/index'));
     }
 
     /**
-     * 修改文件存储.
+     * 存储中心配置.
      * @auth true
-     * @throws \think\admin\Exception
+     * @menu true
      */
     public function storage()
     {
-        app(\plugin\storage\controller\Config::class)->storage();
+        StorageConfig::initialize();
+
+        if ($this->request->isGet()) {
+            $type = strtolower(trim(strval($this->request->get('type', ''))));
+            if ($type == '') {
+                $this->authorizeStorageView();
+                $this->title = '存储配置中心';
+                $this->storage = StorageConfig::viewData();
+                $this->files = Storage::types();
+                $this->driver = strtolower((string)StorageConfig::global('default_driver', 'local'));
+                $this->driverName = $this->files[$this->driver] ?? $this->driver;
+                $this->canEdit = $this->canManageStorage();
+                $this->fetch('config/storage-index');
+                return;
+            }
+
+            $this->authorizeStorageManage();
+            $this->files = Storage::types();
+            if (!isset($this->files[$type])) {
+                $type = array_key_first($this->files) ?: 'local';
+            }
+            $this->title = '修改存储驱动';
+            $this->type = $type;
+            $this->points = Storage::regions($type);
+            $this->storage = StorageConfig::viewData();
+            $this->fetch('config/' . Storage::template($type));
+            return;
+        }
+
+        $this->authorizeStorageManage();
+        $storage = $this->normalizeStorageConfig((array)$this->request->post('storage', []));
+        if (!empty($storage['allowed_extensions'])) {
+            $deny = ['sh', 'asp', 'bat', 'cmd', 'exe', 'php'];
+            if (count(array_intersect($deny, $storage['allowed_extensions'])) > 0) {
+                $this->error('禁止上传可执行文件类型。');
+            }
+        }
+        StorageConfig::save($storage);
+        sysoplog('存储参数配置', '更新存储配置');
+        $this->success('存储配置保存成功。', system_uri('system/config/storage'));
+    }
+
+    private function authorizeStorageView(): void
+    {
+        if ($this->canViewStorage()) {
+            return;
+        }
+        $this->error('抱歉，没有访问该操作的权限！');
+    }
+
+    private function authorizeStorageManage(): void
+    {
+        if ($this->canManageStorage()) {
+            return;
+        }
+        $this->error('抱歉，没有访问该操作的权限！');
+    }
+
+    private function canViewStorage(): bool
+    {
+        return SystemAuthService::isSuper()
+            || SystemAuthService::check('system/config/storage')
+            || SystemAuthService::check('system/file/index')
+            || $this->canManageStorage();
+    }
+
+    private function canManageStorage(): bool
+    {
+        return SystemAuthService::isSuper()
+            || SystemAuthService::check('system/config/storage')
+            || SystemAuthService::check('system/file/edit')
+            || SystemAuthService::check('system/file/remove')
+            || SystemAuthService::check('system/file/distinct');
+    }
+
+    private function siteConfig(): array
+    {
+        $site = array_replace_recursive([
+            'login_title' => '系统管理',
+            'theme' => 'default',
+            'login_background_images' => [],
+            'browser_icon' => 'https://thinkadmin.top/static/img/logo.png',
+            'website_name' => 'ThinkAdmin',
+            'application_name' => 'ThinkAdmin',
+            'application_version' => 'v8',
+            'public_security_filing' => '',
+            'miit_filing' => '',
+            'copyright' => 'Copyright 2014-' . date('Y') . ' ThinkAdmin',
+            'host' => '',
+        ], (array)sysget('system.site', []));
+
+        $site['login_title'] = strval($site['login_title']);
+        $site['theme'] = strval($site['theme']) ?: 'default';
+        $site['browser_icon'] = strval($site['browser_icon']);
+        $site['website_name'] = strval($site['website_name']);
+        $site['application_name'] = strval($site['application_name']);
+        $site['application_version'] = strval($site['application_version']);
+        $site['public_security_filing'] = strval($site['public_security_filing']);
+        $site['miit_filing'] = strval($site['miit_filing']);
+        $site['copyright'] = strval($site['copyright']);
+        $site['host'] = strval($site['host']);
+        $site['login_background_images'] = array_values(array_filter(array_map('strval', (array)$site['login_background_images'])));
+
+        if (!isset(static::themeCatalog[$site['theme']])) {
+            $site['theme'] = 'default';
+        }
+
+        return $site;
+    }
+
+    private function securityConfig(): array
+    {
+        $security = array_replace_recursive([
+            'jwt_secret' => bin2hex(random_bytes(16)),
+        ], (array)sysget('system.security', []));
+
+        $security['jwt_secret'] = strval($security['jwt_secret']);
+        if (strlen($security['jwt_secret']) != 32) {
+            $security['jwt_secret'] = bin2hex(random_bytes(16));
+        }
+
+        return $security;
+    }
+
+    private function runtimeConfig(): array
+    {
+        $runtime = array_replace_recursive([
+            'editor_driver' => 'ckeditor5',
+            'queue_retain_days' => 7,
+        ], (array)sysget('system.runtime', []));
+
+        $runtime['editor_driver'] = strval($runtime['editor_driver']) ?: 'ckeditor5';
+        if (!in_array($runtime['editor_driver'], ['ckeditor4', 'ckeditor5', 'wangEditor', 'auto'], true)) {
+            $runtime['editor_driver'] = 'ckeditor5';
+        }
+        $runtime['queue_retain_days'] = max(1, intval($runtime['queue_retain_days'] ?? 7));
+
+        return $runtime;
+    }
+
+    private function normalizeSiteConfig(array $data): array
+    {
+        $site = array_replace_recursive($this->siteConfig(), $data);
+        $site['login_title'] = trim(strval($site['login_title'] ?? ''));
+        $site['theme'] = trim(strval($site['theme'] ?? 'default'));
+        $site['browser_icon'] = trim(strval($site['browser_icon'] ?? ''));
+        $site['website_name'] = trim(strval($site['website_name'] ?? ''));
+        $site['application_name'] = trim(strval($site['application_name'] ?? ''));
+        $site['application_version'] = trim(strval($site['application_version'] ?? ''));
+        $site['public_security_filing'] = trim(strval($site['public_security_filing'] ?? ''));
+        $site['miit_filing'] = trim(strval($site['miit_filing'] ?? ''));
+        $site['copyright'] = trim(strval($site['copyright'] ?? ''));
+        $site['host'] = trim(strval($site['host'] ?? ''));
+
+        $images = $site['login_background_images'] ?? [];
+        if (is_string($images)) {
+            $images = str2arr($images, '|');
+        }
+        $site['login_background_images'] = array_values(array_filter(array_map(static fn($item) => trim(strval($item)), (array)$images)));
+
+        if (!isset(static::themeCatalog[$site['theme']])) {
+            $site['theme'] = 'default';
+        }
+        if ($site['login_title'] == '') {
+            $site['login_title'] = '系统管理';
+        }
+        if ($site['website_name'] == '') {
+            $site['website_name'] = 'ThinkAdmin';
+        }
+        if ($site['application_name'] == '') {
+            $site['application_name'] = 'ThinkAdmin';
+        }
+
+        return $site;
+    }
+
+    private function normalizeSecurityConfig(array $data): array
+    {
+        $security = array_replace_recursive($this->securityConfig(), $data);
+        $security['jwt_secret'] = trim(strval($security['jwt_secret'] ?? ''));
+        if (strlen($security['jwt_secret']) != 32) {
+            $security['jwt_secret'] = bin2hex(random_bytes(16));
+        }
+        return $security;
+    }
+
+    private function normalizeRuntimeConfig(array $data): array
+    {
+        $runtime = array_replace_recursive($this->runtimeConfig(), $data);
+        $runtime['editor_driver'] = trim(strval($runtime['editor_driver'] ?? 'ckeditor5'));
+        if (!in_array($runtime['editor_driver'], ['ckeditor4', 'ckeditor5', 'wangEditor', 'auto'], true)) {
+            $runtime['editor_driver'] = 'ckeditor5';
+        }
+        $runtime['queue_retain_days'] = max(1, intval($runtime['queue_retain_days'] ?? 7));
+        return $runtime;
+    }
+
+    private function normalizeStorageConfig(array $data): array
+    {
+        if (isset($data['allowed_extensions_text']) && !isset($data['allowed_extensions'])) {
+            $data['allowed_extensions'] = $data['allowed_extensions_text'];
+        }
+        unset($data['allowed_extensions_text']);
+        return array_replace_recursive(StorageConfig::payload(), $data);
+    }
+
+    /**
+     * 获取系统配置页展示的插件应用。
+     * 这里仅展示外部插件应用，不再混入 System 自身。
+     *
+     * @return array<string, array<string, mixed>>
+     */
+    private function configPlugins(): array
+    {
+        $plugins = $this->manifestPluginApps();
+        foreach (AppService::plugins(true) as $plugin) {
+            $code = trim(strval($plugin['code'] ?? ''));
+            if ($code === '' || $code === 'system') {
+                continue;
+            }
+            $plugins[$code] = array_replace($plugins[$code] ?? [], $plugin);
+        }
+
+        $plugins = array_filter($plugins, static function (array $plugin): bool {
+            return !empty($plugin['show']) && trim(strval($plugin['code'] ?? '')) !== '';
+        });
+
+        uasort($plugins, static function (array $left, array $right): int {
+            return strnatcasecmp(strval($left['code'] ?? ''), strval($right['code'] ?? ''));
+        });
+
+        foreach ($plugins as &$plugin) {
+            $plugin['version_text'] = strval($plugin['version'] ?? '') ?: 'unknown';
+            $plugin['license_text'] = empty($plugin['license']) ? '-' : implode(' / ', array_filter((array)$plugin['license']));
+            $plugin['description_text'] = trim(strval($plugin['description'] ?? '')) ?: '暂未提供插件说明，可进入插件后查看具体能力。';
+        }
+
+        unset($plugin);
+        return $plugins;
+    }
+
+    /**
+     * 扫描本地插件 composer 清单，补足开发态下未注册到运行时的插件应用。
+     *
+     * @return array<string, array<string, mixed>>
+     */
+    private function manifestPluginApps(): array
+    {
+        $items = [];
+        $pluginPath = dirname(__DIR__, 4) . DIRECTORY_SEPARATOR . 'plugin';
+        if (!is_dir($pluginPath)) {
+            return $items;
+        }
+
+        foreach (glob($pluginPath . DIRECTORY_SEPARATOR . '*' . DIRECTORY_SEPARATOR . 'composer.json') ?: [] as $file) {
+            $content = file_get_contents($file);
+            $config = is_string($content) ? json_decode($content, true) : null;
+            $app = is_array($config) ? ($config['extra']['xadmin']['app'] ?? null) : null;
+            if (!is_array($app)) {
+                continue;
+            }
+
+            $code = trim(strval($app['code'] ?? ''));
+            if ($code === '' || $code === 'system' || (array_key_exists('show', $app) && empty($app['show']))) {
+                continue;
+            }
+
+            $prefixes = [];
+            foreach ((array)($app['prefixes'] ?? ($app['prefix'] ?? [])) as $prefix) {
+                $prefix = trim(strval($prefix), " \t\n\r\0\x0B\\/");
+                if ($prefix !== '' && !in_array($prefix, $prefixes, true)) {
+                    $prefixes[] = $prefix;
+                }
+            }
+            if ($prefixes === []) {
+                $prefixes = [$code];
+            }
+
+            $license = $config['license'] ?? [];
+            $license = is_array($license) ? $license : [$license];
+
+            $items[$code] = [
+                'code' => $code,
+                'name' => strval($app['name'] ?? $code),
+                'package' => strval($config['name'] ?? ''),
+                'document' => strval($app['document'] ?? ''),
+                'description' => strval($app['description'] ?? ($config['description'] ?? '')),
+                'license' => array_values(array_filter(array_map('strval', $license))),
+                'version' => strval($config['version'] ?? ''),
+                'prefixes' => $prefixes,
+                'show' => !array_key_exists('show', $app) || !empty($app['show']),
+            ];
+        }
+
+        return $items;
+    }
+
+    /**
+     * 将插件列表拆分成左右两列，避免不同高度卡片产生大面积留白。
+     *
+     * @param array<string, array<string, mixed>> $plugins
+     * @return array{0: array<string, array<string, mixed>>, 1: array<string, array<string, mixed>>}
+     */
+    private function splitPluginColumns(array $plugins): array
+    {
+        $columns = [[], []];
+        $index = 0;
+        foreach ($plugins as $code => $plugin) {
+            $columns[$index % 2][$code] = $plugin;
+            ++$index;
+        }
+        return $columns;
     }
 }
