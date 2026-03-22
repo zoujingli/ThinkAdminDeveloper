@@ -64,9 +64,9 @@ class OpenApiService extends Service
     public function __construct(App $app)
     {
         parent::__construct($app);
-        $this->appid = sysconf('data.interface_appid|raw') ?: '';
-        $this->appkey = sysconf('data.interface_appkey|raw') ?: '';
-        $this->gateway = sysconf('data.interface_gateway|raw') ?: '';
+        $this->appid = strval(sysget('system.openapi.appid', ''));
+        $this->appkey = strval(sysget('system.openapi.appkey', ''));
+        $this->gateway = strval(sysget('system.openapi.gateway', ''));
     }
 
     /**

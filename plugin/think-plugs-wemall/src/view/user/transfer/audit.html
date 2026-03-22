@@ -1,13 +1,13 @@
 <form action="{:sysuri()}" method="post" data-auto="true" class="layui-form layui-card">
 
-    <div class="layui-card-body ta-pl-40">
+    <div class="layui-card-body pl40">
 
         <div class="flex layui-form-item">
             <label class="flex-1">
                 <span class="help-label"><b>{:lang('提现单号')}</b></span>
                 <input class='layui-input layui-bg-gray' disabled value='{$vo.code|default="-"}'>
             </label>
-            <label class="flex-1 ta-ml-10">
+            <label class="flex-1 ml10">
                 <span class="help-label"><b>{:lang('提现方式')}</b></span>
                 <input class='layui-input layui-bg-gray' disabled value='{$vo.type_name|default="-"}'>
             </label>
@@ -20,14 +20,14 @@
                     <span class="layui-input-suffix">{:lang('元')}</span>
                 </label>
             </div>
-            <div class="flex-1 ta-ml-10">
+            <div class="flex-1 ml10">
                 <span class="help-label"><b>{:lang('提现手续费')}</b></span>
                 <label class="layui-input-wrap block relative">
                     <input class='layui-input layui-bg-gray' disabled value='{$vo.charge_amount|default="0.00"}'>
                     <span class="layui-input-suffix">{:lang('元')}</span>
                 </label>
             </div>
-            <div class="flex-1 ta-ml-10">
+            <div class="flex-1 ml10">
                 <span class="help-label"><b>{:lang('应打款金额')}</b></span>
                 <label class="layui-input-wrap block relative">
                     <input class='layui-input layui-bg-gray' disabled value='{$vo.amount - $vo.charge_amount}'>
@@ -118,7 +118,7 @@
             {php} $types =[5=>lang('已经完成')]; {/php}
             {/if}
 
-            <div class="layui-textarea help-checks ta-pl-10">
+            <div class="layui-textarea help-checks pl10">
                 {foreach($types as $k => $v)}{if $k eq $vo.status}
                 <input checked name="status" title="{$v}" type="radio" value='{$k}'>
                 {else}

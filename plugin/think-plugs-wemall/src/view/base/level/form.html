@@ -1,5 +1,5 @@
 <form action="{:sysuri()}" class="layui-form layui-card" data-auto="true" method="post">
-    <div class="layui-card-body ta-pl-40">
+    <div class="layui-card-body pl40">
 
         <div class="layui-form-item flex">
             <div class="flex-1">
@@ -12,7 +12,7 @@
                     {/if}{/for}
                 </select>
             </div>
-            <label class="flex-3 ta-ml-15 relative">
+            <label class="flex-3 ml15 relative">
                 <span class="help-label label-required-prev"><b>{:lang('等级名称')}</b>Level Name</span>
                 <input class="layui-input" name="name" placeholder="{:lang('请输入等级名称')}" required value="{$vo.name|default=''}">
             </label>
@@ -54,7 +54,7 @@
                     {/foreach}
                 </div>
             </div>
-            <div class="flex-1 ta-ml-15">
+            <div class="flex-1 ml15">
                 <span class="help-label label-required-prev"><b>{:lang('升级规则')}</b>Upgrade Type</span>
                 {empty name='vo.upgrade_type'}{assign name='vo.upgrade_type' value='1'}{/empty}
                 <div class="layui-textarea help-checks layui-bg-gray">
@@ -73,7 +73,7 @@
 
         <div class="layui-form-item">
             <span class="help-label label-required-prev"><b>{:lang('升级条件')}</b>Upgrade Rules</span>
-            <div class="layui-bg-gray layui-textarea help-checks relative flex flex-wrap ta-p-10">
+            <div class="layui-bg-gray layui-textarea help-checks relative flex flex-wrap pa10">
                 <div class="upgrade-item-group">
                     {if empty($vo.extra.enter_vip_status)}
                     <input name="extra.enter_vip_status" type="checkbox" value="1" lay-text="{:lang('开启 购买入会礼包 升级；')}">

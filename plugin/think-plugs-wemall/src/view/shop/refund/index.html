@@ -42,7 +42,7 @@
                             tpls.push('{:lang("用户手机")}：<b class="font-code">{{d.user.phone}}</b>');
                             tpls.push('{:lang("用户编号")}：<b class="font-code">{{d.user.code}}</b>');
                         } else {
-                            tpls.push('<div class="color-desc ta-pt-10">' + '{:lang("无用户账号")}' + '</div>')
+                            tpls.push('<div class="color-desc pt10">' + '{:lang("无用户账号")}' + '</div>')
                         }
                         return laytpl("<div class='nowrap'>" + tpls.join('<br>') + "</div>").render(d);
                     }
@@ -83,7 +83,7 @@
 <!-- 操控面板的模板 -->
 <script type="text/html" id="RefundEdit">
     <!--{if auth('edit')}-->
-    <div class="ta-p-5"></div>
+    <div class="pa5"></div>
     <a class="layui-btn layui-btn-sm" data-open="{:url('edit')}?id={{d.id}}">{:lang('编 辑')}</a>
     <!--{/if}-->
 </script>

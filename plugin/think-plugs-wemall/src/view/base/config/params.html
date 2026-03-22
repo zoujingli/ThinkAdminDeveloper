@@ -1,5 +1,5 @@
 <form action="{:sysuri()}" class="layui-form layui-card" data-auto="true" method="post">
-    <div class="layui-card-body ta-pl-40">
+    <div class="layui-card-body pl40">
 
         <div class="flex">
             <label class="relative block layui-form-item flex-1">
@@ -7,7 +7,7 @@
                 <input class="layui-input" name="base_name" placeholder="{:lang('请输入商城名称')}" required value='{$vo.base_name|default=""}'>
                 <span class="help-block">{:lang('名称将显示在前端关于我们及登录页面。')}</span>
             </label>
-            <label class="relative block layui-form-item flex-2 ta-ml-15">
+            <label class="relative block layui-form-item flex-2 ml15">
                 <span class="help-label"><b>{:lang('手机网站')}</b>WapSite</span>
                 <input class="layui-input" pattern="url" name="base_domain" placeholder="{:lang('请输入手机网站')}" required value='{$vo.base_domain|default=""}'>
                 <span class="help-block">{:lang('请填写手机网站入口，如果使用 Hash 方案编译生成手机网页需要以 # 结束。')}</span>
@@ -17,7 +17,7 @@
         <div class="flex">
             <div class="layui-form-item flex-1">
                 <span class="help-label label-required-prev"><b>{:lang('账户余额')}</b>User Balance</span>
-                <div class="layui-textarea help-checks layui-bg-gray ta-pl-15">
+                <div class="layui-textarea help-checks layui-bg-gray pl15">
                     {empty name='vo.enable_balance'}{assign name='vo.enable_balance' value='0'}{/empty}
                     {foreach [lang('禁用账户余额'),lang('启用账户余额')] as $k=>$n}
                     {if (isset($vo.enable_balance) && $vo.enable_balance eq $k)}
@@ -29,9 +29,9 @@
                 <span class="help-block">{:lang('开启账户余额之后，可以积累余额并可使用余额抵扣支付。')}</span>
             </div>
 
-            <div class="layui-form-item flex-1 ta-ml-15">
+            <div class="layui-form-item flex-1 ml15">
                 <span class="help-label label-required-prev"><b>{:lang('账户积分')}</b>User Integral</span>
-                <div class="layui-textarea help-checks layui-bg-gray ta-pl-15">
+                <div class="layui-textarea help-checks layui-bg-gray pl15">
                     {empty name='vo.enable_integral'}{assign name='vo.enable_integral' value='0'}{/empty}
                     {foreach [lang('禁用账户积分'),lang('启用账户积分')] as $k=>$n}
                     {if (isset($vo.enable_integral) && $vo.enable_integral eq $k)}
@@ -48,7 +48,7 @@
         <div class="flex">
             <div class="layui-form-item flex-1">
                 <span class="help-label label-required-prev"><b>{:lang('手机站点')}</b>WapSite</span>
-                <div class="layui-textarea help-checks layui-bg-gray ta-pl-15">
+                <div class="layui-textarea help-checks layui-bg-gray pl15">
                     {empty name='vo.enable_wapsite'}{assign name='vo.enable_wapsite' value='0'}{/empty}
                     {foreach [lang('禁用'),lang('启用')] as $k=>$n}
                     {if (isset($vo.enable_wapsite) && $vo.enable_wapsite eq $k)}
@@ -59,12 +59,12 @@
                 </div>
                 <span class="help-block">{:lang('禁用WAP站点后WAP仅可用于注册绑定。')}</span>
             </div>
-            <label class="relative block layui-form-item flex-1 ta-ml-15">
+            <label class="relative block layui-form-item flex-1 ml15">
                 <span class="help-label"><b>{:lang('安卓内链')}</b>URLScheme</span>
                 <input class="layui-input" name="scheme_android" placeholder="{:lang('请输入安卓内链')}" value='{$vo.scheme_android|default=""}'>
                 <span class="help-block">{:lang('系统内部调用该App的专属链接协议。')}</span>
             </label>
-            <label class="relative block layui-form-item flex-1 ta-ml-15">
+            <label class="relative block layui-form-item flex-1 ml15">
                 <span class="help-label"><b>{:lang('跳转链接')}</b>Redirect</span>
                 <input class="layui-input" pattern="url" name="scheme_redirect" placeholder="{:lang('请输入跳转链接')}" value='{$vo.scheme_redirect|default=""}'>
                 <span class="help-block">{:lang('未启用WAP站点时注册完成跳转的地址。')}</span>

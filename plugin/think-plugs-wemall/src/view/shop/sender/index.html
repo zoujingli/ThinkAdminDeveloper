@@ -52,9 +52,9 @@
                             tpls.push('<div>' + '{:lang("用户昵称")}' + '：{{d.user.nickname||d.user.username||"-"}}</div>');
                             tpls.push('<div>' + '{:lang("用户手机")}' + '：<b class="font-code">{{d.user.phone}}</b></div>');
                         } else {
-                            tpls.push('<div class="color-desc ta-pt-10">' + '{:lang("无用户账号")}' + '</div>')
+                            tpls.push('<div class="color-desc pt10">' + '{:lang("无用户账号")}' + '</div>')
                         }
-                        return laytpl("<div class='nowrap ta-pt-10'>" + tpls.join('') + "</div>").render(d);
+                        return laytpl("<div class='nowrap pt10'>" + tpls.join('') + "</div>").render(d);
                     }
                 },
                 {
@@ -106,12 +106,12 @@
                             tpls.push(laytpl(
                                 '<div class="flex">' +
                                 '   <div style="padding-top:3px">{{-showTableImage(d.gcover,false,"md")}}</div>' +
-                                '   <div class="ta-pl-5"></div>' +
+                                '   <div class="pl5"></div>' +
                                 '   <div>' +
                                 '       <div>{{d.gcode}}</div>' +
                                 '       <div>' +
                                 '           <span>{{d.gname}}</span>' +
-                                '           <span class="ta-pl-5 color-desc">{{str2name(d.gspec)}}</span><br>' +
+                                '           <span class="pl5 color-desc">{{str2name(d.gspec)}}</span><br>' +
                                 '           <span>{{d.stock_sales}}' + '{:lang("件")}' + ' x {{str2num(d.price_selling)}}' + '{:lang("元/件")}' + '，' + '{:lang("计")}' + ' {{str2num(d.total_price_selling)}}' + '{:lang("元")}' + '</span> ' +
                                 '       </div>' +
                                 '   </div>' +
@@ -125,11 +125,11 @@
                     title: '{:lang("物流信息")}', templet: function (d) {
                         let tpls = [];
                         if (d.status > 1) {
-                            tpls.push('<b>' + '{:lang("发货物流")}' + '：</b><span class="ta-mr-5">{{d.company_name}}</span><b class="color-blue font-code">{{d.express_code}}</b>');
+                            tpls.push('<b>' + '{:lang("发货物流")}' + '：</b><span class="mr5">{{d.company_name}}</span><b class="color-blue font-code">{{d.express_code}}</b>');
                         } else {
                             tpls.push('<b>' + '{:lang("发货物流")}' + '：</b><span class="color-desc">' + '{:lang("未发货")}' + '</span>');
                         }
-                        tpls.push('<b>' + '{:lang("联系方式")}' + '：</b><span class="ta-mr-5">{{d.user_name}}</span><span class="color-blue font-code">{{d.user_phone}}</span>');
+                        tpls.push('<b>' + '{:lang("联系方式")}' + '：</b><span class="mr5">{{d.user_name}}</span><span class="color-blue font-code">{{d.user_phone}}</span>');
                         tpls.push('<b>' + '{:lang("收货地址")}' + '：</b>{{d.region_prov}} {{d.region_city}} {{d.region_area}} {{d.region_addr}}');
                         return laytpl(tpls.join('<br>')).render(d);
                     }
@@ -152,7 +152,7 @@
 </script>
 
 <script type="text/html" id="toolbar">
-    <div class="ta-pt-10"></div>
+    <div class="pt10"></div>
     <!--{if auth('delivery')}-->
     {{# if(d.status < 2){  }}
     <a class="layui-btn layui-btn-sm" data-title="{:lang('发货快递管理')}" data-modal="{:url('delivery')}" data-value="order_no#{{d.order_no}}">{:lang('发 货')}</a>

@@ -67,7 +67,8 @@ abstract class ConfigService
     {
         $syscfg = sysvar(self::$skey) ?: sysvar(self::$skey, sysdata(self::$skey));
         if (empty($syscfg['base_domain'])) {
-            $syscfg['base_domain'] = sysconf('base.site_host') . '/h5';
+            $host = rtrim(strval(sysget('system.site.host', '')), '/');
+            $syscfg['base_domain'] = $host === '' ? '/h5' : $host . '/h5';
         }
         return is_null($name) ? $syscfg : ($syscfg[$name] ?? $default);
     }

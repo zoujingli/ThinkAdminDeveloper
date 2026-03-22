@@ -3,7 +3,7 @@
 {block name="content"}
 <div id="TruckForm">
     <form action="{:sysuri()}" class='layui-form layui-card shadow' data-auto="true" method="post">
-        <div class="layui-card-body ta-p-40 ta-pb-10">
+        <div class="layui-card-body pa40 pb10">
             <label class="layui-form-item block relative">
                 <span class="help-label"><b>{:lang('邮费模板名称')}</b>Name</span>
                 <input class="layui-input" name="name" placeholder="{:lang('请输入邮费模板名称')}" required vali-name="{:lang('邮费模板名称')}" value='{$vo.name|default=""}'>
@@ -40,24 +40,24 @@
                     <tr ng-if="item.city.length > 0" ng-repeat="item in rules">
                         <td>
                             <b class="color-green">{:lang('自定区域：')}</b>
-                            <div class="ta-mr-5 inline-block" ng-if="ShowProvinceStatus(province)" ng-repeat="province in item.city">
+                            <div class="mr5 inline-block" ng-if="ShowProvinceStatus(province)" ng-repeat="province in item.city">
                                 <b class="font-w7" ng-bind="province.name"></b>
                                 <span class="color-desc">{{ShowProvinceCityName(province)}}</span>
                             </div>
-                            <a class="ta-ml-5 inline-block nowrap" ng-click="EditRuleItem(item)">{:lang('编辑')}</a>
-                            <a class="ta-ml-5 inline-block nowrap" ng-click="RemoveRuleItem(item)">{:lang('删除')}</a>
+                            <a class="ml5 inline-block nowrap" ng-click="EditRuleItem(item)">{:lang('编辑')}</a>
+                            <a class="ml5 inline-block nowrap" ng-click="RemoveRuleItem(item)">{:lang('删除')}</a>
                         </td>
-                        <td class="ta-p-0 text-center">
-                            <input class="layui-input text-center ta-pl-0 border-0" ng-blur="convertNumber(item.rule,'firstNumber',0)" ng-model="item.rule.firstNumber">
+                        <td class="pa0 text-center">
+                            <input class="layui-input text-center pl0 b0" ng-blur="convertNumber(item.rule,'firstNumber',0)" ng-model="item.rule.firstNumber">
                         </td>
-                        <td class="ta-p-0 text-center">
-                            <input class="layui-input text-center ta-pl-0 border-0" ng-blur="convertNumber(item.rule,'firstAmount',2)" ng-model="item.rule.firstAmount">
+                        <td class="pa0 text-center">
+                            <input class="layui-input text-center pl0 b0" ng-blur="convertNumber(item.rule,'firstAmount',2)" ng-model="item.rule.firstAmount">
                         </td>
-                        <td class="ta-p-0 text-center">
-                            <input class="layui-input text-center ta-pl-0 border-0" ng-blur="convertNumber(item.rule,'repeatNumber',0)" ng-model="item.rule.repeatNumber">
+                        <td class="pa0 text-center">
+                            <input class="layui-input text-center pl0 b0" ng-blur="convertNumber(item.rule,'repeatNumber',0)" ng-model="item.rule.repeatNumber">
                         </td>
-                        <td class="ta-p-0 text-center">
-                            <input class="layui-input text-center ta-pl-0 border-0" ng-blur="convertNumber(item.rule,'repeatAmount',2)" ng-model="item.rule.repeatAmount">
+                        <td class="pa0 text-center">
+                            <input class="layui-input text-center pl0 b0" ng-blur="convertNumber(item.rule,'repeatAmount',2)" ng-model="item.rule.repeatAmount">
                         </td>
                     </tr>
                     <tr ng-if="defs.city.length > 0">
@@ -67,22 +67,22 @@
                     <tr ng-if="defs.city.length > 0">
                         <td>
                             <b class="color-green">{:lang('默认区域：')}</b>
-                            <div class="ta-mr-5 inline-block" ng-repeat="province in defs.city">
+                            <div class="mr5 inline-block" ng-repeat="province in defs.city">
                                 <b class="font-w7" ng-bind="province.name"></b>
                                 <span class="color-desc">{{ShowProvinceCityName(province)}}</span>
                             </div>
                         </td>
-                        <td class="ta-p-0 text-center">
-                            <input class="layui-input text-center ta-pl-0 border-0" ng-blur="convertNumber(defs.rule,'firstNumber',0)" ng-model="defs.rule.firstNumber">
+                        <td class="pa0 text-center">
+                            <input class="layui-input text-center pl0 b0" ng-blur="convertNumber(defs.rule,'firstNumber',0)" ng-model="defs.rule.firstNumber">
                         </td>
-                        <td class="ta-p-0 text-center">
-                            <input class="layui-input text-center ta-pl-0 border-0" ng-blur="convertNumber(defs.rule,'firstAmount',2)" ng-model="defs.rule.firstAmount">
+                        <td class="pa0 text-center">
+                            <input class="layui-input text-center pl0 b0" ng-blur="convertNumber(defs.rule,'firstAmount',2)" ng-model="defs.rule.firstAmount">
                         </td>
-                        <td class="ta-p-0 text-center">
-                            <input class="layui-input text-center ta-pl-0 border-0" ng-blur="convertNumber(defs.rule,'repeatNumber',0)" ng-model="defs.rule.repeatNumber">
+                        <td class="pa0 text-center">
+                            <input class="layui-input text-center pl0 b0" ng-blur="convertNumber(defs.rule,'repeatNumber',0)" ng-model="defs.rule.repeatNumber">
                         </td>
-                        <td class="ta-p-0 text-center">
-                            <input class="layui-input text-center ta-pl-0 border-0" ng-blur="convertNumber(defs.rule,'repeatAmount',2)" ng-model="defs.rule.repeatAmount">
+                        <td class="pa0 text-center">
+                            <input class="layui-input text-center pl0 b0" ng-blur="convertNumber(defs.rule,'repeatAmount',2)" ng-model="defs.rule.repeatAmount">
                         </td>
                     </tr>
                     </tbody>
@@ -94,7 +94,7 @@
                 <textarea class="layui-textarea layui-bg-gray" name="content">{{GetRuleData()}}</textarea>
             </label>
 
-            <div class="hr-line-dashed ta-mt-30"></div>
+            <div class="hr-line-dashed mt30"></div>
             {notempty name='vo.id'}<input name="id" type="hidden" value="{$vo.id}">{/notempty}
             {notempty name='vo.code'}<input name="code" type="hidden" value="{$vo.code}">{/notempty}
 
@@ -105,18 +105,18 @@
     </form>
 
     <div class='layui-form layui-card layui-hide' id="RegionDialog">
-        <div class="layui-card-body ta-p-20">
+        <div class="layui-card-body pa20">
             <div class="layui-row layui-col-space10">
                 <div class="layui-col-xs8">
                     <div class="layui-textarea" style="height:360px;overflow:auto">
                         <div>
-                            <span class="pointer notselect ta-mr-10" ng-click="CheckAllProvince(true)">{:lang('全选')}</span>
-                            <span class="pointer notselect ta-mr-10" ng-click="CheckAllProvince(false)">{:lang('取消')}</span>
+                            <span class="pointer notselect mr10" ng-click="CheckAllProvince(true)">{:lang('全选')}</span>
+                            <span class="pointer notselect mr10" ng-click="CheckAllProvince(false)">{:lang('取消')}</span>
                         </div>
-                        <hr class="hr-line-dashed ta-mt-5 ta-mb-5">
+                        <hr class="hr-line-dashed mt5 mb5">
                         <div class="layui-row layui-col-space5">
                             <div class="layui-col-xs3 nowrap" ng-if="ShowProvinceShow(x)" ng-repeat="x in citys">
-                                <label class="think-checkbox ta-mr-0">
+                                <label class="think-checkbox mr0">
                                     <input lay-ignore ng-change="SwitchActiveProvince(x, true)" ng-model="x.status" ng-value="x.name" type="checkbox">
                                 </label>
                                 <span class="pointer notselect color-blue" ng-click="SwitchActiveProvince(x, false)" ng-if="x.name==city.name">{{x.name}}</span>
@@ -128,11 +128,11 @@
                 <div class="layui-col-xs4">
                     <div class="layui-textarea" style="height:360px;overflow:auto">
                         <div>
-                            <span class="pointer notselect ta-mr-10" ng-click="CheckAllCity(true)">{:lang('全选')}</span>
-                            <span class="pointer notselect ta-mr-10" ng-click="CheckAllCity(false)">{:lang('取消')}</span>
+                            <span class="pointer notselect mr10" ng-click="CheckAllCity(true)">{:lang('全选')}</span>
+                            <span class="pointer notselect mr10" ng-click="CheckAllCity(false)">{:lang('取消')}</span>
                             <b class="pull-right color-blue" ng-bind="city.name"></b>
                         </div>
-                        <hr class="hr-line-dashed ta-mt-5 ta-mb-5">
+                        <hr class="hr-line-dashed mt5 mb5">
                         <label class="think-checkbox nowrap layui-elip" ng-if="x.show" ng-repeat="x in city.subs">
                             <input lay-ignore ng-model="x.status" ng-value="x.name" type="checkbox" value=""> {{x.name}}
                         </label>

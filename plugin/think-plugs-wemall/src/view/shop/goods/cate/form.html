@@ -1,5 +1,5 @@
 <form action="{:sysuri()}" data-table-id="CateTable" class="layui-form layui-card" data-auto="true" method="post">
-    <div class="layui-card-body ta-pl-40">
+    <div class="layui-card-body pl40">
 
         <div class="layui-form-item label-required-prev">
             <span class="help-label"><b>{:lang('绑定上级分类')}</b>Category Parent</span>
@@ -30,7 +30,7 @@
 
         <label class="layui-form-item relative block">
             <span class="color-green font-w7">{:lang('商品分类描述')}</span>
-            <span class="color-desc ta-ml-5">Category Remark</span>
+            <span class="color-desc ml5">Category Remark</span>
             <textarea class="layui-textarea" name="remark" placeholder="{:lang('请输入分类描述')}">{$vo.remark|default=''}</textarea>
         </label>
     </div>

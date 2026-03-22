@@ -31,13 +31,13 @@
                 {checkbox: true, fixed: true},
                 {
                     title: '{:lang("头 像")}', width: 95, align: 'center', templet: function (d) {
-                        if (!d.user || !d.user.headimg) return '<div class="ta-pt-15">-</div>';
+                        if (!d.user || !d.user.headimg) return '<div class="pt15">-</div>';
                         return laytpl('<div>{{-showTableImage(d.headimg,false,"sm")}}</div>').render(d)
                     }
                 },
                 {
                     title: '{:lang("用户账号")}', minWidth: 180, templet: function (d) {
-                        if (!d.user) return '<div class="ta-pt-15">-</div>';
+                        if (!d.user) return '<div class="pt15">-</div>';
                         let tpls = [];
                         tpls.push('{:lang("用户姓名")}：{{d.name||"-"}}')
                         tpls.push('{:lang("手机账号")}：<b class="color-blue">{{d.phone}}</b> {{-d.agentRole}}')
@@ -47,7 +47,7 @@
                 },
                 {
                     title: '{:lang("初始佣金")}', minWidth: 120, templet: function (d) {
-                        if (!d.user) return '<div class="ta-pt-15">-</div>';
+                        if (!d.user) return '<div class="pt15">-</div>';
                         let tpls = [];
                         tpls.push('{:lang("累计佣金")}：{{d.rebate_total||"-"}} {:lang("元")}')
                         tpls.push('{:lang("剩余佣金")}：{{d.rebate_usable||"-"}} {:lang("元")}')
@@ -67,7 +67,7 @@
                             tpls.push('{:lang("姓名")}：<b class="color-blue">{{d.agent.nickname}}</b>')
                             tpls.push('{:lang("账号")}：<b class="color-blue">{{d.agent.phone}}</b>')
                         } else {
-                            tpls.push('<div class="color-desc ta-pt-10">' + '{:lang("未绑定上级")}' + '</div>')
+                            tpls.push('<div class="color-desc pt10">' + '{:lang("未绑定上级")}' + '</div>')
                         }
                         return laytpl(tpls.join('<br>')).render(d);
                     }
@@ -91,7 +91,7 @@
 
 <!-- 数据状态切换模板 -->
 <script type="text/html" id="StatusSwitchTpl">
-    <div class="ta-pt-10"></div>
+    <div class="pt10"></div>
     <!--{if auth("state")}-->
     <input type="checkbox" value="{{d.id}}" lay-skin="switch" lay-text="{:lang('已激活')}|{:lang('已禁用')}" lay-filter="StatusSwitch" {{-d.status>0?'checked':''}}>
     <!--{else}-->
@@ -101,13 +101,13 @@
 
 <!-- 列表排序权重模板 -->
 <script type="text/html" id="SortInputTpl">
-    <div class="ta-pt-10"></div>
+    <div class="pt10"></div>
     <input type="number" min="0" data-blur-number="0" data-action-blur="{:sysuri()}" data-value="id#{{d.id}};action#sort;sort#{value}" data-loading="false" value="{{d.sort}}" class="layui-input text-center">
 </script>
 
 <script type="text/html" id="toolbar">
     <!--{if auth('edit')}-->
-    <a class="layui-btn layui-btn-sm ta-mr-10 ta-ml-0" data-modal="{:url('edit')}?id={{d.id}}" data-title="{:lang('编辑用户')}">{:lang('编 辑')}</a>
+    <a class="layui-btn layui-btn-sm mr10 ml0" data-modal="{:url('edit')}?id={{d.id}}" data-title="{:lang('编辑用户')}">{:lang('编 辑')}</a>
     <!--{/if}-->
 </script>
 {/block}

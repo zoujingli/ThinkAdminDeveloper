@@ -1,5 +1,5 @@
 <form action="{:sysuri()}" class="layui-form layui-card" data-auto="true" method="post">
-    <div class="layui-card-body ta-pl-40">
+    <div class="layui-card-body pl40">
 
         <div class="flex">
             <label class="layui-form-item block relative flex-1">
@@ -7,7 +7,7 @@
                 <input class="layui-input" name="name" placeholder="{:lang('请输入用户姓名')}" required value="{$vo.name|default=''}">
                 <span class="help-block">{:lang('用户默认昵称，如果用户不存在则会使用该名称来创建。')}</span>
             </label>
-            <div class="layui-form-item flex-1 ta-ml-15">
+            <div class="layui-form-item flex-1 ml15">
                 <span class="help-label label-required-prev"><b>{:lang('用户头像')}</b>User Headimg</span>
                 <div class="block relative">
                     <input class="layui-input" name="headimg" data-tips-image-hover vali-name="{:lang('头像地址')}" placeholder="{:lang('请输入用户头像地址')}" pattern="url" required value="{$vo.headimg|default=''}">
@@ -23,7 +23,7 @@
                 <input class="layui-input" name="phone" pattern="mobile" maxlength="11" vali-name="{:lang('手机号码')}" placeholder="{:lang('请输入手机号码')}" required value="{$vo.phone|default=''}">
                 <span class="help-block">{:lang('用户登录唯一账号，用于系统登录及其他关联字段。')}</span>
             </label>
-            <label class="layui-form-item block relative flex-1 ta-ml-15">
+            <label class="layui-form-item block relative flex-1 ml15">
                 <span class="help-label"><b>{:lang('登录密码')}</b>User Password</span>
                 <input class="layui-input" name="password" placeholder="{:lang('请输入登录密码')}" pattern="^.{6,}$" required value="{$vo.password|default='123456'}">
                 <span class="help-block">{:lang('用户默认登录密码，设置后用户可以使用此密码登录')}</span>
@@ -36,7 +36,7 @@
                 <input class="layui-input" type="number" min="0" step="0.01" lay-affix="number" lay-precision="2" name="rebate_total" placeholder="{:lang('请输入累计佣金')}" required value="{$vo.rebate_total|default='0.00'}">
                 <span class="help-block">{:lang('将会在代理返佣记录里面创建一条记录，体现为初始佣金值。')}</span>
             </label>
-            <label class="layui-form-item block relative flex-1 ta-ml-15">
+            <label class="layui-form-item block relative flex-1 ml15">
                 <span class="help-label label-required-prev"><b>{:lang('佣金记录描述')}</b>Rebate Total Remark</span>
                 <input class="layui-input" name="rebate_total_desc" placeholder="{:lang('请输入佣金记录描述')}" required value="{$vo.rebate_total_desc|default=lang('用户初始化结算佣金')}">
                 <span class="help-block">{:lang('创建初始佣金记录显示的记录描述内容。')}</span>
@@ -49,7 +49,7 @@
                 <input class="layui-input" type="number" lay-affix="number" min="0" step="0.01" lay-precision="2" name="rebate_usable" placeholder="{:lang('请输入剩余佣金')}" required value="{$vo.rebate_usable|default='0.00'}">
                 <span class="help-block">{:lang('在代理提现记录创建已提现金额（ 累计佣金 减去 剩余佣金 ）')}</span>
             </label>
-            <label class="layui-form-item block relative flex-1 ta-ml-15">
+            <label class="layui-form-item block relative flex-1 ml15">
                 <span class="help-label label-required-prev"><b>{:lang('提现记录描述')}</b>Rebate Usable Remark</span>
                 <input class="layui-input" name="rebate_usable_desc" placeholder="{:lang('请输入佣金记录描述')}" required value="{$vo.rebate_usable_desc|default=lang('用户初始化结算佣金提现')}">
                 <span class="help-block">{:lang('创建初始提现记录显示的记录描述内容。')}</span>
@@ -63,7 +63,7 @@
                 <span class="help-block">{:lang('自动绑定该手机所属用户为当前用户的上级，不存在请勿填写。')}</span>
             </label>
 
-            <div class="layui-form-item block relative flex-1 ta-ml-15">
+            <div class="layui-form-item block relative flex-1 ml15">
                 <span class="help-label label-required-prev"><b>{:lang('代理权限')}</b>Agent Role</span>
                 <div class="layui-input help-checks">
                     {empty name='vo.agent_entry'}{assign name='vo.agent_entry' value='0'/}{/empty}

@@ -7,11 +7,11 @@
 
 {block name='content'}
 <form action="{:sysuri()}" class="layui-form layui-card" data-auto="true" method="post">
-    <div class="layui-card-body padding-left-40">
+    <div class="layui-card-body pl40">
 
         <div class="layui-form-item relative">
             <span class="help-label label-required-prev"><b>{:lang('签到模式')}</b>Checkin Switch</span>
-            <div class="layui-textarea help-checks ta-pl-10">
+            <div class="layui-textarea help-checks pl10">
                 {empty name='data.status'}{assign name='data.status' value='0'}{/empty}
                 {foreach [lang('关闭'),lang('开启')] as $k => $v}
                 {if isset($data.status) and $data.status eq $k}
@@ -31,14 +31,14 @@
 
             <div class="layui-form-item relative block">
                 <span class="help-label label-required-prev"><b>{:lang('奖励余额')}</b>Checkin Reward</span>
-                <div class="layui-textarea ta-p-10 overauto" style="height:250px;">
+                <div class="layui-textarea pa10 overauto" style="height:250px;">
                     <div class="layui-row layui-col-space10">
                         <div class="layui-col-xs6" v-for="(x,i) in data" v-if="i<days">
                             <div class="layui-input-group">
                                 <div class="layui-input-split layui-input-prefix nowrap font-w7">{:lang('签到')} {{i + 1}} {:lang('天奖励')}</div>
-                                <label><input type="number" step="0.01" min="0" max="1000000" @change="x.balance=formatInput($event,2)" class="layui-input ta-pr-0 text-center" v-model="x.balance"></label>
+                                <label><input type="number" step="0.01" min="0" max="1000000" @change="x.balance=formatInput($event,2)" class="layui-input pr0 text-center" v-model="x.balance"></label>
                                 <div class="layui-input-split layui-input-prefix">{:lang('元，奖励')}</div>
-                                <label><input type="number" step="1" min="0" max="1000000" @change="x.integral=formatInput($event)" class="layui-input ta-pr-0 text-center" v-model="x.integral"></label>
+                                <label><input type="number" step="1" min="0" max="1000000" @change="x.integral=formatInput($event)" class="layui-input pr0 text-center" v-model="x.integral"></label>
                                 <div class="layui-input-split layui-input-suffix">{:lang('积分')}</div>
                             </div>
                         </div>

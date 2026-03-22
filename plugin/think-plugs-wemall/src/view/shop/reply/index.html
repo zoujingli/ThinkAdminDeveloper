@@ -43,9 +43,9 @@
                     title: '{:lang("评论图片")}', templet: function (d) {
                         let tpls = [];
                         d.images.map(x => {
-                            tpls.push(laytpl("<div class='uploadimage ta-mr-5' data-lazy-src='{{d.x}}' data-tips-hover data-tips-image style='width:40px;height:40px;background-image:url('{{d.x}}')'></div>").render({x: x}))
+                            tpls.push(laytpl("<div class='uploadimage mr5' data-lazy-src='{{d.x}}' data-tips-hover data-tips-image style='width:40px;height:40px;background-image:url('{{d.x}}')'></div>").render({x: x}))
                         });
-                        return tpls.length > 0 ? tpls.join('') : '<div class="ta-pt-10">-</div>';
+                        return tpls.length > 0 ? tpls.join('') : '<div class="pt10">-</div>';
                     }
                 },
                 {title: '{:lang("订单编号")}', field: 'order_no'},
@@ -80,7 +80,7 @@
 
 <!-- 数据状态切换模板 -->
 <script type="text/html" id="StatusSwitchTpl">
-    <div class="ta-pt-10 block relative"></div>
+    <div class="pt10 block relative"></div>
     <!--{if auth("state")}-->
     <input type="checkbox" value="{{d.id}}" lay-skin="switch" lay-text="{:lang('显示')}|{:lang('隐藏')}" lay-filter="StatusSwitch" {{-d.status>0?'checked':''}}>
     <!--{else}-->

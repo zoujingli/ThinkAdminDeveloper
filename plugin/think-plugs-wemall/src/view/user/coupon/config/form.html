@@ -38,19 +38,19 @@
             </div>
             <div class="layui-form-item" v-if="type==1" style="display:none" :style="{display:type==1?'block':''}">
                 <span class="help-label label-required-prev">
-                    <b>{:lang('关联商品')}</b>Related Goods <a @click="choose" class="ta-ml-15">{:lang('选择商品')}</a>
+                    <b>{:lang('关联商品')}</b>Related Goods <a @click="choose" class="ml15">{:lang('选择商品')}</a>
                 </span>
-                <div v-if="list.length>0" class="layui-textarea flex flex-wrap ta-pt-10 ta-pb-0">
-                    <div v-for="x in list" class="flex layui-bg-gray ta-p-10 border-radius-5 ta-mr-10 ta-mb-10 shadow-mini" style="min-width:400px">
+                <div v-if="list.length>0" class="layui-textarea flex flex-wrap pt10 pb0">
+                    <div v-for="x in list" class="flex layui-bg-gray pa10 border-radius-5 mr10 mb10 shadow-mini" style="min-width:400px">
                         <div v-if="x.cover" :data-lazy-src="x.cover" data-tips-hover data-tips-image class="uploadimage" :style="{backgroundImage:'url('+x.cover+')'}" style="width:60px;height:60px"></div>
-                        <div class="flex-1 ta-ml-5">
-                            <div class="ta-p-5 font-w7">{{x.name}}</div>
-                            <div class="ta-p-5 color-desc">{{x.code}}</div>
+                        <div class="flex-1 ml5">
+                            <div class="pa5 font-w7">{{x.name}}</div>
+                            <div class="pa5 color-desc">{{x.code}}</div>
                         </div>
                         <div>
                             <div class="flex-y text-right">
                                 <a class="layui-icon layui-icon-close color-red" @click="remove(x)"></a>
-                                <div class="ta-mt-15">{:lang('最低售价')} <b>{{Number(x.price)}}</b> {:lang('元')}</div>
+                                <div class="mt15">{:lang('最低售价')} <b>{{Number(x.price)}}</b> {:lang('元')}</div>
                             </div>
                         </div>
                     </div>
@@ -78,23 +78,23 @@
         </div>
 
         <div class="flex flex-wrap">
-            <label class="layui-form-item ta-mr-15">
+            <label class="layui-form-item mr15">
                 <span class="help-label label-required-prev nowrap"><b>{:lang('卡券面值')}</b>Coupon Amount</span>
                 <input class="layui-input" type="number" name="amount" lay-precision="2" lay-affix="number" min="0" placeholder="{:lang('请输入卡券金额')}" required value='{$vo.amount|default="0"}'>
             </label>
-            <label class="layui-form-item ta-mr-15">
+            <label class="layui-form-item mr15">
                 <span class="help-label label-required-prev nowrap"><b>{:lang('门槛金额')}</b>Threshold Amount</span>
                 <input class="layui-input" type="number" name="limit_amount" lay-precision="2" lay-affix="number" min="0" placeholder="{:lang('请输入卡券金额')}" required value='{$vo.limit_amount|default="0"}'>
             </label>
-            <label class="layui-form-item ta-mr-15">
+            <label class="layui-form-item mr15">
                 <span class="help-label label-required-prev nowrap"><b>{:lang('有效时间 ( 天 )')}</b>{:lang('填 0 永久有效')}</span>
                 <input class="layui-input" type="number" name="expire_days" lay-affix="number" min="0" placeholder="{:lang('请输入有效时间')}" required value='{$vo.expire_days|default="0"}'>
             </label>
-            <label class="layui-form-item ta-mr-15">
+            <label class="layui-form-item mr15">
                 <span class="help-label label-required-prev nowrap"><b>{:lang('每人限领数量')}</b>{:lang('填 0 不限制')}</span>
                 <input class="layui-input" type="number" name="limit_times" lay-affix="number" min="0" placeholder="{:lang('请输入每人限领数量')}" required value='{$vo.limit_times|default="0"}'>
             </label>
-            <label class="layui-form-item ta-mr-15">
+            <label class="layui-form-item mr15">
                 <span class="help-label label-required-prev nowrap"><b>{:lang('卡券库存')}</b>{:lang('累计已发')} {$total_sales|default=0} {:lang('张')}</span>
                 <input class="layui-input" type="number" name="total_stock" lay-affix="number" min="0" placeholder="{:lang('请输入卡券库存')}" required value='{$vo.total_stock|default="0"}'>
             </label>

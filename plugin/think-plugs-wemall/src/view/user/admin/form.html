@@ -1,5 +1,5 @@
 <form action="{:sysuri()}" class="layui-form layui-card" data-auto="true" method="post">
-    <div class="layui-card-body ta-pl-40">
+    <div class="layui-card-body pl40">
 
         <fieldset class="layui-form-item">
             <legend><span class="layui-badge think-bg-violet">{:lang('原始资料')}</span></legend>
@@ -23,19 +23,19 @@
         <fieldset class="layui-form-item">
             <legend><span class="layui-badge think-bg-violet">{:lang('用户资料')}</span></legend>
             <div class="layui-row layui-col-space10">
-                <div class="layui-col-xs4 ta-pt-0 ta-pb-0">
+                <div class="layui-col-xs4 pt0 pb0">
                     <label class="layui-form-item block">
                         <span class="help-label"><b>{:lang('手机号码')}</b>User Phone</span>
                         <input class="layui-input" name="user.phone" placeholder="{:lang('请输入手机号')}" required value="{$vo.user.phone|default=''}">
                     </label>
                 </div>
-                <div class="layui-col-xs4 ta-pt-0 ta-pb-0">
+                <div class="layui-col-xs4 pt0 pb0">
                     <label class="layui-form-item block">
                         <span class="help-label"><b>{:lang('用户昵称')}</b>Nickname</span>
                         <input class="layui-input" name="user.nickname" placeholder="{:lang('请输入用户昵称')}" required value="{$vo.user.nickname|default=''}">
                     </label>
                 </div>
-                <div class="layui-col-xs4 ta-pt-0 ta-pb-0">
+                <div class="layui-col-xs4 pt0 pb0">
                     <label class="layui-form-item block">
                         <span class="help-label"><b>{:lang('登录密码')}</b>Password</span>
                         <input class="layui-input" name="user.password" placeholder="{:lang('请输入登录密码，不填写则修改')}">

@@ -9,43 +9,43 @@
 </div>
 <div class="think-box-shadow" id="TruckForm">
 
-    <div class="layui-card border-line">
-        <div class="layui-card-header layui-bg-gray border-bottom-line">
-            <b class="color-green">{:lang('全国')}</b><span class="font-s12 color-desc ta-ml-10">{:lang('配送省份')}</span>
+    <div class="layui-card ba">
+        <div class="layui-card-header layui-bg-gray bb">
+            <b class="color-green">{:lang('全国')}</b><span class="font-s12 color-desc ml10">{:lang('配送省份')}</span>
             <a class="pull-right notselect" ng-click="SetAllChecked(items)">{:lang('全选')}</a>
         </div>
         <div class="layui-card-body">
-            <div class="layui-btn layui-btn-radius ta-ml-0 ta-mr-5 ta-mb-5" ng-class="x.style" ng-click="SetActiveProv(x)" ng-repeat="x in items">
-                <label class="think-checkbox ta-mr-0"><input ng-change="SetChangeCity(x,x.status)" ng-model="x.status" type="checkbox" lay-ignore></label><span ng-bind="x.name"></span>
+            <div class="layui-btn layui-btn-radius ml0 mr5 mb5" ng-class="x.style" ng-click="SetActiveProv(x)" ng-repeat="x in items">
+                <label class="think-checkbox mr0"><input ng-change="SetChangeCity(x,x.status)" ng-model="x.status" type="checkbox" lay-ignore></label><span ng-bind="x.name"></span>
             </div>
         </div>
     </div>
 
-    <div class="layui-card border-line">
-        <div class="layui-card-header layui-bg-gray border-bottom-line">
-            <b class="color-green" ng-bind="prov.name"></b><span class="font-s12 color-desc ta-ml-10">{:lang('配送城市')}</span>
+    <div class="layui-card ba">
+        <div class="layui-card-header layui-bg-gray bb">
+            <b class="color-green" ng-bind="prov.name"></b><span class="font-s12 color-desc ml10">{:lang('配送城市')}</span>
             <a class="pull-right notselect" ng-click="SetAllChecked(prov.subs)">{:lang('全选')}</a>
         </div>
         <div class="layui-card-body">
-            <div class="layui-btn layui-btn-radius ta-ml-0 ta-mr-5 ta-mb-5" ng-class="x.style" ng-click="SetActiveCity(x)" ng-repeat="x in prov.subs">
-                <label class="think-checkbox ta-mr-0"><input ng-change="SetChangeCity(x,x.status)" ng-model="x.status" type="checkbox" lay-ignore></label><span ng-bind="x.name"></span>
+            <div class="layui-btn layui-btn-radius ml0 mr5 mb5" ng-class="x.style" ng-click="SetActiveCity(x)" ng-repeat="x in prov.subs">
+                <label class="think-checkbox mr0"><input ng-change="SetChangeCity(x,x.status)" ng-model="x.status" type="checkbox" lay-ignore></label><span ng-bind="x.name"></span>
             </div>
         </div>
     </div>
 
-    <div class="layui-card border-line">
-        <div class="layui-card-header layui-bg-gray border-bottom-line">
-            <b class="color-green" ng-bind="city.name"></b><span class="font-s12 color-desc ta-ml-10">{:lang('配送区域')}</span>
+    <div class="layui-card ba">
+        <div class="layui-card-header layui-bg-gray bb">
+            <b class="color-green" ng-bind="city.name"></b><span class="font-s12 color-desc ml10">{:lang('配送区域')}</span>
             <a class="pull-right notselect" ng-click="SetAllChecked(city.subs)">{:lang('全选')}</a>
         </div>
         <div class="layui-card-body">
-            <div class="layui-btn layui-btn-radius ta-ml-0 ta-mr-5 ta-mb-5" ng-class="x.style" ng-repeat="x in city.subs">
-                <label class="think-checkbox ta-mr-0"><input ng-change="SetChangeCity(x,x.status)" ng-model="x.status" type="checkbox" lay-ignore></label><span ng-bind="x.name"></span>
+            <div class="layui-btn layui-btn-radius ml0 mr5 mb5" ng-class="x.style" ng-repeat="x in city.subs">
+                <label class="think-checkbox mr0"><input ng-change="SetChangeCity(x,x.status)" ng-model="x.status" type="checkbox" lay-ignore></label><span ng-bind="x.name"></span>
             </div>
         </div>
     </div>
 
-    <div class="hr-line-dashed ta-mt-40"></div>
+    <div class="hr-line-dashed mt40"></div>
     <div class="layui-form-item text-center">
         <button class="layui-btn layui-btn-danger" type="button" data-target-backup>{:lang('取消修改')}</button>
         <button class="layui-btn" ng-click="Confirm()">{:lang('确定修改')}</button>

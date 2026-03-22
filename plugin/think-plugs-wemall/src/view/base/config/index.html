@@ -10,7 +10,7 @@
 {/block}
 
 {block name="content"}
-<div class="layui-card ta-p-20 shadow">
+<div class="layui-card pa20 shadow">
     <div class="layui-card-header notselect">
         <b class="color-text">{:lang('商城参数')}</b>
     </div>
@@ -32,9 +32,9 @@
                 <div class="help-label"><b>{:lang('账户余额')}</b>Balance</div>
                 <div class="layui-input layui-bg-gray flex-align-center">
                     {empty name='data.enable_balance'}
-                    <i class="layui-icon layui-icon-error ta-mr-5 color-red"></i>{:lang('未启用账户余额')}
+                    <i class="layui-icon layui-icon-error mr5 color-red"></i>{:lang('未启用账户余额')}
                     {else}
-                    <i class="layui-icon layui-icon-success color-green ta-mr-5"></i>{:lang('已启用账户余额')}
+                    <i class="layui-icon layui-icon-success color-green mr5"></i>{:lang('已启用账户余额')}
                     {/empty}
                 </div>
                 <span class="help-block">{:lang('开启账户余额之后，用户会增加余额账户，可以积累余额并可使用余额抵扣支付。')}</span>
@@ -43,9 +43,9 @@
                 <div class="help-label"><b>{:lang('账户积分')}</b>Integral</div>
                 <div class="layui-input flex-align-center layui-bg-gray">
                     {empty name='data.enable_integral'}
-                    <i class="layui-icon layui-icon-error color-red ta-mr-5"></i>{:lang('未启用账户积分')}
+                    <i class="layui-icon layui-icon-error color-red mr5"></i>{:lang('未启用账户积分')}
                     {else}
-                    <i class="layui-icon layui-icon-success color-green ta-mr-5"></i>{:lang('已启用账户积分')}
+                    <i class="layui-icon layui-icon-success color-green mr5"></i>{:lang('已启用账户积分')}
                     {/empty}
                 </div>
                 <span class="help-block">{:lang('开启账户积分之后，用户会增加积分账户，可以积累积分并可使用积分抵扣支付。')}</span>
@@ -54,16 +54,16 @@
                 <div class="help-label"><b>{:lang('下单随减')}</b>Reduction</div>
                 <div class="layui-input flex-align-center layui-bg-gray">
                     {empty name='data.enable_reduct'}
-                    <i class="layui-icon layui-icon-error color-red ta-mr-5"></i> {:lang('未启用下单随机减免金额')}
+                    <i class="layui-icon layui-icon-error color-red mr5"></i> {:lang('未启用下单随机减免金额')}
                     {else}
-                    <i class="layui-icon layui-icon-success color-green font-s15 ta-mr-5"></i>
+                    <i class="layui-icon layui-icon-success color-green font-s15 mr5"></i>
                     {:lang('已启用下单随机减免金额，减免范围')} [ {$data.reduct_min|default=0.00} - {$data.reduct_max|default=0.00} ] {:lang('元')}
                     {/empty}
                 </div>
                 <span class="help-block">{:lang('开启下单随减后，用户每次下单都会随机减免一定金额，最多不会超过订单金额。')}</span>
             </div>
-            <div class="layui-form-item ta-mb-0">
-                <div class="layui-row layui-col-space10 portal-block-container notselect ta-mb-0">
+            <div class="layui-form-item mb0">
+                <div class="layui-row layui-col-space10 portal-block-container notselect mb0">
                     <div class="help-label"><b>{:lang('内容管理')}</b>Content</div>
                     {foreach $pages as $k => $v}
                     <div class="layui-col-sm4 layui-col-md4 layui-col-lg3">

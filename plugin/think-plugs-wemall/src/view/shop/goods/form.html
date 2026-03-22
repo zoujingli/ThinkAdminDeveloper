@@ -54,13 +54,13 @@
                     <th class="full-width">{:lang('轮播图片')} <span class="color-desc font-w1">( {:lang('轮播图片推荐的宽高比为 5:3')} )</span></th>
                 </tr>
                 <tr>
-                    <td class="text-center text-top ta-p-0">
+                    <td class="text-center text-top pa0">
                         <div class="help-images">
                             <input name="cover" data-max-width="500" data-max-height="500" type="hidden" value="{$vo.cover|default=''}">
                             <script>$('[name="cover"]').uploadOneImage();</script>
                         </div>
                     </td>
-                    <td class="text-left ta-p-0">
+                    <td class="text-left pa0">
                         <div class="help-images">
                             <input name="slider" data-max-width="2048" data-max-height="1024" type="hidden" value="{$vo.slider|default=''}">
                             <script>$('[name="slider"]').uploadMultipleImage();</script>
@@ -188,8 +188,8 @@
             <span class="help-label label-required-prev">
                 <b>{:lang('商品规格')}</b><span class="color-red font-s12">( {:lang('规格填写后不允许再次增加规格分组，规格图片推荐的宽高比为 5:3，成本价用于计算利润以及发放拥金')} )</span>
             </span>
-            <div class="ta-mb-10" v-for="(x,$index) in specs" :key="$index">
-                <div class="goods-spec-box ta-pr-10" style="background:#ddd">
+            <div class="mb10" v-for="(x,$index) in specs" :key="$index">
+                <div class="goods-spec-box pr10" style="background:#ddd">
                     <span class="text-center goods-spec-name">{:lang('分组')}</span>
                     <label class="label-required-null inline-block">
                         <input v-model.trim="x.name" @change="trimSpace(x,'name')" vali-name="{:lang('分组')}" placeholder="{:lang('请输入分组名称')}" required>
@@ -213,7 +213,7 @@
             </div>
             <div v-if="mode==='add'">
                 <a class="layui-btn layui-btn-sm layui-btn-primary" @click="addSpecRow(specs)" v-if="specs.length<3">{:lang('增加规则分组')}</a>
-                <p class="ta-mt-10"><span class="color-red">{:lang('请完成属性修改后再编辑下面的规格信息，否则规格数据会丢失！')}</span></p>
+                <p class="mt10"><span class="color-red">{:lang('请完成属性修改后再编辑下面的规格信息，否则规格数据会丢失！')}</span></p>
             </div>
             <table class="layui-table goods-spec-table">
                 <thead>
@@ -281,7 +281,7 @@
                     <td><label><input class="layui-input" @blur="syncSet(hash)" v-model.trim="item.v.virtual"></label></td>
                     <td><label><input class="layui-input" @blur="syncSet(hash)" v-model.trim="item.v.express"></label></td>
                     <td><label><input class="layui-input font-code" v-model.trim="item.v.gsku"></label></td>
-                    <td class="upload-image-xs ta-p-0 text-center">
+                    <td class="upload-image-xs pa0 text-center">
                         <upload-image v-model.trim="item.v.image" :showinput="false"></upload-image>
                     </td>
                     <td class="layui-bg-gray"><label class="think-checkbox"><input lay-ignore v-model.trim="item.v.status" type="checkbox"></label></td>
@@ -305,7 +305,7 @@
             <textarea class="layui-hide" name="content">{$vo.content|default=''|raw}</textarea>
         </div>
 
-        <div class="hr-line-dashed ta-mt-40"></div>
+        <div class="hr-line-dashed mt40"></div>
         <input name="code" type="hidden" value="{$vo.code}">
 
         <div class="layui-form-item text-center">

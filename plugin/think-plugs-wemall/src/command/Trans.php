@@ -20,7 +20,7 @@ declare(strict_types=1);
 
 namespace plugin\wemall\command;
 
-use plugin\storage\service\LocalStorage;
+use plugin\system\storage\LocalStorage;
 use plugin\wemall\model\PluginWemallUserTransfer;
 use plugin\wemall\service\UserRebate;
 use think\admin\Command;

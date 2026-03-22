@@ -43,7 +43,7 @@
                 {
                     title: '{:lang("商品名称")}', minWidth: 220, templet: function (d) {
                         d.html = showTableImage(d.cover, false, 'sm')
-                        return laytpl("<div class='flex'><div>{{-d.html}}</div><div class='ta-pl-10 nowrap'>" + '{:lang("名称")}' + "：{{d.name}}<br>" + '{:lang("编号")}' + "：<b class='color-blue'>{{d.code}}</b></div></div>").render(d);
+                        return laytpl("<div class='flex'><div>{{-d.html}}</div><div class='pl10 nowrap'>" + '{:lang("名称")}' + "：{{d.name}}<br>" + '{:lang("编号")}' + "：<b class='color-blue'>{{d.code}}</b></div></div>").render(d);
                     }
                 },
                 {
@@ -57,7 +57,7 @@
                         if (tpls.length > 0) {
                             return laytpl('<div class="flex-center flex-wrap full-height" style="margin:-3px -5px 0 0">' + tpls.join('') + '</div>').render(d);
                         } else {
-                            return '<div class="color-desc ta-pt-10">' + '{:lang("普通商品")}' + '</div>';
+                            return '<div class="color-desc pt10">' + '{:lang("普通商品")}' + '</div>';
                         }
                     }
                 },
@@ -110,7 +110,7 @@
 
 <!-- 数据状态切换模板 -->
 <script type="text/html" id="StatusSwitchTpl">
-    <div class="ta-pt-10 block relative"></div>
+    <div class="pt10 block relative"></div>
     <!--{if auth("state")}-->
     <input type="checkbox" value="{{d.code}}" lay-skin="switch" lay-text="{:lang('已上架')}|{:lang('已下架')}" lay-filter="StatusSwitch" {{-d.status>0?'checked':''}}>
     <!--{else}-->
@@ -120,7 +120,7 @@
 
 <!-- 列表排序权重模板 -->
 <script type="text/html" id="SortInputTpl">
-    <label class="ta-pt-5 block relative">
+    <label class="pt5 block relative">
         <input type="number" min="0" data-blur-number="0" data-action-blur="{:sysuri()}" data-value="id#{{d.id}};action#sort;sort#{value}" data-loading="false" value="{{d.sort}}" class="layui-input text-center">
     </label>
 </script>

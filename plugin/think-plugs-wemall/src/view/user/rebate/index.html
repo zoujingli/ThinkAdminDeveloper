@@ -54,13 +54,13 @@
                 },
                 {
                     title: '{:lang("用户头像")}', width: 80, align: 'center', templet: function (d) {
-                        if (!d.ouser || !d.ouser.headimg) return '<div class="ta-pt-10">-</div>';
+                        if (!d.ouser || !d.ouser.headimg) return '<div class="pt10">-</div>';
                         return laytpl('<div>{{-showTableImage(d.ouser.headimg,true,"sm")}}</div>').render(d)
                     }
                 },
                 {
                     title: '{:lang("用户账号")}', templet: function (d) {
-                        if (!d.ouser || !d.ouser.headimg) return '<div class="ta-pt-10">-</div>';
+                        if (!d.ouser || !d.ouser.headimg) return '<div class="pt10">-</div>';
                         let tpls = [];
                         tpls.push('{:lang("账号昵称")}：<b>{{d.ouser.nickname}}</b>')
                         tpls.push('{:lang("账号手机")}：<b class="color-blue">{{d.ouser.phone}}</b>')

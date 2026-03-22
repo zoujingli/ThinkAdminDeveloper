@@ -1,5 +1,5 @@
 <form action="{:sysuri()}" method="post" data-auto="true" class="layui-form layui-card">
-    <div class="layui-card-body ta-pl-40">
+    <div class="layui-card-body pl40">
 
         <div class="layui-form-item relative block">
             <span class="help-label label-required-prev"><b>{:lang('代理提现状态')}</b>Status</span>
@@ -32,7 +32,7 @@
                     <td class="text-center notselect nowrap"><b>{:lang('是否需要审核')}</b></td>
                     <td class="text-center notselect nowrap"><b>{:lang('图 标')}</b></td>
                     <td class="text-center notselect nowrap"><b>{:lang('单笔最小金额（ 元 ）')}</b></td>
-                    <td class="padding-col-0"></td>
+                    <td class="py0"></td>
                     <td class="text-center notselect nowrap"><b>{:lang('单笔最大金额（ 元 ）')}</b></td>
                     <td class="text-center notselect nowrap"><b>{:lang('每日限提现次数')}</b></td>
                 </tr>
@@ -41,7 +41,7 @@
                 {foreach $types as $k => $t}
                 <tr>
                     <td class="nowrap">
-                        <label class="think-checkbox ta-m-0">
+                        <label class="think-checkbox ma0">
                             {php} $key = 'transfer['.$k.']["state"]'; {/php}
                             <input name="{$key}" type="hidden" value="0">
                             {if isset($data['transfer'][$k]['state']) and $data['transfer'][$k]['state'] eq 1}

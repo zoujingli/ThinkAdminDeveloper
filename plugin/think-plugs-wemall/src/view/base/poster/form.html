@@ -19,7 +19,7 @@
                 </div>
             </div>
 
-            <div class="flex-1 ta-pl-30">
+            <div class="flex-1 pl30">
                 <a class="absolute" style="right:20px;top:20px" @click="show()">{:lang('预 览')}</a>
 
                 <label class="layui-form-item block relative">
@@ -81,23 +81,23 @@
                                 <label class="think-radio"><input type="radio" v-model="x.state" value="1" lay-ignore> {:lang('是')}</label>
                                 <label class="think-radio"><input type="radio" v-model="x.state" value="0" lay-ignore> {:lang('否')}</label>
                             </div>
-                            <div v-if="x.type==='ximg'" class="layui-input-group ta-mt-10">
+                            <div v-if="x.type==='ximg'" class="layui-input-group mt10">
                                 <div class="layui-input-prefix nowrap">{:lang('图片尺寸')}</div>
-                                <label><input type="number" v-model="x.size" min="12" max="200" value="12" class="layui-input ta-pr-0"></label>
+                                <label><input type="number" v-model="x.size" min="12" max="200" value="12" class="layui-input pr0"></label>
                                 <div class="layui-input-suffix">px</div>
                             </div>
-                            <div v-if="x.type=='text'" class="layui-input-group ta-mt-10">
+                            <div v-if="x.type=='text'" class="layui-input-group mt10">
                                 <div class="layui-input-prefix nowrap">{:lang('文字大小')}</div>
-                                <label><input type="number" v-model="x.size" min="12" max="99" value="12" class="layui-input ta-pr-0"></label>
-                                <div class="layui-input-suffix"><span :data-color-picker="k" class="ta-m-0"></span></div>
+                                <label><input type="number" v-model="x.size" min="12" max="99" value="12" class="layui-input pr0"></label>
+                                <div class="layui-input-suffix"><span :data-color-picker="k" class="ma0"></span></div>
                             </div>
-                            <div v-if="x.rule=='item.value'" class="layui-input-group ta-mt-10">
+                            <div v-if="x.rule=='item.value'" class="layui-input-group mt10">
                                 <div class="layui-input-prefix nowrap">{:lang('文字内容')}</div>
                                 <label class="block">
                                     <input class="layui-input" :placeholder="'{:lang('请输入文字内容')}'" v-model="x.value">
                                 </label>
                             </div>
-                            <div v-if="x.rule=='user.spreat'" class="layui-input-group ta-mt-10">
+                            <div v-if="x.rule=='user.spreat'" class="layui-input-group mt10">
                                 <div class="layui-input-prefix nowrap">{:lang('入口链接')}</div>
                                 <label class="block">
                                     <input class="layui-input" :placeholder="'{:lang('请输入入口链接')}'" v-model="x.value">
@@ -114,7 +114,7 @@
             <textarea class="layui-textarea" readonly id="EditValue">{$vo.content|default=[]|json_encode}</textarea>
         </label>
 
-        <div class="hr-line-dashed ta-mt-40"></div>
+        <div class="hr-line-dashed mt40"></div>
         {notempty name='vo.id'}<input name="id" type="hidden" value="{$vo.id}">{/notempty}
 
         <div class="layui-form-item text-center">

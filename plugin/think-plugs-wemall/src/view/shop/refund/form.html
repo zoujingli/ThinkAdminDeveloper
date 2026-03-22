@@ -8,13 +8,13 @@
 {block name="content"}
 <form action="{:sysuri()}" method="post" data-auto="true" class="layui-form layui-card">
 
-    <div class="layui-card-body ta-pl-40">
+    <div class="layui-card-body pl40">
 
         <fieldset class="layui-form-item">
             <legend class="layui-badge text-left think-bg-violet">{:lang('用户信息')}</legend>
             <div class="flex">
                 <div class="headimg" style="width:138px;height:138px" data-tips-image data-lazy-src="{$vo.user.headimg|default='__ROOT__/static/theme/img/headimg.png'}"></div>
-                <div class="flex-1 ta-ml-15">
+                <div class="flex-1 ml15">
                     <label class="layui-form-item relative block">
                         <span class="help-label"><b>{:lang('用户昵称')}</b>Nickname</span>
                         <input class="layui-input layui-bg-gray" readonly value="{$vo.user.nickname|default=''}">
@@ -30,19 +30,19 @@
         <fieldset class="layui-form-item">
             <legend class="layui-badge text-left think-bg-violet">{:lang('订单信息')}</legend>
             <div class="layui-form-item flex">
-                <label class="ta-mr-10">
+                <label class="mr10">
                     <span class="help-label"><b>{:lang('订单单号')}</b>OrderCode</span>
                     <input class="layui-input layui-bg-gray" readonly value="{$vo.order_no|default=''}"/>
                 </label>
-                <label class="ta-mr-10">
+                <label class="mr10">
                     <span class="help-label"><b>{:lang('支付金额')}</b>Amount</span>
                     <input class="layui-input layui-bg-gray" readonly value="{$vo.orderinfo.amount_real|default=''}"/>
                 </label>
-                <label class="ta-mr-10">
+                <label class="mr10">
                     <span class="help-label"><b>{:lang('余额消费')}</b>Balance</span>
                     <input class="layui-input layui-bg-gray" readonly value="{$vo.orderinfo.amount_balance|default=''}"/>
                 </label>
-                <label class="ta-mr-10">
+                <label class="mr10">
                     <span class="help-label"><b>{:lang('积分消费')}</b>Integral</span>
                     <input class="layui-input layui-bg-gray" readonly value="{$vo.orderinfo.amount_integral|default=''}"/>
                 </label>
@@ -50,13 +50,13 @@
             {notempty name='vo.orderinfo.items'}
             <div class="layui-form-item">
                 <span class="help-label"><b>{:lang('商品列表')}</b>Images</span>
-                <div class="layui-textarea ta-p-10 flex flex-wrap" style="min-height:auto;padding-bottom:0!important;">
+                <div class="layui-textarea pa10 flex flex-wrap" style="min-height:auto;padding-bottom:0!important;">
                     {foreach $vo.orderinfo.items as $v}
-                    <div class="flex layui-bg-gray ta-p-10 border-radius-5 ta-mr-10 ta-mb-10" style="min-width:400px">
+                    <div class="flex layui-bg-gray pa10 border-radius-5 mr10 mb10" style="min-width:400px">
                         <div data-tips-image data-lazy-src="{$v.gcover}" class="uploadimage" style="width:60px;height:60px"></div>
-                        <div class="flex-1 ta-ml-5">
-                            <div class="ta-p-5 font-s14 font-w7">{$v.gname}</div>
-                            <div class="ta-p-5 color-desc">{$v.gspec|show_gspec}</div>
+                        <div class="flex-1 ml5">
+                            <div class="pa5 font-s14 font-w7">{$v.gname}</div>
+                            <div class="pa5 color-desc">{$v.gspec|show_gspec}</div>
                         </div>
                         <div>
                             <div class="flex-y">
@@ -93,25 +93,25 @@
                 {/if}
             </legend>
             <div class="layui-form-item flex flex-wrap">
-                <label class="ta-mr-10">
+                <label class="mr10">
                     <span class="help-label"><b>{:lang('售后单号')}</b>Refund Code</span>
                     <input class="layui-input layui-bg-gray" readonly value="{$vo.code|default=''}"/>
                 </label>
-                <label class="ta-mr-10">
+                <label class="mr10">
                     <span class="help-label"><b>{:lang('售后类型')}</b>Refund Type</span>
                     <input class="layui-input layui-bg-gray" readonly value="{$vo.typename|default=''}"/>
                 </label>
-                <label class="ta-mr-10">
+                <label class="mr10">
                     <span class="help-label"><b>{:lang('售后原因')}</b>Refund Reason</span>
                     <input class="layui-input layui-bg-gray" readonly value="{$vo.reasonname|default=''}"/>
                 </label>
                 {notempty name='vo.phone'}
-                <label class="ta-mr-10">
+                <label class="mr10">
                     <span class="help-label"><b>{:lang('联系电话')}</b>Concat Phone</span>
                     <input class="layui-input layui-bg-gray" readonly value="{$vo.phone|default=''}"/>
                 </label>
                 {/notempty}
-                <label class="ta-mr-10">
+                <label class="mr10">
                     <span class="help-label"><b>{:lang('申请退款')}</b>Refund Amount</span>
                     <input class="layui-input layui-bg-gray" readonly value="{$vo.amount|default=''}"/>
                 </label>
@@ -123,15 +123,15 @@
             </label>
 
             <div class="layui-form-item flex flex-wrap">
-                <label class="ta-mr-10">
+                <label class="mr10">
                     <span class="help-label"><b>{:lang('退货快递')}</b>Express Name</span>
                     <input class="layui-input layui-bg-gray" readonly value="{$vo.express_name|default='{:lang("未填写")}'}"/>
                 </label>
-                <label class="ta-mr-10">
+                <label class="mr10">
                     <span class="help-label"><b>{:lang('退货单号')}</b>Express Code</span>
                     <input class="layui-input layui-bg-gray" readonly value="{$vo.express_no|default='{:lang("未填写")}'}"/>
                 </label>
-                <div class="ta-pt-25">
+                <div class="pt25">
                     <a class="layui-btn" data-delivery-code="{$vo.express_code}" data-delivery-number="{$vo.express_no}">{:lang('查询快递')}</a>
                 </div>
             </div>
@@ -174,23 +174,23 @@
             <div class="layui-form-item layui-row layui-col-space15">
                 {foreach $vo.orderinfo.payments as $p}
                 <div class="flex">
-                    <label class="ta-mr-10">
+                    <label class="mr10">
                         <span class="help-label nowrap"><b>{:lang('支付单号')}</b>Payment Code</span>
                         <input class="layui-input layui-bg-gray" readonly value="{$p.code|default='0.00'}"/>
                     </label>
-                    <label class="ta-mr-10">
+                    <label class="mr10">
                         <span class="help-label nowrap"><b>{:lang('支付类型')}</b>Payment Type</span>
                         <input class="layui-input layui-bg-gray" readonly value="{$p.channel_type_name|default='0.00'}"/>
                     </label>
-                    <label class="ta-mr-10">
+                    <label class="mr10">
                         <span class="help-label nowrap"><b>{:lang('支付金额')}</b>Payment Amount</span>
                         <input class="layui-input layui-bg-gray" readonly value="{$p.payment_amount|default='0.00'}"/>
                     </label>
-                    <label class="ta-mr-10">
+                    <label class="mr10">
                         <span class="help-label nowrap"><b>{:lang('平台优惠')}</b>Coupon Amount</span>
                         <input class="layui-input layui-bg-gray" readonly value="{$p.payment_coupon|default='0.00'}"/>
                     </label>
-                    <label class="ta-mr-10">
+                    <label class="mr10">
                         {if $p.channel_type eq 'integral'}
                         <span class="help-label label-required-prev nowrap"><b>{:lang('已退积分')}</b>Refunded Integral</span>
                         {elseif $p.channel_type eq 'balance'}
@@ -229,7 +229,7 @@
                             {/if}
                         </div>
                         {else}
-                        <label class="ta-mr-10">
+                        <label class="mr10">
                             {if $vo['status']<5}
                             <input class="layui-input" name="refunds[{$p.code}]" type="number" lay-affix="number" min="0" max="{$allowAmount|default=0}" value="{$allowAmount|default=0}"/>
                             {else}

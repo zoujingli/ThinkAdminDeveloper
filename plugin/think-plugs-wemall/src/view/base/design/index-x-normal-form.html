@@ -5,7 +5,7 @@
         <li v-if="item.interStyle || (item.inputStyle && item.inputStyle.vTypes)">容器样式</li>
         <li v-if="item.outerStyle">组件样式</li>
     </ul>
-    <div class="layui-tab-content ta-pr-30">
+    <div class="layui-tab-content pr30">
         <div class="layui-tab-item layui-show notselect">
 
             <div v-if="item.type==='PageCate'">
@@ -44,18 +44,18 @@
                 <div class="layui-form-item flex">
                     <span class="design-form-label">搜索热词</span>
                     <div class="flex-1">
-                        <div class="ta-mt-5 color-desc">( 最多支持 10 个，点击右则可移动 )</div>
-                        <div class="ta-mt-5 flex" v-for="(xxx,$index) in item.data">
+                        <div class="mt5 color-desc">( 最多支持 10 个，点击右则可移动 )</div>
+                        <div class="mt5 flex" v-for="(xxx,$index) in item.data">
                             <label class="flex-1 relative">
                                 <input class="layui-input" v-model="xxx.name" required vali-name="热词" placeholder="请输入热词">
                             </label>
-                            <div class="ta-pl-10">
-                                <a @click="moveUp(item.data,$index)" class="ta-m-5 layui-btn-primary layui-btn-md inline-block"><i style="transform:rotate(090deg)" class="layui-icon inline-block">&#xe65c;</i></a>
-                                <a @click="moveRm(item.data,$index)" class="ta-m-5 layui-btn-primary color-red layui-btn-md inline-block"><i class="layui-icon layui-icon-close"></i></a>
-                                <a @click="moveDn(item.data,$index)" class="ta-m-5 layui-btn-primary layui-btn-md inline-block"><i style="transform:rotate(270deg)" class="layui-icon inline-block">&#xe65c;</i></a>
+                            <div class="pl10">
+                                <a @click="moveUp(item.data,$index)" class="ma5 layui-btn-primary layui-btn-md inline-block"><i style="transform:rotate(090deg)" class="layui-icon inline-block">&#xe65c;</i></a>
+                                <a @click="moveRm(item.data,$index)" class="ma5 layui-btn-primary color-red layui-btn-md inline-block"><i class="layui-icon layui-icon-close"></i></a>
+                                <a @click="moveDn(item.data,$index)" class="ma5 layui-btn-primary layui-btn-md inline-block"><i style="transform:rotate(270deg)" class="layui-icon inline-block">&#xe65c;</i></a>
                             </div>
                         </div>
-                        <div class="ta-mt-5" v-if="item.data.length<10">
+                        <div class="mt5" v-if="item.data.length<10">
                             <a @click="addData(item.data)">添加热词</a>
                         </div>
                     </div>
@@ -89,7 +89,7 @@
                                                 <span class="layui-form-label" style="width:3em">标 题</span>
                                                 <input placeholder="选项，请输入标题" v-model="xx.name" class="flex-1 layui-input ">
                                             </label>
-                                            <div class="flex relative ta-mt-5">
+                                            <div class="flex relative mt5">
                                                 <span class="layui-form-label" style="width:3em">链 接</span>
                                                 <div class="layui-input-wrap pointer flex-1" @click="setLink(xx)">
                                                     <label><input type="text" placeholder="必选，请选择链接" class="layui-input" v-model="xx.link"></label>
@@ -189,7 +189,7 @@
                                     <span class="layui-form-label" style="width:3em">标 题</span>
                                     <input placeholder="可选，请输入标题" v-model="edit.item.title" class="flex-1 layui-input ">
                                 </label>
-                                <div class="flex relative ta-mt-5">
+                                <div class="flex relative mt5">
                                     <span class="layui-form-label" style="width:3em">链 接</span>
                                     <div class="layui-input-wrap pointer flex-1" @click="setLink(edit.item)">
                                         <label><input type="text" placeholder="可选，请选择链接" class="layui-input" v-model="edit.item.link"></label>
@@ -218,7 +218,7 @@
             <div v-if="item.type==='BaseSlider'">
                 <draggable v-model="item.data" v-bind="{group:'BaseImageSlider',animation:200}" @start="drag=true" @end="drag=false">
                     <transition-group>
-                        <div class="layui-form-item ta-mb-10" v-for="(xx,$index) in item.data" :key="xx.unid">
+                        <div class="layui-form-item mb10" v-for="(xx,$index) in item.data" :key="xx.unid">
                             <div class="flex">
                                 <div style="padding-top:3px">
                                     <upload-image :mstyle="xx" mfield="image" v-model="xx.image" :showinput="false"></upload-image>
@@ -228,7 +228,7 @@
                                         <span class="layui-form-label" style="width:3em">标 题</span>
                                         <input placeholder="可选，请输入标题" v-model="xx.title" class="flex-1 layui-input ">
                                     </label>
-                                    <div class="flex relative ta-mt-5">
+                                    <div class="flex relative mt5">
                                         <span class="layui-form-label" style="width:3em">链 接</span>
                                         <div class="layui-input-wrap pointer flex-1" @click="setLink(xx)">
                                             <label><input type="text" placeholder="可选，请选择链接" class="layui-input" v-model="xx.link"></label>

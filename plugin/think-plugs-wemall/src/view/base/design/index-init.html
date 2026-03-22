@@ -11,45 +11,45 @@
         <div v-for="(x,$index) in items" :key="x.unid">
             <div v-if="x.type==='表格行数'" class="layui-form-item flex-align-center">
                 <span class="design-form-label">{{x.name || '表格行数'}}</span>
-                <label class="ta-pt-5"><input type="range" min="1" max="5" step="1" v-model.number="mstyle.vRow"></label>
-                <label class="ta-pl-5"><input type="number" min="1" max="5" step="1" v-range v-model.number="mstyle.vRow" class="layui-input"></label>
-                <span class="layui-form-label ta-pl-5 text-left flex-1" style="width:auto">行</span>
+                <label class="pt5"><input type="range" min="1" max="5" step="1" v-model.number="mstyle.vRow"></label>
+                <label class="pl5"><input type="number" min="1" max="5" step="1" v-range v-model.number="mstyle.vRow" class="layui-input"></label>
+                <span class="layui-form-label pl5 text-left flex-1" style="width:auto">行</span>
             </div>
             <div v-if="x.type==='表格列数'" class="layui-form-item flex-align-center">
                 <span class="design-form-label">{{x.name || '表格列数'}}</span>
-                <label class="ta-pt-5"><input type="range" min="1" max="5" step="1" v-model.number="mstyle.vCol"></label>
-                <label class="ta-pl-5"><input type="number" min="1" max="5" step="1" v-range v-model.number="mstyle.vCol" class="layui-input"></label>
-                <span class="layui-form-label ta-pl-5 text-left flex-1" style="width:auto">列</span>
+                <label class="pt5"><input type="range" min="1" max="5" step="1" v-model.number="mstyle.vCol"></label>
+                <label class="pl5"><input type="number" min="1" max="5" step="1" v-range v-model.number="mstyle.vCol" class="layui-input"></label>
+                <span class="layui-form-label pl5 text-left flex-1" style="width:auto">列</span>
             </div>
             <div v-if="x.type==='页面间距'" class="layui-form-item flex-align-center">
                 <span class="design-form-label">{{x.name || '页面间距'}}</span>
-                <label class="ta-pt-5"><input type="range" min="0" max="10" step="0.01" v-model="mstyle.vMarginTop"></label>
-                <label class="ta-pl-5"><input type="number" min="0" max="10" step="0.01" v-range v-model="mstyle.vMarginTop" class="layui-input"></label>
-                <span class="layui-form-label ta-pl-5 text-left flex-1" style="width:auto">vw</span>
+                <label class="pt5"><input type="range" min="0" max="10" step="0.01" v-model="mstyle.vMarginTop"></label>
+                <label class="pl5"><input type="number" min="0" max="10" step="0.01" v-range v-model="mstyle.vMarginTop" class="layui-input"></label>
+                <span class="layui-form-label pl5 text-left flex-1" style="width:auto">vw</span>
             </div>
             <div v-if="x.type==='上下内距'" class="layui-form-item flex-align-center">
                 <span class="design-form-label">{{x.name || '上下内距'}}</span>
-                <label class="ta-pt-5"><input type="range" min="0" max="10" step="0.01" v-model="mstyle.vPaddingTopBottom"></label>
-                <label class="ta-pl-5"><input type="number" min="0" max="10" step="0.01" v-range v-model="mstyle.vPaddingTopBottom" class="layui-input"></label>
-                <span class="layui-form-label ta-pl-5 text-left flex-1" style="width:auto">vw</span>
+                <label class="pt5"><input type="range" min="0" max="10" step="0.01" v-model="mstyle.vPaddingTopBottom"></label>
+                <label class="pl5"><input type="number" min="0" max="10" step="0.01" v-range v-model="mstyle.vPaddingTopBottom" class="layui-input"></label>
+                <span class="layui-form-label pl5 text-left flex-1" style="width:auto">vw</span>
             </div>
             <div v-if="x.type==='左右内距'" class="layui-form-item flex-align-center">
                 <span class="design-form-label">{{x.name || '左右内距'}}</span>
-                <label class="ta-pt-5"><input type="range" min="0" max="10" step="0.01" v-model="mstyle.vPaddingLeftRight"></label>
-                <label class="ta-pl-5"><input type="number" min="0" max="10" step="0.01" v-range v-model="mstyle.vPaddingLeftRight" class="layui-input"></label>
-                <span class="layui-form-label ta-pl-5 text-left flex-1" style="width:auto">vw</span>
+                <label class="pt5"><input type="range" min="0" max="10" step="0.01" v-model="mstyle.vPaddingLeftRight"></label>
+                <label class="pl5"><input type="number" min="0" max="10" step="0.01" v-range v-model="mstyle.vPaddingLeftRight" class="layui-input"></label>
+                <span class="layui-form-label pl5 text-left flex-1" style="width:auto">vw</span>
             </div>
             <div v-if="x.type==='上下间距'" class="layui-form-item flex-align-center">
                 <span class="design-form-label">{{x.name || '上下间距'}}</span>
-                <label class="ta-pt-5"><input type="range" min="0" max="10" step="0.01" v-model="mstyle.vMarginTopBottom"></label>
-                <label class="ta-pl-5"><input type="number" min="0" max="10" step="0.01" v-range v-model="mstyle.vMarginTopBottom" class="layui-input"></label>
-                <span class="layui-form-label ta-pl-5 text-left flex-1" style="width:auto">vw</span>
+                <label class="pt5"><input type="range" min="0" max="10" step="0.01" v-model="mstyle.vMarginTopBottom"></label>
+                <label class="pl5"><input type="number" min="0" max="10" step="0.01" v-range v-model="mstyle.vMarginTopBottom" class="layui-input"></label>
+                <span class="layui-form-label pl5 text-left flex-1" style="width:auto">vw</span>
             </div>
             <div v-if="x.type==='左右间距'" class="layui-form-item flex-align-center">
                 <span class="design-form-label">{{x.name || '左右间距'}}</span>
-                <label class="ta-pt-5"><input type="range" min="0" max="10" step="0.01" v-model="mstyle.vMarginLeftRight"></label>
-                <label class="ta-pl-5"><input type="number" min="0" max="10" step="0.01" v-range v-model="mstyle.vMarginLeftRight" class="layui-input"></label>
-                <span class="layui-form-label ta-pl-5 text-left flex-1" style="width:auto">vw</span>
+                <label class="pt5"><input type="range" min="0" max="10" step="0.01" v-model="mstyle.vMarginLeftRight"></label>
+                <label class="pl5"><input type="number" min="0" max="10" step="0.01" v-range v-model="mstyle.vMarginLeftRight" class="layui-input"></label>
+                <span class="layui-form-label pl5 text-left flex-1" style="width:auto">vw</span>
             </div>
             <div v-if="x.type==='边框位置'" class="layui-form-item flex-align-center">
                 <span class="design-form-label">{{x.name || '边框位置'}}</span>
@@ -81,33 +81,33 @@
             </div>
             <div v-if="x.type==='边框宽度'" class="layui-form-item flex-align-center">
                 <span class="design-form-label">{{x.name || '边框宽度'}}</span>
-                <label class="ta-pt-5"><input type="range" min="0" max="10" step="0.01" v-model="mstyle.vBorderWidth"></label>
-                <label class="ta-pl-5"><input type="number" min="0" max="10" step="0.01" v-range v-model="mstyle.vBorderWidth" class="layui-input"></label>
-                <span class="layui-form-label ta-pl-5 text-left flex-1" style="width:auto">vw</span>
+                <label class="pt5"><input type="range" min="0" max="10" step="0.01" v-model="mstyle.vBorderWidth"></label>
+                <label class="pl5"><input type="number" min="0" max="10" step="0.01" v-range v-model="mstyle.vBorderWidth" class="layui-input"></label>
+                <span class="layui-form-label pl5 text-left flex-1" style="width:auto">vw</span>
             </div>
             <div v-if="x.type==='边框圆角'" class="layui-form-item flex-align-center">
                 <span class="design-form-label">{{x.name || '边框圆角'}}</span>
-                <label class="ta-pt-5"><input type="range" min="0" max="50" step="0.01" v-model="mstyle.vBorderRadius"></label>
-                <label class="ta-pl-5"><input type="number" min="0" max="50" step="0.01" v-range v-model="mstyle.vBorderRadius" class="layui-input"></label>
-                <span class="layui-form-label ta-pl-5 text-left flex-1" style="width:auto">vw</span>
+                <label class="pt5"><input type="range" min="0" max="50" step="0.01" v-model="mstyle.vBorderRadius"></label>
+                <label class="pl5"><input type="number" min="0" max="50" step="0.01" v-range v-model="mstyle.vBorderRadius" class="layui-input"></label>
+                <span class="layui-form-label pl5 text-left flex-1" style="width:auto">vw</span>
             </div>
             <div v-if="x.type==='容器宽度'" class="layui-form-item flex-align-center">
                 <span class="design-form-label">{{x.name || '容器宽度'}}</span>
-                <label class="ta-pt-5"><input type="range" min="0.01" max="100" step="0.01" v-model="mstyle.vWidth"></label>
-                <label class="ta-pl-5"><input type="number" min="0.01" max="100" step="0.01" v-range v-model="mstyle.vWidth" class="layui-input"></label>
-                <span class="layui-form-label ta-pl-5 text-left flex-1" style="width:auto">%</span>
+                <label class="pt5"><input type="range" min="0.01" max="100" step="0.01" v-model="mstyle.vWidth"></label>
+                <label class="pl5"><input type="number" min="0.01" max="100" step="0.01" v-range v-model="mstyle.vWidth" class="layui-input"></label>
+                <span class="layui-form-label pl5 text-left flex-1" style="width:auto">%</span>
             </div>
             <div v-if="x.type==='容器宽度2'" class="layui-form-item flex-align-center">
                 <span class="design-form-label">{{x.name || '容器宽度'}}</span>
-                <label class="ta-pt-5"><input type="range" min="0" max="100" step="0.01" v-model="mstyle.vWidth2"></label>
-                <label class="ta-pl-5"><input type="number" min="0" max="100" step="0.01" v-range v-model="mstyle.vWidth2" class="layui-input"></label>
-                <span class="layui-form-label ta-pl-5 text-left flex-1" style="width:auto">vw</span>
+                <label class="pt5"><input type="range" min="0" max="100" step="0.01" v-model="mstyle.vWidth2"></label>
+                <label class="pl5"><input type="number" min="0" max="100" step="0.01" v-range v-model="mstyle.vWidth2" class="layui-input"></label>
+                <span class="layui-form-label pl5 text-left flex-1" style="width:auto">vw</span>
             </div>
             <div v-if="x.type==='容器高度'" class="layui-form-item flex-align-center">
                 <span class="design-form-label">{{x.name || '容器高度'}}</span>
-                <label class="ta-pt-5"><input type="range" min="0.01" max="100" step="0.01" v-model="mstyle.vHeight"></label>
-                <label class="ta-pl-5"><input type="number" min="0.01" max="100" step="0.01" v-range v-model="mstyle.vHeight" class="layui-input"></label>
-                <span class="layui-form-label ta-pl-5 text-left flex-1" style="width:auto">vw</span>
+                <label class="pt5"><input type="range" min="0.01" max="100" step="0.01" v-model="mstyle.vHeight"></label>
+                <label class="pl5"><input type="number" min="0.01" max="100" step="0.01" v-range v-model="mstyle.vHeight" class="layui-input"></label>
+                <span class="layui-form-label pl5 text-left flex-1" style="width:auto">vw</span>
             </div>
             <div v-if="x.type==='文字位置'" class="layui-form-item flex-align-center">
                 <span class="design-form-label">{{x.name || '文字位置'}}</span>
@@ -121,21 +121,21 @@
             </div>
             <div v-if="x.type==='文字粗细'" class="layui-form-item flex-align-center">
                 <span class="design-form-label">{{x.name || '文字粗细'}}</span>
-                <label class="ta-pt-5"><input type="range" min="100" max="900" step="100" v-model="mstyle.fontWeight"></label>
-                <label class="ta-pl-5"><input type="number" min="100" max="900" step="100" v-range v-model="mstyle.fontWeight" class="layui-input"></label>
-                <span class="layui-form-label ta-pl-5 text-left flex-1" style="width:auto"></span>
+                <label class="pt5"><input type="range" min="100" max="900" step="100" v-model="mstyle.fontWeight"></label>
+                <label class="pl5"><input type="number" min="100" max="900" step="100" v-range v-model="mstyle.fontWeight" class="layui-input"></label>
+                <span class="layui-form-label pl5 text-left flex-1" style="width:auto"></span>
             </div>
             <div v-if="x.type==='文字行高'" class="layui-form-item flex-align-center">
                 <span class="design-form-label">{{x.name || '文字行高'}}</span>
-                <label class="ta-pt-5"><input type="range" min="0.01" max="50" step="0.01" v-model="mstyle.vLineHeight"></label>
-                <label class="ta-pl-5"><input type="number" min="0.01" max="50" step="0.01" v-range v-model="mstyle.vLineHeight" class="layui-input"></label>
-                <span class="layui-form-label ta-pl-5 text-left flex-1" style="width:auto">vw</span>
+                <label class="pt5"><input type="range" min="0.01" max="50" step="0.01" v-model="mstyle.vLineHeight"></label>
+                <label class="pl5"><input type="number" min="0.01" max="50" step="0.01" v-range v-model="mstyle.vLineHeight" class="layui-input"></label>
+                <span class="layui-form-label pl5 text-left flex-1" style="width:auto">vw</span>
             </div>
             <div v-if="x.type==='文字大小'" class="layui-form-item flex-align-center">
                 <span class="design-form-label">{{x.name || '文字大小'}}</span>
-                <label class="ta-pt-5"><input type="range" min="0.05" max="10" step="0.01" v-model="mstyle.vFontSize"></label>
-                <label class="ta-pl-5"><input type="number" min="0.05" max="10" step="0.01" v-range v-model="mstyle.vFontSize" class="layui-input"></label>
-                <span class="layui-form-label ta-pl-5 text-left flex-1" style="width:auto">vw</span>
+                <label class="pt5"><input type="range" min="0.05" max="10" step="0.01" v-model="mstyle.vFontSize"></label>
+                <label class="pl5"><input type="number" min="0.05" max="10" step="0.01" v-range v-model="mstyle.vFontSize" class="layui-input"></label>
+                <span class="layui-form-label pl5 text-left flex-1" style="width:auto">vw</span>
             </div>
             <div v-if="x.type==='文字颜色'" class="layui-form-item flex">
                 <span class="design-form-label">{{x.name || '文字颜色'}}</span>
@@ -288,7 +288,7 @@
                 '   <label class="layui-input-inline" style="width:230px">' +
                 '       <input :value="value" placeholder="请选择颜色" class="layui-input layui-bg-gray font-code text-center" readonly>' +
                 '   </label>' +
-                '   <div class="layui-inline absolute"><div :id="eid" class="ta-m-0">eid</div></div>' +
+                '   <div class="layui-inline absolute"><div :id="eid" class="ma0">eid</div></div>' +
                 '</div>',
             created: function () {
                 let key = '_' + this.mfield.replace(/([A-Z])/g, '_$1').toLowerCase();

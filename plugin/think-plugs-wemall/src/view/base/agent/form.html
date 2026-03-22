@@ -1,5 +1,5 @@
 <form action="{:sysuri()}" class="layui-form layui-card" data-auto="true" method="post">
-    <div class="layui-card-body ta-pl-40">
+    <div class="layui-card-body pl40">
 
         <div class="layui-form-item flex">
             <div class="flex-1">
@@ -12,7 +12,7 @@
                     {/if}{/for}
                 </select>
             </div>
-            <label class="flex-3 ta-ml-15 relative">
+            <label class="flex-3 ml15 relative">
                 <span class="help-label label-required-prev"><b>{:lang('等级名称')}</b>Name</span>
                 <input class="layui-input" name="name" placeholder="{:lang('请输入等级名称')}" required value="{$vo.name|default=''}">
             </label>
@@ -36,7 +36,7 @@
 
         <div class="layui-form-item">
             <span class="help-label label-required-prev"><b>{:lang('升级条件')}</b>Upgrade Rules</span>
-            <div class="layui-bg-gray layui-textarea help-checks relative flex flex-wrap ta-p-10">
+            <div class="layui-bg-gray layui-textarea help-checks relative flex flex-wrap pa10">
                 {foreach ['teams_direct'=>lang('直接团队'),'teams_indirect'=>lang('间接团队'),'teams_total'=>lang('团队总数')] as $k=>$v}
                 <div class="upgrade-item-group">
                     {php}$ks = $k."_status";$kn = $k."_number";{/php}
