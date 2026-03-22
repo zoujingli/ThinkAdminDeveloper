@@ -365,7 +365,7 @@ think-plugs-helper/
 
 **命名空间**: `plugin\wechat\service\`
 
-**访问前缀**: `plugin-wechat-service`
+**访问前缀**: `wechat-service`
 
 **核心功能**:
 - 第三方平台授权

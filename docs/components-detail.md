@@ -409,19 +409,19 @@ php think xadmin:helper:migrate
 - 微信退款管理
 
 **后台节点**:
-- `plugin-wechat-client/config/options` - 公众号配置
-- `plugin-wechat-client/config/payment` - 支付配置
-- `plugin-wechat-client/fans/index` - 粉丝管理
-- `plugin-wechat-client/news/index` - 素材管理
-- `plugin-wechat-client/menu/index` - 菜单管理
-- `plugin-wechat-client/keys/index` - 关键词回复
-- `plugin-wechat-client/payment.record/index` - 支付记录
+- `wechat-client/config/options` - 公众号配置
+- `wechat-client/config/payment` - 支付配置
+- `wechat-client/fans/index` - 粉丝管理
+- `wechat-client/news/index` - 素材管理
+- `wechat-client/menu/index` - 菜单管理
+- `wechat-client/keys/index` - 关键词回复
+- `wechat-client/payment.record/index` - 支付记录
 
 **接口节点**:
-- `/api/plugin-wechat-client/push/*` - 微信推送
-- `/api/plugin-wechat-client/view/*` - 预览页
-- `/api/plugin-wechat-client/js/*` - JS SDK
-- `/api/plugin-wechat-client/login/*` - 网页授权
+- `/api/wechat-client/push/*` - 微信推送
+- `/api/wechat-client/view/*` - 预览页
+- `/api/wechat-client/js/*` - JS SDK
+- `/api/wechat-client/login/*` - 网页授权
 
 **数据表**:
 - `wechat_auto` - 自动回复
@@ -470,16 +470,16 @@ php think xadmin:fanspay
 - 标准平台远程能力代理
 
 **后台节点**:
-- `plugin-wechat-service/config/index` - 开放平台配置
-- `plugin-wechat-service/wechat/index` - 授权账号管理
+- `wechat-service/config/index` - 开放平台配置
+- `wechat-service/wechat/index` - 授权账号管理
 
 **接口节点**:
-- `/api/plugin-wechat-service/client/jsonrpc` - JSON-RPC 远程调用
-- `/api/plugin-wechat-service/push/*` - 推送事件接收
+- `/api/wechat-service/client/jsonrpc` - JSON-RPC 远程调用
+- `/api/wechat-service/push/*` - 推送事件接收
 
 **JSON-RPC 地址示例**:
 ```
-http://example.com/api/plugin-wechat-service/client/jsonrpc?token=TOKEN
+http://example.com/api/wechat-service/client/jsonrpc?token=TOKEN
 ```
 
 **数据表**:

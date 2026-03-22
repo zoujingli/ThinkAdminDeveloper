@@ -114,7 +114,7 @@ flowchart TD
   微信公众号开放平台，提供第三方平台托管、授权管理和远程 JSON-RPC 服务。
     - 命名空间：`plugin\wechat\service\`
     - 服务注册：`plugin\wechat\service\Service`
-    - 访问前缀：`plugin-wechat-service`
+    - 访问前缀：`wechat-service`
     - 数据表：第三方授权、组件配置
     - 核心功能：开放平台配置、授权管理、JSON-RPC 远程调用、推送事件接收
     - 命令：`xsync:wechat`
@@ -237,7 +237,7 @@ flowchart TD
 - 接口：`/api/system/plugs/script`
 - 接口：`/api/storage/upload/file`
 - 接口：`/api/wechat/view/news?id=1`
-- 接口：`/api/plugin-wechat-service/client/jsonrpc?token=TOKEN`
+- 接口：`/api/wechat-service/client/jsonrpc?token=TOKEN`
 
 ### 目录
 
