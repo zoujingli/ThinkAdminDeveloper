@@ -197,16 +197,6 @@ class ArchitectureBoundaryTest extends TestCase
         $this->assertFileDoesNotExist($this->path('plugin/think-plugs-account/src/service/ImageSliderVerify.php'));
     }
 
-    public function testCenterPluginSourceDirectoriesStayStandardized(): void
-    {
-        $dirs = array_values(array_filter(scandir($this->path('plugin/think-plugs-center/src')) ?: [], function ($name) {
-            return $name !== '.' && $name !== '..' && is_dir($this->path("plugin/think-plugs-center/src/{$name}"));
-        }));
-        sort($dirs);
-
-        $this->assertSame(['controller', 'lang', 'route', 'service', 'view'], $dirs);
-    }
-
     public function testWorkerPluginSourceDirectoriesStayStandardized(): void
     {
         $dirs = array_values(array_filter(scandir($this->path('plugin/think-plugs-worker/src')) ?: [], function ($name) {
@@ -313,7 +303,6 @@ class ArchitectureBoundaryTest extends TestCase
     {
         $allowed = [
             'think-plugs-account' => ['Service.php'],
-            'think-plugs-center' => ['Service.php', 'common.php'],
             'think-plugs-helper' => ['Service.php'],
             'think-plugs-payment' => ['Service.php'],
             'think-plugs-storage' => ['Service.php'],
@@ -334,11 +323,10 @@ class ArchitectureBoundaryTest extends TestCase
             $this->assertSame($expected, $files, "{$plugin} has unexpected source root files");
         }
 
-        $this->assertFileDoesNotExist($this->path('plugin/think-plugs-center/src/helper.php'));
+        $this->assertDirectoryDoesNotExist($this->path('plugin/think-plugs-center'));
         $this->assertFileDoesNotExist($this->path('plugin/think-plugs-wemall/src/helper.php'));
         $this->assertFileDoesNotExist($this->path('plugin/think-plugs-wuma/src/Query.php'));
         $this->assertFileDoesNotExist($this->path('plugin/think-plugs-wuma/src/Script.php'));
-        $this->assertFileExists($this->path('plugin/think-plugs-center/src/common.php'));
         $this->assertFileExists($this->path('plugin/think-plugs-wemall/src/common.php'));
         $this->assertFileExists($this->path('plugin/think-plugs-wuma/src/controller/Query.php'));
     }

@@ -4,7 +4,7 @@
     "version": "8.0.x-dev",
     "license": "MIT",
     "homepage": "https://thinkadmin.top",
-    "description": "System Plugin for ThinkAdmin",
+    "description": "System Management Plugin for ThinkAdmin",
     "authors": [
         {
             "name": "Anyon",
@@ -64,6 +64,11 @@
                                 "node": "system/config/index"
                             },
                             {
+                                "name": "插件应用中心",
+                                "icon": "layui-icon layui-icon-app",
+                                "node": "system/plugin/index"
+                            },
+                            {
                                 "name": "动态页面构建",
                                 "icon": "layui-icon layui-icon-template-1",
                                 "node": "system/builder/index"
@@ -120,7 +125,7 @@
             "app": {
                 "name": "系统管理",
                 "document": "https://thinkadmin.top/plugin/think-plugs-system.html",
-                "description": "系统后台、权限用户、共享配置与系统运维一体化管理模块。",
+                "description": "系统后台、权限用户、插件中心与共享配置的一体化管理模块。",
                 "code": "system",
                 "prefix": "system"
             }

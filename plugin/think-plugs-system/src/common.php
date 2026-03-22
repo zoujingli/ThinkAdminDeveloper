@@ -20,7 +20,9 @@ declare(strict_types=1);
 use think\admin\Exception;
 use think\admin\Library;
 use think\admin\route\Url;
+use think\admin\runtime\RequestContext;
 use think\admin\runtime\SystemContext;
+use plugin\system\service\PluginCenterService;
 
 if (!function_exists('auth')) {
     /**
@@ -57,6 +59,24 @@ if (!function_exists('system_uri')) {
     {
         $target = Url::normalizeWebTarget($url);
         return sysuri('system/index/index', [], $suffix, $domain)
+            . '#'
+            . Library::$sapp->route->buildUrl($target, $vars)->suffix($suffix)->domain($domain)->build();
+    }
+}
+
+if (!function_exists('plguri')) {
+    /**
+     * 生成插件工作台 URL 地址
+     * @param string $url 路由地址
+     * @param array $vars PATH 变量
+     * @param bool|string $suffix 后缀
+     * @param bool|string $domain 域名
+     */
+    function plguri(string $url = '', array $vars = [], $suffix = true, $domain = false): string
+    {
+        $encode = encode(RequestContext::instance()->pluginCode());
+        $target = Url::normalizeWebTarget($url);
+        return sysuri('/system/plugin/layout', ['encode' => $encode], false)
             . '#'
             . Library::$sapp->route->buildUrl($target, $vars)->suffix($suffix)->domain($domain)->build();
     }
@@ -107,5 +127,22 @@ if (!function_exists('sysoplog')) {
     function sysoplog(string $action, string $content): bool
     {
         return SystemContext::instance()->setOplog($action, $content);
+    }
+}
+
+if (!function_exists('admin_menu_filter')) {
+    /**
+     * 运行时过滤后台菜单
+     */
+    function admin_menu_filter(array $menus): array
+    {
+        if (PluginCenterService::isMenuVisible()) {
+            return $menus;
+        }
+
+        return array_values(array_filter($menus, static function (array $menu): bool {
+            return strval($menu['node'] ?? '') !== 'system/plugin/index'
+                && strval($menu['url'] ?? '') !== 'system/plugin/index';
+        }));
     }
 }

@@ -30,7 +30,6 @@
     "workerman/workerman": "^5.1.9",
     "zoujingli/think-plugs-account": "^8.0",
     "zoujingli/think-plugs-builder": "^8.0",
-    "zoujingli/think-plugs-center": "^8.0",
     "zoujingli/think-plugs-helper": "^8.0",
     "zoujingli/think-plugs-payment": "^8.0",
     "zoujingli/think-plugs-storage": "^8.0",
@@ -105,10 +104,6 @@
     {
       "type": "path",
       "url": "plugin/think-plugs-system"
-    },
-    {
-      "type": "path",
-      "url": "plugin/think-plugs-center"
     },
     {
       "type": "path",

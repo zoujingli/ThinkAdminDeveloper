@@ -30,6 +30,35 @@
             </div>
         </div>
 
+        <div class="layui-row layui-col-space15 margin-bottom-5">
+            <div class="layui-col-xs4 padding-bottom-0">
+                <div class="help-label label-required-prev"><b>插件中心状态</b>Center Status</div>
+                <select class="layui-select" name="plugin_center_enabled">
+                    <option value="1" {:intval($pluginCenter['enabled'] ?? 1) === 1 ? 'selected' : ''}>启用</option>
+                    <option value="0" {:intval($pluginCenter['enabled'] ?? 1) === 0 ? 'selected' : ''}>禁用</option>
+                </select>
+            </div>
+            <div class="layui-col-xs4 padding-bottom-0">
+                <div class="help-label label-required-prev"><b>菜单显示策略</b>Menu Display</div>
+                <select class="layui-select" name="plugin_center_show_menu">
+                    <option value="1" {:intval($pluginCenter['show_menu'] ?? 1) === 1 ? 'selected' : ''}>显示菜单节点</option>
+                    <option value="0" {:intval($pluginCenter['show_menu'] ?? 1) === 0 ? 'selected' : ''}>隐藏菜单节点</option>
+                </select>
+            </div>
+            <div class="layui-col-xs4 padding-bottom-0">
+                <div class="help-label label-required-prev"><b>默认插件入口</b>Default Entry</div>
+                <select class="layui-select" name="plugin_center_default">
+                    <option value="">不设置默认入口</option>
+                    {foreach $pluginCenterApps as $code=>$label}
+                    <option value="{$code}" {:strval($pluginCenter['default'] ?? '') === strval($code) ? 'selected' : ''}>{$label}</option>
+                    {/foreach}
+                </select>
+            </div>
+            <div class="layui-col-xs12 padding-top-0 padding-bottom-0">
+                <span class="help-block">插件中心能力已并入系统管理，统一使用 <code>system/plugin/index</code> 与 <code>system/plugin/layout</code> 入口；这里可以直接控制启用状态、菜单展示和默认插件跳转。</span>
+            </div>
+        </div>
+
         <div class="layui-form-item margin-bottom-5">
             <div class="help-label"><b>{:lang('登录背景图片')}</b>Background Image</div>
             <div class="layui-textarea help-images">

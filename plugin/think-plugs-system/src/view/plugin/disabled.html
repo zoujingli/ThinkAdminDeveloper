@@ -1,0 +1,12 @@
+{extend name='main'}
+
+{block name='content'}
+<div class="think-box-notify" type="info">
+    <b>插件中心已禁用</b>
+    <span>当前入口已并入系统管理，可在“系统参数配置”中重新启用或隐藏菜单。</span>
+</div>
+{/block}
+
+{block name='button'}
+<a class="layui-btn layui-btn-sm layui-btn-primary" data-modal="{:sysuri('system/config/system')}">系统参数配置</a>
+{/block}

@@ -72,19 +72,31 @@ class CommonFunctionsTest extends TestCase
         }
     }
 
+    public function testPlguriIsLoadedFromSystemPackage(): void
+    {
+        $this->assertTrue(function_exists('plguri'));
+
+        $reflection = new \ReflectionFunction('plguri');
+
+        $this->assertSame(
+            realpath(TEST_PROJECT_ROOT . '/plugin/think-plugs-system/src/common.php'),
+            realpath((string)$reflection->getFileName())
+        );
+    }
+
     public function testSysuriAndUrlBuildSupportShortWebPaths(): void
     {
         $this->assertSame('/system', Url::normalizeWebTarget('system/index/index'));
-        $this->assertSame('/center?from=force', Url::normalizeWebTarget('/center/index/index?from=force'));
-        $this->assertSame('/center/layout?encode=test', Url::normalizeWebTarget('/center/layout?encode=test'));
+        $this->assertSame('/system/plugin?from=force', Url::normalizeWebTarget('/system/plugin/index?from=force'));
+        $this->assertSame('/system/plugin/layout?encode=test', Url::normalizeWebTarget('/system/plugin/layout?encode=test'));
         $this->assertSame('/system.html', sysuri('system/index/index'));
         $this->assertSame('/system.html', sysuri('/system/index/index'));
         $this->assertSame('/system/login.html', sysuri('/system/login/index'));
-        $this->assertSame('/center/layout?encode=test', sysuri('/center/layout', ['encode' => 'test'], false));
-        $this->assertSame('/center.html?from=force', sysuri('/center/index/index', ['from' => 'force']));
-        $this->assertSame('/center.html', sysuri('/center/index/index'));
-        $this->assertSame('/center.html', url('center/index/index')->build());
-        $this->assertSame('/center.html', url('/center/index/index')->build());
+        $this->assertSame('/system/plugin/layout?encode=test', sysuri('/system/plugin/layout', ['encode' => 'test'], false));
+        $this->assertSame('/system/plugin.html?from=force', sysuri('/system/plugin/index', ['from' => 'force']));
+        $this->assertSame('/system/plugin.html', sysuri('/system/plugin/index'));
+        $this->assertSame('/system/plugin.html', url('system/plugin/index')->build());
+        $this->assertSame('/system/plugin.html', url('/system/plugin/index')->build());
 
         AppService::activatePlugin('system', 'system');
 

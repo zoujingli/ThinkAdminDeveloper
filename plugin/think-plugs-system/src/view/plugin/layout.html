@@ -2,7 +2,7 @@
 <html lang="zh">
 
 <head>
-    <title>{block name="title"}{$title|default=''}{if !empty($title)} · {/if}{:sysconf('site_name')}{/block}</title>
+    <title>{block name="title"}{$title|default=''}{if !empty($title)} - {/if}{:sysconf('site_name')}{/block}</title>
     <meta charset="utf-8">
     <meta name="renderer" content="webkit">
     <meta name="format-detection" content="telephone=no">
@@ -12,49 +12,39 @@
     <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=0.4">
     <link rel="stylesheet" href="__ROOT__/static/plugs/layui/css/layui.css?at={:date('md')}">
     <link rel="stylesheet" href="__ROOT__/static/theme/css/iconfont.css?at={:date('md')}">
-    <link rel="stylesheet" href="__ROOT__/static/theme/css/console.css?at={:date('md')}">
-    <link rel="stylesheet" href="__ROOT__/static/extra/style.css?at={:date('md')}">
     {if file_exists(syspath("public/static/extra/icon/iconfont.css"))}
     <link rel="stylesheet" href="__ROOT__/static/extra/icon/iconfont.css?at={:date('md')}">
     {/if}
+    <link rel="stylesheet" href="__ROOT__/static/theme/css/console.css?at={:date('md')}">
+    <link rel="stylesheet" href="__ROOT__/static/extra/style.css?at={:date('md')}">
     {block name="style"}{/block}
     <script src="__ROOT__/static/plugs/jquery/pace.min.js"></script>
+    <script>
+        window.taTokenValue = {$tokenValueJson|default='""'|raw};
+    </script>
     <script src="{:apiuri('system/plugs/script',[],false,false)}"></script>
 </head>
 
 <body class="layui-layout-body layui-layout-theme-{$theme|default='default'}">
-
-{block name='body'}
 <div class="layui-layout layui-layout-admin layui-layout-left-hide">
 
-    <!-- 左则菜单 开始 -->
-    {include file="layout/index-left"}
-    <!-- 左则菜单 结束 -->
+    {include file="index/index-left"}
+    {include file='index/index-top'}
 
-    <!-- 顶部菜单 开始 -->
-    {include file='layout/index-top'}
-    <!-- 顶部菜单 结束 -->
-
-    <!-- 主体内容 开始 -->
     <div class="layui-body">
         <div class="think-page-body">
             {block name='content'}{/block}
         </div>
-        <!-- 页面加载动画 -->
         <div class="think-page-loader layui-hide">
             <div class="loader"></div>
         </div>
     </div>
-    <!-- 主体内容 结束 -->
 </div>
 
-<!-- 加载动画 开始 -->
 <div class="think-page-loader">
     <div class="loader"></div>
 </div>
-<!-- 加载动画 结束 -->
 
-{/block}
 <script src="__ROOT__/static/plugs/layui/layui.js"></script>
 <script src="__ROOT__/static/system.js"></script>
 <script src="__ROOT__/static/extra/script.js"></script>

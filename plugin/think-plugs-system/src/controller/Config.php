@@ -21,6 +21,7 @@ declare(strict_types=1);
 namespace plugin\system\controller;
 
 use plugin\storage\service\StorageConfig;
+use plugin\system\service\PluginCenterService;
 use plugin\system\service\SystemAuthService;
 use plugin\system\service\SystemService;
 use plugin\system\service\UserService;
@@ -132,10 +133,18 @@ class Config extends Controller
         if ($this->request->isGet()) {
             $this->title = '修改系统参数';
             $this->themes = static::themeCatalog;
+            $this->pluginCenter = PluginCenterService::getConfig();
+            $this->pluginCenterApps = PluginCenterService::getSelectableApps();
             $this->fetch();
         } else {
             $post = $this->request->post();
             unset($post['xpath']);
+            PluginCenterService::setConfig([
+                'enabled' => intval($post['plugin_center_enabled'] ?? 1),
+                'show_menu' => intval($post['plugin_center_show_menu'] ?? 1),
+                'default' => strval($post['plugin_center_default'] ?? ''),
+            ]);
+            unset($post['plugin_center_enabled'], $post['plugin_center_show_menu'], $post['plugin_center_default']);
             // 修改网站 ICON 图标，替换 public/favicon.ico
             if (preg_match('#^https?://#', $post['site_icon'] ?? '')) {
                 try {

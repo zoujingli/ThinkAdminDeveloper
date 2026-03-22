@@ -1,0 +1,102 @@
+{extend name='main'}
+
+{block name='button'}
+<a class="layui-btn layui-btn-sm layui-btn-primary" data-modal="{:sysuri('system/config/system')}">中心配置</a>
+{/block}
+
+{block name='content'}
+<div class="plugin-center-page">
+    <section class="plugin-center-hero">
+        <div class="plugin-center-hero__content">
+            <div class="plugin-center-hero__eyebrow">系统插件中心</div>
+            <h2 class="plugin-center-hero__title">插件中心</h2>
+            <div class="plugin-center-hero__desc">统一查看已安装插件，直接进入可用工作台，并在系统参数中管理默认入口与菜单展示策略。</div>
+        </div>
+        <div class="plugin-center-hero__stats">
+            <div class="plugin-center-stat">
+                <div class="plugin-center-stat__label">插件数量</div>
+                <div class="plugin-center-stat__value">{:count($items)}</div>
+            </div>
+            <div class="plugin-center-stat">
+                <div class="plugin-center-stat__label">默认入口</div>
+                <div class="plugin-center-stat__value plugin-center-stat__value--code">{:empty($default) ? '未设置' : $default}</div>
+            </div>
+        </div>
+    </section>
+
+    <div class="plugin-center-grid">
+        {foreach :array_values($items) as $k=>$item}
+        <div class="plugin-center-grid__item">
+            <article class="plugin-card {if isset($default) and $default eq $item.code}is-default{/if}" data-tone="{:($k % 6) + 1}" style="--plugin-delay:{:number_format(($k % 8) * 0.06, 2)}s;">
+                <div class="plugin-card__cover {notempty name='item.cover'}has-cover uploadimage{/notempty}" {notempty name='item.cover'}data-lazy-src="{$item.cover|default=''}"{/notempty} data-plugs-click="{$item.encode}">
+                    <div class="plugin-card__cover-mask"></div>
+                    <div class="plugin-card__badges">
+                        <span class="plugin-card__badge plugin-card__badge--ghost">{$item.code|default=''}</span>
+                        {notempty name='item.version'}
+                        <span class="plugin-card__badge">v{$item.version|default=''}</span>
+                        {/notempty}
+                        {if isset($default) and $default eq $item.code}
+                        <span class="plugin-card__badge plugin-card__badge--accent">默认入口</span>
+                        {/if}
+                    </div>
+                    <div class="plugin-card__cover-main">
+                        <div class="plugin-card__cover-kicker">插件工作台</div>
+                        <div class="plugin-card__cover-title">{$item.name}</div>
+                        <div class="plugin-card__cover-hint">{:count($item['plugmenus']) > 0 ? '点击卡片可直接进入插件' : '当前插件未配置可见菜单'}</div>
+                    </div>
+                </div>
+                <div class="plugin-card__body">
+                    <div class="plugin-card__title-row">
+                        <div class="plugin-card__title">{$item.name}</div>
+                        {if isset($item['license']) and $item['license'] neq '' and $item['license'] neq 'unknow'}
+                        <div class="plugin-card__tag">{:strtoupper((string)$item['license'])}</div>
+                        {/if}
+                    </div>
+                    <div class="plugin-card__desc">{:empty($item['remark']) ? '暂无插件说明，当前页面仅展示插件入口与管理能力。' : $item['remark']}</div>
+                    <div class="plugin-card__meta">
+                        <div class="plugin-card__meta-item">
+                            <span class="plugin-card__meta-label">菜单</span>
+                            <span class="plugin-card__meta-value">{:count($item['plugmenus'])} 项</span>
+                        </div>
+                        <div class="plugin-card__meta-item">
+                            <span class="plugin-card__meta-label">平台</span>
+                            <span class="plugin-card__meta-value" title="{:empty($item['platforms']) ? '通用后台' : implode(' / ', $item['platforms'])}">{:empty($item['platforms']) ? '通用后台' : implode(' / ', $item['platforms'])}</span>
+                        </div>
+                    </div>
+                    <div class="plugin-card__footer">
+                        {notempty name='item.plugmenus'}
+                        <a class="layui-btn layui-btn-sm plugin-card__action" id="p{$item.encode}" data-href="{$item.center}">进入插件</a>
+                        {if auth('system/plugin/setDefaultApp') and isset($default) and $default eq $item.code}
+                        <a class="layui-btn layui-btn-sm layui-btn-primary plugin-card__action plugin-card__action--ghost" data-action="{:url('system/plugin/setDefaultApp')}" data-value="default#">取消默认</a>
+                        {elseif auth('system/plugin/setDefaultApp')}
+                        <a class="layui-btn layui-btn-sm layui-btn-primary plugin-card__action plugin-card__action--ghost" data-action="{:url('system/plugin/setDefaultApp')}" data-value="default#{$item.code}">设为默认</a>
+                        {/if}
+                        {else}
+                        <span class="layui-btn layui-btn-sm layui-btn-disabled plugin-card__action plugin-card__action--disabled">未配置菜单</span>
+                        {/notempty}
+                    </div>
+                </div>
+            </article>
+        </div>
+        {/foreach}
+        {empty name='items'}
+        <div class="plugin-center-grid__item plugin-center-grid__item--empty">
+            <div class="plugin-empty">
+                <div class="plugin-empty__title">暂无可展示插件</div>
+                <div class="plugin-empty__desc">安装并配置菜单后，插件入口会出现在这里。</div>
+            </div>
+        </div>
+        {/empty}
+    </div>
+</div>
+{/block}
+
+{block name='script'}
+<script>
+    $(function () {
+        $('body').off('click', '[data-plugs-click]').on('click', '[data-plugs-click]', function () {
+            $('#p' + (this.dataset.plugsClick || 'plugin-encode')).trigger('click');
+        });
+    });
+</script>
+{/block}

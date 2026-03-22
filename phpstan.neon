@@ -12,7 +12,6 @@ parameters:
         - vendor/topthink/think-orm/src/helper.php
         - vendor/topthink/think-validate/src/helper.php
         - plugin/think-library/src/common.php
-        - plugin/think-plugs-center/src/common.php
         - plugin/think-plugs-system/src/common.php
         - plugin/think-plugs-worker/src/common.php
         - plugin/think-plugs-wemall/src/common.php

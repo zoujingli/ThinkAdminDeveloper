@@ -22,6 +22,7 @@ namespace think\admin\tests;
 
 use plugin\system\controller\Config as ConfigController;
 use plugin\system\model\SystemConfig;
+use plugin\system\model\SystemData;
 use plugin\system\model\SystemOplog;
 use plugin\system\service\SystemContext as PluginSystemContext;
 use think\admin\contract\SystemContextInterface;
@@ -45,10 +46,15 @@ class ConfigControllerTest extends SqliteIntegrationTestCase
             'site_copy' => 'Unit Test Copy',
             'site_icon' => '/upload/local-icon.png',
             'login_name' => '管理后台',
+            'plugin_center_enabled' => '0',
+            'plugin_center_show_menu' => '0',
+            'plugin_center_default' => 'storage',
             'xpath' => '/should-be-ignored',
         ]);
 
         $configs = SystemConfig::mk()->order('id asc')->column('value', 'name');
+        $pluginCenterRow = SystemData::mk()->where(['name' => 'system.plugin.center.config'])->findOrEmpty();
+        $pluginCenter = json_decode(strval($pluginCenterRow->getData('value')), true)[0] ?? [];
         $oplog = SystemOplog::mk()->order('id desc')->findOrEmpty();
 
         $this->assertSame(1, intval($result['code'] ?? 0));
@@ -60,6 +66,10 @@ class ConfigControllerTest extends SqliteIntegrationTestCase
         $this->assertSame('/upload/local-icon.png', $configs['site_icon'] ?? '');
         $this->assertSame('管理后台', $configs['login_name'] ?? '');
         $this->assertArrayNotHasKey('xpath', $configs);
+        $this->assertTrue($pluginCenterRow->isExists());
+        $this->assertSame(0, intval($pluginCenter['enabled'] ?? 1));
+        $this->assertSame(0, intval($pluginCenter['show_menu'] ?? 1));
+        $this->assertSame('storage', strval($pluginCenter['default'] ?? ''));
         $this->assertTrue($oplog->isExists());
         $this->assertSame('系统配置管理', $oplog->getData('action'));
         $this->assertSame('修改系统参数成功', $oplog->getData('content'));
@@ -97,6 +107,7 @@ class ConfigControllerTest extends SqliteIntegrationTestCase
     protected function defineSchema(): void
     {
         $this->createSystemConfigTable();
+        $this->createSystemDataTable();
         $this->createSystemOplogTable();
     }
 
