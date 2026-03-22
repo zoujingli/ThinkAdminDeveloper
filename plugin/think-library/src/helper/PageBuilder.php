@@ -35,141 +35,118 @@ class PageBuilder
 {
     /**
      * 当前控制器.
-     * @var Controller
      */
-    private $class;
+    private Controller $class;
 
     /**
      * 页面标题.
-     * @var string
      */
-    private $title = '';
+    private string $title = '';
 
     /**
      * 头部按钮 HTML.
-     * @var array
      */
-    private $buttons = [];
+    private array $buttons = [];
 
     /**
      * 头部按钮配置.
-     * @var array
      */
-    private $buttonItems = [];
+    private array $buttonItems = [];
 
     /**
      * 搜索字段配置.
-     * @var array
      */
-    private $searchFields = [];
+    private array $searchFields = [];
 
     /**
      * 搜索表单属性.
-     * @var array
      */
-    private $searchAttrs = [];
+    private array $searchAttrs = [];
 
     /**
      * 搜索图例.
-     * @var string
      */
-    private $searchLegend = '条件搜索';
+    private string $searchLegend = '条件搜索';
 
     /**
      * 是否显示搜索图例.
-     * @var bool
      */
-    private $searchLegendEnabled = true;
+    private bool $searchLegendEnabled = true;
 
     /**
      * 表格 ID.
-     * @var string
      */
-    private $tableId = 'PageDataTable';
+    private string $tableId = 'PageDataTable';
 
     /**
      * 表格 URL.
-     * @var string
      */
-    private $tableUrl;
+    private string $tableUrl;
 
     /**
      * 表格属性.
-     * @var array
      */
-    private $tableAttrs = [];
+    private array $tableAttrs = [];
 
     /**
      * 表格参数.
-     * @var array
      */
-    private $tableOptions = [];
+    private array $tableOptions = [];
 
     /**
      * 表格列配置.
-     * @var array
      */
-    private $columns = [];
+    private array $columns = [];
 
     /**
      * 行工具条模板 ID.
-     * @var string
      */
-    private $toolbarId = 'toolbar';
+    private string $toolbarId = 'toolbar';
 
     /**
      * 行工具条 HTML.
-     * @var array
      */
-    private $rowActions = [];
+    private array $rowActions = [];
 
     /**
      * 模板片段.
-     * @var array
      */
-    private $templates = [];
+    private array $templates = [];
 
     /**
      * 表格前内容.
-     * @var array
      */
-    private $beforeTable = [];
+    private array $beforeTable = [];
 
     /**
      * 表格后内容.
-     * @var array
      */
-    private $afterTable = [];
+    private array $afterTable = [];
 
     /**
      * 初始化前脚本.
-     * @var array
      */
-    private $bootScripts = [];
+    private array $bootScripts = [];
 
     /**
      * 初始化后脚本.
-     * @var array
      */
-    private $initScripts = [];
+    private array $initScripts = [];
 
     /**
      * 附加脚本.
-     * @var array
      */
-    private $scripts = [];
+    private array $scripts = [];
 
     /**
      * 内容包裹样式.
-     * @var string
      */
-    private $contentClass = 'think-box-shadow';
+    private string $contentClass = 'think-box-shadow';
 
     /**
      * 渲染时附带变量.
-     * @var array
      */
-    private $renderVars = [];
+    private array $renderVars = [];
 
     /**
      * PageBuilder 构造函数.

@@ -21,6 +21,7 @@ declare(strict_types=1);
 namespace think\admin\helper;
 
 use think\admin\Controller;
+use think\admin\Exception;
 use think\admin\Library;
 use think\exception\HttpResponseException;
 
@@ -49,75 +50,63 @@ class FormBuilder
 
     /**
      * 生成类型.
-     * @var string
      */
-    private $type;
+    private string $type;
 
     /**
      * 显示方式.
-     * @var string
      */
-    private $mode;
+    private string $mode;
 
     /**
      * 当前控制器.
-     * @var Controller
      */
-    private $class;
+    private Controller $class;
 
     /**
      * 提交地址
-     * @var string
      */
-    private $action;
+    private string $action;
 
     /**
      * 表单变量.
-     * @var string
      */
-    private $variable = '$vo';
+    private string $variable = '$vo';
 
     /**
      * 表单项目 HTML.
-     * @var array
      */
-    private $fields = [];
+    private array $fields = [];
 
     /**
      * 表单项目规则.
-     * @var array
      */
-    private $items = [];
+    private array $items = [];
 
     /**
      * 按钮 HTML.
-     * @var array
      */
-    private $buttons = [];
+    private array $buttons = [];
 
     /**
      * 按钮配置.
-     * @var array
      */
-    private $buttonItems = [];
+    private array $buttonItems = [];
 
     /**
      * 附加脚本.
-     * @var array
      */
-    private $scripts = [];
+    private array $scripts = [];
 
     /**
      * _vali 兼容规则.
-     * @var array
      */
-    private $rules = [];
+    private array $rules = [];
 
     /**
      * 表单附加属性.
-     * @var array
      */
-    private $formAttrs = [];
+    private array $formAttrs = [];
 
     /**
      * 构造函数.
@@ -199,11 +188,12 @@ class FormBuilder
     /**
      * 使用收集到的规则验证请求数据.
      *
-     * @param mixed $input 输入数据 (默认为空，自动从请求获取)
+     * @param array|string $input 输入数据 (默认为空，自动从请求获取)
      * @param null|callable $callable 自定义验证回调
      * @return array 验证后的数据
+     * @throws Exception
      */
-    public function validate($input = '', ?callable $callable = null): array
+    public function validate(array|string $input = '', ?callable $callable = null): array
     {
         return ValidateHelper::instance()->init($this->getRequestRules(), $input, $callable);
     }
@@ -607,7 +597,7 @@ class FormBuilder
     /**
      * 解析字段默认值，确保可回填全部输入字段.
      */
-    private function resolveFieldDefault(array $field)
+    private function resolveFieldDefault(array $field): array|string
     {
         return $field['type'] === 'checkbox' ? [] : '';
     }
@@ -732,7 +722,7 @@ class FormBuilder
     {
         $rules = [];
         foreach ($this->rules as $rule => $message) {
-            if (strpos($rule, "{$name}.") === 0) {
+            if (str_starts_with($rule, "{$name}.")) {
                 $rules[$rule] = $message;
             }
         }
