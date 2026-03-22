@@ -36,33 +36,9 @@ use think\admin\Storage;
  */
 class Config extends Controller
 {
-    public const themes = [
-        'default' => '默认青 0',
-        'white' => '极简白 0',
-        'red-1' => '绛霞红 1',
-        'blue-1' => '深空蓝 1',
-        'green-1' => '翡翠绿 1',
-        'black-1' => '石墨黑 1',
-        'navy-1' => '夜幕蓝 1',
-        'amber-1' => '琥珀金 1',
-        'violet-1' => '流光紫 1',
-        'rose-1' => '玫影粉 1',
-        'lime-1' => '青柠绿 1',
-        'indigo-1' => '靛夜蓝 1',
-        'glacier-1' => '冰川蓝 1',
-        'red-2' => '绛霞红 2',
-        'blue-2' => '深空蓝 2',
-        'green-2' => '翡翠绿 2',
-        'black-2' => '石墨黑 2',
-        'slate-2' => '雾岩灰 2',
-        'ocean-2' => '深海青 2',
-        'sunset-2' => '晚霞橙 2',
-        'rose-2' => '玫影粉 2',
-        'lime-2' => '青柠绿 2',
-        'indigo-2' => '靛夜蓝 2',
-        'glacier-2' => '冰川蓝 2',
-    ];
-
+    /**
+     * 系统参数配置.
+     */
     public const themeCatalog = [
         'default' => ['label' => '默认青 0', 'layout' => 'classic', 'layout_label' => '标准', 'primary' => '#009688', 'header' => '#FFFFFF', 'side' => '#20222A', 'surface' => '#FFFFFF', 'body' => '#F4F7FB'],
         'white' => ['label' => '极简白 0', 'layout' => 'classic', 'layout_label' => '标准', 'primary' => '#16A34A', 'header' => '#FFFFFF', 'side' => '#FFFFFF', 'surface' => '#FFFFFF', 'body' => '#F8FAFC'],
@@ -119,6 +95,11 @@ class Config extends Controller
         $this->fetch();
     }
 
+    /**
+     * 修改系统参数.
+     * @auth true
+     * @menu true
+     */
     public function system()
     {
         if ($this->request->isGet()) {
@@ -207,6 +188,9 @@ class Config extends Controller
         $this->success('存储配置保存成功。', system_uri('system/config/storage'));
     }
 
+    /**
+     * 授权存储配置查看.
+     */
     private function authorizeStorageView(): void
     {
         if ($this->canViewStorage()) {
@@ -215,6 +199,9 @@ class Config extends Controller
         $this->error('抱歉，没有访问该操作的权限！');
     }
 
+    /**
+     * 授权存储配置管理.
+     */
     private function authorizeStorageManage(): void
     {
         if ($this->canManageStorage()) {
@@ -223,6 +210,9 @@ class Config extends Controller
         $this->error('抱歉，没有访问该操作的权限！');
     }
 
+    /**
+     * 是否允许查看存储配置.
+     */
     private function canViewStorage(): bool
     {
         return SystemAuthService::isSuper()
@@ -231,6 +221,9 @@ class Config extends Controller
             || $this->canManageStorage();
     }
 
+    /**
+     * 是否允许管理存储配置.
+     */
     private function canManageStorage(): bool
     {
         return SystemAuthService::isSuper()
@@ -240,6 +233,9 @@ class Config extends Controller
             || SystemAuthService::check('system/file/distinct');
     }
 
+    /**
+     * 获取系统站点配置.
+     */
     private function siteConfig(): array
     {
         $site = array_replace_recursive([
@@ -275,6 +271,9 @@ class Config extends Controller
         return $site;
     }
 
+    /**
+     * 获取系统安全配置.
+     */
     private function securityConfig(): array
     {
         $security = array_replace_recursive([
@@ -289,6 +288,9 @@ class Config extends Controller
         return $security;
     }
 
+    /**
+     * 获取系统运行配置.
+     */
     private function runtimeConfig(): array
     {
         $runtime = array_replace_recursive([
@@ -305,6 +307,9 @@ class Config extends Controller
         return $runtime;
     }
 
+    /**
+     * 规范化系统站点配置.
+     */
     private function normalizeSiteConfig(array $data): array
     {
         $site = array_replace_recursive($this->siteConfig(), $data);
@@ -341,6 +346,9 @@ class Config extends Controller
         return $site;
     }
 
+    /**
+     * 规范化系统安全配置.
+     */
     private function normalizeSecurityConfig(array $data): array
     {
         $security = array_replace_recursive($this->securityConfig(), $data);
@@ -351,6 +359,9 @@ class Config extends Controller
         return $security;
     }
 
+    /**
+     * 规范化系统运行配置.
+     */
     private function normalizeRuntimeConfig(array $data): array
     {
         $runtime = array_replace_recursive($this->runtimeConfig(), $data);
@@ -362,6 +373,9 @@ class Config extends Controller
         return $runtime;
     }
 
+    /**
+     * 规范化系统存储配置.
+     */
     private function normalizeStorageConfig(array $data): array
     {
         if (isset($data['allowed_extensions_text']) && !isset($data['allowed_extensions'])) {

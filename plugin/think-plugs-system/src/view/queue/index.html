@@ -148,9 +148,9 @@
                 {
                     field: 'id', title: '{:lang("任务名称")}', width: '25%', sort: true, templet: function (d) {
                         if (d.loops_time > 0) {
-                            d.one = '<span class="layui-badge think-bg-blue">循环</span>';
+                            d.one = '<span class="pull-left layui-badge layui-badge-middle think-bg-blue">循环</span>';
                         } else {
-                            d.one = '<span class="layui-badge think-bg-red">单次</span>';
+                            d.one = '<span class="pull-left layui-badge layui-badge-middle think-bg-red">单次</span>';
                         }
                         return laytpl('{{-d.one}}任务编号：<b>{{d.code}}</b><br>任务名称：{{d.title}}').render(d);
                     }
