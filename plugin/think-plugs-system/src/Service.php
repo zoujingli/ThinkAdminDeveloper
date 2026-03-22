@@ -24,7 +24,6 @@ use plugin\system\middleware\JwtTokenAuth;
 use plugin\system\middleware\RbacAccess;
 use plugin\system\service\SystemContext as PluginSystemContext;
 use think\admin\contract\SystemContextInterface;
-use think\admin\Library;
 use think\admin\Plugin;
 use think\admin\runtime\RequestTokenService;
 use think\middleware\LoadLangPack;
@@ -40,8 +39,6 @@ class Service extends Plugin
      */
     public function register(): void
     {
-        Library::load(__DIR__ . '/common.php');
-        $this->app->config->set(include __DIR__ . '/storage/extra/config.php', 'think_plugs_storage');
         $this->app->bind(SystemContextInterface::class, PluginSystemContext::class);
     }
 

@@ -41,10 +41,12 @@ plugin/think-plugs-system/src/storage/
 ├── StorageManager.php       # 存储管理器
 ├── StorageAuthorize.php     # 上传授权管理
 ├── StorageConfig.php        # 存储配置管理
-├── config.php               # 存储配置
-├── mimes.php                # MIME 类型配置
-└── upload.js                # 前端上传脚本
+└── extra/
+    ├── mimes.php            # MIME 类型配置
+    └── upload.js            # 前端上传脚本
 ```
+
+运行期由 ThinkPHP 加载 `config/storage.php` 为 `storage` 配置（与 `think-plugs-static` 将 `stc/config/*.php` 发布到项目 `config`、按文件名作为配置键的惯例一致，无 `think_plugs_*` 第二套键）。`StorageConfig::registry()` 使用 `config('storage')`。插件内 `stc/config/storage.php` 仅作发布模板，由 `php think xadmin:publish` 或 `extra.think.config` 同步到项目 `config`。
 
 ## 数据表归属
 
@@ -253,8 +255,8 @@ php think config:get storage
    - 迁移脚本在 System 的 stc/database 目录
 
 3. **配置路径**
-   - 存储配置仍在 `config/storage.php`
-   - 但由 System 组件统一管理
+   - 运行期：框架 `loadConfig()` 加载 `config/storage.php` → `config('storage')`（与 static 插件对 `cache`/`app` 等键的用法一致）
+   - 插件 `stc/config/storage.php` 作发布模板；`composer.json` 中 `extra.think.config.storage` 可在发布解析时补全缺失的 `config/storage.php`
 
 4. **向后兼容**
    - 建议尽快更新代码引用

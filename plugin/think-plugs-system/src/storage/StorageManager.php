@@ -24,25 +24,27 @@ use think\admin\Exception;
 use think\App;
 use think\Container;
 
+/**
+ * 存储门面：从 `config('storage')` 解析驱动，并生成上传授权、MIME 等运行时数据。
+ * @class StorageManager
+ */
 class StorageManager
 {
     public function __construct(protected App $app) {}
 
+    /**
+     * 全部已注册存储驱动定义（含 class、label、authorize 等）。
+     * @return array<string, array<string, mixed>>
+     */
     public function drivers(): array
     {
-        $drivers = $this->app->config->get('think_plugs_storage.drivers', []);
-        if (count($drivers) > 0) {
-            return $drivers;
-        }
-        $file = __DIR__ . '/extra/config.php';
-        if (is_file($file)) {
-            $config = include $file;
-            $this->app->config->set($config, 'think_plugs_storage');
-            return $config['drivers'] ?? [];
-        }
-        return [];
+        return (array)$this->app->config->get('storage.drivers', []);
     }
 
+    /**
+     * 指定名称的驱动定义，含归一化后的 `name` 键。
+     * @throws Exception 驱动不存在时
+     */
     public function driver(?string $name = null): array
     {
         $name = $this->driverName($name);
@@ -53,12 +55,19 @@ class StorageManager
         throw new Exception("Storage driver [{$name}] does not exist.");
     }
 
+    /**
+     * 解析当前或默认驱动名（结合 sysdata 与 config 默认）。
+     */
     public function driverName(?string $name = null): string
     {
-        $name = strtolower((string)($name ?: StorageConfig::global('driver', $this->app->config->get('think_plugs_storage.default', 'local'))));
+        $name = strtolower((string)($name ?: StorageConfig::global('driver', $this->app->config->get('storage.default', 'local'))));
         return $name ?: 'local';
     }
 
+    /**
+     * 驱动实现类 FQCN，用于容器实例化。
+     * @throws Exception 类不可用时
+     */
     public function driverClass(?string $name = null): string
     {
         $driver = $this->driver($name);
@@ -70,6 +79,10 @@ class StorageManager
         return $class;
     }
 
+    /**
+     * 驱动编码 => 展示标题（经 lang 包装）。
+     * @return array<string, string>
+     */
     public function types(): array
     {
         $types = [];
@@ -80,6 +93,9 @@ class StorageManager
         return $types;
     }
 
+    /**
+     * 对象存储地域/节点列表（驱动配置或回调返回）。
+     */
     public function regions(string $name): array
     {
         $regions = $this->driver($name)['regions'] ?? null;
@@ -89,11 +105,17 @@ class StorageManager
         return is_array($regions) ? $regions : [];
     }
 
+    /**
+     * 后台存储配置页对应视图模板标识。
+     */
     public function template(string $name): string
     {
         return $this->driver($name)['template'] ?? "storage-{$name}";
     }
 
+    /**
+     * 生成前端直传所需字段（url、token、policy 等，依驱动而定）。
+     */
     public function authorize(string $name, string $key, bool $safe = false, ?string $attname = null, string $hash = ''): array
     {
         $authorize = $this->driver($name)['authorize'] ?? null;
@@ -104,6 +126,9 @@ class StorageManager
         return (array)call_user_func($authorize, $storage, $key, $safe, $attname, $hash);
     }
 
+    /**
+     * 上传允许的 MIME 类型表（来自 extra/mimes.php，静态缓存）。
+     */
     public function mimes(): array
     {
         static $mimes = [];

@@ -41,7 +41,10 @@
         "think": {
             "services": [
                 "plugin\\system\\Service"
-            ]
+            ],
+            "config": {
+                "storage": "stc/config/storage.php"
+            }
         },
         "xadmin": {
             "menu": {
