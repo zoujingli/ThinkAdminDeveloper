@@ -29,7 +29,6 @@
       "publish": {
         "init": {
           "stc/.env.example": ".env.example",
-          "stc/app/model/.gitkeep": "app/model/.gitkeep",
           "stc/class/Index.php": "app/index/controller/Index.php",
           "stc/route/.gitkeep": "route/.gitkeep",
           "stc/public/router.php": "public/router.php",
