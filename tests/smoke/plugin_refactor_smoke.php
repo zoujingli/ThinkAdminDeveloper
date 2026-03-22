@@ -28,7 +28,6 @@ require dirname(__DIR__, 2) . '/vendor/topthink/framework/src/helper.php';
 
 $projectRoot = dirname(__DIR__, 2);
 
-assertHelperOwner('sysconf', $projectRoot . '/plugin/think-plugs-system/src/common.php');
 assertHelperOwner('sysdata', $projectRoot . '/plugin/think-plugs-system/src/common.php');
 assertHelperOwner('sysoplog', $projectRoot . '/plugin/think-plugs-system/src/common.php');
 assertHelperOwner('sysqueue', $projectRoot . '/plugin/think-plugs-worker/src/common.php');
@@ -157,7 +156,6 @@ function runInstallSmoke(string $projectRoot): void
 
         foreach ([
             'database/migrations/20241010000001_install_system20241010.php',
-            'database/migrations/20241010000002_install_storage20241010.php',
             'database/migrations/20241010000008_install_worker20241010.php',
             'public/static/system.js',
             'config/database.php',
@@ -171,7 +169,6 @@ function runInstallSmoke(string $projectRoot): void
             'system_auth_node',
             'system_menu',
             'system_user',
-            'system_config',
             'system_data',
             'system_base',
             'system_oplog',
@@ -182,8 +179,8 @@ function runInstallSmoke(string $projectRoot): void
             assertTrue(!empty($count), "missing installed table {$table}");
         }
 
-        $configRows = intval($db->query('select count(*) from system_config')->fetchColumn());
-        assertTrue($configRows >= 8, 'system_config seed rows should be initialized');
+        $dataRows = intval($db->query('select count(*) from system_data')->fetchColumn());
+        assertTrue($dataRows >= 4, 'system_data seed rows should be initialized');
         $db = null;
     } finally {
         removeTree($root);

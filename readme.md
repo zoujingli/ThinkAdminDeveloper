@@ -59,7 +59,7 @@ flowchart TD
   系统后台组件，提供后台壳层、认证权限、菜单用户和 `system_*` 核心能力。
   - 命名空间：`plugin\system\`
   - 服务注册：`plugin\system\Service`
-  - 数据表：`system_auth`, `system_auth_node`, `system_menu`, `system_user`, `system_config`, `system_data`, `system_base`, `system_oplog`
+  - 数据表：`system_auth`, `system_auth_node`, `system_menu`, `system_user`, `system_data`, `system_base`, `system_oplog`
   - 默认菜单：系统配置、系统数据、权限管理
 
 - **ThinkPlugsWorker** (`zoujingli/think-plugs-worker`)
@@ -325,7 +325,7 @@ php think xadmin:package
 当前约定为：
 
 - 每个插件只保留一份最终安装脚本
-- 根目录 `database/migrations` 视为发布产物
+- 根目录 `database/migrations` 视为发布产物，不纳入源码维护
 
 ## 平台说明
 

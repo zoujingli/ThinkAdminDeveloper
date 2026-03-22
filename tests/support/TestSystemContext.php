@@ -24,8 +24,6 @@ use think\admin\contract\SystemContextInterface;
 
 class TestSystemContext implements SystemContextInterface
 {
-    private array $config = [];
-
     private array $data = [];
 
     private array $user = [];
@@ -103,17 +101,6 @@ class TestSystemContext implements SystemContextInterface
     public function clearAuth(): bool
     {
         return true;
-    }
-
-    public function getConfig(string $name = '', string $default = '')
-    {
-        return $this->config[$name] ?? $default;
-    }
-
-    public function setConfig(string $name, $value = '')
-    {
-        $this->config[$name] = $value;
-        return $value;
     }
 
     public function getData(string $name, $default = [])

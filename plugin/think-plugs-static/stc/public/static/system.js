@@ -862,11 +862,11 @@ $(function () {
     $.layTable = new function () {
         this.showImage = function (image, circle, size, title) {
             if (typeof image !== 'string' || image.length < 5) {
-                return '<span class="color-desc">-</span>' + (title ? laytpl('<span class="margin-left-5">{{d.title}}</span>').render({title: title}) : '');
+                return '<span class="color-desc">-</span>' + (title ? laytpl('<span class="ml5">{{d.title}}</span>').render({title: title}) : '');
             }
             return laytpl('<div class="headimg {{d.class}} headimg-{{d.size}}" data-tips-image data-tips-hover data-lazy-src="{{d.image}}" style="{{d.style}}"></div>').render({
                 size: size || 'ss', class: circle ? 'shadow-inset' : 'headimg-no', image: image, style: 'background-image:url(' + image + ');margin-right:0'
-            }) + (title ? laytpl('<span class="margin-left-5">{{d.title}}</span>').render({title: title}) : '');
+            }) + (title ? laytpl('<span class="ml5">{{d.title}}</span>').render({title: title}) : '');
         }, this.render = function (tabldId) {
             return this.reload(tabldId, true);
         }, this.reload = function (tabldId, force) {
