@@ -46,7 +46,7 @@ plugin/think-plugs-system/src/storage/
     └── upload.js            # 前端上传脚本
 ```
 
-运行期由 ThinkPHP 加载 `config/storage.php` 为 `storage` 配置（与 `think-plugs-static` 将 `stc/config/*.php` 发布到项目 `config`、按文件名作为配置键的惯例一致，无 `think_plugs_*` 第二套键）。`StorageConfig::registry()` 使用 `config('storage')`。插件内 `stc/config/storage.php` 仅作发布模板，由 `php think xadmin:publish` 或 `extra.think.config` 同步到项目 `config`。
+驱动注册表（default / global / drivers 元数据）固定在 `StorageConfig::registryDefinition()` 中维护，**不再**使用 `config/storage.php`；用户在各驱动下填写的密钥、地域等仍保存在 sysdata(`system.storage`)。
 
 ## 数据表归属
 
@@ -255,8 +255,8 @@ php think config:get storage
    - 迁移脚本在 System 的 stc/database 目录
 
 3. **配置路径**
-   - 运行期：框架 `loadConfig()` 加载 `config/storage.php` → `config('storage')`（与 static 插件对 `cache`/`app` 等键的用法一致）
-   - 插件 `stc/config/storage.php` 作发布模板；`composer.json` 中 `extra.think.config.storage` 可在发布解析时补全缺失的 `config/storage.php`
+   - 驱动列表与字段结构：`plugin/think-plugs-system/src/storage/StorageConfig.php` 内 `registryDefinition()`
+   - 业务侧已保存参数：sysdata，经 `StorageConfig` 读写
 
 4. **向后兼容**
    - 建议尽快更新代码引用

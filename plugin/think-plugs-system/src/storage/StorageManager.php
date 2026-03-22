@@ -25,7 +25,7 @@ use think\App;
 use think\Container;
 
 /**
- * 存储门面：从 `config('storage')` 解析驱动，并生成上传授权、MIME 等运行时数据。
+ * 存储门面：从 {@see StorageConfig::registry()} 解析驱动，并生成上传授权、MIME 等运行时数据。
  * @class StorageManager
  */
 class StorageManager
@@ -38,7 +38,7 @@ class StorageManager
      */
     public function drivers(): array
     {
-        return (array)$this->app->config->get('storage.drivers', []);
+        return (array)(StorageConfig::registry()['drivers'] ?? []);
     }
 
     /**
@@ -60,7 +60,7 @@ class StorageManager
      */
     public function driverName(?string $name = null): string
     {
-        $name = strtolower((string)($name ?: StorageConfig::global('driver', $this->app->config->get('storage.default', 'local'))));
+        $name = strtolower((string)($name ?: StorageConfig::global('driver', strval(StorageConfig::registry()['default'] ?? 'local'))));
         return $name ?: 'local';
     }
 
