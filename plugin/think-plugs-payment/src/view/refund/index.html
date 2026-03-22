@@ -125,15 +125,15 @@
     {{# if(d.channel_type === 'voucher'){ }}
 
     {{# if(d.audit_status === 1){ }}
-    <a class="layui-btn layui-btn-sm ta-mt-20" data-modal="{:url('audit')}" data-value="id#{{d.id}}" data-title="支付凭证审核">凭证审核</a>
+    <a class="layui-btn layui-btn-sm mt20" data-modal="{:url('audit')}" data-value="id#{{d.id}}" data-title="支付凭证审核">凭证审核</a>
     {{# } else if(d.audit_status === 0){ }}
-    <a class="layui-btn layui-btn-sm ta-mt-20 layui-disabled">已经拒绝</a>
+    <a class="layui-btn layui-btn-sm mt20 layui-disabled">已经拒绝</a>
     {{# } else if(d.audit_status === 2){ }}
-    <a class="layui-btn layui-btn-sm ta-mt-20 layui-disabled">已经通过</a>
+    <a class="layui-btn layui-btn-sm mt20 layui-disabled">已经通过</a>
     {{# } }}
 
     {{#}else{ }}
-    <a class="layui-btn layui-btn-sm ta-mt-20 layui-disabled">无需操作</a>
+    <a class="layui-btn layui-btn-sm mt20 layui-disabled">无需操作</a>
     {{# } }}
     <!--{/if}-->
 </script>

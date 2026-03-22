@@ -39,7 +39,7 @@ use plugin\payment\service\contract\PaymentUsageTrait;
 use plugin\payment\service\Payment;
 use plugin\payment\service\payment\wechat\WechatPaymentV2;
 use plugin\payment\service\payment\wechat\WechatPaymentV3;
-use plugin\storage\service\LocalStorage;
+use plugin\system\storage\LocalStorage;
 
 /**
  * 微信商户支付调度.

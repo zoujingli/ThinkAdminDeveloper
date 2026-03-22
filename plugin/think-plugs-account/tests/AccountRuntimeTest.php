@@ -182,8 +182,6 @@ class AccountRuntimeTest extends TestCase
 
 class AccountRuntimeSystemContextStub implements SystemContextInterface
 {
-    private array $config = [];
-
     private array $data = [];
 
     public function buildToken(): string
@@ -244,17 +242,6 @@ class AccountRuntimeSystemContextStub implements SystemContextInterface
     public function clearAuth(): bool
     {
         return true;
-    }
-
-    public function getConfig(string $name = '', string $default = '')
-    {
-        return $this->config[$name] ?? $default;
-    }
-
-    public function setConfig(string $name, $value = '')
-    {
-        $this->config[$name] = $value;
-        return $value;
     }
 
     public function getData(string $name, $default = [])

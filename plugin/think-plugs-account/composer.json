@@ -18,7 +18,6 @@
         "ext-json": "*",
         "zoujingli/think-plugs-helper": "^8.0",
         "zoujingli/think-library": "^8.0",
-        "zoujingli/think-plugs-storage": "^8.0",
         "zoujingli/think-plugs-system": "^8.0",
         "zoujingli/think-plugs-wechat-client": "^8.0"
     },

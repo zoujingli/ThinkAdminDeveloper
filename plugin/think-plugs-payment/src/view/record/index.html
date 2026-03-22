@@ -66,7 +66,7 @@
                         tpls.push('支付类型：{{d.channel_type_name||"-"}} ' + (rstatus || (d.payment_status ? rnotify : '')));
                         tpls.push('交易单号：<b class="color-blue">{{d.payment_trade||"-"}}</b>');
                         tpls.push('操作描述：{{d.payment_remark||"-"}}');
-                        let badge = '<div class="layui-badge layui-badge-middle {{d.typeColor}} pull-left ta-mr-5">{{-d.typeInfo}}</div>';
+                        let badge = '<div class="layui-badge layui-badge-middle {{d.typeColor}} pull-left mr5">{{-d.typeInfo}}</div>';
                         return laytpl('<div class="nowrap">' + badge + tpls.join('<br>') + '</div>').render(d);
                     }
                 },
@@ -101,13 +101,13 @@
 
     <!-- {if auth('cancel')}-->
     {{#if(d.payment_status == 0 && d.refund_status < 2){}}
-    <!--<a class="layui-btn layui-btn-sm ta-mt-0 layui-disabled">不能取消</a>-->
+    <!--<a class="layui-btn layui-btn-sm mt0 layui-disabled">不能取消</a>-->
     {{#}else if(d.refund_status){}}
-    <a class="layui-btn layui-btn-sm ta-mt-0 layui-disabled">已经退款</a>
+    <a class="layui-btn layui-btn-sm mt0 layui-disabled">已经退款</a>
     {{#}else if(d.channel_type === 'voucher'){}}
-    <a class="layui-btn layui-btn-sm ta-mt-0 layui-btn-danger" data-confirm="确认要取消审核吗？" data-load="{:url('cancel')}" data-value="code#{{d.code}}">取消审核</a>
+    <a class="layui-btn layui-btn-sm mt0 layui-btn-danger" data-confirm="确认要取消审核吗？" data-load="{:url('cancel')}" data-value="code#{{d.code}}">取消审核</a>
     {{#}else{}}
-    <!-- <a class="layui-btn layui-btn-sm ta-mt-0 layui-btn-danger" data-confirm="确认要取消支付吗？" data-load="{:url('cancel')}" data-value="code#{{d.code}}">取消支付</a> -->
+    <!-- <a class="layui-btn layui-btn-sm mt0 layui-btn-danger" data-confirm="确认要取消支付吗？" data-load="{:url('cancel')}" data-value="code#{{d.code}}">取消支付</a> -->
     {{#}}}
     <br>
     <!-- {/if} -->
