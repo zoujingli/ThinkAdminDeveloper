@@ -27,7 +27,7 @@ use think\admin\service\AppService;
  * 系统内插件中心服务
  * @class PluginCenterService
  */
-abstract class PluginCenterService extends Service
+abstract class PluginService extends Service
 {
     public const CONFIG_KEY = 'system.plugin_center';
 

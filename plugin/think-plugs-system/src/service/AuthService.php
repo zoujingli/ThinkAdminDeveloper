@@ -40,7 +40,7 @@ use think\Request;
  * 系统权限管理服务
  * @class SystemAuthService
  */
-class SystemAuthService extends Service
+class AuthService extends Service
 {
     /**
      * 后台认证请求头.
@@ -79,9 +79,8 @@ class SystemAuthService extends Service
 
     /**
      * 自定义回调处理.
-     * @var array
      */
-    private static $checkCallables = [];
+    private static array $checkCallables = [];
 
     /**
      * 是否已经登录.
@@ -129,7 +128,7 @@ class SystemAuthService extends Service
      * @param null|mixed $default 默认值
      * @return array|mixed
      */
-    public static function getUser(?string $field = null, $default = null)
+    public static function getUser(?string $field = null, mixed $default = null): mixed
     {
         $user = self::currentUser();
         return is_null($field) ? $user : ($user[$field] ?? $default);
