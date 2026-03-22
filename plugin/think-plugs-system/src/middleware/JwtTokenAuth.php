@@ -20,7 +20,7 @@ declare(strict_types=1);
 
 namespace plugin\system\middleware;
 
-use plugin\system\service\SystemAuthService;
+use plugin\system\service\AuthService;
 use think\admin\runtime\RequestTokenService;
 use think\App;
 use think\Request;
@@ -34,9 +34,8 @@ class JwtTokenAuth
 {
     /**
      * 当前 App 对象
-     * @var App
      */
-    protected $app;
+    protected App $app;
 
     /**
      * Construct.
@@ -63,17 +62,17 @@ class JwtTokenAuth
 
         if ($token = RequestTokenService::systemToken($request)) {
             try {
-                SystemAuthService::resolve($token, true);
+                AuthService::resolve($token, true);
                 if (function_exists('worker_auth_should_debug') && worker_auth_should_debug($request->pathinfo(), $request->cookie(), $request->header())) {
                     worker_auth_debug('system.jwt.resolve.ok', [
                         'path' => $request->pathinfo(),
-                        'user_id' => SystemAuthService::getUserId(),
-                        'session_id' => SystemAuthService::currentSessionId(),
+                        'user_id' => AuthService::getUserId(),
+                        'session_id' => AuthService::currentSessionId(),
                         'token' => worker_auth_token_snapshot($token),
                     ]);
                 }
             } catch (\Throwable $exception) {
-                SystemAuthService::forget();
+                AuthService::forget();
                 RequestTokenService::forgetSystem($request);
                 if (function_exists('worker_auth_should_debug') && worker_auth_should_debug($request->pathinfo(), $request->cookie(), $request->header())) {
                     worker_auth_debug('system.jwt.resolve.fail', [
@@ -84,7 +83,7 @@ class JwtTokenAuth
                 }
             }
         } else {
-            SystemAuthService::forget();
+            AuthService::forget();
             if (function_exists('worker_auth_should_debug') && worker_auth_should_debug($request->pathinfo(), $request->cookie(), $request->header())) {
                 worker_auth_debug('system.jwt.missing', [
                     'path' => $request->pathinfo(),

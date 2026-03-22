@@ -21,7 +21,7 @@ declare(strict_types=1);
 namespace plugin\system\controller\api;
 
 use plugin\system\model\SystemData;
-use plugin\system\service\SystemAuthService;
+use plugin\system\service\AuthService;
 use think\admin\Controller;
 use think\admin\service\RuntimeService;
 use think\exception\HttpResponseException;
@@ -38,7 +38,7 @@ class System extends Controller
      */
     public function push()
     {
-        if (SystemAuthService::isSuper()) {
+        if (AuthService::isSuper()) {
             try {
                 RuntimeService::push() && sysoplog('系统运维管理', '刷新发布运行缓存');
                 $this->success('网站缓存加速成功！', 'javascript:location.reload()');
@@ -59,7 +59,7 @@ class System extends Controller
      */
     public function clear()
     {
-        if (SystemAuthService::isSuper()) {
+        if (AuthService::isSuper()) {
             try {
                 RuntimeService::clear() && sysoplog('系统运维管理', '清理网站日志缓存');
                 $this->success('清空日志缓存成功！', 'javascript:location.reload()');
@@ -80,7 +80,7 @@ class System extends Controller
      */
     public function debug()
     {
-        if (SystemAuthService::isSuper()) {
+        if (AuthService::isSuper()) {
             if (input('state')) {
                 RuntimeService::set('product');
                 sysoplog('系统运维管理', '开发模式切换为生产模式');
@@ -101,7 +101,7 @@ class System extends Controller
      */
     public function editor()
     {
-        if (SystemAuthService::isSuper()) {
+        if (AuthService::isSuper()) {
             $editor = input('editor', 'auto');
             sysdata('system.runtime.editor_driver', $editor);
             sysoplog('系统运维管理', "切换编辑器为{$editor}");
@@ -117,7 +117,7 @@ class System extends Controller
      */
     public function config()
     {
-        if (SystemAuthService::isSuper()) {
+        if (AuthService::isSuper()) {
             try {
                 $newdata = [];
                 foreach (SystemData::mk()->order('id asc')->cursor() as $item) {

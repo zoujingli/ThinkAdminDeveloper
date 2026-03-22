@@ -20,7 +20,7 @@ declare(strict_types=1);
 
 namespace plugin\system\controller\api;
 
-use plugin\system\service\SystemAuthService;
+use plugin\system\service\AuthService;
 use plugin\worker\model\SystemQueue;
 use Psr\Log\NullLogger;
 use think\admin\Controller;
@@ -38,7 +38,7 @@ class Queue extends Controller
      */
     public function stop()
     {
-        if (SystemAuthService::isSuper()) {
+        if (AuthService::isSuper()) {
             try {
                 $message = $this->app->console->call('xadmin:worker', ['stop', 'queue'])->fetch();
                 if (stripos($message, 'stop signal sent') !== false) {
@@ -66,7 +66,7 @@ class Queue extends Controller
      */
     public function start()
     {
-        if (SystemAuthService::isSuper()) {
+        if (AuthService::isSuper()) {
             try {
                 $message = $this->app->console->call('xadmin:worker', ['start', 'queue', '--daemon'])->fetch();
                 if (stripos($message, 'started successfully for pid') !== false) {
@@ -94,7 +94,7 @@ class Queue extends Controller
      */
     public function status()
     {
-        if (SystemAuthService::isSuper()) {
+        if (AuthService::isSuper()) {
             try {
                 $message = $this->app->console->call('xadmin:worker', ['status', 'queue'])->fetch();
                 if (preg_match('/process.*?\d+.*?running/i', $message)) {

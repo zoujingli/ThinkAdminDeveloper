@@ -23,7 +23,7 @@ namespace plugin\system\controller;
 use plugin\system\model\SystemAuth;
 use plugin\system\model\SystemBase;
 use plugin\system\model\SystemUser;
-use plugin\system\service\SystemAuthService;
+use plugin\system\service\AuthService;
 use plugin\system\service\UserService;
 use think\admin\Controller;
 use think\admin\helper\QueryHelper;
@@ -82,25 +82,24 @@ class User extends Controller
         if ($this->request->isGet()) {
             $this->verify = false;
             $builder->fetch(['vo' => UserService::loadPassUser(intval($this->request->param('id', 0)))]);
-            return;
-        }
+        } else {
+            $data = $builder->validate();
+            $data['id'] = intval($this->request->post('id', 0));
+            if ($data['id'] < 1) {
+                $this->error('用户ID不能为空！');
+            }
 
-        $data = $builder->validate();
-        $data['id'] = intval($this->request->post('id', 0));
-        if ($data['id'] < 1) {
-            $this->error('用户ID不能为空！');
-        }
+            $user = SystemUser::mk()->findOrEmpty($data['id']);
+            if ($user->isExists() && $user->save(['password' => UserService::hashPassword($data['password'])])) {
+                $this->app->event->trigger('PluginAdminChangePassword', [
+                    'uuid' => $data['id'], 'pass' => $data['password'],
+                ]);
+                sysoplog('系统用户管理', "修改用户[{$data['id']}]密码成功");
+                $this->success('密码修改成功，请使用新密码登录！', '');
+            }
 
-        $user = SystemUser::mk()->findOrEmpty($data['id']);
-        if ($user->isExists() && $user->save(['password' => UserService::hashPassword($data['password'])])) {
-            $this->app->event->trigger('PluginAdminChangePassword', [
-                'uuid' => $data['id'], 'pass' => $data['password'],
-            ]);
-            sysoplog('系统用户管理', "修改用户[{$data['id']}]密码成功");
-            $this->success('密码修改成功，请使用新密码登录！', '');
+            $this->error('密码修改失败，请稍候再试！');
         }
-
-        $this->error('密码修改失败，请稍候再试！');
     }
 
     /**
@@ -133,7 +132,7 @@ class User extends Controller
     {
         if ($this->request->isPost()) {
             empty($data['username']) && $this->error('登录账号不能为空！');
-            if ($data['username'] !== SystemAuthService::getSuperName()) {
+            if ($data['username'] !== AuthService::getSuperName()) {
                 empty($data['authorize']) && $this->error('未配置权限！');
             }
 
@@ -154,7 +153,7 @@ class User extends Controller
         $this->authGroups = $this->buildAuthGroups($this->auths);
         $this->bases = SystemBase::itemsWithPlugins('身份权限');
         $this->baseGroups = $this->buildBaseGroups($this->bases);
-        $this->super = SystemAuthService::getSuperName();
+        $this->super = AuthService::getSuperName();
     }
 
     private function _checkInput()

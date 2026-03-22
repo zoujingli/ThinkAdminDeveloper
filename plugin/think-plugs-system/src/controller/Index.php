@@ -21,8 +21,8 @@ declare(strict_types=1);
 namespace plugin\system\controller;
 
 use plugin\system\model\SystemUser;
+use plugin\system\service\AuthService;
 use plugin\system\service\MenuService;
-use plugin\system\service\SystemAuthService;
 use plugin\system\service\UserService;
 use think\admin\Controller;
 use think\admin\Exception;
@@ -45,16 +45,16 @@ class Index extends Controller
      */
     public function index()
     {
-        SystemAuthService::apply($this->app->isDebug());
+        AuthService::apply($this->app->isDebug());
         $this->menus = MenuService::getTree();
-        $this->login = SystemAuthService::isLogin();
+        $this->login = AuthService::isLogin();
         if (empty($this->menus) && empty($this->login)) {
             $this->redirect(sysuri('system/login/index'));
         } else {
             $this->title = '系统管理后台';
-            $this->super = SystemAuthService::isSuper();
-            $this->theme = SystemAuthService::getUserTheme();
-            $this->tokenValueJson = json_encode(SystemAuthService::buildToken(), JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
+            $this->super = AuthService::isSuper();
+            $this->theme = AuthService::getUserTheme();
+            $this->tokenValueJson = json_encode(AuthService::buildToken(), JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
             $this->fetch();
         }
     }
@@ -71,7 +71,7 @@ class Index extends Controller
             $theme = strval($this->request->param('value', ''));
             $themes = Config::themeCatalog;
             if (!isset($themes[$theme])) {
-                $theme = $scene === 'config' ? strval(sysdata('system.site.theme') ?: 'default') : SystemAuthService::getUserTheme();
+                $theme = $scene === 'config' ? strval(sysdata('system.site.theme') ?: 'default') : AuthService::getUserTheme();
             }
             if (!isset($themes[$theme])) {
                 $theme = 'default';
@@ -83,7 +83,7 @@ class Index extends Controller
             $this->fetch($this->scene === 'config' ? 'index/theme-config' : 'index/theme');
         } else {
             $data = $this->_vali(['site_theme.require' => '主题名称不能为空！']);
-            if (SystemAuthService::setUserTheme($data['site_theme'])) {
+            if (AuthService::setUserTheme($data['site_theme'])) {
                 $this->success('主题配置保存成功！');
             } else {
                 $this->error('主题配置保存失败！');
@@ -98,7 +98,7 @@ class Index extends Controller
     public function info()
     {
         $id = $this->request->param('id');
-        if (SystemAuthService::getUserId() == intval($id)) {
+        if (AuthService::getUserId() == intval($id)) {
             SystemUser::mForm('user/form', 'id', [], ['id' => $id]);
         } else {
             $this->error('只能修改自己的资料！');
@@ -108,14 +108,12 @@ class Index extends Controller
     /**
      * 修改当前用户密码
      * @login true
-     * @throws DataNotFoundException
-     * @throws DbException
-     * @throws ModelNotFoundException
+     * @throws Exception
      */
     public function pass()
     {
         $id = intval($this->request->param('id', 0));
-        if (SystemAuthService::getUserId() !== $id) {
+        if (AuthService::getUserId() !== $id) {
             $this->error('禁止修改他人密码！');
         }
 
@@ -123,32 +121,31 @@ class Index extends Controller
         if ($this->request->isGet()) {
             $this->verify = true;
             $builder->fetch(['vo' => UserService::loadPassUser($id)]);
-            return;
-        }
+        } else {
+            $data = $builder->validate();
+            $user = SystemUser::mk()->findOrEmpty($id);
+            if ($user->isEmpty()) {
+                $this->error('用户不存在！');
+            }
+            if (!UserService::verifyPassword($data['oldpassword'], strval($user['password']))) {
+                $this->error('旧密码验证失败，请重新输入！');
+            }
+            if ($user->save(['password' => UserService::hashPassword($data['password'])])) {
+                sysoplog('系统用户管理', "修改用户[{$user['id']}]密码成功");
+                $this->app->event->trigger('PluginAdminChangePassword', [
+                    'uuid' => intval($user['id']), 'pass' => $data['password'],
+                ]);
+                $this->success('密码修改成功，下次请使用新密码登录！', '');
+            }
 
-        $data = $builder->validate();
-        $user = SystemUser::mk()->findOrEmpty($id);
-        if ($user->isEmpty()) {
-            $this->error('用户不存在！');
+            $this->error('密码修改失败，请稍候再试！');
         }
-        if (!UserService::verifyPassword($data['oldpassword'], strval($user['password']))) {
-            $this->error('旧密码验证失败，请重新输入！');
-        }
-        if ($user->save(['password' => UserService::hashPassword($data['password'])])) {
-            sysoplog('系统用户管理', "修改用户[{$user['id']}]密码成功");
-            $this->app->event->trigger('PluginAdminChangePassword', [
-                'uuid' => intval($user['id']), 'pass' => $data['password'],
-            ]);
-            $this->success('密码修改成功，下次请使用新密码登录！', '');
-        }
-
-        $this->error('密码修改失败，请稍候再试！');
     }
 
     /**
      * 资料修改表单处理.
      */
-    protected function _info_form_filter(array &$data)
+    protected function _info_form_filter(array &$data): void
     {
         if ($this->request->isPost()) {
             unset($data['username'], $data['authorize']);
@@ -158,7 +155,7 @@ class Index extends Controller
     /**
      * 资料修改结果处理.
      */
-    protected function _info_form_result(bool $status)
+    protected function _info_form_result(bool $status): void
     {
         if ($status) {
             $this->success('用户资料修改成功！', 'javascript:location.reload()');

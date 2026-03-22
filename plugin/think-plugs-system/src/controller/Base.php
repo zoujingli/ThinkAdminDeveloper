@@ -176,55 +176,6 @@ class Base extends Controller
         $this->success('数据保存成功！');
     }
 
-    private function buildIndexPage(): PageBuilder
-    {
-        return PageBuilder::mk()
-            ->setTitle('数据字典管理')
-            ->setContentClass('')
-            ->withSearchLegend(false)
-            ->setTable('BaseTable', $this->request->url())
-            ->setSearchAttrs(['action' => $this->request->url()])
-            ->setTableOptions([
-                'even' => true,
-                'height' => 'full',
-                'sort' => ['field' => 'sort desc,id', 'type' => 'asc'],
-            ])
-            ->addModalButton('添加数据', url('add', ['type' => $this->type])->build(), '', ['data-table-id' => 'BaseTable'], 'add')
-            ->addBatchActionButton('批量删除', url('remove')->build(), 'id#{id}', '确定要批量删除数据吗？', [], 'remove')
-            ->addBeforeTableHtml($this->renderTypeTabs())
-            ->addAfterTableHtml('</div></div>')
-            ->addSearchHidden('type', strval($this->type))
-            ->addSearchInput('code', '数据编码', '请输入数据编码')
-            ->addSearchInput('name', '数据名称', '请输入数据名称')
-            ->addSearchSelect('status', '使用状态', [0 => '已禁用记录', 1 => '已激活记录'])
-            ->addSearchSelect('plugin_group', '所属插件', $this->buildPluginGroupOptions($this->pluginGroups))
-            ->addSearchDateRange('create_time', '创建时间', '请选择创建时间')
-            ->addCheckboxColumn()
-            ->addColumn(['field' => 'sort', 'title' => '排序权重', 'width' => 100, 'align' => 'center', 'sort' => true, 'templet' => '#SortInputTpl'])
-            ->addColumn(['field' => 'code', 'title' => '数据编码', 'width' => '20%', 'align' => 'left'])
-            ->addColumn(['field' => 'name', 'title' => '数据名称', 'width' => '30%', 'align' => 'left'])
-            ->addColumn(['field' => 'plugin_title', 'title' => '所属插件', 'minWidth' => 130, 'align' => 'center', 'templet' => '#PluginBaseTableTpl'])
-            ->addColumn(['field' => 'status', 'title' => '数据状态', 'minWidth' => 110, 'align' => 'center', 'templet' => '#StatusSwitchTpl'])
-            ->addColumn(['field' => 'create_time', 'title' => '创建时间', 'minWidth' => 170, 'align' => 'center', 'sort' => true])
-            ->addRowModalAction('编辑', url('edit')->build() . '?id={{d.id}}', '编辑数据', [], 'edit')
-            ->addRowActionButton('删除', url('remove')->build(), 'id#{{d.id}}', '确定要删除数据吗？', [], 'remove')
-            ->addToolbarColumn('数据操作', ['minWidth' => 150])
-            ->addTemplate('SortInputTpl', '<input type="number" min="0" data-blur-number="0" data-action-blur="{:sysuri()}" data-value="id#{{d.id}};action#sort;sort#{value}" data-loading="false" value="{{d.sort}}" class="layui-input text-center">')
-            ->addTemplate('PluginBaseTableTpl', $this->renderPluginTemplate())
-            ->addTemplate('StatusSwitchTpl', '<!--{if auth("state")}--><input type="checkbox" value="{{d.id}}" lay-skin="switch" lay-text="已激活|已禁用" lay-filter="StatusSwitch" {{-d.status>0?\'checked\':\'\'}}><!--{else}-->{{-d.status ? \'<b class="color-green">已启用</b>\' : \'<b class="color-red">已禁用</b>\'}}<!--{/if}-->')
-            ->addScript(<<<'SCRIPT'
-layui.form.on('switch(StatusSwitch)', function (obj) {
-    var data = {id: obj.value, status: obj.elem.checked > 0 ? 1 : 0};
-    $.form.load("state", data, "post", function (ret) {
-        if (ret.code < 1) $.msg.error(ret.info, 3, function () {
-            $("#BaseTable").trigger("reload");
-        });
-        return false;
-    }, false);
-});
-SCRIPT);
-    }
-
     private function buildFormBuilder(): FormBuilder
     {
         $id = intval($this->request->param('id', 0));

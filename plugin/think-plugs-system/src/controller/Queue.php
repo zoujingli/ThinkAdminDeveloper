@@ -20,7 +20,7 @@ declare(strict_types=1);
 
 namespace plugin\system\controller;
 
-use plugin\system\service\SystemAuthService;
+use plugin\system\service\AuthService;
 use plugin\worker\model\SystemQueue;
 use plugin\worker\service\ProcessService;
 use think\admin\Controller;
@@ -50,7 +50,7 @@ class Queue extends Controller
         SystemQueue::mQuery()->layTable(function () {
             $this->title = '系统任务管理';
             $this->iswin = ProcessService::isWin();
-            if ($this->super = SystemAuthService::isSuper()) {
+            if ($this->super = AuthService::isSuper()) {
                 $this->command = ProcessService::think(ProcessService::workerCommand('start', 'queue', true));
                 if (!$this->iswin && !empty($_SERVER['USER'])) {
                     $this->command = "sudo -u {$_SERVER['USER']} {$this->command}";
@@ -108,7 +108,7 @@ class Queue extends Controller
     protected function _index_page_filter(array $data, array &$result)
     {
         $result['extra'] = ['dos' => 0, 'pre' => 0, 'oks' => 0, 'ers' => 0];
-        SystemQueue::mk()->field('status,count(1) count')->group('status')->select()->map(static function ($item) use (&$result) {
+        SystemQueue::mk()->field('status,count(1) count')->group('status')->select()->map(function ($item) use (&$result) {
             if (intval($item['status']) === 1) {
                 $result['extra']['pre'] = $item['count'];
             }

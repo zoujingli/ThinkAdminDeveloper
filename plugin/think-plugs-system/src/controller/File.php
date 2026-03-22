@@ -78,14 +78,13 @@ class File extends Controller
         $file = $this->loadEditableFile($id, $where);
         if ($this->request->isGet()) {
             $builder->fetch(['vo' => $file]);
-            return;
+        } else {
+            $data = $builder->validate();
+            SystemFile::mSave([
+                'id' => intval($this->request->post('id', 0)),
+                'name' => strval($data['name'] ?? ''),
+            ], '', $where);
         }
-
-        $data = $builder->validate();
-        SystemFile::mSave([
-            'id' => intval($this->request->post('id', 0)),
-            'name' => strval($data['name'] ?? ''),
-        ], '', $where);
     }
 
     /**

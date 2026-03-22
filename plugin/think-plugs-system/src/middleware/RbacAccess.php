@@ -20,7 +20,7 @@ declare(strict_types=1);
 
 namespace plugin\system\middleware;
 
-use plugin\system\service\SystemAuthService;
+use plugin\system\service\AuthService;
 use think\App;
 use think\exception\HttpResponseException;
 use think\Request;
@@ -34,9 +34,8 @@ class RbacAccess
 {
     /**
      * 当前 App 对象
-     * @var App
      */
-    protected $app;
+    protected App $app;
 
     /**
      * Construct.
@@ -61,15 +60,15 @@ class RbacAccess
         }
 
         $ignore = $this->app->config->get('app.rbac_ignore', []);
-        if (in_array($this->app->http->getName(), $ignore) || SystemAuthService::check()) {
+        if (in_array($this->app->http->getName(), $ignore) || AuthService::check()) {
             return $next($request);
         }
 
-        if (SystemAuthService::isLogin()) {
+        if (AuthService::isLogin()) {
             if (function_exists('worker_auth_should_debug') && worker_auth_should_debug($request->pathinfo(), $request->cookie(), $request->header())) {
                 worker_auth_debug('system.rbac.denied', [
                     'path' => $request->pathinfo(),
-                    'user_id' => SystemAuthService::getUserId(),
+                    'user_id' => AuthService::getUserId(),
                     'login' => true,
                     'reason' => 'forbidden',
                 ]);

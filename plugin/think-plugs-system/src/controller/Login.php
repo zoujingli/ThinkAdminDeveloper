@@ -21,11 +21,10 @@ declare(strict_types=1);
 namespace plugin\system\controller;
 
 use plugin\system\model\SystemUser;
-use plugin\system\service\SystemAuthService;
+use plugin\system\service\AuthService;
 use plugin\system\service\SystemService;
 use plugin\system\service\UserService;
 use think\admin\Controller;
-use think\admin\Exception;
 use think\admin\extend\CodeToolkit;
 use think\admin\service\ImageSliderVerify;
 use think\admin\service\RuntimeService;
@@ -41,12 +40,11 @@ class Login extends Controller
 
     /**
      * 后台登录入口.
-     * @throws Exception
      */
     public function index()
     {
         if ($this->app->request->isGet()) {
-            if (SystemAuthService::isLogin()) {
+            if (AuthService::isLogin()) {
                 $this->redirect(sysuri('system/index/index'));
             } else {
                 // 加载登录模板
@@ -110,19 +108,19 @@ class Login extends Controller
                 $this->error('登录账号或密码错误，请重新输入!', ['need_verify' => true, 'refresh_verify' => true]);
             }
             // 登录态签发 JWT 需要保留密码摘要参与载荷校验。
-            SystemAuthService::login($user->toArray());
+            AuthService::login($user->toArray());
             $this->clearVerifyError($token);
             $this->clearPasswordCipher($token);
-            $token = SystemAuthService::buildToken();
-            SystemAuthService::syncTokenCookie($token);
+            $token = AuthService::buildToken();
+            AuthService::syncTokenCookie($token);
 
             if (function_exists('worker_auth_debug_enabled') && worker_auth_debug_enabled()) {
                 worker_auth_debug('system.login.success', [
                     'username' => strval($user['username']),
                     'user_id' => intval($user['id']),
-                    'session_id' => SystemAuthService::currentSessionId(),
+                    'session_id' => AuthService::currentSessionId(),
                     'token' => worker_auth_token_snapshot($token),
-                    'request_cookie' => worker_auth_token_snapshot(strval($this->request->cookie(SystemAuthService::getTokenCookie(), ''))),
+                    'request_cookie' => worker_auth_token_snapshot(strval($this->request->cookie(AuthService::getTokenCookie(), ''))),
                 ]);
             }
 
@@ -182,8 +180,8 @@ class Login extends Controller
      */
     public function out()
     {
-        SystemAuthService::logout();
-        SystemAuthService::forgetTokenCookie();
+        AuthService::logout();
+        AuthService::forgetTokenCookie();
         throw new HttpResponseException(json([
             'code' => 1,
             'info' => lang('退出登录成功!'),

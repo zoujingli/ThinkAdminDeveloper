@@ -36,9 +36,6 @@ use think\Response;
 
 class Upload extends Controller
 {
-    /**
-     * @throws \think\admin\Exception
-     */
     public function index(): Response
     {
         $data = ['exts' => []];
@@ -52,8 +49,7 @@ class Upload extends Controller
         }
         $data['exts'] = json_encode($data['exts'], JSON_UNESCAPED_UNICODE);
         $data['nameType'] = (string)StorageConfig::global('naming_rule', 'xmd5');
-        return view(dirname(__DIR__, 2) . '/storage/upload.js', $data)
-            ->contentType('application/x-javascript');
+        return view(dirname(__DIR__, 2) . '/storage/extra/upload.js', $data)->contentType('application/x-javascript');
     }
 
     /**
@@ -61,7 +57,7 @@ class Upload extends Controller
      * @throws DbException
      * @throws ModelNotFoundException
      */
-    public function image()
+    public function image(): void
     {
         [$uuid, $unid] = $this->initUnid();
         SystemFile::mQuery()->layTable(function () {
@@ -80,7 +76,7 @@ class Upload extends Controller
         });
     }
 
-    public function state()
+    public function state(): void
     {
         try {
             [$uuid, $unid] = $this->initUnid();

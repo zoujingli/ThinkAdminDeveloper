@@ -21,8 +21,8 @@ declare(strict_types=1);
 namespace plugin\system\controller;
 
 use plugin\system\model\SystemMenu;
+use plugin\system\service\AuthService;
 use plugin\system\service\MenuService;
-use plugin\system\service\SystemAuthService;
 use think\admin\Controller;
 use think\admin\extend\ArrayTree;
 use think\db\exception\DataNotFoundException;
@@ -151,7 +151,7 @@ class Menu extends Controller
         if ($this->request->isGet()) {
             $debug = $this->app->isDebug();
             // 调试模式下先清理权限缓存，确保节点与菜单实时同步。
-            $debug && SystemAuthService::clear();
+            $debug && AuthService::clear();
             // 读取当前可选节点与授权节点。
             $this->nodes = MenuService::getList($debug);
             $this->auths = MenuService::getAuths($debug);

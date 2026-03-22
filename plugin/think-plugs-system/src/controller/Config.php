@@ -20,8 +20,8 @@ declare(strict_types=1);
 
 namespace plugin\system\controller;
 
-use plugin\system\service\PluginCenterService;
-use plugin\system\service\SystemAuthService;
+use plugin\system\service\AuthService;
+use plugin\system\service\PluginService;
 use plugin\system\service\SystemService;
 use plugin\system\service\UserService;
 use plugin\system\storage\StorageConfig;
@@ -83,12 +83,12 @@ class Config extends Controller
         $this->storageName = $this->files[$this->storageDriver] ?? $this->storageDriver;
         $this->storageEditable = $this->canManageStorage();
         $this->plugins = $this->configPlugins();
-        $this->issuper = SystemAuthService::isSuper();
+        $this->issuper = AuthService::isSuper();
         $this->systemid = ProcessService::getRunVar('uni');
         $this->framework = AppService::getPluginLibrarys('topthink/framework');
         $this->thinkadmin = AppService::getPluginLibrarys('zoujingli/think-library');
-        if (SystemAuthService::isSuper() && UserService::verifyPassword('admin', strval(SystemAuthService::getUser('password', '')))) {
-            $url = url('system/index/pass', ['id' => SystemAuthService::getUserId()]);
+        if (AuthService::isSuper() && UserService::verifyPassword('admin', strval(AuthService::getUser('password', '')))) {
+            $url = url('system/index/pass', ['id' => AuthService::getUserId()]);
             $this->showErrorMessage = lang("默认超管密码仍未修改，<a data-modal='%s'>立即修改</a>。", [$url]);
         }
         [$this->pluginLeft, $this->pluginRight] = $this->splitPluginColumns($this->plugins);
@@ -115,28 +115,27 @@ class Config extends Controller
             $this->themes = static::themeCatalog;
             $this->siteThemeKey = $theme;
             $this->siteThemeLabel = static::themeCatalog[$theme]['label'];
-            $this->pluginCenter = PluginCenterService::getConfig();
+            $this->pluginCenter = PluginService::getConfig();
             $this->fetch();
-            return;
-        }
-
-        $post = $this->request->post();
-        $site = $this->normalizeSiteConfig((array)($post['site'] ?? []));
-        $security = $this->normalizeSecurityConfig((array)($post['security'] ?? []));
-        $runtime = $this->normalizeRuntimeConfig((array)($post['runtime'] ?? []));
-        if (preg_match('#^https?://#', $site['browser_icon'] ?? '')) {
-            try {
-                SystemService::setFavicon($site['browser_icon'] ?? '');
-            } catch (\Exception $exception) {
-                trace_file($exception);
+        } else {
+            $post = $this->request->post();
+            $site = $this->normalizeSiteConfig((array)($post['site'] ?? []));
+            $security = $this->normalizeSecurityConfig((array)($post['security'] ?? []));
+            $runtime = $this->normalizeRuntimeConfig((array)($post['runtime'] ?? []));
+            if (preg_match('#^https?://#', $site['browser_icon'] ?? '')) {
+                try {
+                    SystemService::setFavicon($site['browser_icon'] ?? '');
+                } catch (\Exception $exception) {
+                    trace_file($exception);
+                }
             }
+            sysdata('system.site', $site);
+            sysdata('system.security', $security);
+            sysdata('system.runtime', $runtime);
+            PluginService::setConfig((array)($post['plugin_center'] ?? []));
+            sysoplog('系统参数配置', '更新系统参数');
+            $this->success('系统参数保存成功。', system_uri('system/config/index'));
         }
-        sysdata('system.site', $site);
-        sysdata('system.security', $security);
-        sysdata('system.runtime', $runtime);
-        PluginCenterService::setConfig((array)($post['plugin_center'] ?? []));
-        sysoplog('系统参数配置', '更新系统参数');
-        $this->success('系统参数保存成功。', system_uri('system/config/index'));
     }
 
     /**
@@ -159,33 +158,31 @@ class Config extends Controller
                 $this->driverName = $this->files[$this->driver] ?? $this->driver;
                 $this->canEdit = $this->canManageStorage();
                 $this->fetch('config/storage-index');
-                return;
+            } else {
+                $this->authorizeStorageManage();
+                $this->files = Storage::types();
+                if (!isset($this->files[$type])) {
+                    $type = array_key_first($this->files) ?: 'local';
+                }
+                $this->title = '修改存储驱动';
+                $this->type = $type;
+                $this->points = Storage::regions($type);
+                $this->storage = StorageConfig::viewData();
+                $this->fetch('config/' . Storage::template($type));
             }
-
+        } else {
             $this->authorizeStorageManage();
-            $this->files = Storage::types();
-            if (!isset($this->files[$type])) {
-                $type = array_key_first($this->files) ?: 'local';
+            $storage = $this->normalizeStorageConfig((array)$this->request->post('storage', []));
+            if (!empty($storage['allowed_extensions'])) {
+                $deny = ['sh', 'asp', 'bat', 'cmd', 'exe', 'php'];
+                if (count(array_intersect($deny, str2arr($storage['allowed_extensions']))) > 0) {
+                    $this->error('禁止上传可执行文件类型。');
+                }
             }
-            $this->title = '修改存储驱动';
-            $this->type = $type;
-            $this->points = Storage::regions($type);
-            $this->storage = StorageConfig::viewData();
-            $this->fetch('config/' . Storage::template($type));
-            return;
+            StorageConfig::save($storage);
+            sysoplog('存储参数配置', '更新存储配置');
+            $this->success('存储配置保存成功。', system_uri('system/config/storage'));
         }
-
-        $this->authorizeStorageManage();
-        $storage = $this->normalizeStorageConfig((array)$this->request->post('storage', []));
-        if (!empty($storage['allowed_extensions'])) {
-            $deny = ['sh', 'asp', 'bat', 'cmd', 'exe', 'php'];
-            if (count(array_intersect($deny, $storage['allowed_extensions'])) > 0) {
-                $this->error('禁止上传可执行文件类型。');
-            }
-        }
-        StorageConfig::save($storage);
-        sysoplog('存储参数配置', '更新存储配置');
-        $this->success('存储配置保存成功。', system_uri('system/config/storage'));
     }
 
     /**
@@ -215,9 +212,9 @@ class Config extends Controller
      */
     private function canViewStorage(): bool
     {
-        return SystemAuthService::isSuper()
-            || SystemAuthService::check('system/config/storage')
-            || SystemAuthService::check('system/file/index')
+        return AuthService::isSuper()
+            || AuthService::check('system/config/storage')
+            || AuthService::check('system/file/index')
             || $this->canManageStorage();
     }
 
@@ -226,11 +223,11 @@ class Config extends Controller
      */
     private function canManageStorage(): bool
     {
-        return SystemAuthService::isSuper()
-            || SystemAuthService::check('system/config/storage')
-            || SystemAuthService::check('system/file/edit')
-            || SystemAuthService::check('system/file/remove')
-            || SystemAuthService::check('system/file/distinct');
+        return AuthService::isSuper()
+            || AuthService::check('system/config/storage')
+            || AuthService::check('system/file/edit')
+            || AuthService::check('system/file/remove')
+            || AuthService::check('system/file/distinct');
     }
 
     /**

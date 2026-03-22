@@ -28,17 +28,16 @@ class SystemUser extends Model
 {
     use SoftDelete;
 
-    protected $deleteTime = 'delete_time';
-
-    protected $defaultSoftDelete;
-
     protected $updateTime = false;
 
     protected $oplogName = '系统用户';
 
     protected $oplogType = '系统用户管理';
 
-    public static function items($map, array &$data = [], string $field = 'uuid', string $target = 'user_info', string $fields = 'username,nickname,headimg,status,delete_time'): array
+    /**
+     * 获取用户信息.
+     */
+    public static function items(mixed $map, array &$data = [], string $field = 'uuid', string $target = 'user_info', string $fields = 'username,nickname,headimg,status,delete_time'): array
     {
         $query = static::mk()->where($map)->order('sort desc,id desc');
         if (count($data) > 0) {
@@ -51,6 +50,9 @@ class SystemUser extends Model
         return $query->column($fields, 'id');
     }
 
+    /**
+     * 获取用户信息.
+     */
     public function userinfo(): HasOne
     {
         $relation = $this->hasOne(SystemBase::class, 'code', 'usertype');
@@ -60,7 +62,10 @@ class SystemUser extends Model
         return $relation;
     }
 
-    public function getHeadimgAttr($value): string
+    /**
+     * 获取用户头像.
+     */
+    public function getHeadimgAttr(mixed $value): string
     {
         if (empty($value)) {
             try {

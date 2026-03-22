@@ -85,7 +85,7 @@ class Oplog extends Controller
      * 列表数据处理.
      * @throws \Exception
      */
-    protected function _index_page_filter(array &$data)
+    protected function _index_page_filter(array &$data): void
     {
         $region = new \Ip2Region();
         foreach ($data as &$vo) {

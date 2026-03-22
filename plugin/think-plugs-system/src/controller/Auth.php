@@ -22,7 +22,7 @@ namespace plugin\system\controller;
 
 use plugin\system\model\SystemAuth;
 use plugin\system\model\SystemNode;
-use plugin\system\service\SystemAuthService;
+use plugin\system\service\AuthService;
 use think\admin\Controller;
 use think\admin\helper\QueryHelper;
 use think\admin\service\AppService;
@@ -107,9 +107,9 @@ class Auth extends Controller
             $this->plugin = trim(strval($this->request->get('plugin', '')));
         } elseif ($this->request->post('action') === 'json') {
             if ($this->app->isDebug()) {
-                SystemAuthService::clear();
+                AuthService::clear();
             }
-            $ztree = SystemAuthService::getTree(empty($data['id']) ? [] : SystemNode::mk()->where(['auth' => $data['id']])->column('node'));
+            $ztree = AuthService::getTree(empty($data['id']) ? [] : SystemNode::mk()->where(['auth' => $data['id']])->column('node'));
             usort($ztree, static function ($a, $b) {
                 if (explode('-', $a['node'])[0] !== explode('-', $b['node'])[0]) {
                     if (stripos($a['node'], 'plugin-') === 0) {

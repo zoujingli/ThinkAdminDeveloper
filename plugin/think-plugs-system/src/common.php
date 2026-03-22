@@ -17,7 +17,7 @@ declare(strict_types=1);
  * | Github Repository: https://github.com/zoujingli/ThinkAdmin
  * +----------------------------------------------------------------------
  */
-use plugin\system\service\PluginCenterService;
+use plugin\system\service\PluginService;
 use think\admin\Library;
 use think\admin\route\Url;
 use think\admin\runtime\RequestContext;
@@ -126,7 +126,7 @@ if (!function_exists('admin_menu_filter')) {
      */
     function admin_menu_filter(array $menus): array
     {
-        if (PluginCenterService::isMenuVisible()) {
+        if (PluginService::isMenuVisible()) {
             return $menus;
         }
 

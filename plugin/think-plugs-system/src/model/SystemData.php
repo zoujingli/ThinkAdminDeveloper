@@ -26,7 +26,10 @@ class SystemData extends Model
 {
     private const JSON_FLAGS = JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES;
 
-    public function getValueAttr($value): array
+    /**
+     * 获取数据内容.
+     */
+    public function getValueAttr(mixed $value): array
     {
         if (is_array($value)) {
             return $value;
@@ -40,7 +43,10 @@ class SystemData extends Model
         return [];
     }
 
-    public function setValueAttr($value): string
+    /**
+     * 设置数据内容.
+     */
+    public function setValueAttr(mixed $value): string
     {
         if (is_string($value) && $value !== '') {
             $decoded = json_decode($value, true);
@@ -54,6 +60,9 @@ class SystemData extends Model
         return json_encode(is_array($value) ? $value : [], self::JSON_FLAGS);
     }
 
+    /**
+     * 获取数据内容.
+     */
     public function toString(): string
     {
         return json_encode($this->getAttr('value'), self::JSON_FLAGS);

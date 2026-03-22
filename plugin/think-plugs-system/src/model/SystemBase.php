@@ -22,6 +22,9 @@ namespace plugin\system\model;
 
 use think\admin\Model;
 use think\admin\service\AppService;
+use think\db\exception\DataNotFoundException;
+use think\db\exception\DbException;
+use think\db\exception\ModelNotFoundException;
 use think\model\concern\SoftDelete;
 
 /**
@@ -42,10 +45,6 @@ use think\model\concern\SoftDelete;
 class SystemBase extends Model
 {
     use SoftDelete;
-
-    protected $deleteTime = 'delete_time';
-
-    protected $defaultSoftDelete;
 
     protected $updateTime = false;
 
@@ -176,6 +175,9 @@ class SystemBase extends Model
     /**
      * 按插件分组获取数据字典编号.
      * @return int[]
+     * @throws DataNotFoundException
+     * @throws DbException
+     * @throws ModelNotFoundException
      */
     public static function idsByPluginGroup(string $group, ?string $type = null): array
     {
@@ -236,9 +238,8 @@ class SystemBase extends Model
 
     /**
      * 打包内容元数据.
-     * @param mixed $plugins
      */
-    public static function packContent(string $text = '', $plugins = []): string
+    public static function packContent(string $text = '', mixed $plugins = []): string
     {
         $text = trim($text);
         $codes = self::normalizePluginCodes($plugins);
@@ -270,15 +271,13 @@ class SystemBase extends Model
 
     /**
      * 格式化创建时间.
-     * @param mixed $plugins
      */
 
     /**
      * 标准化插件编码列表.
-     * @param mixed $plugins
      * @return string[]
      */
-    private static function normalizePluginCodes($plugins): array
+    private static function normalizePluginCodes(mixed $plugins): array
     {
         $items = [];
         foreach ((array)$plugins as $plugin) {

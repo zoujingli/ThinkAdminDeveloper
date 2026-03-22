@@ -20,7 +20,7 @@ declare(strict_types=1);
 
 namespace plugin\system\controller\api;
 
-use plugin\system\service\SystemAuthService;
+use plugin\system\service\AuthService;
 use think\admin\Controller;
 use think\admin\Exception;
 use think\admin\service\AppService;
@@ -80,7 +80,7 @@ class Plugs extends Controller
     public function script(): Response
     {
         $token = $this->request->get('uptoken', '');
-        [$unid] = SystemAuthService::withUploadUnid($token);
+        [$unid] = AuthService::withUploadUnid($token);
         $domain = $unid > 0;
         return response(join("\r\n", [
             sprintf('window.taDebug = %s;', $this->app->isDebug() ? 'true' : 'false'),
@@ -89,9 +89,9 @@ class Plugs extends Controller
             sprintf("window.taStorage = '%s';", sysuri('system/config/storage', [], false, $domain)),
             sprintf("window.taSystemApi = '%s';", $this->buildApiRoot('system', $domain)),
             sprintf("window.taStorageApi = '%s';", $this->buildApiRoot('system', $domain)),
-            sprintf("window.taTokenHeader = '%s';", SystemAuthService::getTokenHeader()),
-            sprintf("window.taTokenScheme = '%s';", SystemAuthService::getTokenScheme()),
-            sprintf('window.taTokenExpire = %d;', SystemAuthService::getTokenExpire()),
+            sprintf("window.taTokenHeader = '%s';", AuthService::getTokenHeader()),
+            sprintf("window.taTokenScheme = '%s';", AuthService::getTokenScheme()),
+            sprintf('window.taTokenExpire = %d;', AuthService::getTokenExpire()),
             sprintf("window.taEditor = '%s';", strval(sysdata('system.runtime.editor_driver') ?: 'ckeditor5')),
         ]))->contentType('application/javascript');
     }
@@ -102,7 +102,7 @@ class Plugs extends Controller
      */
     public function optimize()
     {
-        if (SystemAuthService::isSuper()) {
+        if (AuthService::isSuper()) {
             sysoplog('系统运维管理', '创建数据库优化任务');
             $this->_queue('优化数据库所有数据表', 'xadmin:database optimize');
         } else {

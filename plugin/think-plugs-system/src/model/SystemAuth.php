@@ -120,6 +120,9 @@ class SystemAuth extends Model
     /**
      * 获取角色插件分组.
      * @return array<int, array<string, mixed>>
+     * @throws DataNotFoundException
+     * @throws DbException
+     * @throws ModelNotFoundException
      */
     public static function groups(bool $active = false): array
     {
@@ -154,6 +157,9 @@ class SystemAuth extends Model
     /**
      * 按插件分组获取角色编号.
      * @return int[]
+     * @throws DataNotFoundException
+     * @throws DbException
+     * @throws ModelNotFoundException
      */
     public static function idsByPluginGroup(string $group): array
     {
@@ -166,13 +172,13 @@ class SystemAuth extends Model
         return $ids;
     }
 
-    public function onAdminDelete(string $ids)
+    public function onAdminDelete(string $changeIds): void
     {
-        if (count($aids = str2arr($ids)) > 0) {
+        if (count($aids = str2arr($changeIds)) > 0) {
             SystemNode::mk()->whereIn('auth', $aids)->delete();
         }
 
-        sysoplog($this->oplogType, lang('删除%s[%s]及授权配置', [lang($this->oplogName), $ids]));
+        sysoplog($this->oplogType, lang('删除%s[%s]及授权配置', [lang($this->oplogName), $changeIds]));
     }
 
     /**

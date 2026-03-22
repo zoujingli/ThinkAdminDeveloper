@@ -20,14 +20,11 @@ declare(strict_types=1);
 
 namespace plugin\system\controller;
 
-use plugin\system\service\PluginCenterService;
-use plugin\system\service\SystemAuthService;
+use plugin\system\service\AuthService;
+use plugin\system\service\PluginService;
 use think\admin\Controller;
 use think\admin\Exception;
 use think\admin\service\AppService;
-use think\db\exception\DataNotFoundException;
-use think\db\exception\DbException;
-use think\db\exception\ModelNotFoundException;
 
 /**
  * 系统插件中心控制器.
@@ -45,29 +42,25 @@ class Plugin extends Controller
      */
     public function index(): void
     {
-        if (!PluginCenterService::isEnabled()) {
+        if (!PluginService::isEnabled()) {
             $this->title = '插件应用中心';
             $this->fetch('plugin/disabled');
-            return;
+        } else {
+            $this->items = PluginService::getLocalPlugs(true);
+            $this->title = '插件应用中心';
+            $this->fetch();
         }
-
-        $this->items = PluginCenterService::getLocalPlugs(true);
-        $this->title = '插件应用中心';
-        $this->fetch();
     }
 
     /**
      * 插件工作台布局
      *
      * @login true
-     * @throws DataNotFoundException
-     * @throws DbException
      * @throws Exception
-     * @throws ModelNotFoundException
      */
     public function layout(): void
     {
-        if (!PluginCenterService::isEnabled()) {
+        if (!PluginService::isEnabled()) {
             $this->fetchError('插件中心已禁用，请在系统参数中重新启用。');
             return;
         }
@@ -101,7 +94,7 @@ class Plugin extends Controller
             $one['id'] = $k1 + 1;
             if (!empty($one['subs'])) {
                 foreach ($one['subs'] as $k2 => &$two) {
-                    $two['id'] = $k2 + 1;
+                    $two['id'] = 1 + $k2;
                     $two['pid'] = $one['id'];
                 }
                 $one['sub'] = $one['subs'];
@@ -118,7 +111,7 @@ class Plugin extends Controller
             'title' => $this->plugin['name'] ?? $code,
         ]];
 
-        if (PluginCenterService::isMenuVisible()) {
+        if (PluginService::isMenuVisible()) {
             $this->menus[] = [
                 'id' => 9999999,
                 'url' => system_uri('system/plugin/index'),
@@ -127,10 +120,10 @@ class Plugin extends Controller
             ];
         }
 
-        $this->super = SystemAuthService::isSuper();
+        $this->super = AuthService::isSuper();
         $this->title = strval($this->plugin['name'] ?? '');
-        $this->theme = SystemAuthService::getUserTheme();
-        $this->tokenValueJson = json_encode(SystemAuthService::buildToken(), JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
+        $this->theme = AuthService::getUserTheme();
+        $this->tokenValueJson = json_encode(AuthService::buildToken(), JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
         $this->fetch('plugin/layout');
     }
 
@@ -146,9 +139,9 @@ class Plugin extends Controller
             'node' => 'system/plugin/index',
             'title' => '返回插件中心',
         ]];
-        $this->super = SystemAuthService::isSuper();
-        $this->theme = SystemAuthService::getUserTheme();
-        $this->tokenValueJson = json_encode(SystemAuthService::buildToken(), JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
+        $this->super = AuthService::isSuper();
+        $this->theme = AuthService::getUserTheme();
+        $this->tokenValueJson = json_encode(AuthService::buildToken(), JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
         $this->title = strval($this->plugin['name'] ?? '插件中心') . ' - 打开失败';
         $this->content = $content;
         $this->fetch('plugin/error');
