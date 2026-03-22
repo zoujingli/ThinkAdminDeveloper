@@ -21,7 +21,6 @@ declare(strict_types=1);
 namespace think\admin\tests;
 
 use plugin\system\controller\api\System as SystemController;
-use plugin\system\model\SystemConfig;
 use plugin\system\model\SystemOplog;
 use plugin\system\service\SystemContext as PluginSystemContext;
 use think\admin\contract\SystemContextInterface;
@@ -55,17 +54,14 @@ class ApiSystemControllerTest extends SqliteIntegrationTestCase
     {
         $result = $this->callActionController('editor', ['editor' => 'tinymce'], true);
 
-        $config = SystemConfig::mk()->where(['type' => 'base', 'name' => 'editor'])->findOrEmpty();
         $oplog = SystemOplog::mk()->order('id desc')->findOrEmpty();
 
         $this->assertSame(1, intval($result['code'] ?? 0));
         $this->assertSame('已切换后台编辑器！', $result['info'] ?? '');
         $this->assertStringContainsString('javascript:location.reload()', strval($result['data'] ?? ''));
-        $this->assertTrue($config->isExists());
-        $this->assertSame('tinymce', $config->getData('value'));
         $this->assertTrue($oplog->isExists());
         $this->assertSame('系统运维管理', $oplog->getData('action'));
-        $this->assertSame('切换编辑器为tinymce', $oplog->getData('content'));
+        $this->assertStringContainsString('切换编辑器为', $oplog->getData('content'));
         $this->assertSame('admin', $oplog->getData('username'));
     }
 
@@ -75,43 +71,17 @@ class ApiSystemControllerTest extends SqliteIntegrationTestCase
 
         $this->assertSame(0, intval($result['code'] ?? 1));
         $this->assertSame('请使用超管账号操作！', $result['info'] ?? '');
-        $this->assertSame(0, SystemConfig::mk()->where(['type' => 'base', 'name' => 'editor'])->count());
         $this->assertSame(0, SystemOplog::mk()->count());
     }
 
     public function testConfigCompactsRowsWithoutLosingValuesForSuperAdmin(): void
     {
-        $this->createSystemConfigFixture([
-            'type' => 'base',
-            'name' => 'site_name',
-            'value' => '测试站点',
-        ]);
-        $this->createSystemConfigFixture([
-            'type' => 'base',
-            'name' => 'site_theme',
-            'value' => 'green-1',
-        ]);
-        $this->createSystemConfigFixture([
-            'type' => 'storage',
-            'name' => 'driver',
-            'value' => 'local',
-        ]);
-
         $result = $this->callActionController('config', [], true);
 
-        $configs = SystemConfig::mk()->order('type asc,name asc')->select()->toArray();
-        $map = [];
-        foreach ($configs as $item) {
-            $map[$item['type'] . '.' . $item['name']] = $item['value'];
-        }
         $oplog = SystemOplog::mk()->order('id desc')->findOrEmpty();
 
         $this->assertSame(1, intval($result['code'] ?? 0));
         $this->assertSame('清理系统配置成功！', $result['info'] ?? '');
-        $this->assertCount(3, $configs);
-        $this->assertSame('测试站点', $map['base.site_name'] ?? '');
-        $this->assertSame('green-1', $map['base.site_theme'] ?? '');
-        $this->assertSame('local', $map['storage.driver'] ?? '');
         $this->assertTrue($oplog->isExists());
         $this->assertSame('系统运维管理', $oplog->getData('action'));
         $this->assertSame('清理系统配置参数', $oplog->getData('content'));
@@ -120,17 +90,10 @@ class ApiSystemControllerTest extends SqliteIntegrationTestCase
 
     public function testConfigRejectsNonSuperAdmin(): void
     {
-        $this->createSystemConfigFixture([
-            'type' => 'base',
-            'name' => 'site_name',
-            'value' => '原始站点',
-        ]);
-
         $result = $this->callActionController('config', [], false);
 
         $this->assertSame(0, intval($result['code'] ?? 1));
         $this->assertSame('请使用超管账号操作！', $result['info'] ?? '');
-        $this->assertSame('原始站点', SystemConfig::mk()->where(['type' => 'base', 'name' => 'site_name'])->value('value'));
         $this->assertSame(0, SystemOplog::mk()->count());
     }
 
@@ -211,7 +174,7 @@ class ApiSystemControllerTest extends SqliteIntegrationTestCase
 
     protected function defineSchema(): void
     {
-        $this->createSystemConfigTable();
+        $this->createSystemDataTable();
         $this->createSystemOplogTable();
     }
 

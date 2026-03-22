@@ -111,10 +111,8 @@ class CodeToolkit
 
     /**
      * 数据解密处理。
-     *
-     * @return mixed
      */
-    public static function decrypt(string $data, string $skey)
+    public static function decrypt(string $data, string $skey): mixed
     {
         $attr = json_decode(static::deSafe64($data), true) ?: [];
         return unserialize(openssl_decrypt((string)($attr['value'] ?? ''), 'AES-256-CBC', $skey, 0, (string)($attr['iv'] ?? '')));
@@ -130,20 +128,16 @@ class CodeToolkit
 
     /**
      * 压缩数据对象。
-     *
-     * @param mixed $data
      */
-    public static function enzip($data): string
+    public static function enzip(mixed $data): string
     {
         return static::enSafe64(gzcompress(serialize($data)));
     }
 
     /**
      * 解压数据对象。
-     *
-     * @return mixed
      */
-    public static function dezip(string $string)
+    public static function dezip(string $string): mixed
     {
         return unserialize(gzuncompress(static::deSafe64($string)));
     }

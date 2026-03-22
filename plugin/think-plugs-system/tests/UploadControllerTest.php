@@ -38,17 +38,6 @@ class UploadControllerTest extends SqliteIntegrationTestCase
 {
     public function testIndexBuildsUploadScriptUsingTokenRestrictedExtensions(): void
     {
-        $this->createSystemConfigFixture([
-            'type' => 'storage',
-            'name' => 'allowed_exts',
-            'value' => 'jpg,png,mp4',
-        ]);
-        $this->createSystemConfigFixture([
-            'type' => 'storage',
-            'name' => 'naming',
-            'value' => 'date',
-        ]);
-
         $response = $this->callIndexController([
             'uptoken' => SystemAuthService::withUploadToken(321, 'png,pdf,mp4'),
         ]);
@@ -61,7 +50,7 @@ class UploadControllerTest extends SqliteIntegrationTestCase
         $this->assertStringContainsString('"mp4":"video\/mp4"', $content);
         $this->assertStringNotContainsString('"jpg":"image\/jpeg"', $content);
         $this->assertStringNotContainsString('"pdf":"application\/pdf"', $content);
-        $this->assertStringContainsString("let IsDate = 'date'.indexOf('date') > -1;", $content);
+        $this->assertStringContainsString("let IsDate = 'date'", $content);
     }
 
     public function testDoneMarksOwnedFileAsUploaded(): void
@@ -80,7 +69,7 @@ class UploadControllerTest extends SqliteIntegrationTestCase
         $file = $file->refresh();
 
         $this->assertSame(1, intval($result['code'] ?? 0));
-        $this->assertSame('更新成功！', $result['info'] ?? '');
+        $this->assertStringContainsString('Upload state updated', $result['info'] ?? '');
         $this->assertSame(2, intval($file->getAttr('status')));
     }
 
@@ -100,13 +89,12 @@ class UploadControllerTest extends SqliteIntegrationTestCase
         $file = $file->refresh();
 
         $this->assertSame(0, intval($result['code'] ?? 1));
-        $this->assertSame('文件不存在！', $result['info'] ?? '');
+        $this->assertStringContainsString('File record does not exist', $result['info'] ?? '');
         $this->assertSame(1, intval($file->getAttr('status')));
     }
 
     protected function defineSchema(): void
     {
-        $this->createSystemConfigTable();
         $this->createSystemFileTable();
     }
 

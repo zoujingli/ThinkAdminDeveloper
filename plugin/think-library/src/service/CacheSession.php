@@ -60,22 +60,22 @@ final class CacheSession extends Service
 
     /**
      * 读取指定会话数据别名。
-     * @param mixed $default
+     * @param mixed|null $default
      * @return mixed
      * @throws Exception
      */
-    public static function read(string $name, $default = null, ?string $scope = null, ?bool $touch = null)
+    public static function read(string $name, mixed $default = null, ?string $scope = null, ?bool $touch = null): mixed
     {
         return self::get($name, $default, $scope, $touch);
     }
 
     /**
      * 读取指定会话数据。
-     * @param mixed $default
+     * @param mixed|null $default
      * @return mixed
      * @throws Exception
      */
-    public static function get(string $name, $default = null, ?string $scope = null, ?bool $touch = null)
+    public static function get(string $name, mixed $default = null, ?string $scope = null, ?bool $touch = null)
     {
         $data = self::all($scope, $touch);
         return $data[$name] ?? $default;
@@ -84,7 +84,6 @@ final class CacheSession extends Service
     /**
      * 读取全部会话数据。
      * @return array<string, mixed>
-     * @throws Exception|InvalidArgumentException
      */
     public static function all(?string $scope = null, ?bool $touch = null): array
     {
@@ -196,10 +195,14 @@ final class CacheSession extends Service
 
     /**
      * 写入指定会话数据。
+     * @param string $name
      * @param mixed $value
-     * @throws Exception
+     * @param int|null $expire
+     * @param string|null $scope
+     * @return bool
+     * @throws \think\admin\Exception
      */
-    public static function set(string $name, $value, ?int $expire = null, ?string $scope = null): bool
+    public static function set(string $name, mixed $value, ?int $expire = null, ?string $scope = null): bool
     {
         return self::put([$name => $value], $expire, $scope);
     }

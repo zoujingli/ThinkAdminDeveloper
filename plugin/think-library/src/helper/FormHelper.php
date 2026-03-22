@@ -39,10 +39,9 @@ class FormHelper extends Helper
 {
     /**
      * 逻辑器初始化.
-     * @param BaseQuery|Model|string $dbQuery
      * @param string $template 视图模板名称
      * @param string $field 指定数据主键
-     * @param mixed $where 限定更新条件
+     * @param array|mixed $where 限定更新条件
      * @param array $edata 表单扩展数据
      * @return array|bool|void
      * @throws Exception
@@ -50,7 +49,7 @@ class FormHelper extends Helper
      * @throws DbException
      * @throws ModelNotFoundException
      */
-    public function init($dbQuery, string $template = '', string $field = '', $where = [], array $edata = [])
+    public function init(BaseQuery|Model|string $dbQuery, string $template = '', string $field = '', mixed $where = [], array $edata = [])
     {
         $query = QueryFactory::build($dbQuery);
         if (!$query instanceof Query) {

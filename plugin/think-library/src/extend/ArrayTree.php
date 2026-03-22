@@ -70,9 +70,8 @@ class ArrayTree
 
     /**
      * 获取数据树子 ID 集合。
-     * @param mixed $value
      */
-    public static function getArrSubIds(array $list, $value = 0, string $ckey = 'id', string $pkey = 'pid'): array
+    public static function getArrSubIds(array $list, int|string $value = 0, string $ckey = 'id', string $pkey = 'pid'): array
     {
         $ids = [(int)$value];
         foreach ($list as $vo) {

@@ -28,14 +28,11 @@ class Exception extends \Exception
 {
     /**
      * 异常数据对象
-     * @var mixed
      */
     protected mixed $data = [];
 
     /**
      * Exception constructor.
-     * @param string $message
-     * @param int $code
      * @param mixed $data
      */
     public function __construct(string $message = '', int $code = 0, $data = [])

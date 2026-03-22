@@ -73,7 +73,7 @@ class QueryFactory
      * @param BaseQuery|mixed|Model $query
      * @return BaseQuery|mixed|Model
      */
-    private static function triggerBeforeEvent($query)
+    private static function triggerBeforeEvent(mixed $query): mixed
     {
         Library::$sapp->db->trigger('think_before_event', $query);
         return $query;

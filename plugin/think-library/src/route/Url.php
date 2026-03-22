@@ -283,14 +283,14 @@ class Url extends ThinkUrl
      * @param string $url URL
      * @param bool|string $domain Domain
      */
-    protected function parseUrl(string $url, &$domain): string
+    protected function parseUrl(string $url, bool|string &$domain): string
     {
         $request = $this->app->request;
-        if (strpos($url, '/') === 0) {
+        if (str_starts_with($url, '/')) {
             $url = substr($url, 1);
-        } elseif (strpos($url, '\\') !== false) {
+        } elseif (str_contains($url, '\\')) {
             $url = ltrim(str_replace('\\', '/', $url), '/');
-        } elseif (strpos($url, '@') === 0) {
+        } elseif (str_starts_with($url, '@')) {
             $url = substr($url, 1);
         } else {
             $attrs = str2arr($url, '/');

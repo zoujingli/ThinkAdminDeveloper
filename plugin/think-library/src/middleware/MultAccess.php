@@ -66,9 +66,7 @@ class MultAccess
             return $next($request);
         }
 
-        return $this->app->middleware->pipeline('app')->send($request)->then(function ($request) use ($next) {
-            return $next($request);
-        });
+        return $this->app->middleware->pipeline('app')->send($request)->then(fn ($request) => $next($request));
     }
 
     /**

@@ -29,7 +29,6 @@ use plugin\payment\model\PluginPaymentRecord;
 use plugin\payment\service\Payment;
 use plugin\system\model\SystemAuth;
 use plugin\system\model\SystemBase;
-use plugin\system\model\SystemConfig;
 use plugin\system\model\SystemData;
 use plugin\system\model\SystemFile;
 use plugin\system\model\SystemMenu;

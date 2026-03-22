@@ -27,11 +27,8 @@ class HttpClient
 {
     /**
      * 以 GET 模拟网络请求。
-     *
-     * @param array|mixed $data
-     * @return bool|string
      */
-    public static function get(string $location, mixed $data = [], array $options = [])
+    public static function get(string $location, mixed $data = [], array $options = []): bool|string
     {
         $options['query'] = $data;
         return static::request('get', $location, $options);
@@ -39,10 +36,8 @@ class HttpClient
 
     /**
      * 以 cURL 模拟网络请求。
-     *
-     * @return bool|string
      */
-    public static function request(string $method, string $location, array $options = [])
+    public static function request(string $method, string $location, array $options = []): bool|string
     {
         $curl = curl_init();
         self::applyCommonOptions($curl, $options);
@@ -55,11 +50,8 @@ class HttpClient
 
     /**
      * 以 POST 模拟网络请求。
-     *
-     * @param mixed $data
-     * @return bool|string
      */
-    public static function post(string $location, $data = [], array $options = [])
+    public static function post(string $location, mixed $data = [], array $options = []): bool|string
     {
         $options['data'] = $data;
         return static::request('post', $location, $options);
@@ -67,10 +59,8 @@ class HttpClient
 
     /**
      * 以 FormData 模拟网络请求。
-     *
-     * @return bool|string
      */
-    public static function submit(string $url, array $data = [], array $file = [], array $header = [], string $method = 'POST', bool $returnHeader = true)
+    public static function submit(string $url, array $data = [], array $file = [], array $header = [], string $method = 'POST', bool $returnHeader = true): bool|string
     {
         [$lines, $boundary] = [[], CodeToolkit::random(18)];
         foreach ($data as $key => $value) {
@@ -100,9 +90,8 @@ class HttpClient
     /**
      * 公共 cURL 参数。
      * 这些参数在整个项目里应该保持一致，避免不同调用点各自拼一套。
-     * @param mixed $curl
      */
-    private static function applyCommonOptions($curl, array $options): void
+    private static function applyCommonOptions(mixed $curl, array $options): void
     {
         curl_setopt($curl, CURLOPT_USERAGENT, $options['agent'] ?? self::getUserAgent());
         curl_setopt($curl, CURLOPT_AUTOREFERER, true);
@@ -135,9 +124,8 @@ class HttpClient
 
     /**
      * 请求级参数设置。
-     * @param mixed $curl
      */
-    private static function applyRequestOptions($curl, string $method, array $options): void
+    private static function applyRequestOptions(mixed $curl, string $method, array $options): void
     {
         if (!empty($options['cookie'])) {
             curl_setopt($curl, CURLOPT_COOKIE, $options['cookie']);
@@ -170,14 +158,13 @@ class HttpClient
 
     /**
      * 给 URL 安全追加 query 参数。
-     * @param mixed $query
      */
-    private static function appendQuery(string $location, $query): string
+    private static function appendQuery(string $location, mixed $query): string
     {
         if (empty($query)) {
             return $location;
         }
-        $location .= strpos($location, '?') !== false ? '&' : '?';
+        $location .= str_contains($location, '?') ? '&' : '?';
         if (is_array($query)) {
             return $location . http_build_query($query);
         }

@@ -36,7 +36,7 @@ class ModelFactory
      */
     public static function build(string $name, array $data = [], string $conn = ''): Model
     {
-        if (strpos($name, '\\') !== false) {
+        if (str_contains($name, '\\')) {
             if (class_exists($name)) {
                 $model = new $name($data);
                 if ($model instanceof Model) {

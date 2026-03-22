@@ -20,7 +20,6 @@ declare(strict_types=1);
 
 namespace think\admin\helper;
 
-use think\admin\Exception;
 use think\admin\Helper;
 use think\Validate;
 
@@ -47,9 +46,8 @@ class ValidateHelper extends Helper
      * @param array|string $input 输入内容（默认为空，自动从请求获取，可指定 post/get 等）
      * @param null|callable $callable 验证失败时的回调函数（接收错误信息和数据）
      * @return array 验证通过的数据数组
-     * @throws Exception 验证失败时抛出异常
      */
-    public function init(array $rules, array|string $input = '', ?callable $callable = null)
+    public function init(array $rules, array|string $input = '', ?callable $callable = null): array
     {
         if (is_string($input)) {
             $type = trim($input, '.') ?: 'param';

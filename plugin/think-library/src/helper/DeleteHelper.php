@@ -23,7 +23,6 @@ namespace think\admin\helper;
 use think\admin\Helper;
 use think\admin\model\QueryFactory;
 use think\db\BaseQuery;
-use think\db\exception\DbException;
 use think\db\Query;
 use think\Model;
 use think\model\concern\SoftDelete;
@@ -36,7 +35,6 @@ class DeleteHelper extends Helper
 {
     /**
      * @param array|mixed $where
-     * @throws DbException
      */
     public function init(BaseQuery|Model|string $dbQuery, string $field = '', mixed $where = [])
     {

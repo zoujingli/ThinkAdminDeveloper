@@ -107,9 +107,8 @@ class Route extends ThinkRoute
 
     /**
      * 注册绑定到本地 app 的根路由分组。
-     * @param null|mixed $route
      */
-    public function appGroup(string $app, \Closure|string $name, $route = null): RuleGroup
+    public function appGroup(string $app, \Closure|string $name, mixed $route = null): RuleGroup
     {
         return $this->groupTarget([self::OPTION_APP => $app], $name, $route);
     }
@@ -118,9 +117,8 @@ class Route extends ThinkRoute
      * 注册带目标声明的根路由分组。
      *
      * @param array<string, mixed> $target
-     * @param null|mixed $route
      */
-    public function groupTarget(array $target, \Closure|string $name, $route = null): RuleGroup
+    public function groupTarget(array $target, \Closure|string $name, mixed $route = null): RuleGroup
     {
         $group = $this->group($name, $route);
         $option = $this->normalizeTargetOptions($target);
