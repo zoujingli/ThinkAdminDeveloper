@@ -71,7 +71,7 @@ class Index extends Controller
             $theme = strval($this->request->param('value', ''));
             $themes = Config::themeCatalog;
             if (!isset($themes[$theme])) {
-                $theme = $scene === 'config' ? strval(sysconf('base.site_theme') ?: 'default') : SystemAuthService::getUserTheme();
+                $theme = $scene === 'config' ? strval(sysdata('system.site.theme') ?: 'default') : SystemAuthService::getUserTheme();
             }
             if (!isset($themes[$theme])) {
                 $theme = 'default';

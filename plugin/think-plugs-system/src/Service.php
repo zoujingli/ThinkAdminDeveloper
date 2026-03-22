@@ -41,6 +41,7 @@ class Service extends Plugin
     public function register(): void
     {
         Library::load(__DIR__ . '/common.php');
+        $this->app->config->set(include __DIR__ . '/storage/config.php', 'think_plugs_storage');
         $this->app->bind(SystemContextInterface::class, PluginSystemContext::class);
     }
 

@@ -19,7 +19,6 @@
         "zoujingli/ip2region": "^1.0 || ^2.0 || ^3.0",
         "zoujingli/think-library": "^8.0",
         "zoujingli/think-plugs-static": "^8.0",
-        "zoujingli/think-plugs-storage": "^8.0",
         "zoujingli/think-plugs-worker": "^8.0"
     },
     "autoload": {
@@ -62,6 +61,16 @@
                                 "name": "系统参数配置",
                                 "icon": "layui-icon layui-icon-set",
                                 "node": "system/config/index"
+                            },
+                            {
+                                "name": "存储配置中心",
+                                "icon": "layui-icon layui-icon-upload-drag",
+                                "node": "system/config/storage"
+                            },
+                            {
+                                "name": "系统文件管理",
+                                "icon": "layui-icon layui-icon-carousel",
+                                "node": "system/file/index"
                             },
                             {
                                 "name": "插件应用中心",

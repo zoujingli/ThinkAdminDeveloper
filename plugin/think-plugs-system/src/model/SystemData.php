@@ -22,14 +22,40 @@ namespace plugin\system\model;
 
 use think\admin\Model;
 
-/**
- * 系统数据模型.
- *
- * @property int $id
- * @property string $create_time 创建时间
- * @property string $name 配置名
- * @property string $update_time 更新时间
- * @property string $value 配置值
- * @class SystemData
- */
-class SystemData extends Model {}
+class SystemData extends Model
+{
+    private const JSON_FLAGS = JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES;
+
+    public function getValueAttr($value): array
+    {
+        if (is_array($value)) {
+            return $value;
+        }
+        if (is_string($value) && $value !== '') {
+            $data = json_decode($value, true);
+            if (is_array($data)) {
+                return $data;
+            }
+        }
+        return [];
+    }
+
+    public function setValueAttr($value): string
+    {
+        if (is_string($value) && $value !== '') {
+            $decoded = json_decode($value, true);
+            if (is_array($decoded)) {
+                $value = $decoded;
+            }
+        } elseif (is_object($value)) {
+            $value = json_decode(json_encode($value, self::JSON_FLAGS), true) ?: [];
+        }
+
+        return json_encode(is_array($value) ? $value : [], self::JSON_FLAGS);
+    }
+
+    public function toString(): string
+    {
+        return json_encode($this->getAttr('value'), self::JSON_FLAGS);
+    }
+}

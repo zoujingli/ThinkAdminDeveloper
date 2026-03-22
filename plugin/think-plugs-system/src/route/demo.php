@@ -31,9 +31,6 @@ if (RuntimeService::check('demo')) {
     Library::$sapp->route->post('config/storage', static function () {
         return json(['code' => 0, 'info' => lang('演示环境禁止修改系统配置！')]);
     });
-    Library::$sapp->route->post('storage/config/storage', static function () {
-        return json(['code' => 0, 'info' => lang('演示环境禁止修改系统配置！')]);
-    });
     Library::$sapp->route->post('menu', static function () {
         return json(['code' => 0, 'info' => lang('演示环境禁止给菜单排序！')]);
     });

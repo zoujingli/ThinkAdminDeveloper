@@ -20,7 +20,7 @@ declare(strict_types=1);
 
 namespace plugin\system\controller\api;
 
-use plugin\system\model\SystemConfig;
+use plugin\system\model\SystemData;
 use plugin\system\service\SystemAuthService;
 use think\admin\Controller;
 use think\admin\service\RuntimeService;
@@ -103,7 +103,7 @@ class System extends Controller
     {
         if (SystemAuthService::isSuper()) {
             $editor = input('editor', 'auto');
-            sysconf('base.editor', $editor);
+            sysdata('system.runtime.editor_driver', $editor);
             sysoplog('系统运维管理', "切换编辑器为{$editor}");
             $this->success('已切换后台编辑器！', 'javascript:location.reload()');
         } else {
@@ -119,19 +119,16 @@ class System extends Controller
     {
         if (SystemAuthService::isSuper()) {
             try {
-                [$tmpdata, $newdata] = [[], []];
-                foreach (SystemConfig::mk()->order('type,name asc')->cursor() as $item) {
-                    $tmpdata[$item['type']][$item['name']] = $item['value'];
-                }
-                foreach ($tmpdata as $type => $items) {
-                    foreach ($items as $name => $value) {
-                        $newdata[] = ['type' => $type, 'name' => $name, 'value' => $value];
-                    }
+                $newdata = [];
+                foreach (SystemData::mk()->order('id asc')->cursor() as $item) {
+                    $name = strval($item['name']);
+                    $newdata[$name] = ['name' => $name, 'value' => $item->toString()];
                 }
                 $this->app->db->transaction(static function () use ($newdata) {
-                    SystemConfig::mQuery()->empty()->insertAll($newdata);
+                    SystemData::mQuery()->empty()->insertAll(array_values($newdata));
                 });
-                $this->app->cache->delete('SystemConfig');
+                $this->app->cache->delete('SystemData');
+                sysvar('think.admin.data', []);
                 sysoplog('系统运维管理', '清理系统配置参数');
                 $this->success('清理系统配置成功！', 'javascript:location.reload()');
             } catch (HttpResponseException $exception) {

@@ -44,14 +44,14 @@ class InstallSystem20241010 extends Migrator
     public function change()
     {
         $this->_create_system_base();
-        $this->_create_system_config();
         $this->_create_system_data();
+        $this->_create_system_file();
         $this->_create_system_oplog();
         $this->_create_system_auth();
         $this->_create_system_auth_node();
         $this->_create_system_menu();
         $this->_create_system_user();
-        $this->insertBaseConfig();
+        $this->insertSystemData();
         $this->insertUser();
         $this->insertMenu();
     }
@@ -83,25 +83,6 @@ class InstallSystem20241010 extends Migrator
 
     /**
      * 创建数据对象
-     * @class SystemConfig
-     * @table system_config
-     */
-    private function _create_system_config()
-    {
-        $table = $this->table('system_config', [
-            'engine' => 'InnoDB', 'collation' => 'utf8mb4_general_ci', 'comment' => '系统-配置',
-        ]);
-        $this->upgrade($table, [
-            ['type', 'string', ['limit' => 20, 'default' => '', 'null' => true, 'comment' => '配置分类']],
-            ['name', 'string', ['limit' => 100, 'default' => '', 'null' => true, 'comment' => '配置名称']],
-            ['value', 'string', ['limit' => 2048, 'default' => '', 'null' => true, 'comment' => '配置内容']],
-        ], [
-            'type', 'name',
-        ], true);
-    }
-
-    /**
-     * 创建数据对象
      * @class SystemData
      * @table system_data
      */
@@ -117,6 +98,38 @@ class InstallSystem20241010 extends Migrator
             ['update_time', 'datetime', ['default' => null, 'null' => true, 'comment' => '更新时间']],
         ], [
             'name', 'create_time',
+        ], true);
+    }
+
+    /**
+     * 创建数据对象
+     * @class SystemFile
+     * @table system_file
+     */
+    private function _create_system_file()
+    {
+        $table = $this->table('system_file', [
+            'engine' => 'InnoDB', 'collation' => 'utf8mb4_general_ci', 'comment' => '系统-文件',
+        ]);
+        $this->upgrade($table, [
+            ['type', 'string', ['limit' => 20, 'default' => '', 'null' => true, 'comment' => '存储类型']],
+            ['hash', 'string', ['limit' => 32, 'default' => '', 'null' => true, 'comment' => '文件哈希']],
+            ['tags', 'string', ['limit' => 255, 'default' => '', 'null' => true, 'comment' => '文件标签']],
+            ['name', 'string', ['limit' => 255, 'default' => '', 'null' => true, 'comment' => '文件名称']],
+            ['xext', 'string', ['limit' => 20, 'default' => '', 'null' => true, 'comment' => '文件后缀']],
+            ['xurl', 'string', ['limit' => 500, 'default' => '', 'null' => true, 'comment' => '文件链接']],
+            ['xkey', 'string', ['limit' => 500, 'default' => '', 'null' => true, 'comment' => '存储键名']],
+            ['mime', 'string', ['limit' => 100, 'default' => '', 'null' => true, 'comment' => '文件类型']],
+            ['size', 'biginteger', ['limit' => 20, 'default' => 0, 'null' => true, 'comment' => '文件大小']],
+            ['uuid', 'biginteger', ['limit' => 20, 'default' => 0, 'null' => true, 'comment' => '后台用户']],
+            ['unid', 'biginteger', ['limit' => 20, 'default' => 0, 'null' => true, 'comment' => '业务用户']],
+            ['isfast', 'integer', ['limit' => 1, 'default' => 0, 'null' => true, 'comment' => '是否秒传']],
+            ['issafe', 'integer', ['limit' => 1, 'default' => 0, 'null' => true, 'comment' => '安全模式']],
+            ['status', 'integer', ['limit' => 1, 'default' => 1, 'null' => true, 'comment' => '状态(1上传中,2已完成)']],
+            ['create_time', 'datetime', ['default' => null, 'null' => true, 'comment' => '创建时间']],
+            ['update_time', 'datetime', ['default' => null, 'null' => true, 'comment' => '更新时间']],
+        ], [
+            'type', 'hash', 'uuid', 'unid', 'status', 'create_time',
         ], true);
     }
 
@@ -279,22 +292,32 @@ class InstallSystem20241010 extends Migrator
     /**
      * 初始化基础配置.
      */
-    private function insertBaseConfig(): void
+    private function insertSystemData(): void
     {
-        if ($this->tableHasRows('system_config')) {
-            return;
-        }
-
-        $this->table('system_config')->insert([
-            ['type' => 'base', 'name' => 'app_name', 'value' => 'ThinkAdmin'],
-            ['type' => 'base', 'name' => 'app_version', 'value' => 'v8'],
-            ['type' => 'base', 'name' => 'editor', 'value' => 'ckeditor5'],
-            ['type' => 'base', 'name' => 'login_name', 'value' => '系统管理'],
-            ['type' => 'base', 'name' => 'site_copy', 'value' => '©版权所有 2014-' . date('Y') . ' ThinkAdmin'],
-            ['type' => 'base', 'name' => 'site_icon', 'value' => 'https://thinkadmin.top/static/img/logo.png'],
-            ['type' => 'base', 'name' => 'site_name', 'value' => 'ThinkAdmin'],
-            ['type' => 'base', 'name' => 'site_theme', 'value' => 'default'],
-        ])->saveData();
+        $this->seedSystemData('system.site', [
+            'login_title' => '系统管理',
+            'theme' => 'default',
+            'login_background_images' => [],
+            'browser_icon' => 'https://thinkadmin.top/static/img/logo.png',
+            'website_name' => 'ThinkAdmin',
+            'application_name' => 'ThinkAdmin',
+            'application_version' => 'v8',
+            'public_security_filing' => '',
+            'miit_filing' => '',
+            'copyright' => '©版权所有 2014-' . date('Y') . ' ThinkAdmin',
+            'host' => '',
+        ]);
+        $this->seedSystemData('system.security', [
+            'jwt_secret' => bin2hex(random_bytes(16)),
+        ]);
+        $this->seedSystemData('system.runtime', [
+            'editor_driver' => 'ckeditor5',
+            'queue_retain_days' => 7,
+        ]);
+        $this->seedSystemData('system.plugin_center', [
+            'enabled' => 1,
+            'show_menu' => 1,
+        ]);
     }
 
     /**
@@ -304,6 +327,38 @@ class InstallSystem20241010 extends Migrator
     {
         $quoted = $this->getAdapter()->quoteTableName($table);
         $stmt = $this->query("SELECT 1 FROM {$quoted} LIMIT 1");
+        if ($stmt === false) {
+            return false;
+        }
+
+        return $stmt->fetch(PDO::FETCH_ASSOC) !== false;
+    }
+
+    /**
+     * 写入系统初始化数据。
+     */
+    private function seedSystemData(string $name, array $value): void
+    {
+        if ($this->systemDataExists($name)) {
+            return;
+        }
+
+        $this->table('system_data')->insert([[
+            'name' => $name,
+            'value' => json_encode($value, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES),
+            'create_time' => date('Y-m-d H:i:s'),
+            'update_time' => date('Y-m-d H:i:s'),
+        ]])->saveData();
+    }
+
+    /**
+     * 检查系统初始化数据是否存在。
+     */
+    private function systemDataExists(string $name): bool
+    {
+        $quoted = $this->getAdapter()->quoteTableName('system_data');
+        $name = str_replace("'", "''", $name);
+        $stmt = $this->query("SELECT 1 FROM {$quoted} WHERE `name` = '{$name}' LIMIT 1");
         if ($stmt === false) {
             return false;
         }

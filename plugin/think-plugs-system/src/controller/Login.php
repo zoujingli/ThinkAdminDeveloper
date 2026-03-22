@@ -58,7 +58,7 @@ class Login extends Controller
                 $this->runtimeMode = RuntimeService::check();
                 $this->tokenValueJson = json_encode('', JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
                 // 后台背景处理
-                $images = str2arr(sysconf('login_image|raw') ?: '', '|');
+                $images = array_values(array_filter(array_map('strval', (array)sysget('system.site.login_background_images', []))));
                 if (empty($images)) {
                     $images = [
                         SystemService::uri('/static/theme/img/login/bg1.jpg'),
@@ -67,8 +67,8 @@ class Login extends Controller
                 }
                 $this->loginStyle = sprintf('style="background-image:url(%s)" data-bg-transition="%s"', $images[0], join(',', $images));
                 // 更新后台主域名，用于部分无法获取域名的场景调用
-                if ($this->request->domain() !== sysconf('base.site_host|raw')) {
-                    sysconf('base.site_host', $this->request->domain());
+                if ($this->request->domain() !== strval(sysdata('system.site.host') ?: '')) {
+                    sysdata('system.site.host', $this->request->domain());
                 }
                 $this->renderLoginPage();
             }

@@ -1,11 +1,11 @@
 <form action="{:sysuri()}" method="post" data-auto="true" class="layui-form layui-card" data-table-id="UserTable">
-    <div class="layui-card-body padding-left-40">
+    <div class="layui-card-body pl40">
 
         <fieldset class="layui-bg-gray">
             <legend><b class="layui-badge think-bg-violet">{:lang('用户账号')}</b></legend>
 
             <div class="layui-row layui-col-space15">
-                <div class="layui-col-xs2 text-center padding-top-15">
+                <div class="layui-col-xs2 text-center pt15">
                     <input type="hidden" data-cut-width="500" data-cut-height="500" data-max-width="500" data-max-height="500" name="headimg" value="{$vo.headimg|default=''}">
                     <script>$('[name=headimg]').uploadOneImage();</script>
                 </div>
@@ -37,7 +37,7 @@
             {if !empty($bases)}
             <div class="layui-form-item">
                 <div class="help-label"><b>{:lang('角色身份')}</b>Role Identity</div>
-                <div class="margin-bottom-10">
+                <div class="mb10">
                     <div class="layui-input-inline">
                         <select name="usertype_plugin_filter" lay-filter="UserBasePluginFilter">
                             <option value="">{:lang('全部插件')}</option>
@@ -51,7 +51,7 @@
                 <div class="layui-textarea help-checks">
                     {foreach $baseGroups as $group}
                     <div class="user-base-group" data-base-group="{$group.code}">
-                        <div class="padding-left-5 margin-bottom-5">
+                        <div class="pl5 mb5">
                             <span class="layui-badge layui-bg-blue">{$group.name}</span>
                         </div>
                         {foreach $group.items as $base}
@@ -74,7 +74,7 @@
             {if !empty($auths)}
             <div class="layui-form-item">
                 <div class="help-label"><b>{:lang('访问权限')}</b>Role Permission</div>
-                <div class="margin-bottom-10">
+                <div class="mb10">
                     <div class="layui-input-inline">
                         <select name="authorize_plugin_filter" lay-filter="UserAuthPluginFilter">
                             <option value="">{:lang('全部插件')}</option>
@@ -87,10 +87,10 @@
                 </div>
                 <div class="layui-textarea help-checks">
                     {if isset($vo.username) and $vo.username eq $super}
-                    <span class="color-desc padding-left-5">{:lang('超级用户拥有所有访问权限，不需要配置权限。')}</span>
+                    <span class="color-desc pl5">{:lang('超级用户拥有所有访问权限，不需要配置权限。')}</span>
                     {else}{foreach $authGroups as $group}
                     <div class="user-auth-group" data-auth-group="{$group.code}">
-                        <div class="padding-left-5 margin-bottom-5">
+                        <div class="pl5 mb5">
                             <span class="layui-badge layui-bg-blue">{$group.name}</span>
                         </div>
                         {foreach $group.items as $authorize}
@@ -138,7 +138,7 @@
                     </label>
                 </div>
             </div>
-            <label class="layui-form-item block relative margin-top-10">
+            <label class="layui-form-item block relative mt10">
                 <span class="help-label"><b>{:lang('用户描述')}</b>User Remark</span>
                 <textarea placeholder="{:lang('请输入用户描述')}" class="layui-textarea" name="describe">{$vo.describe|default=""}</textarea>
             </label>

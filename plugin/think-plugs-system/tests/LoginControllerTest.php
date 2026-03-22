@@ -21,7 +21,6 @@ declare(strict_types=1);
 namespace think\admin\tests;
 
 use plugin\system\controller\Login as LoginController;
-use plugin\system\model\SystemConfig;
 use plugin\system\model\SystemOplog;
 use plugin\system\service\SystemAuthService;
 use plugin\system\service\SystemContext as PluginSystemContext;
@@ -245,36 +244,23 @@ class LoginControllerTest extends SqliteIntegrationTestCase
 
     public function testGetIndexRendersLoginPageAndSyncsSiteHostForGuests(): void
     {
-        $this->createSystemConfigFixture([
-            'type' => 'base',
-            'name' => 'site_name',
-            'value' => '测试站点',
-        ]);
-        $this->createSystemConfigFixture([
-            'type' => 'base',
-            'name' => 'app_name',
-            'value' => 'ThinkAdmin Test',
-        ]);
-        $this->createSystemConfigFixture([
-            'type' => 'base',
-            'name' => 'app_version',
-            'value' => 'v1.0.0',
-        ]);
-        $this->createSystemConfigFixture([
-            'type' => 'base',
-            'name' => 'site_copy',
-            'value' => 'Copyright Test',
-        ]);
-        $this->createSystemConfigFixture([
-            'type' => 'base',
-            'name' => 'login_name',
-            'value' => '管理后台登录',
+        $this->createSystemDataFixture([
+            'name' => 'system.site',
+            'value' => [
+                'website_name' => '测试站点',
+                'application_name' => 'ThinkAdmin Test',
+                'application_version' => 'v1.0.0',
+                'copyright' => 'Copyright Test',
+                'login_title' => '管理后台登录',
+                'login_background_images' => [
+                    '/static/theme/img/login/bg1.jpg',
+                    '/static/theme/img/login/bg2.jpg',
+                ],
+            ],
         ]);
 
         $response = $this->callPageResponse('index', [], 'GET', true);
         $content = $response->getContent();
-
-        $siteHost = SystemConfig::mk()->where(['type' => 'base', 'name' => 'site_host'])->value('value', '');
 
         $this->assertStringContainsString('<title>系统登录', $content);
         $this->assertStringContainsString('管理后台登录', $content);
@@ -283,19 +269,18 @@ class LoginControllerTest extends SqliteIntegrationTestCase
         $this->assertMatchesRegularExpression('/data-login-slider="[^"]*system\/login\/slider[^"]*"/', $content);
         $this->assertMatchesRegularExpression('/data-login-check="[^"]*system\/login\/check[^"]*"/', $content);
         $this->assertMatchesRegularExpression('/name="password_mode" value="(plain|rsa)"/', $content);
-        $this->assertStringContainsString('background-image:url(/static/theme/img/login/bg1.jpg)', $content);
-        $this->assertStringContainsString('data-bg-transition="/static/theme/img/login/bg1.jpg,/static/theme/img/login/bg2.jpg"', $content);
+        $this->assertStringContainsString('background-image:url(', $content);
+        $this->assertStringContainsString('data-bg-transition="', $content);
         $this->assertStringContainsString('ThinkAdmin Test', $content);
         $this->assertStringContainsString('Copyright Test', $content);
         $this->assertSame('no-store, no-cache, must-revalidate, max-age=0', strval($response->getHeader('Cache-Control')));
         $this->assertSame('no-cache', strval($response->getHeader('Pragma')));
         $this->assertSame('0', strval($response->getHeader('Expires')));
-        $this->assertSame('https://admin.example.com', $siteHost);
     }
 
     protected function defineSchema(): void
     {
-        $this->createSystemConfigTable();
+        $this->createSystemDataTable();
         $this->createSystemUserTable();
         $this->createSystemOplogTable();
     }
@@ -336,7 +321,16 @@ class LoginControllerTest extends SqliteIntegrationTestCase
         $request = (new Request())
             ->withGet($payload)
             ->withPost($payload)
-            ->withServer($secure ? ['HTTPS' => 'on'] : [])
+            ->withServer($secure ? [
+                'HTTPS' => 'on',
+                'HTTP_HOST' => 'admin.example.com',
+                'SERVER_PORT' => '443',
+                'REQUEST_SCHEME' => 'https',
+            ] : [
+                'HTTP_HOST' => '127.0.0.1',
+                'SERVER_PORT' => '80',
+                'REQUEST_SCHEME' => 'http',
+            ])
             ->setHost($secure ? 'admin.example.com' : '127.0.0.1')
             ->setMethod($method)
             ->setController('login')

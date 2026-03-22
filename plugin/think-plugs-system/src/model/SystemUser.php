@@ -64,7 +64,7 @@ class SystemUser extends Model
     {
         if (empty($value)) {
             try {
-                $host = sysconf('base.site_host|raw') ?: 'https://v6.thinkadmin.top';
+                $host = strval(sysdata('system.site.host') ?: 'https://v6.thinkadmin.top');
                 return "{$host}/static/theme/img/headimg.png";
             } catch (\Exception $exception) {
                 return 'https://v6.thinkadmin.top/static/theme/img/headimg.png';

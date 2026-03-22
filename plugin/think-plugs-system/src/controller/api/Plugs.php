@@ -86,13 +86,13 @@ class Plugs extends Controller
             sprintf('window.taDebug = %s;', $this->app->isDebug() ? 'true' : 'false'),
             sprintf("window.taApiPrefix = '%s';", AppService::pluginApiPrefix()),
             sprintf("window.taSystem = '%s';", sysuri('system/index/index', [], false, $domain)),
-            sprintf("window.taStorage = '%s';", sysuri('storage/index/index', [], false, $domain)),
+            sprintf("window.taStorage = '%s';", sysuri('system/config/storage', [], false, $domain)),
             sprintf("window.taSystemApi = '%s';", $this->buildApiRoot('system', $domain)),
-            sprintf("window.taStorageApi = '%s';", $this->buildApiRoot('storage', $domain)),
+            sprintf("window.taStorageApi = '%s';", $this->buildApiRoot('system', $domain)),
             sprintf("window.taTokenHeader = '%s';", SystemAuthService::getTokenHeader()),
             sprintf("window.taTokenScheme = '%s';", SystemAuthService::getTokenScheme()),
             sprintf('window.taTokenExpire = %d;', SystemAuthService::getTokenExpire()),
-            sprintf("window.taEditor = '%s';", sysconf('base.editor|raw') ?: 'ckeditor4'),
+            sprintf("window.taEditor = '%s';", strval(sysdata('system.runtime.editor_driver') ?: 'ckeditor5')),
         ]))->contentType('application/javascript');
     }
 

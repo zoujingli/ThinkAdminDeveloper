@@ -48,7 +48,6 @@ class ConfigControllerTest extends SqliteIntegrationTestCase
             'login_name' => '管理后台',
             'plugin_center_enabled' => '0',
             'plugin_center_show_menu' => '0',
-            'plugin_center_default' => 'storage',
             'xpath' => '/should-be-ignored',
         ]);
 
@@ -69,7 +68,6 @@ class ConfigControllerTest extends SqliteIntegrationTestCase
         $this->assertTrue($pluginCenterRow->isExists());
         $this->assertSame(0, intval($pluginCenter['enabled'] ?? 1));
         $this->assertSame(0, intval($pluginCenter['show_menu'] ?? 1));
-        $this->assertSame('storage', strval($pluginCenter['default'] ?? ''));
         $this->assertTrue($oplog->isExists());
         $this->assertSame('系统配置管理', $oplog->getData('action'));
         $this->assertSame('修改系统参数成功', $oplog->getData('content'));

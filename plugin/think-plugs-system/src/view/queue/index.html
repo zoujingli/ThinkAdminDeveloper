@@ -27,8 +27,8 @@
 <div class="think-box-notify" type="info">
 
     <!--{if isset($super) and $super}-->
-    <b>{:lang('服务状态')}：</b><b class="margin-right-5 pointer" data-queue-message data-tips-text="{:lang('点击刷新服务状态')}"><span class="color-desc">{:lang('检查中')}</span></b>
-    <b data-tips-text="{:lang('点击可复制【服务启动指令】')}" class="layui-icon pointer margin-right-20" data-copy="{$command|default=''}">&#xe633;</b>
+    <b>{:lang('服务状态')}：</b><b class="mr5 pointer" data-queue-message data-tips-text="{:lang('点击刷新服务状态')}"><span class="color-desc">{:lang('检查中')}</span></b>
+    <b data-tips-text="{:lang('点击可复制【服务启动指令】')}" class="layui-icon pointer mr20" data-copy="{$command|default=''}">&#xe633;</b>
     <!--{/if}-->
 
     <b>{:lang('任务统计')}：</b>{:lang('待处理 %s 个任务，处理中 %s 个任务，已完成 %s 个任务，已失败 %s 个任务。', [

@@ -20,11 +20,11 @@ declare(strict_types=1);
 
 namespace plugin\system\service;
 
-use plugin\system\model\SystemConfig;
 use plugin\system\model\SystemData;
 use plugin\system\model\SystemOplog;
 use think\admin\Exception;
 use think\admin\Library;
+use think\admin\Model;
 use think\admin\model\QueryFactory;
 use think\admin\runtime\SystemContext;
 use think\admin\Service;
@@ -33,25 +33,24 @@ use think\admin\service\NodeService;
 use think\admin\Storage;
 use think\db\PDOConnection;
 use think\db\Query;
-use think\Model;
 
-/**
- * 系统配置与运行辅助服务。
- * @class SystemService
- */
 class SystemService extends Service
 {
-    /**
-     * 生成静态路径链接。
-     * @param string $path 后缀路径
-     * @param ?string $type 路径类型
-     * @param mixed $default 默认数据
-     * @return array|string
-     */
+    private const GROUPED_DATA_KEYS = [
+        'system.site',
+        'system.security',
+        'system.runtime',
+        'system.plugin_center',
+        'system.storage',
+        'system.openapi',
+        'wechat.client',
+        'wechat.service',
+    ];
+
     public static function uri(string $path = '', ?string $type = '__ROOT__', $default = '')
     {
         $plugin = Library::$sapp->http->getName();
-        if (strlen($path)) {
+        if ($path !== '') {
             $path = '/' . ltrim($path, '/');
         }
         $prefix = rtrim(dirname(Library::$sapp->request->basefile()), '\/');
@@ -64,85 +63,11 @@ class SystemService extends Service
         return is_null($type) ? $data : ($data[$type] ?? $default);
     }
 
-    /**
-     * 生成全部静态路径。
-     * @return string[]
-     */
     public static function uris(string $path = ''): array
     {
         return static::uri($path, null);
     }
 
-    /**
-     * 设置配置数据。
-     * @param string $name 配置名称
-     * @param mixed $value 配置内容
-     * @return int|string
-     * @throws Exception
-     */
-    public static function set(string $name, $value = '')
-    {
-        [$type, $field] = self::parseRule($name);
-        if (is_array($value)) {
-            $count = 0;
-            foreach ($value as $kk => $vv) {
-                $count += static::set("{$field}.{$kk}", $vv);
-            }
-            return $count;
-        }
-        try {
-            $map = ['type' => $type, 'name' => $field];
-            SystemConfig::mk()->master()->where($map)->findOrEmpty()->save(array_merge($map, ['value' => $value]));
-            sysvar('think.admin.config', []);
-            Library::$sapp->cache->delete('SystemConfig');
-            return 1;
-        } catch (\Exception $exception) {
-            throw new Exception($exception->getMessage(), $exception->getCode());
-        }
-    }
-
-    /**
-     * 读取配置数据。
-     * @return array|mixed|string
-     * @throws Exception
-     */
-    public static function get(string $name = '', string $default = '')
-    {
-        try {
-            if (empty($config = sysvar($keys = 'think.admin.config') ?: [])) {
-                SystemConfig::mk()->cache('SystemConfig')->select()->map(function ($item) use (&$config) {
-                    $config[$item['type']][$item['name']] = $item['value'];
-                });
-                sysvar($keys, $config);
-            }
-            [$type, $field, $outer] = self::parseRule($name);
-            if (empty($name)) {
-                return $config;
-            }
-            if (isset($config[$type])) {
-                $group = $config[$type];
-                if ($outer !== 'raw') {
-                    foreach ($group as $kk => $vo) {
-                        $group[$kk] = htmlspecialchars(strval($vo));
-                    }
-                }
-                return $field ? ($group[$field] ?? $default) : $group;
-            }
-            return $default;
-        } catch (\Exception $exception) {
-            throw new Exception($exception->getMessage(), $exception->getCode());
-        }
-    }
-
-    /**
-     * 数据增量保存。
-     * @param Model|Query|string $query 数据查询对象
-     * @param array $data 需要保存的数据
-     * @param string $key 更新条件查询主键
-     * @param mixed $map 额外更新查询条件
-     * @return bool|int
-     * @throws Exception
-     */
     public static function save($query, array &$data, string $key = 'id', $map = [])
     {
         try {
@@ -155,7 +80,7 @@ class SystemService extends Service
             if ($model->save($data) === false) {
                 return false;
             }
-            if ($model instanceof \think\admin\Model) {
+            if ($model instanceof Model) {
                 $model->{$action}(strval($model->getAttr($key)));
             }
             $data = $model->toArray();
@@ -165,15 +90,6 @@ class SystemService extends Service
         }
     }
 
-    /**
-     * 批量更新保存数据。
-     * @param Model|Query|string $query 数据查询对象
-     * @param array $data 需要保存的数据
-     * @param string $key 更新条件查询主键
-     * @param mixed $map 额外更新查询条件
-     * @return bool|int
-     * @throws Exception
-     */
     public static function update($query, array $data, string $key = 'id', $map = [])
     {
         try {
@@ -187,10 +103,6 @@ class SystemService extends Service
         }
     }
 
-    /**
-     * 获取数据库所有数据表。
-     * @return array [table, total, count]
-     */
     public static function getTables(): array
     {
         $connection = Library::$sapp->db->connect();
@@ -201,37 +113,27 @@ class SystemService extends Service
         return [$tables, count($tables), 0];
     }
 
-    /**
-     * 复制并创建表结构。
-     * @param string $from 来源表名
-     * @param string $create 创建表名
-     * @param array $tables 现有表集合
-     * @param bool $copy 是否复制数据
-     * @param mixed $where 复制条件
-     * @throws Exception
-     */
-    public static function copyTableStruct(string $from, string $create, array $tables = [], bool $copy = false, $where = [])
+    public static function copyTableStruct(string $from, string $create, array $tables = [], bool $copy = false, $where = []): void
     {
         try {
-            if (empty($tables)) {
+            if ($tables === []) {
                 [$tables] = static::getTables();
             }
-            if (!in_array($from, $tables)) {
-                throw new Exception("待复制的数据表 {$from} 不存在！");
+            if (!in_array($from, $tables, true)) {
+                throw new Exception("table {$from} does not exist");
             }
-            if (!in_array($create, $tables)) {
+            if (!in_array($create, $tables, true)) {
                 $connection = Library::$sapp->db->connect();
                 if (!$connection instanceof PDOConnection) {
-                    throw new Exception('当前数据库连接不支持复制数据表结构');
+                    throw new Exception('current database connection does not support table copy');
                 }
                 $connection->execute("CREATE TABLE IF NOT EXISTS {$create} (LIKE {$from})");
                 if ($copy) {
                     $query = Library::$sapp->db->name($from)->where($where);
                     if (!$query instanceof Query) {
-                        throw new Exception('无法构建数据表复制查询');
+                        throw new Exception('failed to build copy query');
                     }
-                    $sql1 = $query->buildSql(false);
-                    $connection->execute("INSERT INTO {$create} {$sql1}");
+                    $connection->execute("INSERT INTO {$create} {$query->buildSql(false)}");
                 }
             }
         } catch (\Exception $exception) {
@@ -239,70 +141,40 @@ class SystemService extends Service
         }
     }
 
-    /**
-     * 保存系统数据。
-     * @param string $name 数据名称
-     * @param mixed $value 数据内容
-     * @throws Exception
-     */
     public static function setData(string $name, $value): bool
     {
         try {
-            $data = ['name' => $name, 'value' => json_encode([$value], 64 | 256)];
-            return SystemData::mk()->where(['name' => $name])->findOrEmpty()->save($data);
+            [$group, $path] = self::resolveDataRule($name);
+            $payload = $path === ''
+                ? self::normalizeDataPayload($value)
+                : self::arraySetValue((array)static::getData($group, []), $path, $value);
+            return self::saveDataRow($group, $payload);
         } catch (\Exception $exception) {
             throw new Exception($exception->getMessage(), $exception->getCode());
         }
     }
 
-    /**
-     * 读取系统数据。
-     * @param string $name 数据名称
-     * @param mixed $default 默认内容
-     * @return mixed
-     */
     public static function getData(string $name, $default = [])
     {
         try {
-            $value = SystemData::mk()->where(['name' => $name])->value('value');
-            if (is_null($value)) {
+            [$group, $path] = self::resolveDataRule($name);
+            $rows = self::loadDataRows();
+            if (!array_key_exists($group, $rows)) {
                 return $default;
             }
-            if (is_string($value) && strpos($value, '[') === 0) {
-                return json_decode($value, true)[0];
-            }
-        } catch (\Exception $exception) {
-            trace_file($exception);
-            return $default;
-        }
-        try {
-            return unserialize($value);
-        } catch (\Exception $exception) {
-            trace_file($exception);
-        }
-        try {
-            $unit = 'i:\d+;|b:[01];|s:\d+:".*?";|O:\d+:".*?":\d+:\{';
-            $preg = '/(?=^|' . $unit . ')s:(\d+):"(.*?)";(?=' . $unit . '|}+$)/';
-            return unserialize(preg_replace_callback($preg, static function ($attr) {
-                return sprintf('s:%d:"%s";', strlen($attr[2]), $attr[2]);
-            }, $value));
+            $payload = is_array($rows[$group]) ? $rows[$group] : [];
+            return $path === '' ? $payload : self::arrayGetValue($payload, $path, $default);
         } catch (\Exception $exception) {
             trace_file($exception);
             return $default;
         }
     }
 
-    /**
-     * 写入系统日志。
-     */
     public static function setOplog(string $action, string $content): bool
     {
         return SystemOplog::mk()->save(static::getOplog($action, $content)) !== false;
     }
 
-    /**
-     * 获取系统日志数组。
-     */
     public static function getOplog(string $action, string $content): array
     {
         return [
@@ -315,13 +187,6 @@ class SystemService extends Service
         ];
     }
 
-    /**
-     * 打印调试数据到文件。
-     * @param mixed $data 输出的数据
-     * @param bool $new 强制替换文件
-     * @param null|string $file 文件名称
-     * @return false|int
-     */
     public static function putDebug($data, bool $new = false, ?string $file = null)
     {
         ob_start();
@@ -332,24 +197,19 @@ class SystemService extends Service
         } elseif (!preg_match('#[/\\\]+#', $file)) {
             $file = runpath("runtime/{$file}.log");
         }
-        is_dir($dir = dirname($file)) or mkdir($dir, 0777, true);
+        is_dir($dir = dirname($file)) || mkdir($dir, 0777, true);
         return $new ? file_put_contents($file, $output) : file_put_contents($file, $output, FILE_APPEND);
     }
 
-    /**
-     * 设置网站 favicon。
-     * @param ?string $icon 网站图标地址
-     * @throws Exception
-     */
     public static function setFavicon(?string $icon = null): bool
     {
         try {
-            $icon = $icon ?: sysconf('base.site_icon|raw');
+            $icon = $icon ?: strval(static::getData('system.site.browser_icon', ''));
             if (!preg_match('#^https?://#i', $icon)) {
-                throw new Exception(lang('无效的原文件地址！'));
+                throw new Exception(lang('无效的图标地址'));
             }
             [$file, $temporary] = self::resolveFaviconFile($icon);
-            if (empty($file) || !is_file($file)) {
+            if ($file === '' || !is_file($file)) {
                 return false;
             }
             try {
@@ -368,10 +228,109 @@ class SystemService extends Service
         }
     }
 
-    /**
-     * 解析 favicon 源文件。
-     * @return array{0:string,1:bool}
-     */
+    private static function loadDataRows(): array
+    {
+        $cacheKey = 'think.admin.data';
+        $rows = sysvar($cacheKey) ?: [];
+        if ($rows !== []) {
+            return $rows;
+        }
+
+        SystemData::mk()->cache('SystemData')->select()->each(function (SystemData $item) use (&$rows) {
+            $rows[strval($item->getAttr('name'))] = (array)$item->getAttr('value');
+        });
+
+        sysvar($cacheKey, $rows);
+        return $rows;
+    }
+
+    private static function saveDataRow(string $name, array $value): bool
+    {
+        $saved = SystemData::mk()->where(['name' => $name])->findOrEmpty()->save([
+            'name' => $name,
+            'value' => $value,
+        ]) !== false;
+
+        sysvar('think.admin.data', []);
+        Library::$sapp->cache->delete('SystemData');
+
+        return $saved;
+    }
+
+    private static function resolveDataRule(string $name): array
+    {
+        $name = trim($name);
+        foreach (self::GROUPED_DATA_KEYS as $group) {
+            if ($name === $group) {
+                return [$group, ''];
+            }
+            if (str_starts_with($name, $group . '.')) {
+                return [$group, substr($name, strlen($group) + 1)];
+            }
+        }
+        return [$name, ''];
+    }
+
+    private static function normalizeDataPayload($value): array
+    {
+        if (is_string($value) && $value !== '') {
+            $decoded = json_decode($value, true);
+            if (is_array($decoded)) {
+                return $decoded;
+            }
+        } elseif (is_object($value)) {
+            $value = json_decode(json_encode($value, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES), true) ?: [];
+        }
+
+        return is_array($value) ? $value : [];
+    }
+
+    private static function normalizeDataLeaf($value)
+    {
+        if (is_string($value) && $value !== '') {
+            $decoded = json_decode($value, true);
+            if (is_array($decoded)) {
+                return $decoded;
+            }
+        } elseif (is_object($value)) {
+            return json_decode(json_encode($value, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES), true) ?: [];
+        }
+
+        return $value;
+    }
+
+    private static function arrayGetValue(array $data, string $path, $default = null)
+    {
+        $segments = array_values(array_filter(explode('.', $path), 'strlen'));
+        foreach ($segments as $segment) {
+            if (!is_array($data) || !array_key_exists($segment, $data)) {
+                return $default;
+            }
+            $data = $data[$segment];
+        }
+        return $data;
+    }
+
+    private static function arraySetValue(array $data, string $path, $value): array
+    {
+        $segments = array_values(array_filter(explode('.', $path), 'strlen'));
+        if ($segments === []) {
+            return $data;
+        }
+
+        $cursor = &$data;
+        $last = array_pop($segments);
+        foreach ($segments as $segment) {
+            if (!isset($cursor[$segment]) || !is_array($cursor[$segment])) {
+                $cursor[$segment] = [];
+            }
+            $cursor = &$cursor[$segment];
+        }
+        $cursor[$last] = self::normalizeDataLeaf($value);
+
+        return $data;
+    }
+
     private static function resolveFaviconFile(string $icon): array
     {
         if ($file = self::resolveUploadFile($icon)) {
@@ -386,9 +345,6 @@ class SystemService extends Service
         return file_put_contents($file, $body) === false ? ['', false] : [$file, true];
     }
 
-    /**
-     * 解析本地上传的图标文件路径。
-     */
     private static function resolveUploadFile(string $icon): ?string
     {
         $path = parse_url($icon, PHP_URL_PATH);
@@ -399,22 +355,7 @@ class SystemService extends Service
         if (preg_match('#(^|/)\.\.(/|$)#', $name)) {
             return null;
         }
-        // upload 目录属于可写运行目录（Phar 环境在外部挂载）
         $file = runpath("public/upload/{$name}");
         return is_file($file) ? $file : null;
-    }
-
-    /**
-     * 解析配置规则。
-     * @param string $rule 配置名称
-     */
-    private static function parseRule(string $rule): array
-    {
-        $type = 'base';
-        if (stripos($rule, '.') !== false) {
-            [$type, $rule] = explode('.', $rule, 2);
-        }
-        [$field, $outer] = explode('|', "{$rule}|");
-        return [$type, $field, strtolower($outer)];
     }
 }

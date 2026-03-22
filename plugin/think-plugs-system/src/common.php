@@ -17,17 +17,14 @@ declare(strict_types=1);
  * | Github Repository: https://github.com/zoujingli/ThinkAdmin
  * +----------------------------------------------------------------------
  */
+use plugin\system\service\PluginCenterService;
 use think\admin\Exception;
 use think\admin\Library;
 use think\admin\route\Url;
 use think\admin\runtime\RequestContext;
 use think\admin\runtime\SystemContext;
-use plugin\system\service\PluginCenterService;
 
 if (!function_exists('auth')) {
-    /**
-     * 访问权限检查.
-     */
     function auth(?string $node): bool
     {
         return SystemContext::instance()->check($node);
@@ -35,12 +32,6 @@ if (!function_exists('auth')) {
 }
 
 if (!function_exists('system_user')) {
-    /**
-     * 获取当前后台用户数据.
-     * @param null|string $field 指定字段
-     * @param mixed $default 默认值
-     * @return array|mixed
-     */
     function system_user(?string $field = null, $default = null)
     {
         return SystemContext::instance()->getUser($field, $default);
@@ -48,13 +39,6 @@ if (!function_exists('system_user')) {
 }
 
 if (!function_exists('system_uri')) {
-    /**
-     * 生成后台 URL 地址
-     * @param string $url 路由地址
-     * @param array $vars PATH 变量
-     * @param bool|string $suffix 后缀
-     * @param bool|string $domain 域名
-     */
     function system_uri(string $url = '', array $vars = [], $suffix = true, $domain = false): string
     {
         $target = Url::normalizeWebTarget($url);
@@ -65,13 +49,6 @@ if (!function_exists('system_uri')) {
 }
 
 if (!function_exists('plguri')) {
-    /**
-     * 生成插件工作台 URL 地址
-     * @param string $url 路由地址
-     * @param array $vars PATH 变量
-     * @param bool|string $suffix 后缀
-     * @param bool|string $domain 域名
-     */
     function plguri(string $url = '', array $vars = [], $suffix = true, $domain = false): string
     {
         $encode = encode(RequestContext::instance()->pluginCode());
@@ -82,30 +59,9 @@ if (!function_exists('plguri')) {
     }
 }
 
-if (!function_exists('sysconf')) {
-    /**
-     * 获取或配置系统参数.
-     * @param string $name 参数名称
-     * @param mixed $value 参数内容
-     * @return mixed
-     * @throws Exception
-     */
-    function sysconf(string $name = '', $value = null)
-    {
-        $context = SystemContext::instance();
-        if (is_null($value) && is_string($name)) {
-            return $context->getConfig($name);
-        }
-        return $context->setConfig($name, $value);
-    }
-}
-
 if (!function_exists('sysdata')) {
     /**
-     * JSON 数据读取与存储.
-     * @param string $name 数据名称
-     * @param mixed $value 数据内容
-     * @return mixed
+     * @param null|mixed $value
      * @throws Exception
      */
     function sysdata(string $name, $value = null)
@@ -118,12 +74,20 @@ if (!function_exists('sysdata')) {
     }
 }
 
-if (!function_exists('sysoplog')) {
+if (!function_exists('sysget')) {
     /**
-     * 写入系统日志.
-     * @param string $action 日志行为
-     * @param string $content 日志内容
+     * 显式读取系统数据，避免 sysdata(name, value) 的读写语义混用。
+     *
+     * @param null|mixed $default
+     * @throws Exception
      */
+    function sysget(string $name, $default = null)
+    {
+        return SystemContext::instance()->getData($name, $default);
+    }
+}
+
+if (!function_exists('sysoplog')) {
     function sysoplog(string $action, string $content): bool
     {
         return SystemContext::instance()->setOplog($action, $content);
@@ -131,9 +95,6 @@ if (!function_exists('sysoplog')) {
 }
 
 if (!function_exists('admin_menu_filter')) {
-    /**
-     * 运行时过滤后台菜单
-     */
     function admin_menu_filter(array $menus): array
     {
         if (PluginCenterService::isMenuVisible()) {

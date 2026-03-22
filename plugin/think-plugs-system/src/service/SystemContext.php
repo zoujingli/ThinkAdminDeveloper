@@ -23,10 +23,6 @@ namespace plugin\system\service;
 use plugin\system\model\SystemBase;
 use think\admin\contract\SystemContextInterface;
 
-/**
- * System 插件系统上下文实现。
- * @class SystemContext
- */
 class SystemContext implements SystemContextInterface
 {
     public function buildToken(): string
@@ -87,16 +83,6 @@ class SystemContext implements SystemContextInterface
     public function clearAuth(): bool
     {
         return SystemAuthService::clear();
-    }
-
-    public function getConfig(string $name = '', string $default = '')
-    {
-        return SystemService::get($name, $default);
-    }
-
-    public function setConfig(string $name, $value = '')
-    {
-        return SystemService::set($name, $value);
     }
 
     public function getData(string $name, $default = [])

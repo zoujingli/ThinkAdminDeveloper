@@ -388,7 +388,7 @@ class SystemAuthService extends Service
      */
     public static function getUserTheme(): string
     {
-        $default = sysconf('base.site_theme|raw') ?: 'default';
+        $default = strval(sysdata('system.site.theme') ?: 'default');
         return static::getUserData('site_theme', $default);
     }
 

@@ -20,8 +20,8 @@ declare(strict_types=1);
 
 namespace think\admin\tests;
 
-use plugin\storage\model\SystemFile;
 use plugin\system\controller\File as FileController;
+use plugin\system\model\SystemFile;
 use think\admin\runtime\RequestContext;
 use think\admin\tests\Support\SqliteIntegrationTestCase;
 use think\exception\HttpResponseException;

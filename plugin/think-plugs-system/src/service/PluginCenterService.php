@@ -29,10 +29,12 @@ use think\admin\service\AppService;
  */
 abstract class PluginCenterService extends Service
 {
-    public const CONFIG_KEY = 'system.plugin.center.config';
+    public const CONFIG_KEY = 'system.plugin_center';
 
     /**
-     * 获取插件中心配置
+     * 获取插件中心配置.
+     *
+     * @return array{enabled:int,show_menu:int}
      */
     public static function getConfig(): array
     {
@@ -41,25 +43,26 @@ abstract class PluginCenterService extends Service
         return [
             'enabled' => array_key_exists('enabled', $data) ? (empty($data['enabled']) ? 0 : 1) : 1,
             'show_menu' => array_key_exists('show_menu', $data) ? (empty($data['show_menu']) ? 0 : 1) : 1,
-            'default' => static::normalizeDefault(strval($data['default'] ?? '')),
         ];
     }
 
     /**
-     * 保存插件中心配置
+     * 保存插件中心配置.
+     *
+     * @return array{enabled:int,show_menu:int}
      */
     public static function setConfig(array $data): array
     {
-        $config = array_merge(static::getConfig(), $data);
-        $config['enabled'] = empty($config['enabled']) ? 0 : 1;
-        $config['show_menu'] = empty($config['show_menu']) ? 0 : 1;
-        $config['default'] = static::normalizeDefault(strval($config['default'] ?? ''));
+        $config = [
+            'enabled' => empty($data['enabled']) ? 0 : 1,
+            'show_menu' => empty($data['show_menu']) ? 0 : 1,
+        ];
         sysdata(static::CONFIG_KEY, $config);
         return $config;
     }
 
     /**
-     * 判断插件中心是否启用
+     * 判断插件中心是否启用.
      */
     public static function isEnabled(): bool
     {
@@ -67,7 +70,7 @@ abstract class PluginCenterService extends Service
     }
 
     /**
-     * 判断插件中心菜单是否显示
+     * 判断插件中心菜单是否显示.
      */
     public static function isMenuVisible(): bool
     {
@@ -76,43 +79,10 @@ abstract class PluginCenterService extends Service
     }
 
     /**
-     * 获取默认插件编码
-     */
-    public static function getDefaultApp(): string
-    {
-        return strval(static::getConfig()['default'] ?? '');
-    }
-
-    /**
-     * 判断插件是否可作为默认入口
-     */
-    public static function hasSelectableApp(string $code): bool
-    {
-        return array_key_exists($code, static::getSelectableApps());
-    }
-
-    /**
-     * 获取默认入口可选插件
-     */
-    public static function getSelectableApps(): array
-    {
-        $items = [];
-        foreach (static::getLocalPlugs(true) as $item) {
-            $items[$item['code']] = sprintf('%s [%s]', $item['name'] ?: $item['code'], $item['code']);
-        }
-
-        $default = static::getDefaultApp();
-        if ($default !== '' && !isset($items[$default])) {
-            $items[$default] = sprintf('%s [%s]', $default, '当前配置');
-        }
-
-        asort($items, SORT_NATURAL);
-        return $items;
-    }
-
-    /**
-     * 获取可进入插件列表
+     * 获取可进入的插件列表.
+     *
      * @param bool $check 是否仅返回具备可见菜单的插件
+     * @return array<string, array<string, mixed>>
      */
     public static function getLocalPlugs(bool $check = false): array
     {
@@ -147,14 +117,5 @@ abstract class PluginCenterService extends Service
             ];
         }
         return $data;
-    }
-
-    /**
-     * 归一化默认值
-     */
-    private static function normalizeDefault(string $default): string
-    {
-        $default = trim($default);
-        return $default === '0' ? '' : $default;
     }
 }

@@ -20,11 +20,11 @@ declare(strict_types=1);
 
 namespace plugin\system\controller;
 
-use plugin\storage\service\StorageConfig;
 use plugin\system\service\PluginCenterService;
 use plugin\system\service\SystemAuthService;
 use plugin\system\service\SystemService;
 use plugin\system\service\UserService;
+use plugin\system\storage\StorageConfig;
 use plugin\worker\service\ProcessService;
 use think\admin\Controller;
 use think\admin\service\AppService;
@@ -323,7 +323,7 @@ class Config extends Controller
         if (is_string($images)) {
             $images = str2arr($images, '|');
         }
-        $site['login_background_images'] = array_values(array_filter(array_map(static fn($item) => trim(strval($item)), (array)$images)));
+        $site['login_background_images'] = array_values(array_filter(array_map(static fn ($item) => trim(strval($item)), (array)$images)));
 
         if (!isset(static::themeCatalog[$site['theme']])) {
             $site['theme'] = 'default';
