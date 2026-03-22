@@ -1,29 +1,29 @@
 {block name="content"}
 <div class="think-box-shadow">
-    <div class="layui-bg-gray border-line border-radius-5 margin-bottom-15 padding-20">
+    <div class="layui-bg-gray ba border-radius-5 mb15 pa20">
         <div class="layui-row">
             <div class="layui-col-xs6">
                 <div class="layui-form-item">
                     <b>代理姓名：</b><b class="color-blue">{$agent.username|default=''}</b>
-                    <span class="margin-left-5">{$agent.phone|default=''}</span>
+                    <span class="ml5">{$agent.phone|default=''}</span>
                 </div>
                 <div class="layui-form-item">
                     <b>产品编号：</b><b>{$product.code|default=''}</b>
                 </div>
                 <div>
                     <b>产品名称：</b><b class="color-blue">{$product.name|default=''}</b>
-                    <span class="margin-left-5">{$product_spec|show_goods_spec}</span>
+                    <span class="ml5">{$product_spec|show_goods_spec}</span>
                 </div>
             </div>
             <div class="layui-col-xs6 sub-strong-blue">
                 <div class="layui-form-item">
-                    <span>累计入库<b class="margin-row-5">{$stock.stock_total+$stock.vir_total}</b>{$stock.product.unit|default=''}</span>
+                    <span>累计入库<b class="mx5">{$stock.stock_total+$stock.vir_total}</b>{$stock.product.unit|default=''}</span>
                 </div>
                 <div class="layui-form-item">
-                    <span>累计出库<b class="margin-row-5">{$stock.sotck_used+$stock.vir_used}</b>{$stock.product.unit|default=''}</span>
+                    <span>累计出库<b class="mx5">{$stock.sotck_used+$stock.vir_used}</b>{$stock.product.unit|default=''}</span>
                 </div>
                 <div>
-                    <span>现有库存<b class="margin-row-5">{$stock.stock_total+$stock.vir_total-$stock.sotck_used-$stock.vir_used}</b> {$stock.product.unit|default=''}</span>
+                    <span>现有库存<b class="mx5">{$stock.stock_total+$stock.vir_total-$stock.sotck_used-$stock.vir_used}</b> {$stock.product.unit|default=''}</span>
                 </div>
             </div>
         </div>
@@ -54,7 +54,7 @@
                 {field: 'create_time', title: '操作时间', minWidth: 170, align: 'center', sort: true},
                 {
                     field: 'num_used', title: '操作数量', align: 'right', width: 130, templet: function (d) {
-                        return layui.laytpl('<span><b class="{{d.class}} font-s16 margin-right-5">{{d.step}} {{d.num}}</b> {{d.unit}}</span>').render({
+                        return layui.laytpl('<span><b class="{{d.class}} font-s16 mr5">{{d.step}} {{d.num}}</b> {{d.unit}}</span>').render({
                             num: d.num_used + d.vir_used,
                             step: d.auid === auid ? '+' : '-',
                             unit: '{$stock.product.unit|default=""}',

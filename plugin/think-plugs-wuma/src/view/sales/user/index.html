@@ -28,11 +28,11 @@
                     }
                 },
                 {field: 'level', title: '等级名称', minWidth: 80, align: 'center', templet: "<div>{{d.levelinfo.name||''}}</div>"},
-                {field: 'phone', title: '代理信息', minWidth: 110, templet: '<div><b class="margin-right-5 color-blue">{{d.phone||""}}</b><span>{{d.username||""}}</span></div>'},
+                {field: 'phone', title: '代理信息', minWidth: 110, templet: '<div><b class="mr5 color-blue">{{d.phone||""}}</b><span>{{d.username||""}}</span></div>'},
                 {
                     field: 'upAgent', title: '上级代理', minWidth: 120, templet: function (d) {
                         if ((d.supAgent = d.supAgent || null)) {
-                            return layui.laytpl('<b class="margin-right-5 color-blue">{{d.phone||""}}</b><span>{{d.username||""}}</span>').render(d.supAgent);
+                            return layui.laytpl('<b class="mr5 color-blue">{{d.phone||""}}</b><span>{{d.username||""}}</span>').render(d.supAgent);
                         } else {
                             return '-';
                         }

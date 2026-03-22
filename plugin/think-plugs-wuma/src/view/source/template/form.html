@@ -29,9 +29,9 @@
             </div>
             <div class="layui-clear">
                 <div class="box-left pull-left">
-                    <div v-for="tool in tools" class="border-0 padding-left-0">
-                        <b v-text="tool.name" class="margin-top-15 layui-badge layui-bg-blue"></b>
-                        <div class="layui-row margin-top-10">
+                    <div v-for="tool in tools" class="b0 pl0">
+                        <b v-text="tool.name" class="mt15 layui-badge layui-bg-blue"></b>
+                        <div class="layui-row mt10">
                             <div class="layui-col-xs4 text-center" v-for="item in tool.data">
                                 <div v-if="item.active">
                                     <a @click="addItem(item.name)" class="transition">
@@ -50,8 +50,8 @@
                     </div>
                 </div>
                 <div class='box-center pull-left shadow-mini mobile-preview'>
-                    <div class='mobile-header padding-row-40' v-text="name"></div>
-                    <div class='mobile-body border-0'>{include file='source/template/form-view'}</div>
+                    <div class='mobile-header px40' v-text="name"></div>
+                    <div class='mobile-body b0'>{include file='source/template/form-view'}</div>
                 </div>
                 <div class="box-right pull-left transition" v-if="item.name">
                     <div class="layui-card shadow-mini">
@@ -70,7 +70,7 @@
             <textarea readonly name="content" class="layui-textarea">{{JSON.stringify(items)}}</textarea>
         </label>
 
-        <div class="hr-line-dashed margin-top-40"></div>
+        <div class="hr-line-dashed mt40"></div>
         {notempty name='vo.id'}<input name="id" type="hidden" value="{$vo.id}">{/notempty}
         {notempty name='vo.code'}<input name="code" type="hidden" value="{$vo.code}">{/notempty}
         {notempty name='vo.from'}<input name="from" type="hidden" value="{$vo.from}">{/notempty}

@@ -69,7 +69,7 @@
 <script type="text/html" id="tpl3">
     赋码类型：{{d.type?'关联赋码':'区间赋码'}}
     <!-- {if auth('mode')} -->
-    <a class="ta-ml-10" data-confirm="切换模式会丢失区间数据，确认？" data-load="{:url('mode')}?batch={{d.batch}}">切换模式</a>
+    <a class="ml10" data-confirm="切换模式会丢失区间数据，确认？" data-load="{:url('mode')}?batch={{d.batch}}">切换模式</a>
     <!-- {/if} -->
     <br>
     创建时间：{{d.create_time}}

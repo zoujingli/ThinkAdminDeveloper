@@ -17,7 +17,6 @@
         "ext-json": "*",
         "ext-bcmath": "*",
         "zoujingli/think-plugs-helper": "^8.0",
-        "zoujingli/think-plugs-storage": "^8.0",
         "zoujingli/think-plugs-system": "^8.0",
         "zoujingli/think-plugs-worker": "^8.0",
         "zoujingli/think-plugs-wemall": "^8.0"

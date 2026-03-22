@@ -92,7 +92,7 @@ class Create extends Command
         $this->app->cache->set("create_auth_{$this->batch}", $auth, 360);
         $token = base64_encode(json_encode([
             'auth' => $auth,
-            'host' => sysconf('site_host'),
+            'host' => strval(sysget('system.site.host', '')),
             'target' => runpath('safefile/code/'),
         ]));
         $binary = dirname(__DIR__, 2) . '/stc/bin/' . (Process::isWin() ? 'coder.exe' : 'coder');

@@ -1,5 +1,5 @@
 <form action="{:sysuri()}" data-table-id="QueryData" class="layui-form layui-card" data-auto="true" method="post">
-    <div class="layui-card-body padding-left-40">
+    <div class="layui-card-body pl40">
 
         <label class="layui-form-item block relative">
             <span class="help-label"><b>流程编号</b>Blockchain Code</span>
@@ -15,7 +15,7 @@
             <span class="help-label"><b>流程环节</b>Blockchain Segment</span>
             <div style="max-height:300px" class="overauto">
                 {foreach $vo.data as $item}
-                <div class="layui-card border-radius-0 margin-bottom-15" style="border:1px solid #EEE">
+                <div class="layui-card border-radius-0 mb15" style="border:1px solid #EEE">
                     <div class="layui-card-header layui-bg-gray font-w7" style="padding:0 15px">{$item.title}</div>
                     <div class="layui-card-body layui-bg-gray" style="padding:10px 15px">{$item.content}</div>
                     {if stripos($item.fileType,'image')!==false}

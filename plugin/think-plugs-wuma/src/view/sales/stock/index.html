@@ -29,27 +29,27 @@
 
 <script type="text/html" id="GoodsTpl">
     {{#if(!d.g){}}
-    <div class="color-desc margin-top-20">关联产品数据无效！</div>
+    <div class="color-desc mt20">关联产品数据无效！</div>
     {{#}else{}}
     <div class="headimg headimg-md headimg-no pull-left" data-tips-image data-tips-hover data-lazy-src="{{d.cover||''}}"></div>
     产品编号：<b class="color-blue">{{ d.g_code || '-' }}</b><br>
-    产品名称：{{d.name||'-'}}<span class="color-desc padding-left-5">({{ showSpec(d.g_spec || '') }})</span><br>
+    产品名称：{{d.name||'-'}}<span class="color-desc pl5">({{ showSpec(d.g_spec || '') }})</span><br>
     产品状态：{{- d.delete_time?'<b class="color-red">已删除</b>':(d.status<1?'<b class="color-red">已下架</b>':'<b class="color-green">使用中</b>')}}
     {{#}}}
 </script>
 
 <script type="text/html" id="StockTpl">
     <div>
-        <span>累计入库：<b class="margin-right-5">{{ d.num_total + d.vir_total }}</b>{{ d.gunit || '' }}</span>
-        <span class="color-desc">（ 扫码 <b class="margin-right-5">{{ d.num_total }}</b>{{ d.gunit || '' }}, 虚拟 <b class="margin-right-5">{{ d.vir_total }}</b>{{ d.gunit || '' }} ）</span>
+        <span>累计入库：<b class="mr5">{{ d.num_total + d.vir_total }}</b>{{ d.gunit || '' }}</span>
+        <span class="color-desc">（ 扫码 <b class="mr5">{{ d.num_total }}</b>{{ d.gunit || '' }}, 虚拟 <b class="mr5">{{ d.vir_total }}</b>{{ d.gunit || '' }} ）</span>
     </div>
     <div>
-        <span>累计出库：<b class="margin-right-5">{{ d.num_count + d.vir_count }}</b>{{ d.gunit || '' }}</span>
-        <span class="color-desc">（ 扫码 <b class="margin-right-5">{{ d.num_count }}</b>{{ d.gunit || '' }}, 虚拟 <b class="margin-right-5">{{ d.vir_count }}</b>{{ d.gunit || '' }} ）</span>
+        <span>累计出库：<b class="mr5">{{ d.num_count + d.vir_count }}</b>{{ d.gunit || '' }}</span>
+        <span class="color-desc">（ 扫码 <b class="mr5">{{ d.num_count }}</b>{{ d.gunit || '' }}, 虚拟 <b class="mr5">{{ d.vir_count }}</b>{{ d.gunit || '' }} ）</span>
     </div>
     <div>
-        <span>现有库存：<b class="margin-right-5">{{ d.num_total + d.vir_total - d.num_count - d.vir_count }}</b> {{ d.gunit || '' }}</span>
-        <span class="color-desc">（ 扫码 <b class="margin-right-5">{{ d.num_total - d.num_count }}</b>{{ d.gunit || '' }}, 虚拟 <b class="margin-right-5">{{ d.vir_total - d.vir_count }}</b>{{ d.gunit || '' }} ）</span>
+        <span>现有库存：<b class="mr5">{{ d.num_total + d.vir_total - d.num_count - d.vir_count }}</b> {{ d.gunit || '' }}</span>
+        <span class="color-desc">（ 扫码 <b class="mr5">{{ d.num_total - d.num_count }}</b>{{ d.gunit || '' }}, 虚拟 <b class="mr5">{{ d.vir_total - d.vir_count }}</b>{{ d.gunit || '' }} ）</span>
     </div>
 </script>
 {/block}

@@ -34,7 +34,7 @@
     {{#}}}
     <div class="text-middle inline-block text-left">
         <div>调货单号：<b>{{ d.code }}</b></div>
-        <div>调货数量：<b>{{ d.num_need + d.vir_need }}</b><span class="margin-row-5">{{ d.gunit || '件' }}</span>( 已调货 <b>{{ d.num_used + d.vir_used }}</b><span class="margin-left-5">{{ d.gunit || '件' }}</span> )</div>
+        <div>调货数量：<b>{{ d.num_need + d.vir_need }}</b><span class="mx5">{{ d.gunit || '件' }}</span>( 已调货 <b>{{ d.num_used + d.vir_used }}</b><span class="ml5">{{ d.gunit || '件' }}</span> )</div>
     </div>
 </script>
 
@@ -45,16 +45,16 @@
     <div class="headimg headimg-no pull-left" data-tips-image data-tips-hover data-lazy-src="{{d.product.cover||''}}"></div>
 
     <div>产品编号：<b class="color-blue">{{ d.product_code || '-' }}</b></div>
-    <div>产品名称：{{ d.product.name || '-' }}<span class="color-desc padding-left-5">( {{ showSpec(d.product_spec || '') }} )</span></div>
+    <div>产品名称：{{ d.product.name || '-' }}<span class="color-desc pl5">( {{ showSpec(d.product_spec || '') }} )</span></div>
 
     {{#}}}
 </script>
 
 <script type="text/html" id="StockTpl">
     调货状态：{{-d.status === 1?'<b class="color-text">待调货</b>':'<b class="color-green">已调货</b>'}}
-    {{#if(d.type === 1){}}<span class="layui-badge layui-bg-cyan margin-left-5">按单调货</span>{{#}}}
-    {{#if(d.type === 2){}}<span class="layui-badge layui-bg-blue margin-left-5">直接调货</span>{{#}}}
-    {{#if(d.type === 3){}}<span class="layui-badge layui-bg-red margin-left-5">仓库调度</span>{{#}}}
+    {{#if(d.type === 1){}}<span class="layui-badge layui-bg-cyan ml5">按单调货</span>{{#}}}
+    {{#if(d.type === 2){}}<span class="layui-badge layui-bg-blue ml5">直接调货</span>{{#}}}
+    {{#if(d.type === 3){}}<span class="layui-badge layui-bg-red ml5">仓库调度</span>{{#}}}
     <div>创建时间：{{ d.create_time || '' }}</div>
 </script>
 
@@ -63,7 +63,7 @@
     <div>代理姓名：{{ d.fromer.username || '-' }}</div>
     <div>代理手机：<b>{{ d.fromer.phone || '-' }}</b></div>
     {{# }else{ }}
-    <div class="color-desc margin-top-10">无代理信息</div>
+    <div class="color-desc mt10">无代理信息</div>
     {{# } }}
 </script>
 
@@ -72,7 +72,7 @@
     <div>代理姓名：{{ d.agent.username || '-' }}</div>
     <div>代理手机：<b>{{ d.agent.phone || '-' }}</b></div>
     {{# }else{ }}
-    <div class="color-desc margin-top-10">无代理信息</div>
+    <div class="color-desc mt10">无代理信息</div>
     {{# } }}
 </script>
 

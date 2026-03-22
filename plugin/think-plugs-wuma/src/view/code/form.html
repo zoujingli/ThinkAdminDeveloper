@@ -12,13 +12,13 @@
 </style>
 
 <form class="layui-form layui-card layui-form-pane" data-table-id="CoderTable" action="{:sysuri()}" data-auto="true" method="post">
-    <div class="layui-card-body padding-left-40 transition" id="RuleForm">
+    <div class="layui-card-body pl40 transition" id="RuleForm">
 
         <div class="layui-row layui-col-space15">
             <div class="layui-col-xs6">
                 <label class="layui-form-label label-required notselect">物码套件组合</label>
                 <div class="layui-input-block">
-                    <div class="layui-input padding-left-15">
+                    <div class="layui-input pl15">
                         <label class="think-checkbox notselect" v-if="type===1">
                             <input checked :checked="type===1" onclick="this.checked=true" type="checkbox" value="1" name="is_min" lay-ignore> 防伪
                         </label>
@@ -37,7 +37,7 @@
             <div class="layui-col-xs6">
                 <label class="layui-form-label label-required notselect">物码关联类型</label>
                 <div class="layui-input-block">
-                    <div class="layui-input padding-left-15">
+                    <div class="layui-input pl15">
                         {foreach [1=>'前关联',2=>'后关联'] as $k => $v}
                         <label class="think-radio notselect">
                             <input v-model.number="type" type="radio" value="{$k}" name="type" lay-ignore> {$v}
@@ -106,14 +106,14 @@
 
             <div class="layui-col-xs6" v-if="type===1">
                 <label class="layui-form-label label-required notselect">生成小码数量</label>
-                <div class="layui-input-block margin-right-0">
+                <div class="layui-input-block mr0">
                     <input name="number" class="layui-input" @change="number" :min="step" :step="step" v-model.number="minNumber" value="{$vo.number|default=0}" data-value-min="1" data-blur-number="0" type='number'>
                 </div>
             </div>
 
             <div class="layui-col-xs6" v-if="type===2">
                 <label class="layui-form-label label-required notselect">生成小码数量</label>
-                <div class="layui-input-block margin-right-0">
+                <div class="layui-input-block mr0">
                     <input name="number" class="layui-input" @change="number" :step="step" v-model.number="minNumber" value="{$vo.number|default=0}" data-value-min="0" data-blur-number="0" type='number'>
                 </div>
             </div>

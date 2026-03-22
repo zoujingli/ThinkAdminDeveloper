@@ -2,7 +2,7 @@
 
 {block name='header'}
 <div class="layui-card-header sub-strong-blue">
-    <span class="layui-icon font-s10 color-desc margin-right-5">&#xe65b;</span>{$title|default=''}
+    <span class="layui-icon font-s10 color-desc mr5">&#xe65b;</span>{$title|default=''}
     <div class="pull-right">
         <!--{if auth("add")}-->
         <button data-modal='{:url("add")}' data-title="添加物码" class='layui-btn layui-btn-sm layui-btn-primary'>添加物码</button>
@@ -118,7 +118,7 @@
 </script>
 
 <script type="text/html" id="tpl4">
-    <div class="padding-top-20"></div>
+    <div class="pt20"></div>
     <!--{if auth("state")}-->
     <input type="checkbox" value="{{d.id}}" lay-skin="switch" lay-text="已激活|已禁用" lay-filter="StatusSwitch" {{-d.status>0?'checked':''}}>
     <!--{else}-->
@@ -127,7 +127,7 @@
 </script>
 
 <script type="text/html" id="toolbar">
-    <div class="padding-top-10"></div>
+    <div class="pt10"></div>
 
     {if auth('template')}
     <a class="layui-btn layui-btn-sm layui-btn-primary" data-event-dbclick="click" data-title="修改导出模板" data-width="820px" data-modal="{:url('template')}?id={{d.id}}">修改</a>

@@ -41,7 +41,7 @@
     {{#}}}
     <div class="text-middle inline-block text-left">
         <div>出库单号：<b>{{ d.code }}</b></div>
-        <div>出库数量：<b>{{ d.num_need + d.vir_need }}</b><span class="margin-row-5">{{ d.gunit || '件' }}</span>( 已出库 <b>{{ d.num_used + d.vir_used }}</b><span class="margin-left-5">{{ d.gunit || '件' }}</span> )</div>
+        <div>出库数量：<b>{{ d.num_need + d.vir_need }}</b><span class="mx5">{{ d.gunit || '件' }}</span>( 已出库 <b>{{ d.num_used + d.vir_used }}</b><span class="ml5">{{ d.gunit || '件' }}</span> )</div>
     </div>
 </script>
 
@@ -52,17 +52,17 @@
     <div class="headimg headimg-no pull-left" data-tips-image data-tips-hover data-lazy-src="{{d.gcover||''}}"></div>
     <div class="inline-block text-left">
         <div>产品编号：<b class="color-blue">{{ d.gcode || '-' }}</b></div>
-        <div>产品名称：{{ d.gname || '-' }}<span class="color-desc padding-left-5">( {{ showSpec(d.gspec || '') }} )</span></div>
+        <div>产品名称：{{ d.gname || '-' }}<span class="color-desc pl5">( {{ showSpec(d.gspec || '') }} )</span></div>
     </div>
     {{# } }}
 </script>
 
 <script type="text/html" id="StockTpl">
     出库状态：{{-d.status === 1?'<b class="color-text">待出库</b>':'<b class="color-green">已出库</b>'}}
-    {{# if(d.type === 4){ }}<span class="layui-badge layui-bg-cyan margin-left-5">按单出库</span>{{# } }}
-    {{# if(d.type === 5){ }}<span class="layui-badge layui-bg-blue margin-left-5">直接出库</span>{{# } }}
-    {{# if(d.type === 6){ }}<span class="layui-badge layui-bg-purple margin-left-5">调货出库</span>{{# } }}
-    {{# if(d.type === 7){ }}<span class="layui-badge layui-bg-red margin-left-5">关联出库</span>{{# } }}
+    {{# if(d.type === 4){ }}<span class="layui-badge layui-bg-cyan ml5">按单出库</span>{{# } }}
+    {{# if(d.type === 5){ }}<span class="layui-badge layui-bg-blue ml5">直接出库</span>{{# } }}
+    {{# if(d.type === 6){ }}<span class="layui-badge layui-bg-purple ml5">调货出库</span>{{# } }}
+    {{# if(d.type === 7){ }}<span class="layui-badge layui-bg-red ml5">关联出库</span>{{# } }}
     <div>创建时间：{{ d.create_time || '' }}</div>
 </script>
 
@@ -76,7 +76,7 @@
     <div>代理姓名：{{ d.agent.username || '-' }}</div>
     <div>代理手机：<b>{{ d.agent.phone || '-' }}</b></div>
     {{# }else{ }}
-    <div class="color-desc margin-top-10">无代理信息</div>
+    <div class="color-desc mt10">无代理信息</div>
     {{# } }}
 </script>
 

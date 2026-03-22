@@ -1,6 +1,6 @@
 {block name="content"}
 <div class="think-box-shadow">
-    <div class="layui-bg-gray border-line border-radius-5 margin-bottom-15 padding-20">
+    <div class="layui-bg-gray ba border-radius-5 mb15 pa20">
         <div class="layui-row">
             <div class="layui-col-xs6">
                 <div class="layui-form-item">
@@ -8,25 +8,25 @@
                 </div>
                 <div class="layui-form-item">
                     <b>产品名称：</b><b class="color-blue">{$goods.gname|default=''}</b>
-                    <span class="margin-left-5">{$goods.gspec|show_gspec}</span>
+                    <span class="ml5">{$goods.gspec|show_gspec}</span>
                 </div>
                 <div>
                     <b>所属仓库：</b><b class="color-blue">{$warehouse.name|default=''}</b>
-                    <span class="margin-left-5">{$warehouse.code|default=''}</span>
+                    <span class="ml5">{$warehouse.code|default=''}</span>
                 </div>
             </div>
             <div class="layui-col-xs6 sub-strong-blue">
                 <div class="layui-form-item">
-                    <span>累计入库<b class="margin-row-5">{$stock.num_total+$stock.vir_total}</b>{$goods.gunit|default=''}</span>
-                    <span class="color-desc font-s12">（ 扫码<b class="margin-row-5">{$stock.num_total}</b>{$goods.gunit|default=''}, 虚拟<b class="margin-row-5">{$stock.vir_total}</b>{$goods.gunit|default=''} ）</span>
+                    <span>累计入库<b class="mx5">{$stock.num_total+$stock.vir_total}</b>{$goods.gunit|default=''}</span>
+                    <span class="color-desc font-s12">（ 扫码<b class="mx5">{$stock.num_total}</b>{$goods.gunit|default=''}, 虚拟<b class="mx5">{$stock.vir_total}</b>{$goods.gunit|default=''} ）</span>
                 </div>
                 <div class="layui-form-item">
-                    <span>累计出库<b class="margin-row-5">{$stock.num_count+$stock.vir_count}</b>{$goods.gunit|default=''}</span>
-                    <span class="color-desc font-s12">（ 扫码<b class="margin-row-5">{$stock.num_count}</b>{$goods.gunit|default=''}, 虚拟<b class="margin-row-5">{$stock.vir_count}</b>{$goods.gunit|default=''} ）</span>
+                    <span>累计出库<b class="mx5">{$stock.num_count+$stock.vir_count}</b>{$goods.gunit|default=''}</span>
+                    <span class="color-desc font-s12">（ 扫码<b class="mx5">{$stock.num_count}</b>{$goods.gunit|default=''}, 虚拟<b class="mx5">{$stock.vir_count}</b>{$goods.gunit|default=''} ）</span>
                 </div>
                 <div>
-                    <span>现有库存<b class="margin-row-5">{$stock.num_total+$stock.vir_total-$stock.num_count-$stock.vir_count}</b>{$goods.gunit|default=''}</span>
-                    <span class="color-desc font-s12">（ 扫码<b class="margin-row-5">{$stock.num_total-$stock.num_count}</b>{$goods.gunit|default=''}, 虚拟<b class="margin-row-5">{$stock.vir_total-$stock.vir_count}</b>{$goods.gunit|default=''} ）</span>
+                    <span>现有库存<b class="mx5">{$stock.num_total+$stock.vir_total-$stock.num_count-$stock.vir_count}</b>{$goods.gunit|default=''}</span>
+                    <span class="color-desc font-s12">（ 扫码<b class="mx5">{$stock.num_total-$stock.num_count}</b>{$goods.gunit|default=''}, 虚拟<b class="mx5">{$stock.vir_total-$stock.vir_count}</b>{$goods.gunit|default=''} ）</span>
                 </div>
             </div>
         </div>
@@ -49,7 +49,7 @@
                 {field: 'create_time', title: '操作时间', minWidth: 170, align: 'center', sort: true},
                 {
                     field: 'num_need', title: '操作数量', align: 'right', templet: function (d) {
-                        return laytpl('<span><b class="{{d.class}} font-s16 margin-right-5">{{d.step}} {{d.gnum}}</b> {{d.unit}}</span>').render({
+                        return laytpl('<span><b class="{{d.class}} font-s16 mr5">{{d.step}} {{d.gnum}}</b> {{d.unit}}</span>').render({
                             gnum: d.vir_used + d.num_used, step: d.type < 3 ? '+' : '-',
                             unit: '{$goods.gunit|default=""}', class: d.type < 3 ? 'color-blue' : 'color-red'
                         });

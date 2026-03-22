@@ -13,7 +13,7 @@
     }
 </style>
 <form class="layui-form layui-card" action="{:sysuri()}" data-table-id="CoderTable" id="RuleForm" data-auto="true" method="post">
-    <div class="layui-card-body padding-left-40">
+    <div class="layui-card-body pl40">
 
         <label class="layui-form-item block relative">
             <span class="help-label label-required-prev"><b>物码批次号</b>Code Batch</span>
@@ -28,7 +28,7 @@
             </label>
             <div class="sub-strong-blue color-desc notselect">
                 {foreach $fields as $k => $v}
-                <div class='margin-right-5 inline-block pointer'>{$v}<b><span style="padding-left:2px">{</span>{$k}<span>}</span></b></div>
+                <div class='mr5 inline-block pointer'>{$v}<b><span style="padding-left:2px">{</span>{$k}<span>}</span></b></div>
                 {/foreach}
             </div>
             <script>

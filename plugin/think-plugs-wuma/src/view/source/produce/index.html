@@ -50,7 +50,7 @@
 </script>
 
 <script type="text/html" id="SortInputTpl">
-    <div class="padding-top-5">
+    <div class="pt5">
         <input type="number" min="0" data-blur-number="0" data-action-blur="{:sysuri()}" data-value="id#{{d.id}};action#sort;sort#{value}" data-loading="false" value="{{d.sort}}" class="layui-input text-center">
     </div>
 </script>
@@ -66,7 +66,7 @@
     {{#}else{}}
     <div class="headimg headimg-no pull-left" data-tips-image data-tips-hover data-lazy-src="{{d.gcover||''}}"></div>
     <div class="nowrap">产品编号：<b>{{ d.gcode || '-' }}</b></div>
-    <div class="nowrap">产品名称：{{ d.gname || '-' }}<span class="color-desc padding-left-5">( {{ showSpec(d.gspec || '') }} )</span></div>
+    <div class="nowrap">产品名称：{{ d.gname || '-' }}<span class="color-desc pl5">( {{ showSpec(d.gspec || '') }} )</span></div>
     {{#}}}
 </script>
 

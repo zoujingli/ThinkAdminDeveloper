@@ -29,37 +29,37 @@
         <div class="layui-form-item label-required-prev" id="VueApp">
             <span class="help-label"><b>区块链流程环节</b>Blockchain Segment</span>
             <div class="text-center layui-textarea border-radius-5">
-                <div class="padding-20"></div>
-                <div class="padding-5">
+                <div class="pa20"></div>
+                <div class="pa5">
                     <i class="layui-icon layui-icon-diamond color-blue font-s40"></i>
                 </div>
                 <div v-for="(item, idx) in items">
-                    <div class="padding-5">
+                    <div class="pa5">
                         <div style="transform:rotate(90deg);">
                             <i class="layui-icon layui-icon-next"></i>
                         </div>
                     </div>
-                    <div class="layui-row layui-input margin-top-5 text-center inline-block shadow-inset" style="width:350px">
+                    <div class="layui-row layui-input mt5 text-center inline-block shadow-inset" style="width:350px">
                         <div class="layui-col-xs3 text-center">{{ idx + 1 }}</div>
                         <div class="layui-col-xs6">{{ item.title }}</div>
                         <div class="layui-col-xs3">
                             <a @click="form(item)">编辑</a>
-                            <a class="margin-left-10" @click="items.splice(idx,1)">删除</a>
+                            <a class="ml10" @click="items.splice(idx,1)">删除</a>
                         </div>
                     </div>
                 </div>
-                <div class="padding-5">
+                <div class="pa5">
                     <div style="transform:rotate(90deg); ">
                         <i class="layui-icon layui-icon-next" style="opacity:0.5"></i>
                     </div>
                 </div>
                 <div>
                     <div class="color-desc">请添加流程环节</div>
-                    <button @click="form(false)" type="button" class="margin-top-10 layui-btn layui-btn-primary" style="width:200px">添 加</button>
+                    <button @click="form(false)" type="button" class="mt10 layui-btn layui-btn-primary" style="width:200px">添 加</button>
                 </div>
-                <div class="padding-20"></div>
+                <div class="pa20"></div>
             </div>
-            <label class='layui-form-item margin-top-10 layui-hide'>
+            <label class='layui-form-item mt10 layui-hide'>
                 <textarea class="layui-textarea layui-bg-cyan" name="data" readonly>{{JSON.stringify(items)}}</textarea>
             </label>
         </div>
@@ -69,7 +69,7 @@
             <textarea class="layui-textarea" name="remark" placeholder="请输入区块链备注">{$vo.remark|default=''|raw}</textarea>
         </label>
 
-        <div class="hr-line-dashed margin-top-40"></div>
+        <div class="hr-line-dashed mt40"></div>
         {notempty name='vo.id'}<input name="id" type="hidden" value="{$vo.id}">{/notempty}
 
         <div class="layui-form-item text-center">
@@ -82,7 +82,7 @@
 <div class="layui-hide" id="formset">
     <form onsubmit="return false" class="layui-form layui-card" method="post" autocomplete="off">
 
-        <div class="layui-card-body padding-left-40">
+        <div class="layui-card-body pl40">
 
             <label class="layui-form-item relative block">
                 <span class="help-label"><b>环节名称</b>Name</span>

@@ -32,7 +32,7 @@
     {{d.type===3 ? '调入' : '出库' }}数量：<b>{{ d.number || '' }}</b>
     {{#}else{}}调出数量：<b>{{ d.number || '' }}</b>{{#}}}
     {{#if(d.main){}}
-    <span class="margin-row-5">{{ d.main.product.unit || '件' }}</span>
+    <span class="mx5">{{ d.main.product.unit || '件' }}</span>
     {{#if(d.main.type===1){ }}<span class="layui-badge layui-bg-orange">按单出库</span>{{#}}}
     {{#if(d.main.type===2){ }}<span class="layui-badge layui-bg-blue">直接出库</span>{{#}}}
     {{#if(d.main.type===3){ }}<span class="layui-badge layui-bg-red">仓库调度</span>{{#}}}
@@ -45,9 +45,9 @@
     {{#if(!d.main||!d.main.product){}}
     <div class="color-desc">关联产品数据无效！</div>
     {{#}else{}}
-    <div class="headimg headimg-no margin-top-5 pull-left" data-tips-image data-tips-hover data-lazy-src="{{d.main.product.cover||''}}"></div>
+    <div class="headimg headimg-no mt5 pull-left" data-tips-image data-tips-hover data-lazy-src="{{d.main.product.cover||''}}"></div>
     产品编号：<b class="color-blue">{{ d.main.product_code || '-' }}</b><br>
-    产品名称：{{ d.main.product.name || '-' }}<span class="color-desc padding-left-5">( {{ showSpec(d.main.gspec || '') }} )</span><br>
+    产品名称：{{ d.main.product.name || '-' }}<span class="color-desc pl5">( {{ showSpec(d.main.gspec || '') }} )</span><br>
     {{#}}}
 </script>
 

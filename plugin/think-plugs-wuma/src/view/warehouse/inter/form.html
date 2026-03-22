@@ -1,5 +1,5 @@
 <form data-table-id="HouseTable" class="layui-form layui-card" action="{:sysuri()}" data-auto="true" method="post">
-    <div class="layui-card-body padding-left-40">
+    <div class="layui-card-body pl40">
 
         <label class="layui-form-item block relative">
             <span class="help-label"><b>入库单号</b>Order Code</span>
@@ -42,13 +42,13 @@
         <!--{/notempty}-->
 
         <label class="layui-form-item block relative">
-            <b class="color-green">入库数量</b><span class="color-desc margin-left-5">Storage Quantity</span>
+            <b class="color-green">入库数量</b><span class="color-desc ml5">Storage Quantity</span>
             <input class="layui-input" type="number" name="num_need" maxlength="20" data-blur-number="0" placeholder="请输入入库数量" required value="{$vo.num_need|default='100'}">
         </label>
 
         <div class="layui-form-item">
             <b class="color-green label-required-prev">指定入库仓库</b>
-            <span class="color-desc margin-left-5">Warehouse</span>
+            <span class="color-desc ml5">Warehouse</span>
             <select class="layui-select" name="wcode" lay-search>
                 {foreach $warehouses as $v}
                 <option value="{$v.code}">{$v.code}（ {$v.name} ）</option>
@@ -58,7 +58,7 @@
 
         <label class="layui-form-item block">
             <b class="color-green">入库订单备注</b>
-            <span class="color-desc margin-left-5">Notes of Stock in Order</span>
+            <span class="color-desc ml5">Notes of Stock in Order</span>
             <textarea class="layui-textarea" name="remark" placeholder="请输入入库备注">{$vo.remark|default=''|raw}</textarea>
         </label>
 

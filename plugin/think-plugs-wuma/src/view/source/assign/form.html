@@ -47,17 +47,17 @@
             <div class="layui-row layui-col-space10" v-for="(x, i) in items">
                 <div class="layui-col-xs1">
                     <label class="layui-form-item block relative">
-                        <input :class="x.lock>0?'think-bg-gray':''" :readonly="!!x.lock" :step="step" :min="minValue" :max="maxValue" type="number" class="layui-input text-center padding-row-0" @change="sync('min',i,x)" v-model="x.min">
+                        <input :class="x.lock>0?'think-bg-gray':''" :readonly="!!x.lock" :step="step" :min="minValue" :max="maxValue" type="number" class="layui-input text-center px0" @change="sync('min',i,x)" v-model="x.min">
                     </label>
                 </div>
                 <div class="layui-col-xs1">
                     <label class="layui-form-item block relative">
-                        <input :class="x.lock>0?'think-bg-gray':''" :readonly="!!x.lock" :step="step" :min="minValue-1" :max="maxValue" type="number" class="layui-input text-center padding-row-0" @change="sync('max',i,x)" v-model="x.max">
+                        <input :class="x.lock>0?'think-bg-gray':''" :readonly="!!x.lock" :step="step" :min="minValue-1" :max="maxValue" type="number" class="layui-input text-center px0" @change="sync('max',i,x)" v-model="x.max">
                     </label>
                 </div>
                 <div class="layui-col-xs1">
                     <label class="layui-form-item block relative">
-                        <input :class="x.lock>0?'think-bg-gray':''" :readonly="!!x.lock" :step="step" :min="minNumValue" :max="maxNumValue" type="number" class="layui-input text-center padding-row-0" @change="sync('num',i,x)" v-model="x.num">
+                        <input :class="x.lock>0?'think-bg-gray':''" :readonly="!!x.lock" :step="step" :min="minNumValue" :max="maxNumValue" type="number" class="layui-input text-center px0" @change="sync('num',i,x)" v-model="x.num">
                     </label>
                 </div>
                 <div class="layui-col-xs6">
@@ -77,7 +77,7 @@
             </div>
         </fieldset>
 
-        <div class="hr-line-dashed margin-top-40"></div>
+        <div class="hr-line-dashed mt40"></div>
         {notempty name='vo.id'}<input name="id" type="hidden" value="{$vo.id}">{/notempty}
 
         <div class="layui-form-item text-center">

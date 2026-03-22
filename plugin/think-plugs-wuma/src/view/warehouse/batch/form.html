@@ -18,7 +18,7 @@
         </div>
 
         <div class="layui-row layui-col-space15">
-            <div class="layui-col-xs6 padding-col-0">
+            <div class="layui-col-xs6 py0">
                 <div class="layui-form-item relative label-required-prev">
                     <span class="help-label"><b>出货仓库</b>Warehouse</span>
                     <select class="layui-select" name="wcode" lay-search>
@@ -28,7 +28,7 @@
                     </select>
                 </div>
             </div>
-            <div class="layui-col-xs6 padding-col-0">
+            <div class="layui-col-xs6 py0">
                 <div class="layui-form-item relative label-required-prev">
                     <span class="help-label"><b>自动虚拟入库</b>Auto Import</span>
                     <div class="layui-input">
@@ -62,17 +62,17 @@
             <div class="layui-row layui-col-space10" v-for="(range,index) in ranges">
                 <div class="layui-col-xs1">
                     <div class="layui-form-item block relative">
-                        <div class="layui-input think-bg-gray text-center padding-row-0" v-text="range.range_start"></div>
+                        <div class="layui-input think-bg-gray text-center px0" v-text="range.range_start"></div>
                     </div>
                 </div>
                 <div class="layui-col-xs1">
                     <div class="layui-form-item block relative">
-                        <div class="layui-input think-bg-gray text-center padding-row-0" v-text="range.range_after"></div>
+                        <div class="layui-input think-bg-gray text-center px0" v-text="range.range_after"></div>
                     </div>
                 </div>
                 <div class="layui-col-xs1">
                     <div class="layui-form-item block relative">
-                        <div class="layui-input think-bg-gray text-center padding-row-0" v-text="range.range_after-range.range_start+1"></div>
+                        <div class="layui-input think-bg-gray text-center px0" v-text="range.range_after-range.range_start+1"></div>
                     </div>
                 </div>
                 <div class="layui-col-xs4">
@@ -90,33 +90,33 @@
                     </div>
                 </div>
                 <div class="layui-col-xs1 text-left nowrap">
-                    <div class="layui-input layui-bg-gray text-center padding-left-0 color-red" v-if="range.lock==2">已锁定</div>
-                    <div class="layui-input layui-bg-gray text-center padding-left-0 color-green" v-else>未锁定</div>
+                    <div class="layui-input layui-bg-gray text-center pl0 color-red" v-if="range.lock==2">已锁定</div>
+                    <div class="layui-input layui-bg-gray text-center pl0 color-green" v-else>未锁定</div>
                 </div>
                 <div class="layui-col-xs12">
                     <div class="layui-row layui-col-space10" v-for="(x,i) in range.items">
                         <div class="layui-col-xs1">
                             <label class="layui-form-item block relative" v-if="x.lock<1">
-                                <input v-model.number="x.min" :min="x.vmin" :max="x.max" @change="setSyn(range,x,i,0)" type="number" class="layui-input text-center padding-row-0">
+                                <input v-model.number="x.min" :min="x.vmin" :max="x.max" @change="setSyn(range,x,i,0)" type="number" class="layui-input text-center px0">
                             </label>
                             <div class="layui-form-item relative" v-else>
-                                <div class="layui-input padding-left-0 layui-bg-gray text-center color-blue">{{x.min}}</div>
+                                <div class="layui-input pl0 layui-bg-gray text-center color-blue">{{x.min}}</div>
                             </div>
                         </div>
                         <div class="layui-col-xs1">
                             <label class="layui-form-item block relative" v-if="x.lock<1">
-                                <input v-model.number="x.max" :min="x.min" :max="x.vmax" @change="setSyn(range,x,i,1)" type="number" class="layui-input text-center padding-row-0">
+                                <input v-model.number="x.max" :min="x.min" :max="x.vmax" @change="setSyn(range,x,i,1)" type="number" class="layui-input text-center px0">
                             </label>
                             <div class="layui-form-item relative" v-else>
-                                <div class="layui-input padding-left-0 layui-bg-gray text-center color-blue">{{x.max}}</div>
+                                <div class="layui-input pl0 layui-bg-gray text-center color-blue">{{x.max}}</div>
                             </div>
                         </div>
                         <div class="layui-col-xs1">
                             <label class="layui-form-item block relative" v-if="x.lock<1">
-                                <input v-model.number="x.num" :min="1" @change="setNum(range,x,i,1)" type="number" class="layui-input text-center padding-row-0">
+                                <input v-model.number="x.num" :min="1" @change="setNum(range,x,i,1)" type="number" class="layui-input text-center px0">
                             </label>
                             <div class="layui-form-item relative" v-else>
-                                <div class="layui-input padding-left-0 layui-bg-gray text-center color-blue">{{x.num}}</div>
+                                <div class="layui-input pl0 layui-bg-gray text-center color-blue">{{x.num}}</div>
                             </div>
                         </div>
                         <div class="layui-col-xs3">
@@ -151,7 +151,7 @@
             </div>
         </fieldset>
 
-        <div class="hr-line-dashed margin-top-40"></div>
+        <div class="hr-line-dashed mt40"></div>
         {notempty name='vo.id'}<input name="id" type="hidden" value="{$vo.id}">{/notempty}
 
         <div class="layui-form-item text-center">

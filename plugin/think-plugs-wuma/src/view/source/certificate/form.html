@@ -9,7 +9,7 @@
                 <div class="absolute-full"><a class="absolute nowrap" v-for="x in items" v-if="x.state==1" :style="point(x)" @mousedown="move($event,x)">{{ x.value }}</a></div>
             </div>
             <div class="flex-1">
-                <div class="padding-left-30">
+                <div class="pl30">
                     <a class="pull-right" @click="show()">预 览</a>
                     <label class="layui-form-item block relative label-required-prev">
                         <span class="help-label"><b>确权证书编号</b>Certificate Code</span>
@@ -20,7 +20,7 @@
                         <input class="layui-input" name="name" v-model="items.name.value" required placeholder="请输入确权证书名称" value='{$vo.name|default=""}'>
                     </label>
                     <div class="layui-form-item label-required-prev">
-                        <span class="help-label"><b>确权证书底图</b>( 图片尺寸：<strong class="color-text">宽1008px</strong><strong class="color-text margin-left-5">高1426px</strong> )</span>
+                        <span class="help-label"><b>确权证书底图</b>( 图片尺寸：<strong class="color-text">宽1008px</strong><strong class="color-text ml5">高1426px</strong> )</span>
                         <label class="block relative">
                             <input class="layui-input think-bg-gray" readonly v-model="image" name="image">
                             <a class="layui-icon layui-icon-upload input-right-icon" data-file data-field="image" data-type="png,jpg,jpeg"></a>
@@ -28,9 +28,9 @@
                     </div>
                     <div class="layui-row layui-col-space15">
                         <div class="layui-col-sm12 layui-col-lg6" v-for="(x,k) in items">
-                            <fieldset class="margin-bottom-10 padding-top-5 relative">
+                            <fieldset class="mb10 pt5 relative">
                                 <legend><span class="layui-badge layui-bg-blue" v-text="x.name"></span></legend>
-                                <div class="flex nowrap margin-bottom-5">
+                                <div class="flex nowrap mb5">
                                     <div style="line-height:36px">是否显示：</div>
                                     <label class="think-radio"><input type="radio" v-model="x.state" value="1" lay-ignore> 是</label>
                                     <label class="think-radio"><input type="radio" v-model="x.state" value="0" lay-ignore> 否</label>
@@ -53,7 +53,7 @@
             <textarea class="layui-textarea" readonly id="EditValue">{$vo.content|default=[]|json_encode}</textarea>
         </label>
 
-        <div class="hr-line-dashed margin-top-40"></div>
+        <div class="hr-line-dashed mt40"></div>
         {notempty name='vo.id'}<input name="id" type="hidden" value="{$vo.id}">{/notempty}
 
         <div class="layui-form-item text-center">

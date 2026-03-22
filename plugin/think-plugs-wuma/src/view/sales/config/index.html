@@ -7,7 +7,7 @@
 {/block}
 
 {block name="content"}
-<div class="layui-card padding-20 shadow">
+<div class="layui-card pa20 shadow">
     <div class="layui-card-header notselect">
         <b>代理参数配置</b>
     </div>
@@ -25,19 +25,19 @@
     </div>
 </div>
 
-<div class="layui-card padding-20 shadow layui-hide">
+<div class="layui-card pa20 shadow layui-hide">
     <div class="layui-card-header notselect">
         <b>小程序配置</b>
     </div>
     <div class="layui-card-body">
         <label class="layui-form-item block relative">
             <span class="help-label"><b>小程序 AppId</b></span>
-            <input class="layui-input think-bg-gray" readonly value="{:sysconf('data.saas_minapp_appid')}">
+            <input class="layui-input think-bg-gray" readonly value="{:sysdata('system.openapi.saas_minapp_appid')}">
         </label>
 
         <label class="layui-form-item block relative">
             <span class="help-label"><b>小程序密钥 AppSecret</b></span>
-            <input class="layui-input think-bg-gray" readonly value="{:sysconf('data.saas_minapp_appkey')}">
+            <input class="layui-input think-bg-gray" readonly value="{:sysdata('system.openapi.saas_minapp_appkey')}">
         </label>
     </div>
 </div>
