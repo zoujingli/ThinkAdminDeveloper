@@ -3,39 +3,51 @@
 
 // +----------------------------------------------------------------------
 
-// 新样式
-// .flex-x
-// .flex-x-center
-// .flex-y
-// .flex-y-center
-// .flex-center
-// .flex-between
-// .ta-m*
-// .ta-p*
+// 标准化短工具类
+// ma/mt/mr/mb/ml/mx/my
+// pa/pt/pr/pb/pl/px/py
+// ba/bt/br/bb/bl/b0
 
-@nums: 0, 5, 10, 15, 20, 25, 30;
+@nums: 0, 5, 10, 15, 20, 25, 30, 40;
 each({
-  m: margin;
-  p: padding;
-}, .(@tv,@tt) {
-  .ta-@{tt} {
-    each(@nums, .(@n) {
-      &-@{n} {
-          @{tv}: @n * 1px !important;
-      }
-      each({
-        t: -top;
-        l: -left;
-        r: -right;
-        b: -bottom;
-      }, .(@d,@k) {
-        &@{k}-@{n} {
-            @{tv}@{d}: @n * 1px !important;
-        }
-      });
-    })
-  }
-})
+  margin: ma m;
+  padding: pa p;
+}, .(@value,@prop) {
+  @all: extract(@value, 1);
+  @base: extract(@value, 2);
+
+  each(@nums, .(@n) {
+    .@{all}@{n} {
+      @{prop}: @n * 1px !important;
+    }
+
+    .@{base}t@{n} {
+      @{prop}-top: @n * 1px !important;
+    }
+
+    .@{base}r@{n} {
+      @{prop}-right: @n * 1px !important;
+    }
+
+    .@{base}b@{n} {
+      @{prop}-bottom: @n * 1px !important;
+    }
+
+    .@{base}l@{n} {
+      @{prop}-left: @n * 1px !important;
+    }
+
+    .@{base}x@{n} {
+      @{prop}-left: @n * 1px !important;
+      @{prop}-right: @n * 1px !important;
+    }
+
+    .@{base}y@{n} {
+      @{prop}-top: @n * 1px !important;
+      @{prop}-bottom: @n * 1px !important;
+    }
+  });
+});
 
 .flex {
   #flex();
@@ -339,6 +351,99 @@ each({
   }
 }
 
+// 标准化后台说明块、缩进分隔线和操作区，减少模板中的重复内联样式。
+.ta-note {
+  margin: 0 0 16px;
+  padding: 14px 16px;
+  color: var(--ta-text-muted, #64748B);
+  font-size: 12px;
+  line-height: 1.8;
+  border: 1px solid var(--ta-border-color, @BoxBorderColor);
+  border-left: 4px solid var(--ta-accent, #009688);
+  border-radius: 14px;
+  background: linear-gradient(180deg, var(--ta-surface-soft, #F8FAFC) 0%, var(--ta-surface, #FFF) 100%);
+  box-shadow: 0 10px 24px rgba(15, 23, 42, 0.05);
+
+  p {
+    margin: 0;
+  }
+
+  p + p {
+    margin-top: 6px;
+  }
+
+  strong {
+    color: var(--ta-text-color, #1F2937);
+    font-weight: 700;
+  }
+
+  &--indent {
+    margin-left: 40px;
+  }
+}
+
+.ta-divider--indent {
+  margin-left: 40px;
+}
+
+.ta-actions {
+  text-align: center;
+
+  &--indent {
+    padding-left: 40px;
+  }
+}
+
+.ta-desc {
+  margin-top: 14px;
+  color: var(--ta-text-muted, #64748B);
+  font-size: 12px;
+  line-height: 1.8;
+
+  p {
+    margin: 0;
+  }
+
+  p + p {
+    margin-top: 6px;
+  }
+
+  b {
+    color: var(--ta-text-color, #1F2937);
+    font-weight: 600;
+  }
+}
+
+.ta-kv {
+  display: grid;
+  gap: 10px;
+  margin-top: 14px;
+
+  &-item {
+    padding: 12px 14px;
+    border: 1px solid var(--ta-border-color, @BoxBorderColor);
+    border-radius: 14px;
+    background: var(--ta-surface-soft, #F8FAFC);
+  }
+
+  &-label {
+    display: block;
+    margin-bottom: 4px;
+    color: var(--ta-text-muted, #64748B);
+    font-size: 12px;
+    line-height: 1.4;
+  }
+
+  &-value {
+    display: block;
+    color: var(--ta-text-color, #1F2937);
+    font-size: 13px;
+    line-height: 1.7;
+    font-weight: 600;
+    word-break: break-all;
+  }
+}
+
 /* 搜索表单样式 */
 .form-search {
   .layui-btn {
@@ -357,12 +462,13 @@ each({
       border: none
     }
 
+    position: relative;
     white-space: nowrap;
     margin-right: 8px;
     margin-bottom: 10px;
     border: 1px solid var(--ta-border-color, @InputBorderNormalColor);
     border-radius: 10px;
-    overflow: hidden;
+    overflow: visible;
     background: var(--ta-surface, #fff);
     box-shadow: 0 10px 24px rgba(15, 23, 42, 0.05);
 
@@ -379,6 +485,7 @@ each({
       width: 150px;
       margin: 0 !important;
       display: inline-block !important;
+      overflow: visible;
 
       input, select {
         width: 100%;
@@ -390,10 +497,14 @@ each({
     }
 
     .layui-form-select {
+      display: block;
+      width: 100%;
+
       dl {
         top: 31px;
         padding: 0;
         border-width: 0;
+        z-index: 10;
         box-shadow: var(--ta-shadow-sm, @ShadowOuterMax);
         border-top-left-radius: 0;
         border-top-right-radius: 0;
@@ -1751,7 +1862,7 @@ body.layui-layout-body {
   }
 
   .layui-btn:hover {
-    transform: translateY(-1px);
+    transform: none;
   }
 
   .layui-btn.layui-btn-disabled,
@@ -1760,6 +1871,10 @@ body.layui-layout-body {
   .layui-btn[disabled]:hover {
     transform: none;
     box-shadow: none !important;
+  }
+
+  .layui-btn:not(.layui-btn-disabled):not([disabled]):hover {
+    border-color: transparent;
   }
 
   .layui-btn-primary {
@@ -1773,6 +1888,7 @@ body.layui-layout-body {
     color: var(--ta-accent, #009688);
     border-color: var(--ta-accent, #009688);
     background-color: var(--ta-accent-soft, rgba(0, 150, 136, 0.08));
+    box-shadow: 0 10px 22px rgba(15, 23, 42, 0.08);
   }
 
   .layui-btn-normal {
@@ -2836,89 +2952,65 @@ body.layui-layout-body {
   })
 }
 
-.border {
-  &-0 {
-    border: 0 !important
-  }
+.b0 {
+  border: 0 !important;
+}
 
-  &-line {
-    border: 1px solid @BoxBorderColor;
-  }
+.ba {
+  border: 1px solid @BoxBorderColor;
+}
 
-  &-bottom-line {
-    border-bottom: 1px solid @BoxBorderColor;
-  }
+.bt {
+  border-top: 1px solid @BoxBorderColor;
+}
 
-  &-top-0 {
-    border-top: 0 !important;
-  }
+.br {
+  border-right: 1px solid @BoxBorderColor;
+}
+
+.bb {
+  border-bottom: 1px solid @BoxBorderColor;
+}
+
+.bl {
+  border-left: 1px solid @BoxBorderColor;
+}
+
+.bt0 {
+  border-top: 0 !important;
+}
+
+.br0 {
+  border-right: 0 !important;
+}
+
+.bb0 {
+  border-bottom: 0 !important;
+}
+
+.bl0 {
+  border-left: 0 !important;
+}
+
+.border-radius {
+  border-radius: 50% !important;
+
+  each(range(0, 6), {
+    &-@{value} {
+      border-radius: 1px*@value !important
+    }
+  })
 
   &-left-0 {
-    border-left: 0 !important;
+    border-top-left-radius: 0 !important;
+    border-bottom-left-radius: 0 !important
   }
 
   &-right-0 {
-    border-right: 0 !important;
-  }
-
-  &-bottom-0 {
-    border-bottom: 0 !important;
-  }
-
-  &-radius {
-    border-radius: 50% !important;
-
-    each(range(0, 6), {
-      &-@{value} {
-        border-radius: 1px*@value !important
-      }
-    })
-
-    &-left-0 {
-      border-top-left-radius: 0 !important;
-      border-bottom-left-radius: 0 !important
-    }
-
-    &-right-0 {
-      border-top-right-radius: 0 !important;
-      border-bottom-right-radius: 0 !important
-    }
+    border-top-right-radius: 0 !important;
+    border-bottom-right-radius: 0 !important
   }
 }
-
-@nums: 0, 5, 10, 15, 20, 25, 30, 40;
-each({
-  --margin: margin;
-  --padding: padding;
-}, .(@v) {
-  .@{v} {
-    each(@nums, {
-      &-@{value} {
-          @{v}: @value*1px !important;
-      }
-      &-row-@{value} {
-          @{v}-left: @value*1px !important;
-          @{v}-right: @value*1px !important;
-      }
-      &-col-@{value} {
-          @{v}-top: @value*1px !important;
-          @{v}-bottom: @value*1px !important;
-      }
-      &-top-@{value} {
-          @{v}-top: @value*1px !important;
-      }
-      &-left-@{value} {
-          @{v}-left: @value*1px !important;
-      }
-      &-right-@{value} {
-          @{v}-right: @value*1px !important;
-      }
-      &-bottom-@{value} {
-          @{v}-bottom: @value*1px !important;
-      }
-    })
-  }
-})
 
 @keyframes loading {
   17% {
