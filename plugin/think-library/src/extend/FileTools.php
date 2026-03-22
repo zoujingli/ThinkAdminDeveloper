@@ -20,34 +20,11 @@ declare(strict_types=1);
 
 namespace think\admin\extend;
 
-use SplFileInfo;
-use think\admin\Exception;
-
 /**
  * 标准文件系统工具。
  */
 class FileTools
 {
-    /**
-     * 兼容旧方式调用。
-     *
-     * @return array|bool
-     * @throws Exception
-     */
-    public static function __callStatic(string $method, array $arguments)
-    {
-        $methods = [
-            'copyfile' => 'copy',
-            'scandirectory' => 'scan',
-            'findfilesarray' => 'find',
-            'removeemptydirectory' => 'remove',
-        ];
-        if ($real = $methods[strtolower($method)] ?? null) {
-            return self::{$real}(...$arguments);
-        }
-        throw new Exception("method not exists: FileTools::{$method}()");
-    }
-
     /**
      * 扫描目录下的文件列表。
      */

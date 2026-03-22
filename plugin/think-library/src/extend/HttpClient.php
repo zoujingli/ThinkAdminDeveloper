@@ -28,10 +28,10 @@ class HttpClient
     /**
      * 以 GET 模拟网络请求。
      *
-     * @param mixed $data
+     * @param mixed|array $data
      * @return bool|string
      */
-    public static function get(string $location, $data = [], array $options = [])
+    public static function get(string $location, mixed $data = [], array $options = [])
     {
         $options['query'] = $data;
         return static::request('get', $location, $options);

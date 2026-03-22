@@ -79,10 +79,8 @@ class CodeToolkit
     /**
      * 数据加密处理。
      * 这里保留历史序列化格式，避免影响现有 JWT 和业务临时票据。
-     *
-     * @param mixed $data
      */
-    public static function encrypt($data, string $skey): string
+    public static function encrypt(mixed $data, string $skey): string
     {
         $iv = static::random(16, 3);
         $value = openssl_encrypt(serialize($data), 'AES-256-CBC', $skey, 0, $iv);

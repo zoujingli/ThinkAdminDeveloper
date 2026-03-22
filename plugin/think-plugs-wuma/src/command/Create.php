@@ -36,11 +36,10 @@ class Create extends Command
      * 物码批次号.
      * @var string
      */
-    protected $batch;
+    protected string $batch;
 
     /**
      * 任务执行.
-     * @throws \think\admin\Exception
      */
     public function handle()
     {
