@@ -18,9 +18,8 @@ declare(strict_types=1);
  * +----------------------------------------------------------------------
  */
 
-namespace think\admin\helper;
+namespace think\admin;
 
-use think\admin\Controller;
 use think\App;
 use think\Container;
 

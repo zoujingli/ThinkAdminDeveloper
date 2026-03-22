@@ -20,6 +20,7 @@ declare(strict_types=1);
 
 namespace think\admin\helper;
 
+use think\admin\Helper;
 use think\admin\model\QueryFactory;
 use think\db\BaseQuery;
 use think\db\exception\DbException;

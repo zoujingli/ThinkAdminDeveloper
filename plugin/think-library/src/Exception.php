@@ -30,7 +30,7 @@ class Exception extends \Exception
      * 异常数据对象
      * @var mixed
      */
-    protected $data = [];
+    protected mixed $data = [];
 
     /**
      * Exception constructor.
@@ -38,7 +38,7 @@ class Exception extends \Exception
      * @param int $code
      * @param mixed $data
      */
-    public function __construct($message = '', $code = 0, $data = [])
+    public function __construct(string $message = '', int $code = 0, $data = [])
     {
         parent::__construct($message);
         $this->code = $code;

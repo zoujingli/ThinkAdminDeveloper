@@ -28,7 +28,7 @@ class HttpClient
     /**
      * 以 GET 模拟网络请求。
      *
-     * @param mixed|array $data
+     * @param array|mixed $data
      * @return bool|string
      */
     public static function get(string $location, mixed $data = [], array $options = [])
