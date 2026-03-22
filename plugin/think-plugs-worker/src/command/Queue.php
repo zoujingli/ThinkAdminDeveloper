@@ -70,8 +70,8 @@ class Queue extends Command
      */
     protected function cleanAction(): void
     {
-        $retainDays = function_exists('sysconf')
-            ? intval(sysconf('base.queue_clean_days|raw') ?: $this->queueConfig('retain_days', 7))
+        $retainDays = function_exists('sysget')
+            ? intval(sysget('system.runtime.queue_retain_days', $this->queueConfig('retain_days', 7)))
             : intval($this->queueConfig('retain_days', 7));
         $retainDays = max(1, $retainDays);
         $lockTimeout = max(60, intval($this->queueConfig('lock_timeout', 3600)));

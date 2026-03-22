@@ -33,7 +33,7 @@ composer build:phar
 
 上面的脚本会按下面的顺序执行：
 
-1. 先执行 `php database/sync.php` 同步数据库脚本
+1. 先执行 `composer database:publish` 发布配置、静态资源和迁移脚本
 2. 再执行 `php -d phar.readonly=0 think xadmin:builder --name=admin.phar`
 
 构建成功后，会在项目根目录生成 `admin.phar`。
@@ -193,7 +193,7 @@ php admin.phar xadmin:worker status http
 - `xadmin:builder` 仅在调试模式下可用，生产模式不会暴露该命令
 - 打包时必须使用 `-d phar.readonly=0`
 - 打包前必须先执行 `composer install`，否则缺少 `vendor` 目录无法构建
-- 如果项目依赖数据库结构导出，建议优先执行 `composer build:phar`，不要绕过 `database:sync`
+- 如果项目依赖迁移发布产物，建议优先执行 `composer build:phar`，不要绕过 `database:publish`
 - 输出文件默认会覆盖已有的同名 `admin.phar`
 
 ## 验证建议
