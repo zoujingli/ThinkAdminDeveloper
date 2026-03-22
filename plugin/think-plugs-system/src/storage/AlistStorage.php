@@ -36,27 +36,23 @@ class AlistStorage implements StorageInterface
 
     /**
      * 用户账号.
-     * @var string
      */
-    protected $username;
+    protected string $username;
 
     /**
      * 用户密码
-     * @var string
      */
-    protected $password;
+    protected string $password;
 
     /**
      * 保存路径.
-     * @var string
      */
-    protected $savepath;
+    protected string $savepath;
 
     /**
      * 缓存前缀
-     * @var string
      */
-    protected $cachekey;
+    protected string $cachekey;
 
     /**
      * 上传文件内容.

@@ -41,7 +41,7 @@ class StorageConfig
         if ($registry !== []) {
             return $registry;
         }
-        $file = __DIR__ . '/config.php';
+        $file = __DIR__ . '/extra/config.php';
         return $registry = is_file($file) ? include $file : [];
     }
 
@@ -70,7 +70,7 @@ class StorageConfig
     public static function driver(string $driver, string $name, mixed $default = null): mixed
     {
         $payload = self::payload();
-        return $payload['drivers'][$driver][$name] ?? $default;
+        return $payload['drivers'][$driver][$name] ?? null ?: $default;
     }
 
     public static function defaults(): array

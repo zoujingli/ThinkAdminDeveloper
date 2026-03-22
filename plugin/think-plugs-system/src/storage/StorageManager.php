@@ -34,7 +34,7 @@ class StorageManager
         if (count($drivers) > 0) {
             return $drivers;
         }
-        $file = __DIR__ . '/config.php';
+        $file = __DIR__ . '/extra/config.php';
         if (is_file($file)) {
             $config = include $file;
             $this->app->config->set($config, 'think_plugs_storage');
@@ -110,6 +110,6 @@ class StorageManager
         if (count($mimes) > 0) {
             return $mimes;
         }
-        return $mimes = include __DIR__ . '/mimes.php';
+        return $mimes = include __DIR__ . '/extra/mimes.php';
     }
 }

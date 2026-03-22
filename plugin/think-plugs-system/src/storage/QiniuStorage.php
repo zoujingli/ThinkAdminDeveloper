@@ -34,11 +34,11 @@ class QiniuStorage implements StorageInterface
 {
     use StorageUsageTrait;
 
-    private $bucket;
+    private string $bucket;
 
-    private $accessKey;
+    private string $accessKey;
 
-    private $secretKey;
+    private string $secretKey;
 
     /**
      * 上传文件内容.

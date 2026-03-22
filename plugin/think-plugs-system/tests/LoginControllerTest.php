@@ -22,7 +22,7 @@ namespace think\admin\tests;
 
 use plugin\system\controller\Login as LoginController;
 use plugin\system\model\SystemOplog;
-use plugin\system\service\SystemAuthService;
+use plugin\system\service\AuthService;
 use plugin\system\service\SystemContext as PluginSystemContext;
 use think\admin\contract\SystemContextInterface;
 use think\admin\runtime\RequestContext;
@@ -130,7 +130,7 @@ class LoginControllerTest extends SqliteIntegrationTestCase
         $payload = JwtToken::verify(strval($result['token'] ?? ''));
         $oplog = SystemOplog::mk()->order('id desc')->findOrEmpty();
         $sessionId = RequestContext::instance()->sessionId();
-        $queuedCookie = strval($this->app->cookie->getCookie()[SystemAuthService::getTokenCookie()][0] ?? '');
+        $queuedCookie = strval($this->app->cookie->getCookie()[AuthService::getTokenCookie()][0] ?? '');
 
         $this->assertSame(0, intval($failed['code'] ?? 1));
         $this->assertSame('登录账号或密码错误，请重新输入!', $failed['info'] ?? '');
@@ -180,7 +180,7 @@ class LoginControllerTest extends SqliteIntegrationTestCase
         $this->assertSame([], RequestContext::instance()->user());
         $this->assertSame('', RequestContext::instance()->sessionId());
         $this->assertFalse(CacheSession::exists("sid:{$sessionId}"));
-        $this->assertFalse(SystemAuthService::isLogin());
+        $this->assertFalse(AuthService::isLogin());
     }
 
     public function testRequestTokenCanDecryptEncryptedCookie(): void
@@ -191,18 +191,18 @@ class LoginControllerTest extends SqliteIntegrationTestCase
             'password' => $this->hashSystemPassword('cookie-pass'),
             'status' => 1,
         ])->toArray();
-        $token = SystemAuthService::buildToken($user);
+        $token = AuthService::buildToken($user);
         $encodedCookie = RequestTokenService::encodeCookieToken($token);
         $request = (new Request())->withCookie([
-            SystemAuthService::getTokenCookie() => $encodedCookie,
+            AuthService::getTokenCookie() => $encodedCookie,
         ]);
 
         RequestContext::clear();
         $this->app->instance('request', $request);
 
         $this->assertNotSame($token, $encodedCookie);
-        $this->assertSame($token, SystemAuthService::requestCookieToken($request));
-        $this->assertSame($token, SystemAuthService::requestToken($request));
+        $this->assertSame($token, AuthService::requestCookieToken($request));
+        $this->assertSame($token, AuthService::requestToken($request));
     }
 
     public function testRequestTokenUpgradesLegacyPlainCookie(): void
@@ -213,17 +213,17 @@ class LoginControllerTest extends SqliteIntegrationTestCase
             'password' => $this->hashSystemPassword('legacy-cookie-pass'),
             'status' => 1,
         ])->toArray();
-        $token = SystemAuthService::buildToken($user);
+        $token = AuthService::buildToken($user);
         $request = (new Request())->withCookie([
-            SystemAuthService::getTokenCookie() => $token,
+            AuthService::getTokenCookie() => $token,
         ]);
 
         RequestContext::clear();
         $this->app->instance('request', $request);
 
-        $this->assertSame($token, SystemAuthService::requestToken($request));
+        $this->assertSame($token, AuthService::requestToken($request));
 
-        $queuedCookie = strval($this->app->cookie->getCookie()[SystemAuthService::getTokenCookie()][0] ?? '');
+        $queuedCookie = strval($this->app->cookie->getCookie()[AuthService::getTokenCookie()][0] ?? '');
         $this->assertStringStartsWith('enc:', $queuedCookie);
         $this->assertNotSame($token, $queuedCookie);
         $this->assertSame($token, RequestTokenService::decodeCookieToken($queuedCookie));

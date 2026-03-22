@@ -141,15 +141,15 @@ class LocalStorage implements StorageInterface
 
     /**
      * 初始化入口.
-     * @throws \think\admin\Exception
      */
-    protected function init()
+    protected function init(): void
     {
         $type = (string)StorageConfig::driver('local', 'protocol', 'follow');
         if ($type === 'follow') {
             $type = $this->app->request->scheme();
         }
         $this->domain = trim(dirname($this->app->request->baseFile()), '\/');
+
         if ($type !== 'path') {
             $domain = (string)StorageConfig::driver('local', 'domain', $this->app->request->host());
             if ($type === 'auto') {

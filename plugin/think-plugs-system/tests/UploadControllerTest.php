@@ -21,7 +21,7 @@ declare(strict_types=1);
 namespace think\admin\tests;
 
 use plugin\system\controller\api\Upload as UploadController;
-use plugin\system\service\SystemAuthService;
+use plugin\system\service\AuthService;
 use plugin\system\service\SystemContext as PluginSystemContext;
 use think\admin\contract\SystemContextInterface;
 use think\admin\runtime\RequestContext;
@@ -39,7 +39,7 @@ class UploadControllerTest extends SqliteIntegrationTestCase
     public function testIndexBuildsUploadScriptUsingTokenRestrictedExtensions(): void
     {
         $response = $this->callIndexController([
-            'uptoken' => SystemAuthService::withUploadToken(321, 'png,pdf,mp4'),
+            'uptoken' => AuthService::withUploadToken(321, 'png,pdf,mp4'),
         ]);
 
         $contentType = strval($response->getHeader('Content-Type'));

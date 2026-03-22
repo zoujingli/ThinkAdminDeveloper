@@ -36,27 +36,23 @@ class TxcosStorage implements StorageInterface
 
     /**
      * 数据中心.
-     * @var string
      */
-    private $point;
+    private string $point;
 
     /**
      * 存储空间名称.
-     * @var string
      */
-    private $bucket;
+    private string $bucket;
 
     /**
      * $secretId.
-     * @var string
      */
-    private $secretId;
+    private string $secretId;
 
     /**
      * secretKey.
-     * @var string
      */
-    private $secretKey;
+    private string $secretKey;
 
     /**
      * 上传文件内容.

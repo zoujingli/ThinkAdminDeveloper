@@ -22,7 +22,7 @@ namespace think\admin\tests;
 
 use plugin\system\controller\api\Plugs as PlugsController;
 use plugin\system\model\SystemOplog;
-use plugin\system\service\SystemAuthService;
+use plugin\system\service\AuthService;
 use plugin\system\service\SystemContext as PluginSystemContext;
 use plugin\worker\model\SystemQueue;
 use plugin\worker\service\QueueService;
@@ -42,7 +42,7 @@ class PlugsControllerTest extends SqliteIntegrationTestCase
 {
     public function testScriptBuildsJavascriptConfigWithAbsoluteUrlsWhenUploadTokenIsValid(): void
     {
-        $uptoken = SystemAuthService::withUploadToken(321, 'jpg,png');
+        $uptoken = AuthService::withUploadToken(321, 'jpg,png');
 
         $response = $this->callScriptController([
             'uptoken' => $uptoken,
