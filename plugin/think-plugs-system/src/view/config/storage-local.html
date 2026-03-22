@@ -1,0 +1,59 @@
+{include file='config/storage-style'}
+<form action="{:sysuri()}" method="post" data-auto="true" class="layui-form layui-card storage-form">
+    <div class="layui-card-body pl40">
+
+        <div class="ta-note">
+            <p><strong>{:lang('文件将保存在当前服务器的 public/upload 目录，适合单机或轻量部署场景。')}</strong></p>
+            <p>{:lang('请确保对应目录具备读写权限，并预留足够的磁盘空间。本地存储不承担外部图像处理能力。')}</p>
+        </div>
+
+        {include file='config/storage-0'}
+
+        <div class="storage-form__group">
+            <div class="storage-form__group-head">
+                <span class="storage-form__group-kicker">Local</span>
+                <h3>{:lang('本地驱动参数')}</h3>
+                <p>{:lang('用于控制本地上传后的访问协议和输出域名。')}</p>
+            </div>
+            <div class="storage-form__group-body">
+                <div class="layui-form-item">
+                    <label class="layui-form-label label-required">
+                        <b class="color-green">{:lang('访问协议')}</b><br><span class="nowrap color-desc">Protocol</span>
+                    </label>
+                    <div class="layui-input-block">
+                        <div class="layui-input help-checks">
+                            {foreach ['follow'=>'FOLLOW','http'=>'HTTP','https'=>'HTTPS','path'=>'PATH','auto'=>'AUTO'] as $protocol => $remark}
+                            <label class="think-radio">
+                                {if $storage.drivers.local.protocol eq $protocol}
+                                <input checked type="radio" name="storage[drivers][local][protocol]" value="{$protocol}" lay-ignore> {$remark}
+                                {else}
+                                <input type="radio" name="storage[drivers][local][protocol]" value="{$protocol}" lay-ignore> {$remark}
+                                {/if}
+                            </label>
+                            {/foreach}
+                        </div>
+                        <p class="help-block">{:lang('FOLLOW 跟随当前请求协议，PATH 返回相对路径，AUTO 返回协议相对地址。')}</p>
+                    </div>
+                </div>
+
+                <div class="layui-form-item">
+                    <label class="layui-form-label" for="storage-local-domain">
+                        <b class="color-green">{:lang('访问域名')}</b><br><span class="nowrap color-desc">Domain</span>
+                    </label>
+                    <div class="layui-input-block">
+                        <input id="storage-local-domain" type="text" name="storage[drivers][local][domain]" value="{$storage.drivers.local.domain}" placeholder="请输入上传后的访问域名（非必填）" class="layui-input">
+                        <p class="help-block">{:lang('无需填写 http/https 协议，例如 static.thinkadmin.top。留空时会根据当前访问地址自动推断。')}</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="hr-line-dashed"></div>
+        <input type="hidden" name="storage[default_driver]" value="local">
+
+        <div class="layui-form-item ta-actions">
+            <button class="layui-btn" type="submit">{:lang('保存配置')}</button>
+            <button class="layui-btn layui-btn-danger" type="button" data-confirm="{:lang('确定要取消修改吗？')}" data-close>{:lang('取消修改')}</button>
+        </div>
+    </div>
+</form>

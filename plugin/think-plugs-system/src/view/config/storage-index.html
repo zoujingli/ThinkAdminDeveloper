@@ -1,0 +1,106 @@
+{extend name="main"}
+
+{block name="button"}
+<a class="layui-btn layui-btn-sm layui-btn-primary" data-open="{:sysuri('system/file/index')}">{:lang('文件管理')}</a>
+<a class="layui-btn layui-btn-sm layui-btn-primary" data-open="{:sysuri('system/config/index')}">{:lang('返回系统配置')}</a>
+{/block}
+
+{block name='style'}{include file='config/storage-style'}{/block}
+
+{block name="content"}
+<div class="storage-console">
+    <div class="storage-hero">
+        <div class="storage-hero__content">
+            <div class="storage-hero__eyebrow">Storage Center</div>
+            <h2 class="storage-hero__title">{:lang('统一管理文件上传、命名策略与外链输出')}</h2>
+            <p class="storage-hero__desc">
+                {:lang('系统所有上传驱动共享一套全局策略，切换默认驱动后，上传入口、命名方式和链接输出会同步生效。建议先确认全局规则，再按业务选择合适的存储后端。')}
+            </p>
+        </div>
+        <div class="storage-hero__summary">
+            <div class="storage-hero__metric">
+                <span>{:lang('当前默认驱动')}</span>
+                <strong>{$driverName}</strong>
+            </div>
+            <div class="storage-hero__metric">
+                <span>{:lang('命名策略')}</span>
+                <strong>{$storage.naming_rule|default='xmd5'}</strong>
+            </div>
+            <div class="storage-hero__metric">
+                <span>{:lang('链接策略')}</span>
+                <strong>{$storage.link_mode|default='none'}</strong>
+            </div>
+            <div class="storage-hero__metric">
+                <span>{:lang('可用驱动数量')}</span>
+                <strong>{:count($files)}</strong>
+            </div>
+        </div>
+    </div>
+
+    <div class="layui-card storage-panel">
+        <div class="layui-card-header notselect">
+            <span class="help-label">
+                <b>{:lang('存储引擎')}</b>
+                ( {:lang('系统默认文件存储方式，可按驱动分别配置')} )
+            </span>
+        </div>
+        <div class="layui-card-body">
+            <div class="storage-driver-grid">
+                {foreach $files as $k => $v}
+                {if !empty($canEdit)}
+                <a data-title="配置{$v}" data-modal="{:sysuri('system/config/storage')}?type={$k}" class="storage-driver-card {if $driver eq $k}is-active{/if}">
+                {else}
+                <div class="storage-driver-card {if $driver eq $k}is-active{/if}">
+                {/if}
+                    <div class="storage-driver-card__head">
+                        <span class="storage-driver-card__icon">
+                            {if $k eq 'local'}LO{/if}
+                            {if $k eq 'alist'}AL{/if}
+                            {if $k eq 'qiniu'}QN{/if}
+                            {if $k eq 'upyun'}UP{/if}
+                            {if $k eq 'txcos'}TX{/if}
+                            {if $k eq 'alioss'}OS{/if}
+                        </span>
+                        <span class="storage-driver-card__status">
+                            {if $driver eq $k}{:lang('当前默认')}{else}{:lang('可切换')}{/if}
+                        </span>
+                    </div>
+                    <div class="storage-driver-card__title">{$v}</div>
+                    <div class="storage-driver-card__desc">
+                        {if $k eq 'local'}{:lang('文件直接保存到当前服务器目录，部署最简单，适合单机或轻量业务。')}{/if}
+                        {if $k eq 'alist'}{:lang('通过 Alist 统一存储网关落盘，适合自建存储集群或多云盘整合场景。')}{/if}
+                        {if $k eq 'qiniu'}{:lang('适合静态资源托管、CDN 分发和图片处理需求较多的业务场景。')}{/if}
+                        {if $k eq 'upyun'}{:lang('适合资源分发、浏览器直传和静态文件托管需求较强的业务。')}{/if}
+                        {if $k eq 'txcos'}{:lang('适合腾讯云生态或需要对象存储与 CDN 联动的部署方案。')}{/if}
+                        {if $k eq 'alioss'}{:lang('适合阿里云生态、多地域部署以及对象存储接入场景。')}{/if}
+                    </div>
+                    <div class="storage-driver-card__meta">
+                        <span class="storage-driver-card__tag">{$k}</span>
+                        {if $k eq 'local'}<span class="storage-driver-card__tag">{:lang('本机磁盘')}</span>{/if}
+                        {if $k eq 'alist'}<span class="storage-driver-card__tag">{:lang('统一网关')}</span>{/if}
+                        {if $k eq 'qiniu'}<span class="storage-driver-card__tag">{:lang('对象存储')}</span>{/if}
+                        {if $k eq 'upyun'}<span class="storage-driver-card__tag">{:lang('USS')}</span>{/if}
+                        {if $k eq 'txcos'}<span class="storage-driver-card__tag">{:lang('COS')}</span>{/if}
+                        {if $k eq 'alioss'}<span class="storage-driver-card__tag">{:lang('OSS')}</span>{/if}
+                    </div>
+                    <div class="storage-driver-card__footer">
+                        <span>{if !empty($canEdit)}{:lang('点击查看并配置参数')}{else}{:lang('当前账号仅可查看存储策略')}{/if}</span>
+                        <span class="storage-driver-card__action">{if $driver eq $k}{:lang('当前使用')}{else}{:lang('进入配置')}{/if}</span>
+                    </div>
+                {if !empty($canEdit)}
+                </a>
+                {else}
+                </div>
+                {/if}
+                {/foreach}
+            </div>
+
+            <div class="storage-tail ta-desc">
+                <p><b>{:lang('允许类型')}</b>：{$storage.allowed_extensions_text|default='-'}</p>
+                <p><b>{:lang('文件管理')}</b>：{:lang('上传后的文件记录统一在 System 的文件管理中维护，可直接查看、重命名、删除或清理重复文件。')}</p>
+                <p><b>{:lang('部署建议')}</b>：{:lang('本地存储适合快速部署，自建网关适合统一收口，对象存储更适合公共资源、CDN 和大文件场景。')}</p>
+            </div>
+        </div>
+    </div>
+</div>
+{/block}

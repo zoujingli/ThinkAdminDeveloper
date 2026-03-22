@@ -1,0 +1,89 @@
+{include file='config/storage-style'}
+<form action="{:sysuri()}" method="post" data-auto="true" class="layui-form layui-card storage-form">
+    <div class="layui-card-body pl40">
+
+        <div class="ta-note">
+            <p><strong>{:lang('文件将上传到 Alist 统一存储网关，适合接入自建存储服务或多云盘整合。')}</strong></p>
+            <p>{:lang('建议使用独立上传账号，并为目标目录单独授予读写权限，避免直接使用管理员账号。')}</p>
+        </div>
+
+        {include file='config/storage-0'}
+
+        <div class="storage-form__group">
+            <div class="storage-form__group-head">
+                <span class="storage-form__group-kicker">Alist</span>
+                <h3>{:lang('Alist 驱动参数')}</h3>
+                <p>{:lang('请填写访问入口、目标目录以及上传账号信息。')}</p>
+            </div>
+            <div class="storage-form__group-body">
+                <div class="layui-form-item">
+                    <label class="layui-form-label label-required">
+                        <b class="color-green">{:lang('访问协议')}</b><br><span class="nowrap color-desc">Protocol</span>
+                    </label>
+                    <div class="layui-input-block">
+                        <div class="layui-input help-checks">
+                            {foreach ['http'=>'HTTP','https'=>'HTTPS','auto'=>'AUTO'] as $protocol => $remark}
+                            <label class="think-radio">
+                                {if $storage.drivers.alist.protocol eq $protocol}
+                                <input checked type="radio" name="storage[drivers][alist][protocol]" value="{$protocol}" lay-ignore> {$remark}
+                                {else}
+                                <input type="radio" name="storage[drivers][alist][protocol]" value="{$protocol}" lay-ignore> {$remark}
+                                {/if}
+                            </label>
+                            {/foreach}
+                        </div>
+                        <p class="help-block">{:lang('AUTO 返回协议相对地址；如果开启 HTTPS，请确保 Alist 入口已经正确部署证书。')}</p>
+                    </div>
+                </div>
+
+                <div class="layui-form-item">
+                    <label class="layui-form-label" for="storage-alist-domain">
+                        <b class="color-green">{:lang('访问域名')}</b><br><span class="nowrap color-desc">Domain</span>
+                    </label>
+                    <div class="layui-input-block">
+                        <input id="storage-alist-domain" type="text" name="storage[drivers][alist][domain]" value="{$storage.drivers.alist.domain}" required vali-name="访问域名" placeholder="请输入 Alist 访问域名" class="layui-input">
+                        <p class="help-block">{:lang('例如 storage.thinkadmin.top，不需要携带协议头。')}</p>
+                    </div>
+                </div>
+
+                <div class="layui-form-item">
+                    <label class="layui-form-label" for="storage-alist-path">
+                        <b class="color-green">{:lang('存储目录')}</b><br><span class="nowrap color-desc">Directory</span>
+                    </label>
+                    <div class="layui-input-block">
+                        <input id="storage-alist-path" type="text" name="storage[drivers][alist][path]" value="{$storage.drivers.alist.path}" required vali-name="存储目录" placeholder="请输入 Alist 目标目录" class="layui-input">
+                        <p class="help-block">{:lang('填写相对于当前 Alist 用户根目录的路径，填写 / 表示直接写入根目录。')}</p>
+                    </div>
+                </div>
+
+                <div class="layui-form-item">
+                    <label class="layui-form-label" for="storage-alist-username">
+                        <b class="color-green">{:lang('用户账号')}</b><br><span class="nowrap color-desc">Username</span>
+                    </label>
+                    <div class="layui-input-block">
+                        <input id="storage-alist-username" type="text" name="storage[drivers][alist][username]" value="{$storage.drivers.alist.username}" maxlength="100" required vali-name="用户账号" placeholder="请输入 Alist 上传账号" class="layui-input">
+                        <p class="help-block">{:lang('该账号需要具备目标目录的读取和写入权限。')}</p>
+                    </div>
+                </div>
+
+                <div class="layui-form-item">
+                    <label class="layui-form-label" for="storage-alist-password">
+                        <b class="color-green">{:lang('用户密码')}</b><br><span class="nowrap color-desc">Password</span>
+                    </label>
+                    <div class="layui-input-block">
+                        <input id="storage-alist-password" type="text" name="storage[drivers][alist][password]" value="{$storage.drivers.alist.password}" maxlength="100" required vali-name="用户密码" placeholder="请输入 Alist 上传密码" class="layui-input">
+                        <p class="help-block">{:lang('用于换取上传令牌，填写错误时无法下发上传授权。')}</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="hr-line-dashed"></div>
+        <input type="hidden" name="storage[default_driver]" value="alist">
+
+        <div class="layui-form-item ta-actions">
+            <button class="layui-btn" type="submit">{:lang('保存配置')}</button>
+            <button class="layui-btn layui-btn-danger" type="button" data-confirm="{:lang('确定要取消修改吗？')}" data-close>{:lang('取消修改')}</button>
+        </div>
+    </div>
+</form>

@@ -1,0 +1,108 @@
+{include file='config/storage-style'}
+<form action="{:sysuri()}" method="post" data-auto="true" class="layui-form layui-card storage-form">
+    <div class="layui-card-body pl40">
+
+        <div class="ta-note">
+            <p><strong>{:lang('文件将上传到腾讯云 COS，请确保 Bucket 已配置公开读、私有写和浏览器跨域策略。')}</strong></p>
+            <p>{:lang('如果需要前端直传，请同时允许 POST 请求和上传所需的 Headers。')}</p>
+        </div>
+
+        {include file='config/storage-0'}
+
+        <div class="storage-form__group">
+            <div class="storage-form__group-head">
+                <span class="storage-form__group-kicker">Tencent COS</span>
+                <h3>{:lang('腾讯云驱动参数')}</h3>
+                <p>{:lang('请保持区域、Bucket、外链域名和云 API 密钥与实际配置一致。')}</p>
+            </div>
+            <div class="storage-form__group-body">
+
+        <div class="layui-form-item">
+            <label class="layui-form-label label-required">
+                <b class="color-green">{:lang('访问协议')}</b><br><span class="nowrap color-desc">Protocol</span>
+            </label>
+            <div class="layui-input-block">
+                <div class="layui-input help-checks">
+                    {foreach ['http'=>'HTTP','https'=>'HTTPS','auto'=>'AUTO'] as $protocol => $remark}
+                    <label class="think-radio">
+                        {if $storage.drivers.txcos.protocol eq $protocol}
+                        <input checked type="radio" name="storage[drivers][txcos][protocol]" value="{$protocol}" lay-ignore> {$remark}
+                        {else}
+                        <input type="radio" name="storage[drivers][txcos][protocol]" value="{$protocol}" lay-ignore> {$remark}
+                        {/if}
+                    </label>
+                    {/foreach}
+                </div>
+                <p class="help-block">{:lang('AUTO 返回协议相对地址；HTTPS 需要绑定域名证书。')}</p>
+            </div>
+        </div>
+
+        <div class="layui-form-item">
+            <label class="layui-form-label">
+                <b class="color-green">{:lang('存储区域')}</b><br><span class="nowrap color-desc label-required">Region</span>
+            </label>
+            <div class="layui-input-block">
+                <select class="layui-select" name="storage[drivers][txcos][region]" lay-search>
+                    {foreach $points as $point => $title}
+                    {if $storage.drivers.txcos.region eq $point}
+                    <option selected value="{$point}">{$title}（{$point}）</option>
+                    {else}
+                    <option value="{$point}">{$title}（{$point}）</option>
+                    {/if}
+                    {/foreach}
+                </select>
+                <p class="help-block">{:lang('必须与 Bucket 的实际区域一致。')}</p>
+            </div>
+        </div>
+
+        <div class="layui-form-item">
+            <label class="layui-form-label" for="storage-txcos-bucket">
+                <b class="color-green">{:lang('空间名称')}</b><br><span class="nowrap color-desc">Bucket</span>
+            </label>
+            <div class="layui-input-block">
+                <input id="storage-txcos-bucket" type="text" name="storage[drivers][txcos][bucket]" value="{$storage.drivers.txcos.bucket}" required vali-name="空间名称" placeholder="请输入腾讯云 COS Bucket" class="layui-input">
+                <p class="help-block">{:lang('例如 thinkadmin-1251143395。')}</p>
+            </div>
+        </div>
+
+        <div class="layui-form-item">
+            <label class="layui-form-label" for="storage-txcos-domain">
+                <b class="color-green">{:lang('访问域名')}</b><br><span class="nowrap color-desc">Domain</span>
+            </label>
+            <div class="layui-input-block">
+                <input id="storage-txcos-domain" type="text" name="storage[drivers][txcos][domain]" value="{$storage.drivers.txcos.domain}" required vali-name="访问域名" placeholder="请输入腾讯云 COS 外链域名" class="layui-input">
+                <p class="help-block">{:lang('例如 static.cos.example.com，不需要携带协议头。')}</p>
+            </div>
+        </div>
+
+        <div class="layui-form-item">
+            <label class="layui-form-label" for="storage-txcos-access-key">
+                <b class="color-green">{:lang('访问密钥')}</b><br><span class="nowrap color-desc">SecretId</span>
+            </label>
+            <div class="layui-input-block">
+                <input id="storage-txcos-access-key" type="text" name="storage[drivers][txcos][access_key]" value="{$storage.drivers.txcos.access_key}" required vali-name="访问密钥" placeholder="请输入腾讯云 SecretId" class="layui-input">
+                <p class="help-block">{:lang('请使用具备目标 Bucket 操作权限的云 API 密钥。')}</p>
+            </div>
+        </div>
+
+        <div class="layui-form-item">
+            <label class="layui-form-label" for="storage-txcos-secret-key">
+                <b class="color-green">{:lang('安全密钥')}</b><br><span class="nowrap color-desc">SecretKey</span>
+            </label>
+            <div class="layui-input-block">
+                <input id="storage-txcos-secret-key" type="text" name="storage[drivers][txcos][secret_key]" value="{$storage.drivers.txcos.secret_key}" maxlength="64" required vali-name="安全密钥" placeholder="请输入腾讯云 SecretKey" class="layui-input">
+                <p class="help-block">{:lang('请妥善保管，不要暴露到前端。')}</p>
+            </div>
+        </div>
+            </div>
+        </div>
+
+        <div class="hr-line-dashed"></div>
+        <input type="hidden" name="storage[default_driver]" value="txcos">
+
+        <div class="layui-form-item ta-actions">
+            <button class="layui-btn" type="submit">{:lang('保存配置')}</button>
+            <button class="layui-btn layui-btn-danger" type="button" data-confirm="{:lang('确定要取消修改吗？')}" data-close>{:lang('取消修改')}</button>
+        </div>
+    </div>
+</form>

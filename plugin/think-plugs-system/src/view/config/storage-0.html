@@ -1,0 +1,58 @@
+<div class="storage-form__group">
+    <div class="storage-form__group-head">
+        <span class="storage-form__group-kicker">Global</span>
+        <h3>{:lang('全局上传策略')}</h3>
+        <p>{:lang('下面三项规则会对所有存储驱动同时生效，建议优先确认。')}</p>
+    </div>
+    <div class="storage-form__group-body">
+        <div class="layui-form-item">
+            <label class="layui-form-label label-required">
+                <b class="color-green">{:lang('命名方式')}</b><br><span class="nowrap color-desc">Naming Rule</span>
+            </label>
+            <div class="layui-input-block">
+                <div class="layui-input help-checks">
+                    {foreach ['xmd5'=>'文件哈希（支持秒传）','date'=>'日期随机（普通上传）'] as $k => $v}
+                    <label class="think-radio notselect">
+                        {if $storage.naming_rule eq $k}
+                        <input checked type="radio" name="storage[naming_rule]" value="{$k}" lay-ignore> {$v}
+                        {else}
+                        <input type="radio" name="storage[naming_rule]" value="{$k}" lay-ignore> {$v}
+                        {/if}
+                    </label>
+                    {/foreach}
+                </div>
+                <p class="help-block">{:lang('推荐使用“文件哈希”，同一文件只需上传一次，可减少重复存储并支持秒传。')}</p>
+            </div>
+        </div>
+
+        <div class="layui-form-item">
+            <label class="layui-form-label label-required">
+                <b class="color-green">{:lang('链接类型')}</b><br><span class="nowrap color-desc">Link Mode</span>
+            </label>
+            <div class="layui-input-block">
+                <div class="layui-input help-checks">
+                    {foreach ['none'=>'简洁链接','full'=>'完整链接','none+compress'=>'简洁链接 + 图片压缩','full+compress'=>'完整链接 + 图片压缩'] as $k => $v}
+                    <label class="think-radio notselect">
+                        {if $storage.link_mode eq $k}
+                        <input checked type="radio" name="storage[link_mode]" value="{$k}" lay-ignore> {$v}
+                        {else}
+                        <input type="radio" name="storage[link_mode]" value="{$k}" lay-ignore> {$v}
+                        {/if}
+                    </label>
+                    {/foreach}
+                </div>
+                <p class="help-block">{:lang('“完整链接”会保留原始文件名参数；带压缩的模式仅在云存储驱动已提供图片处理能力时生效。')}</p>
+            </div>
+        </div>
+
+        <div class="layui-form-item">
+            <label class="layui-form-label" for="storage-allowed-extensions">
+                <b class="color-green">{:lang('允许类型')}</b><br><span class="nowrap color-desc">Allow Exts</span>
+            </label>
+            <div class="layui-input-block">
+                <input id="storage-allowed-extensions" type="text" name="storage[allowed_extensions_text]" value="{$storage.allowed_extensions_text|default=''}" required vali-name="文件后缀" placeholder="请输入系统允许上传的文件后缀" class="layui-input">
+                <p class="help-block">{:lang('多个后缀请用英文逗号分隔，例如 png,jpg,pdf,zip。系统会统一转为小写并自动去重。')}</p>
+            </div>
+        </div>
+    </div>
+</div>
