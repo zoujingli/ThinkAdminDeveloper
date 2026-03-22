@@ -24,6 +24,10 @@ use think\admin\Model;
 use think\model\concern\SoftDelete;
 use think\model\relation\HasOne;
 
+/**
+ * 系统管理员账号模型（含软删除）。
+ * @class SystemUser
+ */
 class SystemUser extends Model
 {
     use SoftDelete;

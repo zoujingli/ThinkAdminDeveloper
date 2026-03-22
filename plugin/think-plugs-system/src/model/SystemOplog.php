@@ -22,6 +22,10 @@ namespace plugin\system\model;
 
 use think\admin\Model;
 
+/**
+ * 后台操作日志模型。
+ * @class SystemOplog
+ */
 class SystemOplog extends Model
 {
     protected $updateTime = false;

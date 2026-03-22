@@ -34,6 +34,10 @@ use think\admin\Storage;
 use think\db\PDOConnection;
 use think\db\Query;
 
+/**
+ * 系统级能力：站点/安全等分组配置、数据字典、操作日志、图标与运行时信息同步等。
+ * @class SystemService
+ */
 class SystemService extends Service
 {
     private const GROUPED_DATA_KEYS = [

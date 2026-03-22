@@ -22,6 +22,10 @@ namespace plugin\system\model;
 
 use think\admin\Model;
 
+/**
+ * 权限节点（路由/按钮）模型。
+ * @class SystemNode
+ */
 class SystemNode extends Model
 {
     protected $updateTime = false;

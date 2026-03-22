@@ -23,6 +23,10 @@ namespace plugin\system\service;
 use plugin\system\model\SystemBase;
 use think\admin\contract\SystemContextInterface;
 
+/**
+ * 系统插件对框架 SystemContextInterface 的实现：登录态、Token、系统数据与字典等委托给各 Service。
+ * @class SystemContext
+ */
 class SystemContext implements SystemContextInterface
 {
     public function buildToken(): string

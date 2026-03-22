@@ -22,6 +22,10 @@ namespace plugin\system\model;
 
 use think\admin\Model;
 
+/**
+ * 系统键值配置表模型（JSON 存 value）。
+ * @class SystemData
+ */
 class SystemData extends Model
 {
     private const JSON_FLAGS = JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES;

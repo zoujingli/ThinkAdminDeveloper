@@ -22,4 +22,8 @@ namespace plugin\system\model;
 
 use think\admin\Model;
 
+/**
+ * 附件元数据模型（对应 system_file 等表，依迁移定义）。
+ * @class SystemFile
+ */
 class SystemFile extends Model {}

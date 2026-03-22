@@ -22,6 +22,10 @@ namespace plugin\system\model;
 
 use think\admin\Model;
 
+/**
+ * 后台菜单树模型。
+ * @class SystemMenu
+ */
 class SystemMenu extends Model
 {
     protected $updateTime = false;

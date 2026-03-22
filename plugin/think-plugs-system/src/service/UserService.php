@@ -24,6 +24,10 @@ use plugin\system\model\SystemUser;
 use think\admin\helper\FormBuilder;
 use think\admin\Service;
 
+/**
+ * 系统后台用户：密码哈希、校验与账户字段处理。
+ * @class UserService
+ */
 class UserService extends Service
 {
     private const PASSWORD_PATTERN = '^(?![\d]+$)(?![a-zA-Z]+$)(?![^\da-zA-Z]+$).{6,32}$';

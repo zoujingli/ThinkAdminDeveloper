@@ -26,6 +26,10 @@ use think\db\exception\DataNotFoundException;
 use think\db\exception\DbException;
 use think\db\exception\ModelNotFoundException;
 
+/**
+ * 角色/权限规则模型。
+ * @class SystemAuth
+ */
 class SystemAuth extends Model
 {
     protected $updateTime = false;
