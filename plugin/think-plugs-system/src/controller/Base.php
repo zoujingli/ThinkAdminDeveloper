@@ -21,9 +21,9 @@ declare(strict_types=1);
 namespace plugin\system\controller;
 
 use plugin\system\model\SystemBase;
+use plugin\system\service\BaseBuilder;
 use think\admin\Controller;
 use think\admin\helper\FormBuilder;
-use think\admin\helper\PageBuilder;
 use think\admin\helper\QueryHelper;
 use think\db\exception\DataNotFoundException;
 use think\db\exception\DbException;
@@ -50,7 +50,7 @@ class Base extends Controller
             $this->types = SystemBase::types();
             $this->type = $this->get['type'] ?? ($this->types[0] ?? '-');
             $this->pluginGroups = SystemBase::groups($this->type);
-            $this->buildIndexPage()->fetch([
+            BaseBuilder::buildIndexPage($this->type, $this->types, $this->pluginGroups, $this->request->url())->fetch([
                 'types' => $this->types,
                 'type' => $this->type,
             ]);
@@ -230,11 +230,7 @@ SCRIPT);
         $id = intval($this->request->param('id', 0));
         $isEdit = $id > 0;
         $types = SystemBase::types();
-        $types[] = '--- 新增类型 ---';
-        $typeOptions = [];
-        foreach ($types as $type) {
-            $typeOptions[$type] = $type;
-        }
+        $typeOptions = BaseBuilder::buildTypeOptions($types);
 
         $builder = FormBuilder::mk()->setAction(url($this->request->action(), array_filter([
             'id' => $id ?: null,
@@ -278,7 +274,7 @@ SCRIPT);
         return $builder
             ->addTextInput('code', '数据编码', 'Data Code', true, '请输入新的数据编码，数据创建后不能再次修改，同种数据类型的数据编码不能出现重复 ~', null, $codeAttrs)
             ->addTextInput('name', '数据名称', 'Data Name', true, '请输入当前数据名称，请尽量保持名称的唯一性，数据名称尽量不要出现重复 ~', null, ['maxlength' => 500])
-            ->addSelectInput('plugin_code', '所属插件', 'Plugin Scope', false, '可选。选择后会写入插件归属元数据，适合身份权限或插件专用字典项。', $this->buildPluginOptions())
+            ->addSelectInput('plugin_code', '所属插件', 'Plugin Scope', false, '可选。选择后会写入插件归属元数据，适合身份权限或插件专用字典项。', BaseBuilder::buildPluginOptions())
             ->addTextArea('content_text', '数据内容', 'Data Content', false, '', ['placeholder' => '请输入数据内容'])
             ->addSubmitButton()
             ->addCancelButton();
@@ -301,61 +297,5 @@ SCRIPT);
         $data['type_select'] = strval($data['type'] ?? $this->request->param('type', SystemBase::types()[0] ?? ''));
         $data['type'] = strval($data['type'] ?? $this->request->param('type', ''));
         return $data;
-    }
-
-    private function buildPluginOptions(): array
-    {
-        $options = [];
-        foreach (SystemBase::pluginOptions() as $plugin) {
-            $code = strval($plugin['code'] ?? '');
-            $name = strval($plugin['name'] ?? $code);
-            if ($code !== '') {
-                $options[$code] = "{$name} [ {$code} ]";
-            }
-        }
-        return $options;
-    }
-
-    private function buildPluginGroupOptions(array $groups): array
-    {
-        $options = [];
-        foreach ($groups as $group) {
-            $code = strval($group['code'] ?? '');
-            if ($code !== '') {
-                $options[$code] = strval($group['name'] ?? $code);
-            }
-        }
-        return $options;
-    }
-
-    private function renderTypeTabs(): string
-    {
-        return <<<'HTML'
-<div class="layui-tab layui-tab-card">
-    <ul class="layui-tab-title">
-        {foreach $types as $t}{if isset($type) and $type eq $t}
-        <li class="layui-this" data-open="{:sysuri()}?type={$t}">{$t}</li>
-        {else}
-        <li data-open="{:sysuri()}?type={$t}">{$t}</li>
-        {/if}{/foreach}
-    </ul>
-    <div class="layui-tab-content">
-HTML;
-    }
-
-    private function renderPluginTemplate(): string
-    {
-        return <<<'HTML'
-{{# if(d.plugin_group === 'mixed'){ }}
-<span class="layui-badge layui-bg-orange">{{ d.plugin_title || '跨插件' }}</span>
-{{# } else if(d.plugin_group === 'common') { }}
-<span class="layui-badge layui-bg-gray">{{ d.plugin_title || '未绑定' }}</span>
-{{# } else { }}
-<span class="layui-badge layui-bg-blue">{{ d.plugin_title || '-' }}</span>
-{{# } }}
-{{# if(d.plugin_text && d.plugin_count > 1){ }}
-<div class="color-desc nowrap">{{ d.plugin_text }}</div>
-{{# } }}
-HTML;
     }
 }
