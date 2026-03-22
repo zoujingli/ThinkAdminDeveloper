@@ -24,8 +24,8 @@
 
 ## 组件边界
 
-- 插件编码：`plugin-wechat-service`
-- 访问前缀：`plugin-wechat-service`
+- 插件编码：`wechat-service`
+- 访问前缀：`wechat-service`
 - 负责微信开放平台配置、授权账号管理和远程服务入口
 - 负责为 `ThinkPlugsWechatClient` 等业务插件提供远程能力
 - 不承载公众号标准平台的本地后台能力
@@ -57,30 +57,30 @@ composer remove zoujingli/think-plugs-wechat-service
 
 后台节点：
 
-- `plugin-wechat-service/config/index`
-- `plugin-wechat-service/wechat/index`
+- `wechat-service/config/index`
+- `wechat-service/wechat/index`
 
 接口节点：
 
-- `/api/plugin-wechat-service/client/jsonrpc`
-- `/api/plugin-wechat-service/push/*`
+- `/api/wechat-service/client/jsonrpc`
+- `/api/wechat-service/push/*`
 
 JSON-RPC 地址示例：
 
-- `http://example.com/api/plugin-wechat-service/client/jsonrpc?token=TOKEN`
+- `http://example.com/api/wechat-service/client/jsonrpc?token=TOKEN`
 
 双入口约定：
 
-- 后台页面统一走 `/plugin-wechat-service/...`
-- 开放平台接口统一走 `/api/plugin-wechat-service/...`
+- 后台页面统一走 `/wechat-service/...`
+- 开放平台接口统一走 `/api/wechat-service/...`
 
 典型示例：
 
-- `/plugin-wechat-service/config/index`
-- `/api/plugin-wechat-service/push/ticket`
-- `/api/plugin-wechat-service/push/notify/appid/$APPID$`
-- `/api/plugin-wechat-service/push/auth?source=SOURCE`
-- `/api/plugin-wechat-service/client/jsonrpc?token=TOKEN`
+- `/wechat-service/config/index`
+- `/api/wechat-service/push/ticket`
+- `/api/wechat-service/push/notify/appid/$APPID$`
+- `/api/wechat-service/push/auth?source=SOURCE`
+- `/api/wechat-service/client/jsonrpc?token=TOKEN`
 
 ## 命令说明
 
