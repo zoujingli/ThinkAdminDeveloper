@@ -22,13 +22,12 @@ namespace think\admin\service;
 
 use think\admin\extend\FileTools;
 use think\admin\Library;
-use think\admin\Service;
 
 /**
  * 应用节点管理服务。
  * @class NodeService
  */
-final class NodeService extends Service
+final class NodeService
 {
     /**
      * 获取应用命名空间.

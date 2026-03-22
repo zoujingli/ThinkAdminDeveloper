@@ -48,7 +48,7 @@ abstract class Model extends \think\Model
      */
     public static $oplogCall;
 
-    protected $autoWriteTimestamp = 'datetime';
+    protected string $autoWriteTimestamp = 'datetime';
 
     protected $createTime = 'create_time';
 
@@ -116,9 +116,8 @@ abstract class Model extends \think\Model
 
     /**
      * 创建模型实例。
-     * @param mixed $data
      */
-    public static function mk($data = []): static
+    public static function mk(array $data = []): static
     {
         return new static($data);
     }

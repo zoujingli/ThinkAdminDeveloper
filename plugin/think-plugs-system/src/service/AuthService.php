@@ -384,7 +384,6 @@ class SystemAuthService extends Service
 
     /**
      * 获取用户主题名称.
-     * @throws Exception
      */
     public static function getUserTheme(): string
     {

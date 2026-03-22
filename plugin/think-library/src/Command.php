@@ -32,12 +32,22 @@ abstract class Command extends \think\console\Command
 {
     protected QueueManagerInterface $queue;
 
+    /**
+     * 设置队列消息.
+     * @param int $total 总数
+     * @param int $count 当前进度
+     * @param string $message 消息内容
+     * @param int $backline 回滚行数
+     */
     public function setQueueMessage(int $total, int $count, string $message = '', int $backline = 0): static
     {
         $this->queue->message($total, $count, $message, $backline);
         return $this;
     }
 
+    /**
+     * Command initialization.
+     */
     protected function initialize(Input $input, Output $output): static
     {
         $this->queue = QueueService::instance();
@@ -48,6 +58,9 @@ abstract class Command extends \think\console\Command
         return $this;
     }
 
+    /**
+     * 设置队列错误消息.
+     */
     protected function setQueueError(string $message): void
     {
         if (QueueService::inContext()) {
@@ -58,6 +71,9 @@ abstract class Command extends \think\console\Command
         }
     }
 
+    /**
+     * 设置队列成功消息.
+     */
     protected function setQueueSuccess(string $message): void
     {
         if (QueueService::inContext()) {
@@ -68,6 +84,9 @@ abstract class Command extends \think\console\Command
         }
     }
 
+    /**
+     * 设置队列进度消息.
+     */
     protected function setQueueProgress(?string $message = null, ?string $progress = null, int $backline = 0): static
     {
         if (QueueService::inContext()) {
@@ -79,6 +98,9 @@ abstract class Command extends \think\console\Command
         return $this;
     }
 
+    /**
+     * 输出控制台消息.
+     */
     protected function writeConsoleMessage(string $message, int $backline = 0): void
     {
         while ($backline-- > 0) {

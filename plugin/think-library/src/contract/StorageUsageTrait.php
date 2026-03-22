@@ -45,22 +45,17 @@ use think\Container;
  */
 trait StorageUsageTrait
 {
-    /**
-     * @var App
-     */
-    protected $app;
+    protected App $app;
 
     /**
      * 链接类型.
-     * @var string
      */
-    protected $link;
+    protected string $link;
 
     /**
      * 链接前缀
-     * @var string
      */
-    protected $domain;
+    protected string $domain;
 
     /**
      * 存储器构造方法.
@@ -75,9 +70,8 @@ trait StorageUsageTrait
 
     /**
      * 获取对象实例.
-     * @return static
      */
-    public static function instance()
+    public static function instance(): static|StorageInterface
     {
         /* @var \think\admin\contract\StorageInterface */
         return Container::getInstance()->make(static::class);

@@ -25,6 +25,8 @@ use think\admin\Exception;
 use think\admin\Library;
 use think\admin\runtime\RequestContext;
 use think\admin\Service;
+use think\Cache;
+use think\cache\Driver;
 
 /**
  * 基于 Token SID 的缓存会话服务。
@@ -60,8 +62,6 @@ final class CacheSession extends Service
 
     /**
      * 读取指定会话数据别名。
-     * @param mixed|null $default
-     * @return mixed
      * @throws Exception
      */
     public static function read(string $name, mixed $default = null, ?string $scope = null, ?bool $touch = null): mixed
@@ -71,7 +71,6 @@ final class CacheSession extends Service
 
     /**
      * 读取指定会话数据。
-     * @param mixed|null $default
      * @return mixed
      * @throws Exception
      */
@@ -195,12 +194,7 @@ final class CacheSession extends Service
 
     /**
      * 写入指定会话数据。
-     * @param string $name
-     * @param mixed $value
-     * @param int|null $expire
-     * @param string|null $scope
-     * @return bool
-     * @throws \think\admin\Exception
+     * @throws Exception
      */
     public static function set(string $name, mixed $value, ?int $expire = null, ?string $scope = null): bool
     {
@@ -210,6 +204,7 @@ final class CacheSession extends Service
     /**
      * 批量写入会话数据。
      * @param array<string, mixed> $data
+     * @throws InvalidArgumentException
      * @throws Exception
      */
     public static function put(array $data, ?int $expire = null, ?string $scope = null, bool $replace = false): bool
@@ -240,21 +235,18 @@ final class CacheSession extends Service
 
     /**
      * 写入指定会话数据别名。
-     * @param mixed $value
      * @throws Exception
      */
-    public static function write(string $name, $value, ?int $expire = null, ?string $scope = null): bool
+    public static function write(string $name, mixed $value, ?int $expire = null, ?string $scope = null): bool
     {
         return self::set($name, $value, $expire, $scope);
     }
 
     /**
      * 读取并删除指定会话字段。
-     * @param mixed $default
-     * @return mixed
      * @throws Exception
      */
-    public static function pull(string $name, $default = null, ?string $scope = null)
+    public static function pull(string $name, mixed $default = null, ?string $scope = null): mixed
     {
         $value = self::get($name, $default, $scope, false);
         self::delete($name, $scope);
@@ -263,6 +255,7 @@ final class CacheSession extends Service
 
     /**
      * 清空当前会话数据，但保留会话本身。
+     * @throws InvalidArgumentException
      * @throws Exception
      */
     public static function clear(?string $scope = null): bool
@@ -288,6 +281,7 @@ final class CacheSession extends Service
 
     /**
      * 判断当前会话是否存在。
+     * @throws InvalidArgumentException
      * @throws Exception
      */
     public static function exists(?string $scope = null): bool
@@ -308,6 +302,7 @@ final class CacheSession extends Service
 
     /**
      * 销毁当前会话。
+     * @throws InvalidArgumentException
      * @throws Exception
      */
     public static function destroy(?string $scope = null): bool
@@ -321,6 +316,7 @@ final class CacheSession extends Service
 
     /**
      * 刷新当前会话过期时间。
+     * @throws InvalidArgumentException
      * @throws Exception
      */
     public static function touch(?int $expire = null, ?string $scope = null): bool
@@ -358,7 +354,7 @@ final class CacheSession extends Service
     /**
      * 获取缓存驱动。
      */
-    private static function store()
+    private static function store(): Cache|Driver
     {
         $store = trim(strval(self::config('token_session_store', '')));
         return $store === '' ? Library::$sapp->cache : Library::$sapp->cache->store($store);
@@ -366,10 +362,8 @@ final class CacheSession extends Service
 
     /**
      * 读取令牌会话配置。
-     * @param mixed $default
-     * @return mixed
      */
-    private static function config(string $name, $default = null)
+    private static function config(string $name, mixed $default = null): mixed
     {
         $config = Library::$sapp->config->get('app', []);
         if (is_array($config) && array_key_exists($name, $config)) {
@@ -401,10 +395,9 @@ final class CacheSession extends Service
 
     /**
      * 规范化缓存载荷。
-     * @param mixed $payload
      * @return array{scope:string,expire:int,updated_at:int,data:array<string,mixed>}
      */
-    private static function payload(string $scope, $payload): array
+    private static function payload(string $scope, mixed $payload): array
     {
         $data = is_array($payload['data'] ?? null) ? $payload['data'] : [];
         return [

@@ -66,6 +66,7 @@ abstract class Storage
                 $class = static::manager()->driverClass($name);
             }
             if (class_exists($class)) {
+                /* @var StorageInterface */
                 return Container::getInstance()->make($class);
             }
             throw new Exception("Storage driver [{$class}] does not exist.");
@@ -135,10 +136,10 @@ abstract class Storage
      * @param array|string $exts 文件后缀
      * @param array $mime 文件信息
      */
-    public static function mime($exts, array $mime = []): string
+    public static function mime(array|string $exts, array $mime = []): string
     {
         $mimes = static::mimes();
-        foreach (is_string($exts) ? explode(',', $exts) : $exts as $ext) {
+        foreach (str2arr($exts) as $ext) {
             $mime[] = $mimes[strtolower($ext)] ?? 'application/octet-stream';
         }
         return join(',', array_unique($mime));

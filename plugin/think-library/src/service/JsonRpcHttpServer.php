@@ -42,17 +42,15 @@ final class JsonRpcHttpServer
     /**
      * 静态实例对象。
      */
-    public static function instance(...$args): static
+    public static function instance(...$args): JsonRpcHttpServer
     {
         return Container::getInstance()->make(self::class, $args);
     }
 
     /**
      * 设置监听对象。
-     *
-     * @param mixed $object
      */
-    public function handle($object): void
+    public function handle(mixed $object): void
     {
         if ($this->app->request->method() !== 'POST' || $this->app->request->contentType() !== 'application/json') {
             $this->printMethod($object);
@@ -71,10 +69,8 @@ final class JsonRpcHttpServer
 
     /**
      * 打印输出对象方法。
-     *
-     * @param mixed $object
      */
-    private function printMethod($object): void
+    private function printMethod(mixed $object): void
     {
         try {
             $object = new \ReflectionClass($object);
@@ -99,10 +95,8 @@ final class JsonRpcHttpServer
 
     /**
      * 执行 RPC 方法调用。
-     *
-     * @param mixed $object
      */
-    private function dispatchRequest($object, array $request): array
+    private function dispatchRequest(mixed $object, array $request): array
     {
         try {
             if ($object instanceof \Exception) {
@@ -126,11 +120,8 @@ final class JsonRpcHttpServer
 
     /**
      * 构建错误响应。
-     *
-     * @param mixed $result
-     * @param mixed $id
      */
-    private function errorResponse($id, string $code, string $message, string $meaning, $result = null): array
+    private function errorResponse(mixed $id, string $code, string $message, string $meaning, mixed $result = null): array
     {
         return [
             'jsonrpc' => '2.0',
@@ -142,11 +133,8 @@ final class JsonRpcHttpServer
 
     /**
      * 构建成功响应。
-     *
-     * @param mixed $id
-     * @param mixed $result
      */
-    private function successResponse($id, $result): array
+    private function successResponse(mixed $id, mixed $result): array
     {
         return ['jsonrpc' => '2.0', 'id' => $id, 'result' => $result, 'error' => null];
     }

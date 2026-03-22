@@ -147,7 +147,7 @@ final class JwtToken
      * 输出模板变量。
      * 这是旧接口能力，仍然保留在这里，避免影响现有 API 控制器。
      */
-    public static function fetch(Controller $class, array $vars = [])
+    public static function fetch(Controller $class, array $vars = []): void
     {
         $ignore = array_keys(get_class_vars(Controller::class));
         foreach (get_object_vars($class) as $name => $value) {
