@@ -19,7 +19,7 @@
                 <textarea placeholder="{:lang('请输入权限描述')}" maxlength="200" class="layui-textarea" name="desc">{$vo.desc|default=""}</textarea>
             </label>
             <div class="layui-form-item">
-                <span class="help-label"><b>{:lang('插件筛选')}</b>Plugin Filter</span>
+                <div class="help-label"><b>{:lang('插件筛选')}</b>Plugin Filter</div>
                 <div class="layui-input-inline">
                     <select name="plugin_filter" lay-filter="AuthPluginFilter">
                         <option value="">{:lang('全部插件')}</option>
