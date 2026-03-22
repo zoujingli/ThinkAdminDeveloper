@@ -34,6 +34,10 @@ use think\exception\HttpResponseException;
 use think\file\UploadedFile;
 use think\Response;
 
+/**
+ * 通用文件上传 API（直传凭证、分片、本地存储等）。
+ * @class Upload
+ */
 class Upload extends Controller
 {
     public function index(): Response

@@ -20,8 +20,13 @@ declare(strict_types=1);
 
 namespace plugin\system\storage;
 
+/**
+ * 各存储驱动在 config 中 `authorize` 项指向的回调：组装前端上传/直传所需参数。
+ * @class StorageAuthorize
+ */
 class StorageAuthorize
 {
+    /** @return array{url:string,server:string} */
     public static function local(LocalStorage $storage, string $key, bool $safe = false, ?string $attname = null): array
     {
         return [
@@ -30,6 +35,7 @@ class StorageAuthorize
         ];
     }
 
+    /** 七牛上传凭证与直传地址 */
     public static function qiniu(QiniuStorage $storage, string $key, bool $safe = false, ?string $attname = null): array
     {
         return [
@@ -39,6 +45,7 @@ class StorageAuthorize
         ];
     }
 
+    /** 阿里云 OSS Post 策略与签名 */
     public static function alioss(AliossStorage $storage, string $key, bool $safe = false, ?string $attname = null): array
     {
         $token = $storage->token($key, 3600, $attname);
@@ -51,6 +58,7 @@ class StorageAuthorize
         ];
     }
 
+    /** 腾讯云 COS 表单上传签名 */
     public static function txcos(TxcosStorage $storage, string $key, bool $safe = false, ?string $attname = null): array
     {
         $token = $storage->token($key, 3600, $attname);
@@ -65,6 +73,7 @@ class StorageAuthorize
         ];
     }
 
+    /** 又拍云表单 policy 与鉴权头 */
     public static function upyun(UpyunStorage $storage, string $key, bool $safe = false, ?string $attname = null, string $hash = ''): array
     {
         $token = $storage->token($key, 3600, $attname, $hash);
@@ -76,6 +85,7 @@ class StorageAuthorize
         ];
     }
 
+    /** Alist 远端路径与 token */
     public static function alist(AlistStorage $storage, string $key): array
     {
         return [
