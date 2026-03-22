@@ -34,7 +34,6 @@ class Create extends Command
 {
     /**
      * 物码批次号.
-     * @var string
      */
     protected string $batch;
 
