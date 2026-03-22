@@ -92,19 +92,17 @@ class ComposerDependencyBoundaryTest extends TestCase
         $this->assertSame([
             'zoujingli/think-library',
             'zoujingli/think-plugs-static',
-            'zoujingli/think-plugs-storage',
             'zoujingli/think-plugs-worker',
         ], $this->localRequires('zoujingli/think-plugs-system'));
         $this->assertSame(['zoujingli/think-library'], $this->localRequires('zoujingli/think-plugs-worker'));
     }
 
-    public function testStorageAndHelperDoNotReintroduceKnownDependencyLoops(): void
+    public function testSystemAndHelperDoNotReintroduceLegacyStoragePackage(): void
     {
-        $storage = $this->localRequires('zoujingli/think-plugs-storage');
+        $system = $this->localRequires('zoujingli/think-plugs-system');
         $helper = $this->localRequires('zoujingli/think-plugs-helper');
 
-        $this->assertNotContains('zoujingli/think-plugs-worker', $storage);
-
+        $this->assertNotContains('zoujingli/think-plugs-storage', $system);
         $this->assertNotContains('zoujingli/think-plugs-storage', $helper);
     }
 

@@ -162,28 +162,19 @@ class ArchitectureBoundaryTest extends TestCase
         }));
         sort($dirs);
 
-        $this->assertSame(['controller', 'lang', 'middleware', 'model', 'route', 'service', 'view'], $dirs);
+        $this->assertSame(['controller', 'lang', 'middleware', 'model', 'route', 'service', 'storage', 'view'], $dirs);
     }
 
-    public function testStoragePluginSourceDirectoriesStayStandardized(): void
+    /**
+     * 存储能力已合并至 system 插件的 src/storage，独立 think-plugs-storage 包已移除。
+     */
+    public function testSystemPluginStorageSourceLayout(): void
     {
-        $dirs = array_values(array_filter(scandir($this->path('plugin/think-plugs-storage/src')) ?: [], function ($name) {
-            return $name !== '.' && $name !== '..' && is_dir($this->path("plugin/think-plugs-storage/src/{$name}"));
-        }));
-        sort($dirs);
-
-        $this->assertSame(['controller', 'model', 'service', 'view'], $dirs);
-        $this->assertDirectoryDoesNotExist($this->path('plugin/think-plugs-storage/src/storage'));
-        $this->assertDirectoryDoesNotExist($this->path('plugin/think-plugs-storage/src/support'));
-        $this->assertFileDoesNotExist($this->path('plugin/think-plugs-storage/src/StorageConfig.php'));
-        $this->assertFileDoesNotExist($this->path('plugin/think-plugs-storage/src/StorageManager.php'));
-        $this->assertFileExists($this->path('plugin/think-plugs-storage/src/service/StorageConfig.php'));
-        $this->assertFileExists($this->path('plugin/think-plugs-storage/src/service/StorageManager.php'));
-        $this->assertFileExists($this->path('plugin/think-plugs-storage/src/service/StorageAuthorize.php'));
-        $this->assertFileExists($this->path('plugin/think-plugs-storage/src/service/LocalStorage.php'));
-
-        $composer = json_decode(file_get_contents($this->path('plugin/think-plugs-storage/composer.json')) ?: '', true);
-        $this->assertSame(['plugin\storage\\' => 'src'], $composer['autoload']['psr-4'] ?? []);
+        $this->assertDirectoryDoesNotExist($this->path('plugin/think-plugs-storage'));
+        $this->assertFileExists($this->path('plugin/think-plugs-system/src/storage/StorageConfig.php'));
+        $this->assertFileExists($this->path('plugin/think-plugs-system/src/storage/StorageManager.php'));
+        $this->assertFileExists($this->path('plugin/think-plugs-system/src/storage/StorageAuthorize.php'));
+        $this->assertFileExists($this->path('plugin/think-plugs-system/src/storage/LocalStorage.php'));
     }
 
     public function testAccountPluginSourceDirectoriesStayStandardized(): void
@@ -305,7 +296,6 @@ class ArchitectureBoundaryTest extends TestCase
             'think-plugs-account' => ['Service.php'],
             'think-plugs-helper' => ['Service.php'],
             'think-plugs-payment' => ['Service.php'],
-            'think-plugs-storage' => ['Service.php'],
             'think-plugs-system' => ['Service.php', 'common.php'],
             'think-plugs-wechat-client' => ['Service.php'],
             'think-plugs-wechat-service' => ['Service.php'],
