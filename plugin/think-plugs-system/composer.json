@@ -78,11 +78,6 @@
                                 "node": "system/plugin/index"
                             },
                             {
-                                "name": "动态页面构建",
-                                "icon": "layui-icon layui-icon-template-1",
-                                "node": "system/builder/index"
-                            },
-                            {
                                 "name": "系统菜单管理",
                                 "icon": "layui-icon layui-icon-layouts",
                                 "node": "system/menu/index"
