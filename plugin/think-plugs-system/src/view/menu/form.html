@@ -74,8 +74,12 @@
     </div>
 </form>
 
+<script type="application/json" id="MenuFormNodesJson">{$nodes|raw|json_encode}</script>
+<script type="application/json" id="MenuFormAuthsJson">{$auths|raw|json_encode}</script>
 <script>
     $.module.use(['jquery.autocompleter'], function () {
+        var menuFormNodes = JSON.parse(((document.getElementById('MenuFormNodesJson') || {}).text || '[]'));
+        var menuFormAuths = JSON.parse(((document.getElementById('MenuFormAuthsJson') || {}).text || '[]'));
         $('[name="icon"]').on('change', function () {
             $(this).parent().next().find('i').get(0).className = this.value
         }), $('input[name=url]').autocompleter({
@@ -84,12 +88,12 @@
             }, source: (function (subjects, data) {
                 for (var i in subjects) data.push({value: subjects[i].node, label: subjects[i].node, title: subjects[i].title});
                 return data;
-            })(JSON.parse('{$nodes|raw|json_encode}'), [])
+            })(menuFormNodes, [])
         }), $('input[name=node]').autocompleter({
             limit: 5, highlightMatches: true, template: '{{ label }} <span> {{ title }} </span>', source: (function (subjects, data) {
                 for (var i in subjects) data.push({value: subjects[i].node, label: subjects[i].node, title: subjects[i].title});
                 return data;
-            })(JSON.parse('{$auths|raw|json_encode}'), [])
+            })(menuFormAuths, [])
         });
     });
 </script>
