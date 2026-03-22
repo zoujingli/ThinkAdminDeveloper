@@ -132,7 +132,13 @@ class Config extends Controller
     {
         if ($this->request->isGet()) {
             $this->title = '修改系统参数';
+            $theme = strval(sysconf('base.site_theme') ?: 'default');
+            if (!isset(static::themeCatalog[$theme])) {
+                $theme = 'default';
+            }
             $this->themes = static::themeCatalog;
+            $this->siteThemeKey = $theme;
+            $this->siteThemeLabel = static::themeCatalog[$theme]['label'];
             $this->pluginCenter = PluginCenterService::getConfig();
             $this->pluginCenterApps = PluginCenterService::getSelectableApps();
             $this->fetch();

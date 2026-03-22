@@ -5,25 +5,25 @@
             <div class="layui-col-xs4 padding-bottom-0">
                 <label class="relative block">
                     <span class="help-label"><b>{:lang('登录表单标题')}</b>Login Name</span>
-                    <input name="login_name" required placeholder="{:lang('请输入登录页面的表单标题')}" vali-name="{:lang('登录标题')}" value="{:sysconf('login_name')?:'系统管理'}" class="layui-input">
+                    <input name="login_name" required placeholder="{:lang('请输入登录页面的表单标题')}" vali-name="{:lang('登录标题')}"
+                        value="{:sysconf('login_name')?:'系统管理'}" class="layui-input">
                 </label>
             </div>
             <div class="layui-col-xs4 padding-bottom-0">
                 <div class="help-label label-required-prev"><b>{:lang('后台登录入口')}</b>Login Entry</div>
                 <label class="layui-input relative block nowrap label-required-null">
                     <span>{:sysuri('@',[],false,true)}</span>
-                    <input readonly disabled class="layui-input inline-block padding-0 border-0" style="width:100px;background:none" value="{:substr(sysuri('system/index/index',[],false), strlen(sysuri('@')))}">
+                    <input readonly disabled class="layui-input inline-block padding-0 border-0" style="width:100px;background:none"
+                        value="{:substr(sysuri('system/index/index',[],false), strlen(sysuri('@')))}">
                 </label>
             </div>
             <div class="layui-col-xs4 padding-bottom-0">
                 <div class="help-label label-required-prev"><b>{:lang('后台默认配色')}</b>Theme Style</div>
-                <select class="layui-select" name="site_theme" lay-filter="SiteTheme">
-                    {foreach $themes as $k=>$v}{if sysconf('base.site_theme') eq $k}
-                    <option selected value="{$k}">{$v.label}</option>
-                    {else}
-                    <option value="{$k}">{$v.label}</option>
-                    {/if}{/foreach}
-                </select>
+                <label class="relative block theme-config-picker" data-open-site-theme>
+                    <input type="hidden" name="site_theme" value="{$siteThemeKey}">
+                    <input readonly class="layui-input" data-site-theme-text value="{$siteThemeLabel}" title="{$siteThemeLabel}">
+                    <span class="input-right-icon layui-icon layui-icon-theme"></span>
+                </label>
             </div>
             <div class="layui-col-xs12 padding-top-0 padding-bottom-0">
                 <span class="help-block">{:lang('后台登录入口由 admin 插件注册前缀决定，当前模式不再通过运行时映射修改；如需调整，请修改插件注册前缀 ~')}</span>
@@ -34,15 +34,15 @@
             <div class="layui-col-xs4 padding-bottom-0">
                 <div class="help-label label-required-prev"><b>插件中心状态</b>Center Status</div>
                 <select class="layui-select" name="plugin_center_enabled">
-                    <option value="1" {:intval($pluginCenter['enabled'] ?? 1) === 1 ? 'selected' : ''}>启用</option>
-                    <option value="0" {:intval($pluginCenter['enabled'] ?? 1) === 0 ? 'selected' : ''}>禁用</option>
+                    <option value="1" {:intval($pluginCenter['enabled'] ?? 1)===1 ? 'selected' : '' }>启用</option>
+                    <option value="0" {:intval($pluginCenter['enabled'] ?? 1)===0 ? 'selected' : '' }>禁用</option>
                 </select>
             </div>
             <div class="layui-col-xs4 padding-bottom-0">
                 <div class="help-label label-required-prev"><b>菜单显示策略</b>Menu Display</div>
                 <select class="layui-select" name="plugin_center_show_menu">
-                    <option value="1" {:intval($pluginCenter['show_menu'] ?? 1) === 1 ? 'selected' : ''}>显示菜单节点</option>
-                    <option value="0" {:intval($pluginCenter['show_menu'] ?? 1) === 0 ? 'selected' : ''}>隐藏菜单节点</option>
+                    <option value="1" {:intval($pluginCenter['show_menu'] ?? 1)===1 ? 'selected' : '' }>显示菜单节点</option>
+                    <option value="0" {:intval($pluginCenter['show_menu'] ?? 1)===0 ? 'selected' : '' }>隐藏菜单节点</option>
                 </select>
             </div>
             <div class="layui-col-xs4 padding-bottom-0">
@@ -50,12 +50,13 @@
                 <select class="layui-select" name="plugin_center_default">
                     <option value="">不设置默认入口</option>
                     {foreach $pluginCenterApps as $code=>$label}
-                    <option value="{$code}" {:strval($pluginCenter['default'] ?? '') === strval($code) ? 'selected' : ''}>{$label}</option>
+                    <option value="{$code}" {:strval($pluginCenter['default'] ?? '' )===strval($code) ? 'selected' : '' }>{$label}</option>
                     {/foreach}
                 </select>
             </div>
             <div class="layui-col-xs12 padding-top-0 padding-bottom-0">
-                <span class="help-block">插件中心能力已并入系统管理，统一使用 <code>system/plugin/index</code> 与 <code>system/plugin/layout</code> 入口；这里可以直接控制启用状态、菜单展示和默认插件跳转。</span>
+                <span class="help-block">插件中心能力已并入系统管理，统一使用 <code>system/plugin/index</code> 与 <code>system/plugin/layout</code>
+                    入口；这里可以直接控制启用状态、菜单展示和默认插件跳转。</span>
             </div>
         </div>
 
@@ -69,7 +70,8 @@
         <div class="layui-form-item margin-bottom-5">
             <div class="help-label label-required-prev"><b>{:lang('JWT 接口密钥')}</b>Jwt Key</div>
             <label class="relative block label-required-null">
-                <input class="layui-input" pattern=".{32}" maxlength="32" required vali-name="{:lang('接口密钥')}" placeholder="{:lang('请输入32位JWT接口密钥')}" name="data.jwtkey" value="{:sysconf('data.jwtkey')?:bin2hex(random_bytes(16))}">
+                <input class="layui-input" pattern=".{32}" maxlength="32" required vali-name="{:lang('接口密钥')}" placeholder="{:lang('请输入32位JWT接口密钥')}"
+                    name="data.jwtkey" value="{:sysconf('data.jwtkey')?:bin2hex(random_bytes(16))}">
                 <a class="input-right-icon layui-icon layui-icon-refresh" id="RefreshJwtKey"></a>
             </label>
             <div class="help-block sub-span-blue">
@@ -80,7 +82,8 @@
         <div class="layui-form-item margin-bottom-5">
             <div class="help-label label-required-prev"><b>{:lang('浏览器小图标')}</b>Browser Icon</div>
             <div class="relative block label-required-null">
-                <input class="layui-input" required pattern="url" vali-name="{:lang('图标文件')}" data-tips-image data-tips-hover placeholder="{:lang('请上传浏览器图标')}" value="{:sysconf('site_icon')}" name="site_icon">
+                <input class="layui-input" required pattern="url" vali-name="{:lang('图标文件')}" data-tips-image data-tips-hover
+                    placeholder="{:lang('请上传浏览器图标')}" value="{:sysconf('site_icon')}" name="site_icon">
                 <a class="input-right-icon layui-icon layui-icon-upload-drag" data-file="btn" data-type="png,jpg,jpeg" data-field="site_icon"></a>
             </div>
             <div class="help-block sub-span-blue">
@@ -92,14 +95,16 @@
             <div class="layui-col-xs4 padding-bottom-0">
                 <label class="layui-form-item margin-bottom-5 relative block">
                     <span class="help-label"><b>{:lang('网站名称')}</b>Site Name</span>
-                    <input name="site_name" required placeholder="{:lang('请输入网站名称')}" vali-name="{:lang('网站名称')}" value="{:sysconf('site_name')}" class="layui-input">
+                    <input name="site_name" required placeholder="{:lang('请输入网站名称')}" vali-name="{:lang('网站名称')}" value="{:sysconf('site_name')}"
+                        class="layui-input">
                     <span class="help-block">{:lang('网站名称将显示在浏览器的标签上 ~')}</span>
                 </label>
             </div>
             <div class="layui-col-xs4 padding-bottom-0">
                 <label class="layui-form-item margin-bottom-5 relative block">
                     <span class="help-label"><b>{:lang('后台程序名称')}</b>App Name</span>
-                    <input name="app_name" required placeholder="{:lang('请输入程序名称')}" vali-name="{:lang('程序名称')}" value="{:sysconf('app_name')}" class="layui-input">
+                    <input name="app_name" required placeholder="{:lang('请输入程序名称')}" vali-name="{:lang('程序名称')}" value="{:sysconf('app_name')}"
+                        class="layui-input">
                     <span class="help-block">{:lang('管理程序名称显示在后台左上标题处 ~')}</span>
                 </label>
             </div>
@@ -125,7 +130,8 @@
             <div class="layui-col-xs4 padding-top-0 padding-bottom-0">
                 <label class="relative block">
                     <span class="help-label"><b>{:lang('网站版权信息')}</b>Copyright</span>
-                    <input name="site_copy" required placeholder="{:lang('请输入版权信息')}" vali-name="{:lang('版权信息')}" value="{:sysconf('site_copy')}" class="layui-input">
+                    <input name="site_copy" required placeholder="{:lang('请输入版权信息')}" vali-name="{:lang('版权信息')}" value="{:sysconf('site_copy')}"
+                        class="layui-input">
                 </label>
             </div>
             <div class="layui-col-xs12 help-block padding-top-0">
@@ -141,6 +147,7 @@
     </div>
 </form>
 
+<script type="application/json" id="SiteThemeCatalogJson">{$themes|json_encode|raw}</script>
 <script>
     $('[name=login_image]').uploadMultipleImage();
     const generateJwtKey = function () {
@@ -160,11 +167,30 @@
     $('body').off('click', '#RefreshJwtKey').on('click', '#RefreshJwtKey', function () {
         $(this).parent().find('input').val(generateJwtKey());
     });
-    layui.form.on('select(SiteTheme)', function (data) {
-        var alls = '', prox = 'layui-layout-theme-', curt = prox + data.value;
-        $(data.elem.options).map(function () {
-            if (this.value !== data.value) alls += ' ' + prox + this.value;
+
+    const siteThemeCatalogNode = document.getElementById('SiteThemeCatalogJson') || {};
+    const siteThemeCatalog = JSON.parse(siteThemeCatalogNode.textContent || siteThemeCatalogNode.text || '{}');
+    const previewSiteTheme = function (value) {
+        var alls = '', prox = 'layui-layout-theme-', curt = prox + value;
+        $.each(siteThemeCatalog, function (key) {
+            if (key !== value) alls += ' ' + prox + key;
         });
-        $('.layui-layout-body').removeClass(alls).addClass(curt)
+        (top.$ || $)('.layui-layout-body').removeClass($.trim(alls)).addClass(curt);
+    };
+    const updateSiteThemeField = function (value, label) {
+        var meta = siteThemeCatalog[value] || {};
+        var text = label || meta.label || value;
+        $('input[name=site_theme]').val(value);
+        $('[data-site-theme-text]').val(text).attr('title', text);
+        previewSiteTheme(value);
+    };
+    $('body').off('click', '[data-open-site-theme]').on('click', '[data-open-site-theme]', function () {
+        var value = $('input[name=site_theme]').val() || 'default';
+        var frameIndex = top.layer && typeof top.layer.getFrameIndex === 'function' ? (top.layer.getFrameIndex(window.name) || 'page') : 'page';
+        var pickerName = '__themeConfigPicker_' + String(frameIndex).replace(/[^\w]/g, '_');
+        top.window[pickerName] = function (theme, label) {
+            updateSiteThemeField(theme, label);
+        };
+        $.form.modal("{:sysuri('system/index/theme')}?scene=config&picker=" + encodeURIComponent(pickerName) + "&value=" + encodeURIComponent(value), {}, '选择后台默认配色', undefined, undefined, undefined, '800px');
     });
 </script>

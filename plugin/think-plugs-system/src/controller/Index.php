@@ -67,9 +67,20 @@ class Index extends Controller
     public function theme()
     {
         if ($this->request->isGet()) {
-            $this->theme = SystemAuthService::getUserTheme();
-            $this->themes = Config::themeCatalog;
-            $this->fetch();
+            $scene = strval($this->request->param('scene', 'user'));
+            $theme = strval($this->request->param('value', ''));
+            $themes = Config::themeCatalog;
+            if (!isset($themes[$theme])) {
+                $theme = $scene === 'config' ? strval(sysconf('base.site_theme') ?: 'default') : SystemAuthService::getUserTheme();
+            }
+            if (!isset($themes[$theme])) {
+                $theme = 'default';
+            }
+            $this->scene = $scene === 'config' ? 'config' : 'user';
+            $this->picker = strval($this->request->param('picker', ''));
+            $this->theme = $theme;
+            $this->themes = $themes;
+            $this->fetch($this->scene === 'config' ? 'index/theme-config' : 'index/theme');
         } else {
             $data = $this->_vali(['site_theme.require' => '主题名称不能为空！']);
             if (SystemAuthService::setUserTheme($data['site_theme'])) {
