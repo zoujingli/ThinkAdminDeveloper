@@ -27,62 +27,62 @@ class SystemContext implements SystemContextInterface
 {
     public function buildToken(): string
     {
-        return SystemAuthService::buildToken();
+        return AuthService::buildToken();
     }
 
     public function getTokenHeader(): string
     {
-        return SystemAuthService::getTokenHeader();
+        return AuthService::getTokenHeader();
     }
 
     public function getTokenCookie(): string
     {
-        return SystemAuthService::getTokenCookie();
+        return AuthService::getTokenCookie();
     }
 
     public function getTokenType(): string
     {
-        return SystemAuthService::getTokenType();
+        return AuthService::getTokenType();
     }
 
     public function syncTokenCookie(?string $token = null): string
     {
-        return SystemAuthService::syncTokenCookie($token);
+        return AuthService::syncTokenCookie($token);
     }
 
     public function check(?string $node = ''): bool
     {
-        return SystemAuthService::check($node);
+        return AuthService::check($node);
     }
 
     public function getUser(?string $field = null, $default = null)
     {
-        return SystemAuthService::getUser($field, $default);
+        return AuthService::getUser($field, $default);
     }
 
     public function getUserId(): int
     {
-        return SystemAuthService::getUserId();
+        return AuthService::getUserId();
     }
 
     public function isSuper(): bool
     {
-        return SystemAuthService::isSuper();
+        return AuthService::isSuper();
     }
 
     public function isLogin(): bool
     {
-        return SystemAuthService::isLogin();
+        return AuthService::isLogin();
     }
 
     public function withUploadUnid(?string $uptoken = null): array
     {
-        return SystemAuthService::withUploadUnid($uptoken);
+        return AuthService::withUploadUnid($uptoken);
     }
 
     public function clearAuth(): bool
     {
-        return SystemAuthService::clear();
+        return AuthService::clear();
     }
 
     public function getData(string $name, $default = [])

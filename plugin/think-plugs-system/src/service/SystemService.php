@@ -187,20 +187,6 @@ class SystemService extends Service
         ];
     }
 
-    public static function putDebug($data, bool $new = false, ?string $file = null)
-    {
-        ob_start();
-        var_dump($data);
-        $output = preg_replace('/]=>\n(\s+)/m', '] => ', ob_get_clean());
-        if (is_null($file)) {
-            $file = runpath('runtime/' . date('Ymd') . '.log');
-        } elseif (!preg_match('#[/\\\]+#', $file)) {
-            $file = runpath("runtime/{$file}.log");
-        }
-        is_dir($dir = dirname($file)) || mkdir($dir, 0777, true);
-        return $new ? file_put_contents($file, $output) : file_put_contents($file, $output, FILE_APPEND);
-    }
-
     public static function setFavicon(?string $icon = null): bool
     {
         try {

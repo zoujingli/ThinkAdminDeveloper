@@ -274,16 +274,16 @@ class MenuService extends Service
             }
             if (!empty($menu['sub'])) {
                 $menu['url'] = '#';
-            } elseif (empty($menu['url']) || $menu['url'] === '#' || !(empty($menu['node']) || SystemAuthService::check($menu['node']))) {
+            } elseif (empty($menu['url']) || $menu['url'] === '#' || !(empty($menu['node']) || AuthService::check($menu['node']))) {
                 unset($menus[$key]);
             } elseif (preg_match('#^(https?:)?//\w+#i', $menu['url'])) {
                 if ($menu['params']) {
-                    $menu['url'] .= (strpos($menu['url'], '?') === false ? '?' : '&') . $menu['params'];
+                    $menu['url'] .= (!str_contains($menu['url'], '?') ? '?' : '&') . $menu['params'];
                 }
             } else {
                 $node = join('/', array_slice(str2arr($menu['url'], '/'), 0, 3));
                 $menu['url'] = system_uri($menu['url']) . ($menu['params'] ? '?' . $menu['params'] : '');
-                if (!SystemAuthService::check($node)) {
+                if (!AuthService::check($node)) {
                     unset($menus[$key]);
                 }
             }

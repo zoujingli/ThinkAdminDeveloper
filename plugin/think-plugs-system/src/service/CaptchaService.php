@@ -29,19 +29,19 @@ use think\admin\Service;
  */
 class CaptchaService extends Service
 {
-    private $code; // 验证码
+    private string $code; // 验证码
 
-    private $uniqid; // 唯一序号
+    private string $uniqid; // 唯一序号
 
-    private $charset = 'ABCDEFGHKMNPRSTUVWXYZ23456789'; // 随机因子
+    private string $charset = 'ABCDEFGHKMNPRSTUVWXYZ23456789'; // 随机因子
 
-    private $width = 130; // 图片宽度
+    private int $width = 130; // 图片宽度
 
-    private $height = 50; // 图片高度
+    private int $height = 50; // 图片高度
 
-    private $length = 4; // 验证码长度
+    private int $length = 4; // 验证码长度
 
-    private $fontsize = 20; // 指定字体大小
+    private int $fontsize = 20; // 指定字体大小
 
     /**
      * 输出图形验证码
