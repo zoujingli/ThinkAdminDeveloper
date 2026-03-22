@@ -31,7 +31,7 @@ declare(strict_types=1);
 
 namespace plugin\wechat\client\service;
 
-use plugin\storage\service\LocalStorage;
+use plugin\system\storage\LocalStorage;
 use think\admin\Exception;
 use think\admin\Library;
 use think\admin\Service;
@@ -119,6 +119,8 @@ use WeChat\Exceptions\LocalCacheException;
  */
 class WechatService extends Service
 {
+    private const CLIENT_GROUP = 'wechat.client';
+
     /**
      * 静态初始化对象
      * @return mixed
@@ -130,18 +132,18 @@ class WechatService extends Service
         if ("{$type}{$base}" !== $name) {
             throw new Exception("抱歉，实例 {$name} 不符合规则！");
         }
-        if (sysconf('wechat.type') === 'api' || in_array($type, ['WePay', 'WePayV3'])) {
+        if (static::config('type') === 'api' || in_array($type, ['WePay', 'WePayV3'], true)) {
             if (class_exists($class)) {
                 return new $class($type === 'WeMini' ? static::getWxconf() : static::getConfig());
             }
             throw new Exception("抱歉，接口模式无法实例 {$class} 对象！");
         } else {
-            [$appid, $appkey] = [sysconf('wechat.thr_appid'), sysconf('wechat.thr_appkey')];
+            [$appid, $appkey] = [static::config('thr_appid'), static::config('thr_appkey')];
             $data = ['class' => $name, 'appid' => $appid, 'time' => time(), 'nostr' => uniqid()];
             $data['sign'] = md5("{$data['class']}#{$appid}#{$appkey}#{$data['time']}#{$data['nostr']}");
             // 创建远程连接，默认使用 JSON-RPC 方式调用接口
             $token = enbase64url(json_encode($data, JSON_UNESCAPED_UNICODE));
-            $jsonrpc = sysconf('wechat.service_jsonrpc|raw') ?: 'https://open.cuci.cc/api/plugin-wechat-service/client/jsonrpc?token=TOKEN';
+            $jsonrpc = static::config('service_jsonrpc') ?: 'https://open.cuci.cc/service/api.client/jsonrpc?token=TOKEN';
             return new JsonRpcHttpClient(str_replace('token=TOKEN', "token={$token}", $jsonrpc));
         }
     }
@@ -153,9 +155,9 @@ class WechatService extends Service
     public static function getAppid(): string
     {
         if (static::getType() === 'api') {
-            return sysconf('wechat.appid');
+            return static::config('appid');
         }
-        return sysconf('wechat.thr_appid');
+        return static::config('thr_appid');
     }
 
     /**
@@ -164,8 +166,8 @@ class WechatService extends Service
      */
     public static function getType(): string
     {
-        $type = strtolower(sysconf('wechat.type'));
-        if (in_array($type, ['api', 'thr'])) {
+        $type = strtolower(static::config('type'));
+        if (in_array($type, ['api', 'thr'], true)) {
             return $type;
         }
         throw new Exception('请在后台配置微信对接授权模式');
@@ -180,9 +182,9 @@ class WechatService extends Service
     {
         $config = [
             'appid' => static::getAppid(),
-            'token' => sysconf('wechat.token'),
-            'appsecret' => sysconf('wechat.appsecret'),
-            'encodingaeskey' => sysconf('wechat.encodingaeskey'),
+            'token' => static::config('token'),
+            'appsecret' => static::config('appsecret'),
+            'encodingaeskey' => static::config('encodingaeskey'),
             'cache_path' => runpath('runtime/wechat'),
         ];
         return $ispay ? static::withWxpayCert($config) : $config;
@@ -345,6 +347,14 @@ class WechatService extends Service
             return static::WeChatScript()->getJsSign($location);
         }
         return static::ThinkServiceConfig()->jsSign($location);
+    }
+
+    /**
+     * 读取配置参数.
+     */
+    public static function config(string $name, string $default = ''): string
+    {
+        return strval(sysget(self::CLIENT_GROUP . '.' . $name, $default));
     }
 
     /**

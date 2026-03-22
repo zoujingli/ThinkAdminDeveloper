@@ -88,6 +88,8 @@ use think\Exception;
  */
 class AuthService extends Service
 {
+    private const SERVICE_GROUP = 'wechat.service';
+
     /**
      * 静态初始化对象
      * @return mixed
@@ -178,9 +180,9 @@ class AuthService extends Service
     {
         $conifg = [
             'appid' => $appid,
-            'token' => sysconf('service.component_token'),
-            'appsecret' => sysconf('service.component_appsecret'),
-            'encodingaeskey' => sysconf('service.component_encodingaeskey'),
+            'token' => $this->serviceConfigValue('component_token'),
+            'appsecret' => $this->serviceConfigValue('component_appsecret'),
+            'encodingaeskey' => $this->serviceConfigValue('component_encodingaeskey'),
             'cache_path' => $this->getCachePath(),
         ];
         $conifg['GetAccessTokenCallback'] = function ($authorizerAppid) {
@@ -212,10 +214,10 @@ class AuthService extends Service
     {
         return [
             'cache_path' => $this->getCachePath(),
-            'component_appid' => sysconf('service.component_appid'),
-            'component_token' => sysconf('service.component_token'),
-            'component_appsecret' => sysconf('service.component_appsecret'),
-            'component_encodingaeskey' => sysconf('service.component_encodingaeskey'),
+            'component_appid' => $this->serviceConfigValue('component_appid'),
+            'component_token' => $this->serviceConfigValue('component_token'),
+            'component_appsecret' => $this->serviceConfigValue('component_appsecret'),
+            'component_encodingaeskey' => $this->serviceConfigValue('component_encodingaeskey'),
         ];
     }
 
@@ -225,5 +227,10 @@ class AuthService extends Service
     private function getCachePath(): string
     {
         return runpath('safefile/cache');
+    }
+
+    private function serviceConfigValue(string $name): string
+    {
+        return strval(sysget(self::SERVICE_GROUP . '.' . $name, ''));
     }
 }

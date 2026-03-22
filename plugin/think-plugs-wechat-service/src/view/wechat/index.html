@@ -36,7 +36,7 @@
                         line.push('{:lang("公众号APPID")}：<b>{{d.authorizer_appid}}</b>，{:lang("已请求")} <b class="color-blue">{{d.total}}</b> {:lang("次")}')
                         line.push('{:lang("平台接口密钥")}：<b>{{-d.appkey||"<span class=\'color-desc font-w4\'>' + '{:lang("未生成平台接口密钥, 请稍候授权绑定")}' + '</span>"}}</b>')
                         line.push('{:lang("消息推送地址")}：{{d.appuri||"' + '{:lang("未配置消息推送地址")}' + '"}}')
-                        return laytpl('<div class="flex flex-align-center"><div class="ta-pr-10">{{-showTableImage(d.user_headimg, false, "md")}}</div><div>' + line.join('<br>') + '</div></div>').render(d)
+                        return laytpl('<div class="flex flex-align-center"><div class="pr10">{{-showTableImage(d.user_headimg, false, "md")}}</div><div>' + line.join('<br>') + '</div></div>').render(d)
                     }
                 },
                 {
@@ -72,12 +72,12 @@
 <!-- 数据操作工具条模板 -->
 <script type="text/html" id="toolbar">
 
-    <div class="ta-pt-10"></div>
+    <div class="pt10"></div>
     <!--{if auth("state")}-->
     <input type="checkbox" value="{{d.id}}" lay-skin="switch" lay-text="{:lang('已激活')}|{:lang('已禁用')}" lay-filter="StatusSwitch" {{-d.status>0?'checked':''}}>
     <!--{/if}-->
 
-    <span class="ta-ml-5"></span>
+    <span class="ml5"></span>
 
     <!--{if auth("sync")}-->
     <a class="layui-btn layui-btn-sm" data-action="{:url('sync')}" data-value="appid#{{d.authorizer_appid}}">{:lang('同 步')}</a>

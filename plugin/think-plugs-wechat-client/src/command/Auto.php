@@ -113,7 +113,7 @@ class Auto extends Command
         if ($type === 'news') {
             [$item, $news] = [MediaService::news($data['news_id']), []];
             if (isset($item['articles']) && is_array($item['articles'])) {
-                $host = sysconf('base.site_host') ?: true;
+                $host = strval(sysget('system.site.host', '')) ?: true;
                 foreach ($item['articles'] as $vo) {
                     if (empty($news)) {
                         $news[] = [

@@ -55,7 +55,7 @@
                 {field: 'sort', title: '排序权重', width: 100, align: 'center', sort: true, templet: '#SortInputTpl'},
                 {
                     field: 'keys', title: '关键字', minWidth: 100, templet: function (d) {
-                        d.className = 'layui-icon layui-icon-cols font-s12 pointer margin-right-5 pull-left';
+                        d.className = 'layui-icon layui-icon-cols font-s12 pointer mr5 pull-left';
                         return laytpl('<i class="{{d.className}}" data-load="{{d.qrc}}" data-time="false" data-tips-text="生成关键字二维码"></i> {{d.keys}}').render(d);
                     }
                 },

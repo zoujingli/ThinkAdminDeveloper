@@ -12,41 +12,85 @@
 <!--{/if}-->
 {/block}
 
+{block name='style'}{include file='config/options-style'}{/block}
+
 {block name="content"}
-<div class="think-box-shadow layui-form">
-    <div style="margin-left:99px;max-width:750px">
-        {foreach ['api'=>lang('微信公众平台直接模式'),'thr'=>lang('微信开放平台授权模式')] as $k=>$v}
-        <label class="think-radio">
-            <input type="radio" data-wechat-type="{$k}" name="wechat.type" value="{$k}" title="{$v}" lay-ignore> {$v}
+<div class="wechat-config-page">
+    <div class="wechat-hero">
+        <div class="wechat-hero__content">
+            <div class="wechat-hero__eyebrow">Wechat Gateway</div>
+            <h2 class="wechat-hero__title">{:lang('统一管理公众号直连模式与第三方授权模式')}</h2>
+            <p class="wechat-hero__desc">
+                {:lang('根据当前业务接入方式选择模式后，系统会切换对应配置表单。直接模式适合公众号自身接入，授权模式适合将公众号托管到第三方服务平台。')}
+            </p>
+        </div>
+        <div class="wechat-info-grid">
+            <div class="wechat-info-card">
+                <span>{:lang('消息推送接口')}</span>
+                <strong>{$thrNotify}</strong>
+            </div>
+            <div class="wechat-info-card">
+                <span>{:lang('服务器授权 IP')}</span>
+                <strong>{$geoip|default='-'}</strong>
+            </div>
+        </div>
+    </div>
+
+    <div class="wechat-mode-grid">
+        <label class="wechat-mode-card" data-mode-card="api">
+            <input type="radio" data-wechat-type="api" name="wechat.type" value="api" lay-ignore>
+            <span class="wechat-mode-card__eyebrow">Direct Mode</span>
+            <span class="wechat-mode-card__title">{:lang('微信公众平台直接模式')}</span>
+            <span class="wechat-mode-card__desc">
+                {:lang('由当前公众号直接对接系统，适合标准开发模式，参数来源清晰，部署后可独立运行。')}
+            </span>
+            <span class="wechat-mode-card__footer">
+                <span class="wechat-mode-card__badge">{:lang('推荐标准接入')}</span>
+                <span class="wechat-mode-card__hint">{:lang('点击切换')}</span>
+            </span>
         </label>
-        {/foreach}
-        <div class="help-block">{:lang('请选择微信对接方式，其中微信开放平台授权模式需要微信开放平台支持，还需要搭建第三方服务平台托管系统！')}</div>
+
+        <label class="wechat-mode-card" data-mode-card="thr">
+            <input type="radio" data-wechat-type="thr" name="wechat.type" value="thr" lay-ignore>
+            <span class="wechat-mode-card__eyebrow">Managed Mode</span>
+            <span class="wechat-mode-card__title">{:lang('微信开放平台授权模式')}</span>
+            <span class="wechat-mode-card__desc">
+                {:lang('由第三方服务平台托管公众号授权和消息转发，适合统一管理多个公众号或外部托管场景。')}
+            </span>
+            <span class="wechat-mode-card__footer">
+                <span class="wechat-mode-card__badge">{:lang('需要开放平台')}</span>
+                <span class="wechat-mode-card__hint">{:lang('点击切换')}</span>
+            </span>
+        </label>
     </div>
-</div>
-<div class="think-box-shadow margin-top-15">
-    <div class="padding-top-20" style="max-width:850px">
-        <div class="layui-anim layui-anim-fadein" data-type="api">{include file='config/options_form_api'}</div>
-        <div class="layui-anim layui-anim-fadein" data-type="thr">{include file='config/options_form_thr'}</div>
-    </div>
+
+    <div class="wechat-panel layui-anim layui-anim-fadein" data-type="api">{include file='config/options_form_api'}</div>
+    <div class="wechat-panel layui-anim layui-anim-fadein" data-type="thr">{include file='config/options_form_thr'}</div>
 </div>
 {/block}
 
 {block name='script'}
 <script>
     $(function () {
-
         $('body').off('change', '[data-wechat-type]').on('change', '[data-wechat-type]', apply);
+        $('body').off('click', '[data-mode-card]').on('click', '[data-mode-card]', function () {
+            $(this).find('[data-wechat-type]').prop('checked', true).trigger('change');
+        });
 
-        // 初始化选择器
-        let value = '{:sysconf("wechat.type")}' || 'api';
-        $("[data-wechat-type='" + value + "']").trigger('click')
+        let value = '{:sysget("wechat.client.type", "api")}' || 'api';
+        let $current = $("[data-wechat-type='" + value + "']");
+        if ($current.length < 1) {
+            $current = $("[data-wechat-type='api']");
+        }
+        $current.prop('checked', true);
+        apply();
 
         function apply() {
-            if ((value = $('input[data-wechat-type]:checked').val())) {
-                $('[data-type="' + value + '"]').show().siblings('[data-type]').hide();
-            } else {
-                $("[data-wechat-type]:frist").trigger('click')
-            }
+            value = $('input[data-wechat-type]:checked').val() || 'api';
+            $('[data-mode-card]').removeClass('is-active');
+            $('[data-mode-card="' + value + '"]').addClass('is-active');
+            $('[data-type]').hide();
+            $('[data-type="' + value + '"]').show();
         }
     });
 </script>

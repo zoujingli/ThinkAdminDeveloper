@@ -19,7 +19,6 @@
         "zoujingli/qrcode": "^1.0",
         "zoujingli/think-library": "^8.0",
         "zoujingli/think-plugs-helper": "^8.0",
-        "zoujingli/think-plugs-storage": "^8.0",
         "zoujingli/think-plugs-system": "^8.0",
         "zoujingli/think-plugs-worker": "^8.0",
         "zoujingli/wechat-developer": "^1.2"

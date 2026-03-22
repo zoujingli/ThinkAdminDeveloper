@@ -29,22 +29,22 @@
         </ul>
     </div>
 
-    <div class="absolute inline-block layui-card margin-left-10" style="height:578px;width:570px">
+    <div class="absolute inline-block layui-card ml10" style="height:578px;width:570px">
         <div class="layui-card-header layui-bg-gray text-center">{:lang('菜单编辑')}</div>
         <div class="layui-card-body" ng-if="list.length<1">
-            <blockquote class="layui-elem-quote border-0 text-center">{:lang('请在左侧创建菜单...')}</blockquote>
+            <blockquote class="layui-elem-quote b0 text-center">{:lang('请在左侧创建菜单...')}</blockquote>
         </div>
         <div class="layui-card-body">
-            <form class="layui-form padding-right-40" name="menu" role="form" onsubmit="return false">
+            <form class="layui-form pr40" name="menu" role="form" onsubmit="return false">
                 <div ng-if="list.length>0">
-                    <div class="layui-form-item margin-top-20">
+                    <div class="layui-form-item mt20">
                         <label class="layui-form-label">{:lang('菜单名称')}</label>
                         <div class="layui-input-block">
                             <input required vali-name="{:lang('菜单名称')}" ng-model="item.name" class="layui-input" placeholder="{:lang('请输入菜单名称')}">
                             <span class="help-block">{:lang('字数不超过13个汉字或40个字母')}</span>
                         </div>
                     </div>
-                    <div class="layui-form-item margin-top-20" ng-if="!item.sub_button||item.sub_button.length<1">
+                    <div class="layui-form-item mt20" ng-if="!item.sub_button||item.sub_button.length<1">
                         <label class="layui-form-label label-required">{:lang('菜单类型')}</label>
                         <div class="layui-input-block">
                             {foreach $menuTypes as $key => $type}
@@ -54,13 +54,13 @@
                             {/foreach}
                         </div>
                     </div>
-                    <div class="layui-form-item margin-top-20" ng-if="item.type==='customservice'">
+                    <div class="layui-form-item mt20" ng-if="item.type==='customservice'">
                         <label class="layui-form-label">提示文字</label>
                         <div class="layui-input-block">
                             <textarea required vali-name="提示文字" class="layui-textarea" ng-model="item.content"></textarea>
                         </div>
                     </div>
-                    <div class="layui-form-item margin-top-20" ng-if="(!item.sub_button||item.sub_button.length<1)&&item.type==='click'">
+                    <div class="layui-form-item mt20" ng-if="(!item.sub_button||item.sub_button.length<1)&&item.type==='click'">
                         <label class="layui-form-label">匹配规则</label>
                         <div class="layui-input-block">
                             <select required class="layui-select" lay-filter="key" lay-search>
@@ -68,26 +68,26 @@
                             </select>
                         </div>
                     </div>
-                    <div class="layui-form-item margin-top-20" ng-if="item.type==='view'">
+                    <div class="layui-form-item mt20" ng-if="item.type==='view'">
                         <label class="layui-form-label">跳转链接</label>
                         <div class="layui-input-block">
                             <input type="text" required vali-name="跳转链接" class="layui-input" ng-model="item.url" placeholder="请输入跳转链接">
                         </div>
                     </div>
                     <div ng-if="item.type==='miniprogram'">
-                        <div class="layui-form-item margin-top-20">
+                        <div class="layui-form-item mt20">
                             <label class="layui-form-label">小程序链接</label>
                             <div class="layui-input-block">
                                 <input type="text" required vali-name="小程序链接" class="layui-input" ng-model="item.url" placeholder="请输入小程序链接">
                             </div>
                         </div>
-                        <div class="layui-form-item margin-top-20">
+                        <div class="layui-form-item mt20">
                             <label class="layui-form-label">小程序APPID</label>
                             <div class="layui-input-block">
                                 <input type="text" required vali-name="小程序APPID" class="layui-input" ng-model="item.appid" placeholder="请输入小程序APPID">
                             </div>
                         </div>
-                        <div class="layui-form-item margin-top-20">
+                        <div class="layui-form-item mt20">
                             <label class="layui-form-label">小程序页面</label>
                             <div class="layui-input-block">
                                 <input type="text" required vali-name="小程序页面" class="layui-input" ng-model="item.pagepath" placeholder="请输入小程序页面">
@@ -99,8 +99,8 @@
         </div>
     </div>
 
-    <div class="text-center margin-top-20">
-        <div class="hr-line-dashed margin-top-15 margin-bottom-15"></div>
+    <div class="text-center mt20">
+        <div class="hr-line-dashed mt15 mb15"></div>
         <!--{if auth("push")}-->
         <button ng-click="submit()" class="layui-btn menu-submit">保存发布</button>
         <!--{/if}-->

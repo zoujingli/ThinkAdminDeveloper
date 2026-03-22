@@ -20,7 +20,7 @@ declare(strict_types=1);
 
 namespace plugin\wechat\client\controller;
 
-use plugin\storage\service\LocalStorage;
+use plugin\system\storage\LocalStorage;
 use plugin\wechat\client\service\WechatService;
 use think\admin\Controller;
 use think\admin\helper\FormBuilder;
@@ -31,6 +31,8 @@ use think\admin\helper\FormBuilder;
  */
 class Config extends Controller
 {
+    private const CLIENT_GROUP = 'wechat.client';
+
     /**
      * 微信授权配置.
      * @auth true
@@ -41,21 +43,29 @@ class Config extends Controller
     {
         $this->thrNotify = apiuri('wechat-client/push/index', [], false, true);
         if ($this->request->isGet()) {
+            $type = strval(sysget(self::clientKey('type'), 'api')) ?: 'api';
+            $thrAppid = strval(sysget(self::clientKey('thr_appid'), ''));
+            $thrAppkey = strval(sysget(self::clientKey('thr_appkey'), ''));
             try {
                 // 生成微信授权链接
                 $source = enbase64url(sysuri('system/index/index', [], false, true) . '#' . $this->request->url());
-                $authurl = sysconf('wechat.service_authurl|raw') ?: 'https://open.cuci.cc/api/plugin-wechat-service/push/auth?source=SOURCE';
+                $authurl = strval(sysget(self::clientKey('service_authurl'), '')) ?: 'https://open.cuci.cc/service/api.push/auth?source=SOURCE';
                 $this->authurl = str_replace('source=SOURCE', "source={$source}", $authurl);
                 // 授权成功后的参数保存
                 if (input('?appid') && input('?appkey')) {
-                    sysconf('wechat.type', 'thr');
-                    sysconf('wechat.thr_appid', input('appid'));
-                    sysconf('wechat.thr_appkey', input('appkey'));
+                    sysdata(self::clientKey('type'), 'thr');
+                    sysdata(self::clientKey('thr_appid'), strval(input('appid')));
+                    sysdata(self::clientKey('thr_appkey'), strval(input('appkey')));
                     WechatService::ThinkServiceConfig()->setApiNotifyUri($this->thrNotify);
+                    $type = 'thr';
+                    $thrAppid = strval(input('appid'));
+                    $thrAppkey = strval(input('appkey'));
                 }
                 // 读取授权的微信参数
-                $this->wechat = WechatService::ThinkServiceConfig()->getConfig();
-            } catch (\Exception $exception) {
+                $this->wechat = ($type === 'thr' && $thrAppid !== '' && $thrAppkey !== '')
+                    ? WechatService::ThinkServiceConfig()->getConfig()
+                    : [];
+            } catch (\Throwable $exception) {
                 $this->wechat = [];
                 $this->message = $exception->getMessage();
             }
@@ -68,9 +78,9 @@ class Config extends Controller
             $this->fetch();
         } else {
             foreach ($this->request->post() as $k => $v) {
-                sysconf($k, $v);
+                sysdata(self::normalizePostKey(strval($k)), $v);
             }
-            if ($this->request->post('wechat.type') === 'thr') {
+            if (strval($this->request->post('wechat.type')) === 'thr') {
                 try {
                     WechatService::ThinkServiceConfig()->setApiNotifyUri($this->thrNotify);
                 } catch (\Exception $exception) {
@@ -100,13 +110,13 @@ class Config extends Controller
     {
         $builder = $this->buildJsonrpcForm();
         if ($this->request->isGet()) {
-            $authUrl = sysconf('wechat.service_authurl|raw') ?: 'https://open.cuci.cc/api/plugin-wechat-service/push/auth?source=SOURCE';
-            $jsonRpc = sysconf('wechat.service_jsonrpc|raw') ?: 'https://open.cuci.cc/api/plugin-wechat-service/client/jsonrpc?token=TOKEN';
+            $authUrl = strval(sysget(self::clientKey('service_authurl'), '')) ?: 'https://open.cuci.cc/service/api.push/auth?source=SOURCE';
+            $jsonRpc = strval(sysget(self::clientKey('service_jsonrpc'), '')) ?: 'https://open.cuci.cc/service/api.client/jsonrpc?token=TOKEN';
             $builder->fetch(['vo' => ['auth_url' => $authUrl, 'json_rpc' => $jsonRpc]]);
         } else {
             $data = $builder->validate();
-            sysconf('wechat.service_authurl', $data['auth_url']);
-            sysconf('wechat.service_jsonrpc', $data['json_rpc']);
+            sysdata(self::clientKey('service_authurl'), $data['auth_url']);
+            sysdata(self::clientKey('service_jsonrpc'), $data['json_rpc']);
             $this->success('接口地址保存成功！');
         }
     }
@@ -271,5 +281,17 @@ class Config extends Controller
             ])
             ->addSubmitButton('保存参数')
             ->addCancelButton();
+    }
+
+    private static function normalizePostKey(string $name): string
+    {
+        return str_starts_with($name, 'wechat.')
+            ? self::clientKey(substr($name, 7))
+            : $name;
+    }
+
+    private static function clientKey(string $name): string
+    {
+        return self::CLIENT_GROUP . '.' . ltrim($name, '.');
     }
 }

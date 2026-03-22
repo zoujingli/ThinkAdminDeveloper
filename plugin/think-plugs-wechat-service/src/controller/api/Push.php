@@ -82,7 +82,7 @@ class Push extends Controller
                 return 'Ticket event handling failed.';
             }
             if (!empty($data['ComponentVerifyTicket'])) {
-                sysconf('service.ticket_push_date', date('Y-m-d H:i:s'));
+                sysdata('wechat.service.ticket_push_date', date('Y-m-d H:i:s'));
             }
         } catch (\Exception $exception) {
             $message = "Ticket event handling failed, {$exception->getMessage()}";

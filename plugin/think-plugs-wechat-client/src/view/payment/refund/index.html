@@ -24,7 +24,7 @@
                     title: '用户账号', minWidth: 170, templet: function (d) {
                         if (!d.record) return '-';
                         let tpls = [];
-                        tpls.push('<div class="padding-top-10"></div>用户昵称：{{d.record.fans_nickname||"-"}}');
+                        tpls.push('<div class="pt10"></div>用户昵称：{{d.record.fans_nickname||"-"}}');
                         tpls.push('用户标识：<span class="font-code">{{d.record.openid||"-"}}</span>');
                         return laytpl(tpls.join('<br>')).render(d);
                     }

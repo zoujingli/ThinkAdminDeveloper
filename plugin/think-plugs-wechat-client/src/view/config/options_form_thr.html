@@ -1,30 +1,48 @@
-<form action="{:request()->url()}" method="post" data-auto="true" class="layui-form layui-card shadow-none">
+<form action="{:request()->url()}" method="post" data-auto="true" class="layui-form layui-card shadow-none wechat-form">
 
-    <div class="layui-card-header border-0" style="height:auto">
-        <div class="layui-bg-gray padding-20 border-radius-5" style="line-height:2em">
-            {:lang('使用微信开放平台授权模式时，微信将授权给第三方服务平台托管系统，消息数据使用 %s 通信协议转发。',['<span>JsonRpc</span>'])}
+    <div class="layui-card-header b0">
+        <div class="ta-note">
+            <p><strong>{:lang('授权模式会将公众号委托给第三方服务平台托管，消息数据通过 %s 转发。',['JsonRpc'])}</strong></p>
+            <p>{:lang('适合统一管理多个公众号，或者由外部授权平台集中维护消息通道和接口能力。')}</p>
         </div>
     </div>
 
     <div class="layui-card-body">
 
         <!--{if !empty($wechat)}-->
-        <div class="hr-line-dashed"></div>
-        <div class="layui-form-item margin-bottom-20">
-            <label class="layui-form-label"><b>QRCode</b><br><span class="nowrap color-desc">公众号二维码</span></label>
-            <div class="layui-input-block">
-                <div class="pull-left notselect">
-                    <div class="shadow" data-tips-image data-lazy-src="{$wechat.qrcode_url|down_file}" style="width:95px;height:95px"></div>
+        <div class="wechat-auth-card">
+            <div class="wechat-auth-card__media">
+                <div class="shadow wechat-auth-card__qrcode" data-tips-image data-lazy-src="{$wechat.qrcode_url|down_file}"></div>
+            </div>
+            <div class="wechat-auth-card__body">
+                <div class="wechat-auth-card__title">
+                    <strong>{:lang('已绑定公众号')}</strong>
+                    {if $wechat.service_verify == '未认证'}
+                    <span class="wechat-pill warn">{:lang('未认证')}</span>
+                    {else}
+                    <span class="wechat-pill success">{:lang('已认证')}</span>
+                    {/if}
                 </div>
-                <div class="pull-left padding-left-10">
-                    <p class="nowrap">微信昵称：{$wechat.user_nickname|default='-'}</p>
-                    <p class="nowrap">微信类型：{$wechat.service_type|default='-'} / {$wechat.service_verify == '未认证' ? '未认证' : '<span class="color-green">已认证</span>'}</p>
-                    <p class="nowrap">注册公司：{$wechat.user_company|default='-'}</p>
-                    <p class="nowrap">授权绑定：{$wechat.create_time}</p>
+                <div class="wechat-auth-card__meta">
+                    <div>
+                        <span>{:lang('微信昵称')}</span>
+                        <strong>{$wechat.user_nickname|default='-'}</strong>
+                    </div>
+                    <div>
+                        <span>{:lang('微信类型')}</span>
+                        <strong>{$wechat.service_type|default='-'}</strong>
+                    </div>
+                    <div>
+                        <span>{:lang('注册公司')}</span>
+                        <strong>{$wechat.user_company|default='-'}</strong>
+                    </div>
+                    <div>
+                        <span>{:lang('授权时间')}</span>
+                        <strong>{$wechat.create_time|default='-'}</strong>
+                    </div>
                 </div>
             </div>
         </div>
-        <div class="hr-line-dashed"></div>
         <!--{/if}-->
 
         <div class="layui-form-item">
@@ -32,14 +50,14 @@
             <div class="layui-input-block">
                 <button type="button" data-href="{$authurl|default=''}" class="layui-btn layui-btn-sm layui-btn-primary">重新绑定公众号</button>
                 <p class="help-block">点击链接将跳转到微信第三方平台进行公众号授权。</p>
-                {if !empty($message)}<p class="color-red">{$message|default=''}</p>{/if}
+                {if !empty($message)}<div class="think-box-notify wechat-error" type="error">{$message|default=''}</div>{/if}
             </div>
         </div>
 
         <div class="layui-form-item">
             <label class="layui-form-label"><b>AppId</b><br><span class="nowrap color-desc">公众号 AppId</span></label>
             <div class="layui-input-block">
-                <input name="wechat.thr_appid" vali-name="微信APPID" placeholder="请输入以wx开头的18位公众号AppId（必填）" pattern="^wx[0-9a-z]{16}$" maxlength="18" required value="{:sysconf('wechat.thr_appid')}" class="layui-input">
+                <input name="wechat.thr_appid" vali-name="微信APPID" placeholder="请输入以wx开头的18位公众号AppId（必填）" pattern="^wx[0-9a-z]{16}$" maxlength="18" required value="{:sysget('wechat.client.thr_appid', '')}" class="layui-input">
                 <p class="help-block">众号 appid 通过微信第三方授权自动获取. 若没有值请进行微信第三方授权。</p>
             </div>
         </div>
@@ -48,7 +66,7 @@
             <label class="layui-form-label"><b>AppKey</b><br><span class="nowrap color-desc">服务接口密钥</span></label>
             <div class="layui-input-block">
                 <label class="relative block">
-                    <input name="wechat.thr_appkey" vali-name="接口密钥" required placeholder="请输入32位第三方平台接口密钥AppKey（必填）" value="{:sysconf('wechat.thr_appkey')}" maxlength="32" pattern="^[0-9a-z]{32}$" class="layui-input">
+                    <input name="wechat.thr_appkey" vali-name="接口密钥" required placeholder="请输入32位第三方平台接口密钥AppKey（必填）" value="{:sysget('wechat.client.thr_appkey', '')}" maxlength="32" pattern="^[0-9a-z]{32}$" class="layui-input">
                     <p class="help-block">公众号服务平台接口密钥, 通过微信第三方授权自动获取, 若没有值请进行微信第三方授权。</p>
                 </label>
             </div>
@@ -69,7 +87,7 @@
     <div class="hr-line-dashed"></div>
     <input type="hidden" name="wechat.type" value="thr">
 
-    <div class="layui-form-item text-center">
+    <div class="layui-form-item ta-actions">
         <button class="layui-btn" type="submit">保存配置</button>
     </div>
 </form>

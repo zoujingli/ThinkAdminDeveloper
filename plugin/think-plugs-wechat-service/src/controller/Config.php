@@ -26,6 +26,8 @@ use think\admin\helper\FormBuilder;
 
 class Config extends Controller
 {
+    private const SERVICE_GROUP = 'wechat.service';
+
     /**
      * @auth true
      * @menu true
@@ -55,10 +57,10 @@ class Config extends Controller
         }
 
         $data = $builder->validate();
-        sysconf('service.component_appid', $data['component_appid']);
-        sysconf('service.component_appsecret', $data['component_appsecret']);
-        sysconf('service.component_token', $data['component_token']);
-        sysconf('service.component_encodingaeskey', $data['component_encodingaeskey']);
+        sysdata(self::serviceKey('component_appid'), $data['component_appid']);
+        sysdata(self::serviceKey('component_appsecret'), $data['component_appsecret']);
+        sysdata(self::serviceKey('component_token'), $data['component_token']);
+        sysdata(self::serviceKey('component_encodingaeskey'), $data['component_encodingaeskey']);
         $this->success('参数修改成功！');
     }
 
@@ -90,10 +92,15 @@ class Config extends Controller
     private function loadConfigFormData(): array
     {
         return [
-            'component_appid' => strval(sysconf('service.component_appid')),
-            'component_appsecret' => strval(sysconf('service.component_appsecret')),
-            'component_token' => strval(sysconf('service.component_token')),
-            'component_encodingaeskey' => strval(sysconf('service.component_encodingaeskey')),
+            'component_appid' => strval(sysget(self::serviceKey('component_appid'), '')),
+            'component_appsecret' => strval(sysget(self::serviceKey('component_appsecret'), '')),
+            'component_token' => strval(sysget(self::serviceKey('component_token'), '')),
+            'component_encodingaeskey' => strval(sysget(self::serviceKey('component_encodingaeskey'), '')),
         ];
+    }
+
+    private static function serviceKey(string $name): string
+    {
+        return self::SERVICE_GROUP . '.' . $name;
     }
 }

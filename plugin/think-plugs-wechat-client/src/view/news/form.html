@@ -3,7 +3,7 @@
 {block name="style"}{include file='news/formstyle'}{/block}
 
 {block name='content'}
-<div id="NewsEditor" class="layui-clear nowrap padding-bottom-30">
+<div id="NewsEditor" class="layui-clear nowrap pb30">
     <div class="layui-card news-left">
         <div class="layui-card-body layui-hide">
             <div ng-if="list.length > 0" ng-repeat="x in list">
@@ -27,7 +27,7 @@
     </div>
     <div class="layui-card news-right">
         <div class="layui-card-body">
-            <form class="layui-form padding-20" role="form" name="news" onsubmit="return false">
+            <form class="layui-form pa20" role="form" name="news" onsubmit="return false">
                 <label class="layui-form-item relative block">
                     <span class="color-green">文章标题</span>
                     <input maxlength="64" ng-model="item.title" required placeholder="请在这里输入标题" name='title' class="layui-input">
@@ -42,10 +42,10 @@
                         <div class="upload-image-box pull-left transition" data-tips-image="{{item.local_url}}" style="{{item.style}}">
                             <input ng-model="item.local_url" data-auto-none value="{{item.local_url}}" type="hidden" name="local_url">
                         </div>
-                        <div class="pull-left padding-top-15 padding-left-15">
+                        <div class="pull-left pt15 pl15">
                             <button type="button" data-title="上传图片" data-file="btn" data-type="jpg,png,jpeg" data-field="local_url" class="layui-btn layui-btn-sm layui-btn-primary">上传图片</button>
                             <br>
-                            <label class="think-checkbox notselect margin-top-15">
+                            <label class="think-checkbox notselect mt15">
                                 <input ng-model="item.show_cover_pic" ng-checked="!!item.show_cover_pic" data-auto-none type="checkbox" value="1" name="show_cover_pic" lay-ignore> 在正文顶部显示此图片
                             </label>
                         </div>
@@ -64,7 +64,7 @@
                     <span class="help-block">原文链接 <span class="color-blue">选填</span>，填写之后在图文左下方会出现此链接</span>
                     <input pattern="^(http:\/\/|^https:\/\/|^\/\/)((\w|=|\?|\.|\/|&|-)+)" placeholder="请输入跳转链接地址" ng-model="item.content_source_url" maxlength="200" name='content_source_url' class="layui-input">
                 </label>
-                <div class="layui-form-item text-center padding-top-30">
+                <div class="layui-form-item text-center pt30">
                     <input ng-model="x.read_num" type="hidden">
                     <button ng-click="submit()" type="button" class="layui-btn">保存图文</button>
                 </div>
