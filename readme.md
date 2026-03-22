@@ -1,4 +1,4 @@
-# ThinkAdminDeveloper for ThinkAdmin
+﻿# ThinkAdminDeveloper for ThinkAdmin
 
 **ThinkAdminDeveloper** 是基于 ThinkAdmin 8 / ThinkPHP 8.1 的组件化开发仓库，用于维护核心基础库、运行时组件、后台平台插件和业务插件。
 
@@ -21,7 +21,7 @@
 - **核心层**：`ThinkLibrary` 提供运行时、认证、任务契约、菜单节点、模型查询和基础工具。
 - **系统层**：`ThinkPlugsSystem` 提供后台壳层、认证权限、系统用户，以及 `system_*` 共享配置、字典、扩展数据和操作日志。
 - **运行层**：`ThinkPlugsWorker` 用 Workerman 托管 `http` 和 `queue` 两类常驻服务。
-- **平台层**：`ThinkPlugsCenter`、`ThinkPlugsStorage`、`ThinkPlugsWechatClient`、`ThinkPlugsWechatService` 提供插件平台和标准能力入口。
+- **平台层**：`ThinkPlugsStorage`、`ThinkPlugsWechatClient`、`ThinkPlugsWechatService` 提供标准能力入口，`ThinkPlugsCenter` 已并入 `ThinkPlugsSystem`。
 - **业务层**：`ThinkPlugsAccount`、`ThinkPlugsPayment`、`ThinkPlugsWemall`、`ThinkPlugsWuma` 负责各自业务域。
 - **交付层**：`ThinkPlugsHelper` 和 `ThinkPlugsStatic` 负责发布、迁移、安装包、静态资源和项目骨架。
 
@@ -39,7 +39,6 @@ flowchart TD
     S --> WS["WechatService"]
     S --> WM["Wemall"]
     S --> U["Wuma"]
-    S --> C["Center"]
     AC --> P
     AC --> WM
     P --> WM
@@ -90,13 +89,6 @@ flowchart TD
   - 主要功能：静态资源发布、项目骨架生成
 
 ### 平台插件
-
-- **ThinkPlugsCenter** (`zoujingli/think-plugs-center`)
-  插件应用中心，提供插件安装、卸载、升级和管理功能。
-  - 命名空间：`plugin\center\`
-  - 服务注册：`plugin\center\Service`
-  - 访问前缀：`center`
-  - 菜单：隐藏（后台管理入口）
 
 - **ThinkPlugsWechatClient** (`zoujingli/think-plugs-wechat-client`)
   微信公众号标准平台，提供公众号基础能力、菜单管理、消息推送等。

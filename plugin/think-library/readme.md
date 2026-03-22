@@ -270,7 +270,7 @@ ThinkLibrary 提供以下全局函数:
 
 - `sysuri($node, $vars = [], $suffix = true)`: 生成系统 URL
 - `apiuri($node, $vars = [], $suffix = true)`: 生成 API URL
-- `plguri($node, $vars = [], $suffix = true)`: 生成插件 URL
+- `plguri($node, $vars = [], $suffix = true)`: 生成插件工作台 URL（由 ThinkPlugsSystem 提供）
 
 ### 认证相关
 
