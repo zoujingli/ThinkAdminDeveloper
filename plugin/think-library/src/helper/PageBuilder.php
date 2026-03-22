@@ -703,7 +703,7 @@ class PageBuilder
         if ($this->title !== '' || count($this->buttons) > 0) {
             $html .= "\n\t" . '<div class="layui-card-header">';
             if ($this->title !== '') {
-                $html .= sprintf('<span class="layui-icon font-s10 color-desc margin-right-5">&#xe65b;</span>%s', $this->title);
+                $html .= sprintf('<span class="layui-icon font-s10 color-desc mr5">&#xe65b;</span>%s', $this->title);
             }
             if (count($this->buttons) > 0) {
                 $html .= sprintf('<div class="pull-right">%s</div>', join("\n", $this->buttons));

@@ -1029,7 +1029,7 @@ class FormBuilder
         ], $this->formAttrs);
         $attrs = $this->mergeClass($attrs, 'layui-form layui-card');
         $html = sprintf('<form %s>', $this->_attrs($attrs));
-        $html .= "\n\t" . '<div class="layui-card-body padding-left-40">' . join("\n", $this->fields);
+        $html .= "\n\t" . '<div class="layui-card-body pl40">' . join("\n", $this->fields);
         if (count($this->buttons)) {
             $html .= "\n\n\t\t" . '<div class="hr-line-dashed"></div>';
             $html .= "\n\t\t" . sprintf('{notempty name="%s.id"}<input type="hidden" value="{%s.id}" name="id">{/notempty}', $this->variableName(), $this->variable);

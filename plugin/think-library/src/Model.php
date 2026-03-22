@@ -117,9 +117,8 @@ abstract class Model extends \think\Model
     /**
      * 创建模型实例。
      * @param mixed $data
-     * @return static
      */
-    public static function mk($data = [])
+    public static function mk($data = []): static
     {
         return new static($data);
     }

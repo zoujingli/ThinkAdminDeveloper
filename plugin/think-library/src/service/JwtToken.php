@@ -104,12 +104,12 @@ final class JwtToken
             if (!empty($jwtkey)) {
                 return $jwtkey;
             }
-            $jwtkey = sysconf('data.jwtkey|raw');
+            $jwtkey = function_exists('sysdata') ? sysdata('system.security.jwt_secret') : '';
             if (!empty($jwtkey)) {
-                return $jwtkey;
+                return strval($jwtkey);
             }
             $jwtkey = bin2hex(random_bytes(16));
-            sysconf('data.jwtkey', $jwtkey);
+            function_exists('sysdata') && sysdata('system.security.jwt_secret', $jwtkey);
             return $jwtkey;
         } catch (\Exception $exception) {
             trace_file($exception);

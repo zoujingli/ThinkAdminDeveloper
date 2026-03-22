@@ -42,20 +42,20 @@ class MigrationOwnershipTest extends TestCase
         $this->assertFileExists($owner);
 
         $content = $this->read($owner);
-        foreach (['system_base', 'system_config', 'system_data', 'system_oplog', 'system_auth', 'system_auth_node', 'system_menu', 'system_user'] as $table) {
+        foreach (['system_base', 'system_data', 'system_oplog', 'system_auth', 'system_auth_node', 'system_menu', 'system_user'] as $table) {
             $this->assertStringContainsString($table, $content);
         }
     }
 
-    public function testStorageAndWorkerTablesAreOwnedByTheirPlugins(): void
+    public function testSharedTablesAreOwnedBySystemAndWorkerPlugins(): void
     {
-        $storage = $this->path('plugin/think-plugs-storage/stc/database/20241010000002_install_storage20241010.php');
+        $system = $this->path('plugin/think-plugs-system/stc/database/20241010000001_install_system20241010.php');
         $worker = $this->path('plugin/think-plugs-worker/stc/database/20241010000008_install_worker20241010.php');
 
-        $this->assertFileExists($storage);
+        $this->assertFileExists($system);
         $this->assertFileExists($worker);
 
-        $this->assertStringContainsString('system_file', $this->read($storage));
+        $this->assertStringContainsString('system_file', $this->read($system));
         $this->assertStringContainsString('system_queue', $this->read($worker));
     }
 
@@ -69,9 +69,7 @@ class MigrationOwnershipTest extends TestCase
     {
         $plugins = [
             'account',
-            'center',
             'payment',
-            'storage',
             'system',
             'wechat-client',
             'wechat-service',
@@ -92,10 +90,9 @@ class MigrationOwnershipTest extends TestCase
     {
         $owners = [
             'system_base' => $this->path('plugin/think-plugs-system/stc/database/20241010000001_install_system20241010.php'),
-            'system_config' => $this->path('plugin/think-plugs-system/stc/database/20241010000001_install_system20241010.php'),
             'system_data' => $this->path('plugin/think-plugs-system/stc/database/20241010000001_install_system20241010.php'),
             'system_oplog' => $this->path('plugin/think-plugs-system/stc/database/20241010000001_install_system20241010.php'),
-            'system_file' => $this->path('plugin/think-plugs-storage/stc/database/20241010000002_install_storage20241010.php'),
+            'system_file' => $this->path('plugin/think-plugs-system/stc/database/20241010000001_install_system20241010.php'),
             'system_queue' => $this->path('plugin/think-plugs-worker/stc/database/20241010000008_install_worker20241010.php'),
         ];
 

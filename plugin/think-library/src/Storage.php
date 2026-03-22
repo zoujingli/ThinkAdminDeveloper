@@ -20,7 +20,7 @@ declare(strict_types=1);
 
 namespace think\admin;
 
-use plugin\storage\service\LocalStorage;
+use plugin\system\storage\LocalStorage;
 use think\admin\contract\StorageInterface;
 use think\Container;
 
@@ -214,10 +214,10 @@ abstract class Storage
      */
     protected static function manager(): object
     {
-        $class = 'plugin\storage\service\StorageManager';
+        $class = 'plugin\system\storage\StorageManager';
         if (class_exists($class)) {
             return Container::getInstance()->make($class);
         }
-        throw new Exception('Storage plugin [zoujingli/think-plugs-storage] is required.');
+        throw new Exception('System storage manager is not available.');
     }
 }
