@@ -27,7 +27,12 @@
 /public/.user.ini
 /public/index.html
 /public/favicon.ico
-/database/sqlite.db
+/database/*.db
+/database/*.sqlite
+/database/*.sqlite3
+/database/*-journal
+/database/*-shm
+/database/*-wal
 
 ### 屏蔽插件文件
 /app/admin
@@ -47,7 +52,7 @@
 /public/static/admin.js
 /public/static/login.js
 
-### 屏蔽数据库脚本
-/database/migrations/*_install_*.php
-!database/migrations/*_install_*_table.php
-!database/migrations/*_install_package.php
+### 屏蔽数据库发布产物
+/database/migrations/*
+!/database/migrations/.gitkeep
+/database/migrations/.xadmin-published.json

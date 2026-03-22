@@ -7,13 +7,9 @@
         "source": "vendor/zoujingli/think-plugs-payment/stc/database/20241010000006_install_payment20241010.php",
         "mtime": 1774105655
     },
-    "20241010000002_install_storage20241010.php": {
-        "source": "vendor/zoujingli/think-plugs-storage/stc/database/20241010000002_install_storage20241010.php",
-        "mtime": 1774105657
-    },
     "20241010000001_install_system20241010.php": {
         "source": "vendor/zoujingli/think-plugs-system/stc/database/20241010000001_install_system20241010.php",
-        "mtime": 1774105657
+        "mtime": 1774160506
     },
     "20241010000003_install_wechat20241010.php": {
         "source": "vendor/zoujingli/think-plugs-wechat-client/stc/database/20241010000003_install_wechat20241010.php",

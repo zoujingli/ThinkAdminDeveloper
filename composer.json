@@ -32,7 +32,6 @@
     "zoujingli/think-plugs-builder": "^8.0",
     "zoujingli/think-plugs-helper": "^8.0",
     "zoujingli/think-plugs-payment": "^8.0",
-    "zoujingli/think-plugs-storage": "^8.0",
     "zoujingli/think-plugs-system": "^8.0",
     "zoujingli/think-plugs-wechat-client": "^8.0",
     "zoujingli/think-plugs-wechat-service": "^8.0",
@@ -57,11 +56,14 @@
       "@php think xadmin:helper:model --reset",
       "php-cs-fixer fix"
     ],
-    "database:sync": [
-      "@php database/sync.php"
+    "database:publish": [
+      "@php think xadmin:publish"
+    ],
+    "database:migrate": [
+      "@php think xadmin:publish --migrate"
     ],
     "build:phar": [
-      "@database:sync",
+      "@database:publish",
       "@php -d phar.readonly=0 think xadmin:builder --name=admin.phar"
     ],
     "test:smoke": [
@@ -116,10 +118,6 @@
     {
       "type": "path",
       "url": "plugin/think-plugs-wemall"
-    },
-    {
-      "type": "path",
-      "url": "plugin/think-plugs-storage"
     },
     {
       "type": "path",
