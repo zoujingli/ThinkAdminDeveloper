@@ -57,7 +57,7 @@ class Service extends Plugin
                 return "Error: {$exception->getMessage()}";
             }
         };
-        $this->app->route->any('/api/plugin-wechat-client/payment/notify/:vars', $notify)->name('plugin-wechat-client-payment-notify');
+        $this->app->route->any('/api/wechat-client/payment/notify/:vars', $notify)->name('wechat-client-payment-notify');
         $this->app->route->any('/plugin-wxpay-notify/:vars', $notify)->name('plugin-wxpay-notify');
     }
 }

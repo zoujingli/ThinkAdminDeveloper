@@ -59,35 +59,35 @@ composer remove zoujingli/think-plugs-wechat-client
 
 后台节点：
 
-- `plugin-wechat-client/config/options`
-- `plugin-wechat-client/config/payment`
-- `plugin-wechat-client/fans/index`
-- `plugin-wechat-client/news/index`
-- `plugin-wechat-client/menu/index`
-- `plugin-wechat-client/keys/index`
-- `plugin-wechat-client/auto/index`
-- `plugin-wechat-client/payment.record/index`
-- `plugin-wechat-client/payment.refund/index`
+- `wechat-client/config/options`
+- `wechat-client/config/payment`
+- `wechat-client/fans/index`
+- `wechat-client/news/index`
+- `wechat-client/menu/index`
+- `wechat-client/keys/index`
+- `wechat-client/auto/index`
+- `wechat-client/payment.record/index`
+- `wechat-client/payment.refund/index`
 
 接口节点：
 
-- `/api/plugin-wechat-client/push/*`
-- `/api/plugin-wechat-client/view/*`
-- `/api/plugin-wechat-client/js/*`
-- `/api/plugin-wechat-client/login/*`
+- `/api/wechat-client/push/*`
+- `/api/wechat-client/view/*`
+- `/api/wechat-client/js/*`
+- `/api/wechat-client/login/*`
 
 双入口约定：
 
-- 后台页面统一走 `/plugin-wechat-client/...`
-- 公开接口、预览页和测试接口统一走 `/api/plugin-wechat-client/...`
+- 后台页面统一走 `/wechat-client/...`
+- 公开接口、预览页和测试接口统一走 `/api/wechat-client/...`
 
 典型示例：
 
-- `/plugin-wechat-client/news/index`
-- `/api/plugin-wechat-client/view/news?id=1`
-- `/api/plugin-wechat-client/view/text?content=hello`
-- `/api/plugin-wechat-client/test/jsapiQrc`
-- `/api/plugin-wechat-client/login/oauth`
+- `/wechat-client/news/index`
+- `/api/wechat-client/view/news?id=1`
+- `/api/wechat-client/view/text?content=hello`
+- `/api/wechat-client/test/jsapiQrc`
+- `/api/wechat-client/login/oauth`
 
 ## 命令说明
 
