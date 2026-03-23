@@ -170,7 +170,7 @@ final class ImageSliderVerify
                 return $cached;
             }
         }
-        [$w, $h] = getimagesize($image);
+        [$w, $h, $srcim] = self::sourceImage($image) ?? self::fallbackSource($image, $width, $height);
         if ($w > $h) {
             [$_sw, $_sh, $_sx, $_sy] = [$h, $h, (int)(($w - $h) / 2), 0];
         } elseif ($w < $h) {
@@ -179,11 +179,9 @@ final class ImageSliderVerify
             [$_sw, $_sh, $_sx, $_sy] = [$w, $h, 0, 0];
         }
         $newim = imagecreatetruecolor($width, $height);
-        $srcim = imagecreatefromstring(file_get_contents($image));
         imagecopyresampled($newim, $srcim, 0, 0, $_sx, $_sy, $width, $height, $_sw, $_sh);
         imagedestroy($srcim);
-        is_dir($dir = dirname($file)) || mkdir($dir, 0755, true);
-        imagepng($newim, $file);
+        self::storeCover($newim, $file);
         return $newim;
     }
 
@@ -224,6 +222,95 @@ final class ImageSliderVerify
         $size = is_file($image) ? filesize($image) : 0;
         $hash = hash('sha256', "{$image}#{$mtime}#{$size}#{$width}#{$height}");
         return runpath('runtime/slider/' . substr($hash, 0, 2) . '/' . $hash . '.png');
+    }
+
+    /**
+     * 读取源图片资源。
+     *
+     * @return array{0:int,1:int,2:\GdImage|resource}|null
+     */
+    private static function sourceImage(string $image): ?array
+    {
+        clearstatcache(true, $image);
+        if (!is_file($image) || !is_readable($image)) {
+            return null;
+        }
+        $size = @getimagesize($image);
+        if (!is_array($size) || empty($size[0]) || empty($size[1])) {
+            return null;
+        }
+        $data = file_get_contents($image);
+        if ($data === false) {
+            return null;
+        }
+        $srcim = @imagecreatefromstring($data);
+        if ($srcim === false) {
+            return null;
+        }
+        return [intval($size[0]), intval($size[1]), $srcim];
+    }
+
+    /**
+     * 在静态资源缺失时生成兜底背景图。
+     *
+     * @return array{0:int,1:int,2:\GdImage|resource}
+     */
+    private static function fallbackSource(string $image, int $width, int $height): array
+    {
+        $hash = hash('sha256', $image);
+        $palettes = [
+            [[22, 66, 122], [120, 188, 222]],
+            [[31, 84, 68], [194, 235, 191]],
+            [[88, 44, 24], [236, 183, 90]],
+            [[58, 34, 96], [233, 205, 146]],
+            [[24, 58, 94], [218, 237, 255]],
+        ];
+        [$start, $end] = $palettes[hexdec(substr($hash, 0, 2)) % count($palettes)];
+        $imageim = imagecreatetruecolor($width, $height);
+        imagealphablending($imageim, true);
+        imagesavealpha($imageim, true);
+
+        $scale = max($height - 1, 1);
+        for ($y = 0; $y < $height; ++$y) {
+            $color = imagecolorallocate(
+                $imageim,
+                (int)round($start[0] + ($end[0] - $start[0]) * $y / $scale),
+                (int)round($start[1] + ($end[1] - $start[1]) * $y / $scale),
+                (int)round($start[2] + ($end[2] - $start[2]) * $y / $scale),
+            );
+            imageline($imageim, 0, $y, $width, $y, $color);
+        }
+
+        $line = imagecolorallocatealpha($imageim, 255, 255, 255, 96);
+        for ($x = -$height; $x < $width + $height; $x += 48) {
+            imageline($imageim, $x, 0, $x + $height, $height, $line);
+        }
+
+        for ($i = 0; $i < 4; ++$i) {
+            $offset = 2 + $i * 2;
+            $radius = 60 + hexdec(substr($hash, $offset, 2)) % 60;
+            $alpha = 88 + hexdec(substr($hash, $offset + 8, 2)) % 24;
+            $shape = imagecolorallocatealpha($imageim, 255, 255, 255, $alpha);
+            imagefilledellipse(
+                $imageim,
+                (int)(($i + 1) * $width / 5),
+                30 + hexdec(substr($hash, $offset + 16, 2)) % max($height - 60, 1),
+                $radius * 2,
+                $radius * 2,
+                $shape
+            );
+        }
+
+        return [$width, $height, $imageim];
+    }
+
+    /**
+     * 保存裁剪缓存文件。
+     */
+    private static function storeCover($image, string $file): void
+    {
+        is_dir($dir = dirname($file)) || mkdir($dir, 0755, true);
+        imagepng($image, $file);
     }
 
     /**

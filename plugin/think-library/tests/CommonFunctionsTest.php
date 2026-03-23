@@ -24,6 +24,7 @@ use PHPUnit\Framework\TestCase;
 use think\admin\route\Url;
 use think\admin\runtime\RequestContext;
 use think\admin\service\AppService;
+use think\admin\service\ImageSliderVerify;
 use think\admin\service\RuntimeService;
 use think\App;
 
@@ -138,6 +139,22 @@ class CommonFunctionsTest extends TestCase
         $this->assertSame(',a,b,c,', arr2str('a,b,c'));
         $this->assertSame(',a,c,', arr2str(['a', 'b', 'c'], ',', ['a', 'c']));
         $this->assertSame('', arr2str(''));
+    }
+
+    public function testImageSliderVerifyFallsBackWhenSourceImageIsMissing(): void
+    {
+        $image = ImageSliderVerify::render(TEST_PROJECT_ROOT . '/runtime/missing-slider-' . uniqid('', true) . '.jpg', 60);
+        $background = base64_decode(substr($image['bgimg'], strlen('data:image/png;base64,')), true);
+        $piece = base64_decode(substr($image['water'], strlen('data:image/png;base64,')), true);
+
+        $this->assertStringStartsWith('V', $image['code']);
+        $this->assertSame(600, $image['width']);
+        $this->assertSame(300, $image['height']);
+        $this->assertSame(100, $image['piece_width']);
+        $this->assertNotFalse($background);
+        $this->assertNotFalse($piece);
+        $this->assertSame([600, 300], array_slice(getimagesizefromstring($background) ?: [0, 0], 0, 2));
+        $this->assertSame([100, 300], array_slice(getimagesizefromstring($piece) ?: [0, 0], 0, 2));
     }
 
     private function resetRuntimeContext(): void
