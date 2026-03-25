@@ -65,8 +65,6 @@ return [
             'queue' => [
                 'scan_interval' => 1,
                 'batch_limit' => 20,
-                'lock_timeout' => 3600,
-                'retain_days' => 7,
             ],
         ],
     ],
