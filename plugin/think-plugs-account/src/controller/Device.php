@@ -24,7 +24,7 @@ use plugin\account\model\PluginAccountBind;
 use plugin\account\service\Account;
 use think\admin\Controller;
 use think\admin\Exception;
-use think\admin\helper\FormBuilder;
+use think\admin\builder\form\FormBuilder;
 use think\admin\helper\QueryHelper;
 use think\db\exception\DataNotFoundException;
 use think\db\exception\DbException;
@@ -110,51 +110,52 @@ class Device extends Controller
 
     private function buildConfigForm(): FormBuilder
     {
-        return FormBuilder::mk()
-            ->addTextInput('expire', '认证有效时间', 'Expire Time', true, '设置为 0 表示永不过期，建议设置有效时间达到系统自动回收令牌。', '^[0-9]+$', [
-                'type' => 'number',
-                'min' => 0,
-                'data-blur-number' => '0',
-                'required-error' => '认证有效时间不能为空！',
-                'pattern-error' => '认证有效时间格式错误！',
-            ])
-            ->addField([
-                'type' => 'radio',
-                'name' => 'disRegister',
-                'title' => '登录自动注册',
-                'subtitle' => 'Auto Register',
-                'required' => true,
-                'remark' => '启用自动登录时，通过验证码登录时账号不存在会自动创建。',
-                'attrs' => ['required-error' => '登录自动注册不能为空！'],
-                'vname' => 'registerModes',
-            ])
-            ->addTextInput('userPrefix', '默认昵称前缀', 'NickName Prefix', true, '用户绑定账号后会自动使用此前缀与手机号后 4 位拼接为新默认昵称。', null, [
-                'maxlength' => 20,
-                'required-error' => '默认昵称前缀不能为空！',
-            ])
-            ->addField([
-                'type' => 'image',
-                'name' => 'headimg',
-                'title' => '默认用户头像',
-                'subtitle' => 'Default Headimg',
-                'required' => true,
-                'remark' => '当用户未设置头像时，自动使用此头像设置的图片链接。',
-                'attrs' => [
-                    'required-error' => '默认用户头像不能为空！',
-                    'data-tips-hover' => null,
-                    'data-tips-image' => null,
-                ],
-            ])
-            ->addField([
-                'type' => 'checkbox',
-                'name' => 'types',
-                'title' => '开放接口通道',
-                'subtitle' => 'Interface Types',
-                'remark' => '选择开放接口通道。',
-                'vname' => 'typeLabels',
-            ])
-            ->addSubmitButton()
-            ->addCancelButton();
+        return FormBuilder::make()
+            ->define(function ($form) {
+                $form->fields(function ($fields) {
+                    $fields->text('expire', '认证有效时间', 'Expire Time', true, '设置为 0 表示永不过期，建议设置有效时间达到系统自动回收令牌。', '^[0-9]+$', [
+                        'type' => 'number',
+                        'min' => 0,
+                        'data-blur-number' => '0',
+                        'required-error' => '认证有效时间不能为空！',
+                        'pattern-error' => '认证有效时间格式错误！',
+                    ])->field([
+                        'type' => 'radio',
+                        'name' => 'disRegister',
+                        'title' => '登录自动注册',
+                        'subtitle' => 'Auto Register',
+                        'required' => true,
+                        'remark' => '启用自动登录时，通过验证码登录时账号不存在会自动创建。',
+                        'attrs' => ['required-error' => '登录自动注册不能为空！'],
+                        'vname' => 'registerModes',
+                    ])->text('userPrefix', '默认昵称前缀', 'NickName Prefix', true, '用户绑定账号后会自动使用此前缀与手机号后 4 位拼接为新默认昵称。', null, [
+                        'maxlength' => 20,
+                        'required-error' => '默认昵称前缀不能为空！',
+                    ])->field([
+                        'type' => 'image',
+                        'name' => 'headimg',
+                        'title' => '默认用户头像',
+                        'subtitle' => 'Default Headimg',
+                        'required' => true,
+                        'remark' => '当用户未设置头像时，自动使用此头像设置的图片链接。',
+                        'attrs' => [
+                            'required-error' => '默认用户头像不能为空！',
+                            'data-tips-hover' => null,
+                            'data-tips-image' => null,
+                        ],
+                    ])->field([
+                        'type' => 'checkbox',
+                        'name' => 'types',
+                        'title' => '开放接口通道',
+                        'subtitle' => 'Interface Types',
+                        'remark' => '选择开放接口通道。',
+                        'vname' => 'typeLabels',
+                    ]);
+                })->actions(function ($actions) {
+                    $actions->submit()->cancel();
+                });
+            })
+            ->build();
     }
 
     private function loadConfigFormData(): array

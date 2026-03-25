@@ -22,8 +22,8 @@ namespace plugin\wemall\controller\shop\goods;
 
 use plugin\wemall\model\PluginWemallGoodsMark;
 use think\admin\Controller;
-use think\admin\helper\FormBuilder;
-use think\admin\helper\PageBuilder;
+use think\admin\builder\form\FormBuilder;
+use think\admin\builder\page\PageBuilder;
 use think\admin\helper\QueryHelper;
 use think\db\exception\DataNotFoundException;
 use think\db\exception\DbException;
@@ -118,51 +118,52 @@ class Mark extends Controller
 
     private function buildIndexPage(): PageBuilder
     {
-        return PageBuilder::mk()
-            ->setTitle('商品标签管理')
-            ->setTable('TagsData', $this->request->url())
-            ->setSearchAttrs(['action' => $this->request->url()])
-            ->setTableOptions([
-                'even' => true,
-                'height' => 'full',
-                'sort' => ['field' => 'sort desc,id', 'type' => 'desc'],
-            ])
-            ->addModalButton('添加', url('add')->build(), '添加素材标签', ['data-table-id' => 'TagsData'], 'add')
-            ->addSearchInput('name', '标签名称', '请输入标签名称')
-            ->addSearchSelect('status', '使用状态', [0 => '已禁用的记录', 1 => '已激活的记录'])
-            ->addSearchDateRange('create_time', '创建时间', '请选择创建时间')
-            ->addColumn(['field' => 'id', 'title' => 'ID', 'width' => 80, 'align' => 'center', 'sort' => true])
-            ->addColumn(['field' => 'sort', 'title' => '排序权重', 'width' => 100, 'align' => 'center', 'sort' => true, 'templet' => '#SortInputTagsDataTplModal'])
-            ->addColumn(['field' => 'name', 'title' => '标签名称', 'minWidth' => 100])
-            ->addColumn(['field' => 'status', 'title' => '状态', 'width' => 110, 'align' => 'center', 'templet' => '#StatusSwitchTagsDataTpl'])
-            ->addColumn(['field' => 'create_time', 'title' => '创建时间', 'minWidth' => 170, 'align' => 'center'])
-            ->addRowModalAction('编辑', url('edit')->build() . '?id={{d.id}}', '编辑标签数据', [], 'edit')
-            ->addRowActionButton('删除', url('remove')->build(), 'id#{{d.id}}', '确定要删除此标签吗？', [], 'remove')
-            ->addToolbarColumn('操作面板', ['minWidth' => 100])
-            ->addTemplate('StatusSwitchTagsDataTpl', '<!--{if auth("state")}--><input type="checkbox" value="{{d.id}}" lay-skin="switch" lay-text="已激活|已禁用" lay-filter="StatusSwitchTagsData" {{-d.status>0?\'checked\':\'\'}}><!--{else}-->{{-d.status ? \'<b class="color-green">已激活</b>\' : \'<b class="color-red">已禁用</b>\'}}<!--{/if}-->')
-            ->addTemplate('SortInputTagsDataTplModal', '<input type="number" min="0" data-blur-number="0" data-action-blur="{:sysuri()}" data-value="id#{{d.id}};action#sort;sort#{value}" data-loading="false" value="{{d.sort}}" class="layui-input text-center">')
-            ->addScript(<<<'SCRIPT'
-layui.form.on('switch(StatusSwitchTagsData)', function (obj) {
-    var data = {id: obj.value, status: obj.elem.checked > 0 ? 1 : 0};
-    $.form.load("state", data, "post", function (ret) {
-        if (ret.code < 1) $.msg.error(ret.info, 3, function () {
-            $("#TagsData").trigger("reload");
-        });
-        return false;
-    }, false);
-});
-SCRIPT);
+        return PageBuilder::make()
+            ->define(function ($page) {
+                $page->title('商品标签管理')
+                    ->searchAttrs(['action' => $this->request->url()])
+                    ->buttons(function ($buttons) {
+                        $buttons->modal('添加', url('add')->build(), '添加素材标签', ['data-table-id' => 'TagsData'], 'add');
+                    })
+                    ->search(function ($search) {
+                        $search->input('name', '标签名称', '请输入标签名称')
+                            ->select('status', '使用状态', [0 => '已禁用的记录', 1 => '已激活的记录'])
+                            ->dateRange('create_time', '创建时间', '请选择创建时间');
+                    })
+                    ->table('TagsData', $this->request->url(), function ($table) {
+                        $table->options([
+                            'even' => true,
+                            'height' => 'full',
+                            'sort' => ['field' => 'sort desc,id', 'type' => 'desc'],
+                        ])->column(['field' => 'id', 'title' => 'ID', 'width' => 80, 'align' => 'center', 'sort' => true])
+                            ->sortInput('{:sysuri()}')
+                            ->column(['field' => 'name', 'title' => '标签名称', 'minWidth' => 100])
+                            ->statusSwitch(url('state')->build(), ['title' => '状态', 'width' => 110])
+                            ->column(['field' => 'create_time', 'title' => '创建时间', 'minWidth' => 170, 'align' => 'center'])
+                            ->rows(function ($rows) {
+                                $rows->modal('编辑', url('edit')->build() . '?id={{d.id}}', '编辑标签数据', [], 'edit')
+                                    ->action('删除', url('remove')->build(), 'id#{{d.id}}', '确定要删除此标签吗？', [], 'remove');
+                            })
+                            ->toolbar('操作面板', ['minWidth' => 100]);
+                    });
+            })
+            ->build();
     }
 
     private function buildFormBuilder(): FormBuilder
     {
         $id = intval($this->request->param('id', 0));
-        return FormBuilder::mk()
-            ->setAction(url($this->request->action(), array_filter(['id' => $id ?: null]))->build())
-            ->addTextInput('name', '标签名称', 'Mark Name', true, '<b>必填：</b>请填写标签名称，建议字符不要太长')
-            ->addTextArea('desc', '标签描述', 'Mark Remark')
-            ->addSubmitButton()
-            ->addCancelButton('取消编辑', '确定要取消修改吗？');
+        return FormBuilder::make()
+            ->define(function ($form) use ($id) {
+                $form->action(url($this->request->action(), array_filter(['id' => $id ?: null]))->build())
+                    ->fields(function ($fields) {
+                        $fields->text('name', '标签名称', 'Mark Name', true, '<b>必填：</b>请填写标签名称，建议字符不要太长')
+                            ->textarea('desc', '标签描述', 'Mark Remark');
+                    })->actions(function ($actions) {
+                        $actions->submit()->cancel('取消编辑', '确定要取消修改吗？');
+                    });
+            })
+            ->build();
     }
 
     private function loadFormData(int $id = 0): array

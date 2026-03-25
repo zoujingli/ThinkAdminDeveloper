@@ -22,7 +22,7 @@ namespace plugin\wuma\controller\warehouse;
 
 use plugin\wuma\model\PluginWumaWarehouseUser;
 use think\admin\Controller;
-use think\admin\helper\FormBuilder;
+use think\admin\builder\form\FormBuilder;
 use think\admin\helper\QueryHelper;
 use think\admin\service\AppService;
 use think\db\exception\DataNotFoundException;
@@ -148,48 +148,54 @@ class User extends Controller
 
     private function buildUserForm(array $vo = []): FormBuilder
     {
-        $builder = FormBuilder::mk();
-        if (!empty($vo['id'])) {
-            $builder->addTextInput('username', '登录账号', 'Username', false, '登录账号创建后不能再次修改。', null, [
-                'readonly' => null,
-                'class' => 'layui-disabled',
-            ]);
-        } else {
-            $builder->addTextInput('username', '登录账号', 'Username', true, '登录账号不能重复，账号创建后不能再次修改。', '^.{4,}$', [
-                'required-error' => '登录账号不能为空！',
-                'pattern-error' => '登录账号格式错误！',
-            ]);
-        }
+        return FormBuilder::make()
+            ->define(function ($form) use ($vo) {
+                $form->fields(function ($fields) use ($vo) {
+                    if (!empty($vo['id'])) {
+                        $fields->text('username', '登录账号', 'Username', false, '登录账号创建后不能再次修改。', null, [
+                            'readonly' => null,
+                            'class' => 'layui-disabled',
+                        ]);
+                    } else {
+                        $fields->text('username', '登录账号', 'Username', true, '登录账号不能重复，账号创建后不能再次修改。', '^.{4,}$', [
+                            'required-error' => '登录账号不能为空！',
+                            'pattern-error' => '登录账号格式错误！',
+                        ]);
+                    }
 
-        return $builder
-            ->addTextInput('nickname', '账号昵称', 'Nickname', true, '账号昵称用于显示区分，请尽量保持唯一不要重复。', null, [
-                'required-error' => '账号昵称不能为空！',
-            ])
-            ->addTextArea('remark', '账号描述', 'User Remark', false, '')
-            ->addSubmitButton()
-            ->addCancelButton();
+                    $fields->text('nickname', '账号昵称', 'Nickname', true, '账号昵称用于显示区分，请尽量保持唯一不要重复。', null, [
+                        'required-error' => '账号昵称不能为空！',
+                    ])->textarea('remark', '账号描述', 'User Remark', false, '');
+                })->actions(function ($actions) {
+                    $actions->submit()->cancel();
+                });
+            })
+            ->build();
     }
 
     private function buildPassForm(): FormBuilder
     {
-        return FormBuilder::mk()
-            ->addTextInput('username', '登录用户账号', 'Username', false, '登录用户账号创建后，不允许再次修改。', null, [
-                'readonly' => null,
-                'class' => 'layui-bg-gray',
-            ])
-            ->addPassInput('password', '新的登录密码', 'New Password', true, '密码必须包含大小写字母、数字、符号的任意两者组合。', '^(?![\d]+$)(?![a-zA-Z]+$)(?![^\da-zA-Z]+$).{6,32}$', [
-                'maxlength' => 32,
-                'required-error' => '登录密码不能为空！',
-                'pattern-error' => '登录密码格式错误！',
-            ])
-            ->addPassInput('repassword', '重复登录密码', 'Repeat Password', true, '密码必须包含大小写字母、数字、符号的任意两者组合。', '^(?![\d]+$)(?![a-zA-Z]+$)(?![^\da-zA-Z]+$).{6,32}$', [
-                'maxlength' => 32,
-                'required-error' => '重复密码不能为空！',
-                'pattern-error' => '重复密码格式错误！',
-            ])
-            ->addValidateRule('repassword', 'confirm:password', '两次输入的密码不一致！')
-            ->addSubmitButton()
-            ->addCancelButton();
+        return FormBuilder::make()
+            ->define(function ($form) {
+                $form->fields(function ($fields) {
+                    $fields->text('username', '登录用户账号', 'Username', false, '登录用户账号创建后，不允许再次修改。', null, [
+                        'readonly' => null,
+                        'class' => 'layui-bg-gray',
+                    ])->password('password', '新的登录密码', 'New Password', true, '密码必须包含大小写字母、数字、符号的任意两者组合。', '^(?![\d]+$)(?![a-zA-Z]+$)(?![^\da-zA-Z]+$).{6,32}$', [
+                        'maxlength' => 32,
+                        'required-error' => '登录密码不能为空！',
+                        'pattern-error' => '登录密码格式错误！',
+                    ])->password('repassword', '重复登录密码', 'Repeat Password', true, '密码必须包含大小写字母、数字、符号的任意两者组合。', '^(?![\d]+$)(?![a-zA-Z]+$)(?![^\da-zA-Z]+$).{6,32}$', [
+                        'maxlength' => 32,
+                        'required-error' => '重复密码不能为空！',
+                        'pattern-error' => '重复密码格式错误！',
+                    ]);
+                })->rule('repassword', 'confirm:password', '两次输入的密码不一致！')
+                    ->actions(function ($actions) {
+                        $actions->submit()->cancel();
+                    });
+            })
+            ->build();
     }
 
     private function loadFormUser(): array

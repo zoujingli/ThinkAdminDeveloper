@@ -25,8 +25,8 @@ use plugin\account\service\message\Alisms;
 use plugin\account\service\Message as AccountMessage;
 use think\admin\Controller;
 use think\admin\Exception;
-use think\admin\helper\FormBuilder;
-use think\admin\helper\PageBuilder;
+use think\admin\builder\form\FormBuilder;
+use think\admin\builder\page\PageBuilder;
 use think\admin\helper\QueryHelper;
 use think\db\exception\DataNotFoundException;
 use think\db\exception\DbException;
@@ -102,46 +102,58 @@ class Message extends Controller
      */
     private function buildIndexPage(): PageBuilder
     {
-        return PageBuilder::mk()
-            ->setTitle('手机短信管理')
-            ->setTable('MessageData', $this->request->url())
-            ->setSearchAttrs(['action' => $this->request->url()])
-            ->addModalButton('短信配置', url('config')->build(), '', [], 'config')
-            ->addBeforeTableHtml('<label class="layui-hide"><textarea id="ScenesData">{$scenes|default=\'\'|json_encode}</textarea></label>')
-            ->addBootScript("let scenes = JSON.parse(document.getElementById('ScenesData').value || '{}');")
-            ->setTableOptions([
-                'loading' => true,
-                'sort' => ['field' => 'id', 'type' => 'desc'],
-            ])
-            ->addSearchInput('smsid', '消息编号', '请输入消息编号')
-            ->addSearchInput('phone', '发送手机', '请输入发送手机')
-            ->addSearchSelect('scene', '业务场景', [], [], 'scenes')
-            ->addSearchSelect('status', '执行结果', [0 => '发送失败', 1 => '发送成功'])
-            ->addSearchDateRange('create_time', '发送时间', '请选择发送时间')
-            ->addColumn(['field' => 'id', 'hide' => true])
-            ->addColumn(['field' => 'smsid', 'title' => '消息编号', 'sort' => true, 'minWidth' => 100, 'width' => '12%', 'align' => 'center'])
-            ->addColumn(['field' => 'type', 'title' => '短信类型', 'sort' => true, 'minWidth' => 90, 'width' => '8%', 'align' => 'center'])
-            ->addColumn(['field' => 'phone', 'title' => '发送手机', 'sort' => true, 'minWidth' => 100, 'width' => '10%', 'align' => 'center'])
-            ->addColumn([
-                'field' => 'scene',
-                'title' => '业务场景',
-                'align' => 'center',
-                'minWidth' => 100,
-                'width' => '8%',
-                'templet' => PageBuilder::raw('function(d){ return scenes[d.scene] || d.scene_name; }'),
-            ])
-            ->addColumn(['field' => 'params', 'title' => '短信内容', 'align' => 'center'])
-            ->addColumn(['field' => 'result', 'title' => '返回结果', 'align' => 'center'])
-            ->addColumn([
-                'field' => 'status',
-                'title' => '执行结果',
-                'minWidth' => 80,
-                'width' => '8%',
-                'sort' => true,
-                'align' => 'center',
-                'templet' => PageBuilder::raw("function(d){ return ['<b class=\"color-red\">失败</b>', '<b class=\"color-green\">成功</b>'][d.status]; }"),
-            ])
-            ->addColumn(['field' => 'create_time', 'title' => '发送时间', 'width' => 170, 'align' => 'center', 'sort' => true]);
+        return PageBuilder::make()
+            ->define(function ($page) {
+                $page->title('手机短信管理')
+                    ->searchAttrs(['action' => $this->request->url()])
+                    ->buttons(function ($buttons) {
+                        $buttons->modal('短信配置', url('config')->build(), '', [], 'config');
+                    })
+                    ->bootScript("let scenes = JSON.parse(document.getElementById('ScenesData').value || '{}');")
+                    ->search(function ($search) {
+                        $search->input('smsid', '消息编号', '请输入消息编号')
+                            ->input('phone', '发送手机', '请输入发送手机')
+                            ->select('scene', '业务场景', [], [], 'scenes')
+                            ->select('status', '执行结果', [0 => '发送失败', 1 => '发送成功'])
+                            ->dateRange('create_time', '发送时间', '请选择发送时间');
+                    })
+                    ->table('MessageData', $this->request->url(), function ($table) {
+                        $table->options([
+                            'loading' => true,
+                            'sort' => ['field' => 'id', 'type' => 'desc'],
+                        ])->column(['field' => 'id', 'hide' => true])
+                            ->column(['field' => 'smsid', 'title' => '消息编号', 'sort' => true, 'minWidth' => 100, 'width' => '12%', 'align' => 'center'])
+                            ->column(['field' => 'type', 'title' => '短信类型', 'sort' => true, 'minWidth' => 90, 'width' => '8%', 'align' => 'center'])
+                            ->column(['field' => 'phone', 'title' => '发送手机', 'sort' => true, 'minWidth' => 100, 'width' => '10%', 'align' => 'center'])
+                            ->column([
+                                'field' => 'scene',
+                                'title' => '业务场景',
+                                'align' => 'center',
+                                'minWidth' => 100,
+                                'width' => '8%',
+                                'templet' => PageBuilder::js('function(d){ return scenes[d.scene] || d.scene_name; }'),
+                            ])
+                            ->column(['field' => 'params', 'title' => '短信内容', 'align' => 'center'])
+                            ->column(['field' => 'result', 'title' => '返回结果', 'align' => 'center'])
+                            ->column([
+                                'field' => 'status',
+                                'title' => '执行结果',
+                                'minWidth' => 80,
+                                'width' => '8%',
+                                'sort' => true,
+                                'align' => 'center',
+                                'templet' => PageBuilder::js("function(d){ return ['<b class=\"color-red\">失败</b>', '<b class=\"color-green\">成功</b>'][d.status]; }"),
+                            ])
+                            ->column(['field' => 'create_time', 'title' => '发送时间', 'width' => 170, 'align' => 'center', 'sort' => true]);
+                    });
+
+                $page->node('label')
+                    ->class('layui-hide')
+                    ->node('textarea')
+                    ->id('ScenesData')
+                    ->html('{$scenes|default=\'\'|json_encode}');
+            })
+            ->build();
     }
 
     private function buildConfigForm(): FormBuilder
@@ -151,18 +163,22 @@ class Message extends Controller
             $regionOptions[$code] = sprintf('[ %s ] %s', $code, strval($region['name'] ?? $code));
         }
 
-        $builder = FormBuilder::mk()
-            ->setAction(url('config')->build())
-            ->addSelectInput('alisms_region', '服务区域', 'Region', true, '', $regionOptions)
-            ->addTextInput('alisms_keyid', '阿里云账号', 'AccessKeyId', true)
-            ->addTextInput('alisms_secret', '阿里云密钥', 'AccessKeySecret', true)
-            ->addTextInput('alisms_signtx', '短信签名', 'SignName', true);
-
-        foreach (AccountMessage::$scenes as $code => $name) {
-            $builder->addTextInput($this->sceneFieldName((string)$code), (string)$name, ucfirst(strtolower((string)$code)) . ' Code', true);
-        }
-
-        return $builder->addSubmitButton('保存配置')->addCancelButton('取消修改', '确定要取消修改吗？');
+        return FormBuilder::make()
+            ->define(function ($form) use ($regionOptions) {
+                $form->action(url('config')->build())
+                    ->fields(function ($fields) use ($regionOptions) {
+                        $fields->select('alisms_region', '服务区域', 'Region', true, '', $regionOptions)
+                            ->text('alisms_keyid', '阿里云账号', 'AccessKeyId', true)
+                            ->text('alisms_secret', '阿里云密钥', 'AccessKeySecret', true)
+                            ->text('alisms_signtx', '短信签名', 'SignName', true);
+                        foreach (AccountMessage::$scenes as $code => $name) {
+                            $fields->text($this->sceneFieldName((string)$code), (string)$name, ucfirst(strtolower((string)$code)) . ' Code', true);
+                        }
+                    })->actions(function ($actions) {
+                        $actions->submit('保存配置')->cancel('取消修改', '确定要取消修改吗？');
+                    });
+            })
+            ->build();
     }
 
     private function loadConfigData(): array

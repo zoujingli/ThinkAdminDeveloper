@@ -22,8 +22,8 @@ namespace plugin\wuma\controller\sales;
 
 use plugin\wuma\model\PluginWumaSalesUserLevel as UserLevel;
 use think\admin\Controller;
-use think\admin\helper\FormBuilder;
-use think\admin\helper\PageBuilder;
+use think\admin\builder\form\FormBuilder;
+use think\admin\builder\page\PageBuilder;
 use think\db\exception\DataNotFoundException;
 use think\db\exception\DbException;
 use think\db\exception\ModelNotFoundException;
@@ -142,27 +142,30 @@ class Level extends Controller
 
     private function buildIndexPage(): PageBuilder
     {
-        return PageBuilder::mk()
-            ->setTitle('代理等级管理')
-            ->setTable('UpgradeTable', $this->request->url())
-            ->setSearchLegend('条件搜索')
-            ->setTableOptions([
-                'even' => true,
-                'height' => 'full',
-                'sort' => ['field' => 'number', 'type' => 'asc'],
-            ])
-            ->addModalButton('添加等级', url('add')->build(), '添加等级', ['data-table-id' => 'UpgradeTable'], 'add')
-            ->addBeforeTableHtml('<div class="think-box-notify"><span>代理等级添加后，尽量不要对等级进行删除操作，否则会影响代理等级显示！</span></div>')
-            ->addColumn(['field' => 'number', 'title' => '序号', 'align' => 'center', 'width' => 80, 'sort' => true])
-            ->addColumn(['field' => 'name', 'title' => '等级名称', 'align' => 'center', 'minWidth' => 100])
-            ->addColumn(['field' => 'remark', 'title' => '等级描述', 'align' => 'center', 'minWidth' => 100, 'templet' => '<div class="color-desc">{{d.remark||"-"}}</div>'])
-            ->addColumn(['field' => 'status', 'title' => '等级状态', 'align' => 'center', 'minWidth' => 110, 'templet' => '#StatusSwitchTpl'])
-            ->addColumn(['field' => 'create_time', 'title' => '创建时间', 'align' => 'center', 'minWidth' => 170, 'sort' => true])
-            ->addRowModalAction('编辑', url('edit')->build() . '?id={{d.id}}', '编辑等级', [], 'edit')
-            ->addRowActionButton('删除', url('remove')->build(), 'id#{{d.id}}', '确定要删除问题吗?', [], 'remove')
-            ->addToolbarColumn('操作面板', ['minWidth' => 160])
-            ->addTemplate('StatusSwitchTpl', '<!--{if auth("state")}--><input type="checkbox" value="{{d.id}}" lay-skin="switch" lay-text="已激活|已禁用" lay-filter="StatusSwitch" {{d.status>0?\'checked\':\'\'}}><!--{else}-->{{d.status ? \'<b class="color-green">已启用</b>\' : \'<b class="color-red">已禁用</b>\'}}<!--{/if}-->')
-            ->addScript(<<<'SCRIPT'
+        return PageBuilder::make()
+            ->define(function ($page) {
+                $page->title('代理等级管理')
+                    ->searchLegend('条件搜索')
+                    ->buttons(function ($buttons) {
+                        $buttons->modal('添加等级', url('add')->build(), '添加等级', ['data-table-id' => 'UpgradeTable'], 'add');
+                    })
+                    ->table('UpgradeTable', $this->request->url(), function ($table) {
+                        $table->options([
+                            'even' => true,
+                            'height' => 'full',
+                            'sort' => ['field' => 'number', 'type' => 'asc'],
+                        ])->column(['field' => 'number', 'title' => '序号', 'align' => 'center', 'width' => 80, 'sort' => true])
+                            ->column(['field' => 'name', 'title' => '等级名称', 'align' => 'center', 'minWidth' => 100])
+                            ->column(['field' => 'remark', 'title' => '等级描述', 'align' => 'center', 'minWidth' => 100, 'templet' => '<div class="color-desc">{{d.remark||"-"}}</div>'])
+                            ->column(['field' => 'status', 'title' => '等级状态', 'align' => 'center', 'minWidth' => 110, 'templet' => '#StatusSwitchTpl'])
+                            ->column(['field' => 'create_time', 'title' => '创建时间', 'align' => 'center', 'minWidth' => 170, 'sort' => true])
+                            ->rows(function ($rows) {
+                                $rows->modal('编辑', url('edit')->build() . '?id={{d.id}}', '编辑等级', [], 'edit')
+                                    ->action('删除', url('remove')->build(), 'id#{{d.id}}', '确定要删除问题吗?', [], 'remove');
+                            })
+                            ->toolbar('操作面板', ['minWidth' => 160])
+                            ->template('StatusSwitchTpl', '<!--{if auth("state")}--><input type="checkbox" value="{{d.id}}" lay-skin="switch" lay-text="已激活|已禁用" lay-filter="StatusSwitch" {{d.status>0?\'checked\':\'\'}}><!--{else}-->{{d.status ? \'<b class="color-green">已启用</b>\' : \'<b class="color-red">已禁用</b>\'}}<!--{/if}-->')
+                            ->script(<<<'SCRIPT'
 layui.form.on('switch(StatusSwitch)', function (obj) {
     var data = {id: obj.value, status: obj.elem.checked > 0 ? 1 : 0};
     $.form.load("state", data, "post", function (ret) {
@@ -170,9 +173,17 @@ layui.form.on('switch(StatusSwitch)', function (obj) {
             $("#UpgradeTable").trigger("reload");
         });
         return false;
-    }, false);
+                            }, false);
 });
 SCRIPT);
+                    });
+
+                $page->div()
+                    ->class('think-box-notify')
+                    ->node('span')
+                    ->html('代理等级添加后，尽量不要对等级进行删除操作，否则会影响代理等级显示！');
+            })
+            ->build();
     }
 
     private function buildFormBuilder(): FormBuilder
@@ -192,13 +203,18 @@ SCRIPT);
                 : "设置为第 {$i} 级权限";
         }
 
-        return FormBuilder::mk()
-            ->setAction(url($this->request->action(), array_filter($query, static fn ($value) => $value !== null))->build())
-            ->addSelectInput('number', '等级序号', 'Level Seq.', true, '序号的数字越小表示等级越低，数字越大表示等级越高。', $options)
-            ->addTextInput('name', '等级名称', 'Level Name', true, '请保持等级名称不重复，代理用户将使用此名称显示区分等级。')
-            ->addTextArea('remark', '等级描述', 'Level Remark', false, '等级描述仅用于后台标注该等级的用途或其他描述，其它位置不显示。')
-            ->addSubmitButton()
-            ->addCancelButton();
+        return FormBuilder::make()
+            ->define(function ($form) use ($query, $options) {
+                $form->action(url($this->request->action(), array_filter($query, static fn ($value) => $value !== null))->build())
+                    ->fields(function ($fields) use ($options) {
+                        $fields->select('number', '等级序号', 'Level Seq.', true, '序号的数字越小表示等级越低，数字越大表示等级越高。', $options)
+                            ->text('name', '等级名称', 'Level Name', true, '请保持等级名称不重复，代理用户将使用此名称显示区分等级。')
+                            ->textarea('remark', '等级描述', 'Level Remark', false, '等级描述仅用于后台标注该等级的用途或其他描述，其它位置不显示。');
+                    })->actions(function ($actions) {
+                        $actions->submit()->cancel();
+                    });
+            })
+            ->build();
     }
 
     private function loadFormData(int $id = 0): array

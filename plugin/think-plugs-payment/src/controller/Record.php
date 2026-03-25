@@ -26,7 +26,7 @@ use plugin\payment\service\Payment;
 use plugin\system\service\AuthService;
 use think\admin\Controller;
 use think\admin\extend\CodeToolkit;
-use think\admin\helper\FormBuilder;
+use think\admin\builder\form\FormBuilder;
 use think\admin\helper\QueryHelper;
 use think\db\exception\DataNotFoundException;
 use think\db\exception\DbException;
@@ -169,37 +169,37 @@ class Record extends Controller
 <div class="layui-textarea"><img alt="img" data-tips-image src="{$vo.payment_images|default=''}" style="width:auto;height:220px"></div>
 HTML;
 
-        return FormBuilder::mk()
-            ->setAction(url('audit', array_filter(['id' => $id ?: null]))->build())
-            ->addTextInput('order_no_display', '业务单号', 'Order No.', false, '', null, [
-                'readonly' => null,
-                'class' => 'layui-bg-gray',
-            ])
-            ->addTextInput('code_display', '交易单号', 'Payment No.', false, '', null, [
-                'readonly' => null,
-                'class' => 'layui-bg-gray',
-            ])
-            ->addTextInput('payment_amount_display', '交易金额', 'Payment Amount', false, '', null, [
-                'readonly' => null,
-                'class' => 'layui-bg-gray',
-            ])
-            ->addTextInput('payment_images_display', '支付单据凭证', 'Payment Voucher', false, $voucherRemark, null, [
-                'readonly' => null,
-                'class' => 'layui-bg-gray',
-            ])
-            ->addField([
-                'type' => 'radio',
-                'name' => 'status',
-                'title' => '审核操作类型',
-                'subtitle' => 'Audit Status',
-                'required' => true,
-                'options' => [0 => '驳回凭证', 1 => '等待审核', 2 => '审核通过'],
-            ])
-            ->addTextArea('remark', '订单审核描述', 'Audit Remark', false, '', [
-                'placeholder' => '请输入订单审核描述',
-            ])
-            ->addSubmitButton()
-            ->addCancelButton('取消操作', '确定要取消吗？');
+        return FormBuilder::make()
+            ->define(function ($form) use ($id, $voucherRemark) {
+                $form->action(url('audit', array_filter(['id' => $id ?: null]))->build())
+                    ->fields(function ($fields) use ($voucherRemark) {
+                        $fields->text('order_no_display', '业务单号', 'Order No.', false, '', null, [
+                            'readonly' => null,
+                            'class' => 'layui-bg-gray',
+                        ])->text('code_display', '交易单号', 'Payment No.', false, '', null, [
+                            'readonly' => null,
+                            'class' => 'layui-bg-gray',
+                        ])->text('payment_amount_display', '交易金额', 'Payment Amount', false, '', null, [
+                            'readonly' => null,
+                            'class' => 'layui-bg-gray',
+                        ])->text('payment_images_display', '支付单据凭证', 'Payment Voucher', false, $voucherRemark, null, [
+                            'readonly' => null,
+                            'class' => 'layui-bg-gray',
+                        ])->field([
+                            'type' => 'radio',
+                            'name' => 'status',
+                            'title' => '审核操作类型',
+                            'subtitle' => 'Audit Status',
+                            'required' => true,
+                            'options' => [0 => '驳回凭证', 1 => '等待审核', 2 => '审核通过'],
+                        ])->textarea('remark', '订单审核描述', 'Audit Remark', false, '', [
+                            'placeholder' => '请输入订单审核描述',
+                        ]);
+                    })->actions(function ($actions) {
+                        $actions->submit()->cancel('取消操作', '确定要取消吗？');
+                    });
+            })
+            ->build();
     }
 
     private function loadAuditRecord(int $id): array
