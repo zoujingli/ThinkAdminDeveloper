@@ -42,13 +42,19 @@ class BaseControllerTest extends SqliteIntegrationTestCase
         ]);
 
         $indexHtml = $this->callActionHtml('index', [
-            'type' => 'identity',
+            'type' => 'index',
+            'base_type' => 'identity',
         ], 'GET');
         $formHtml = $this->callActionHtml('add', [
             'type' => 'identity',
         ], 'GET');
 
         $this->assertStringContainsString('page-builder-schema', $indexHtml);
+        $this->assertStringContainsString('id="BaseTable"', $indexHtml);
+        $this->assertStringContainsString('plugin_group === \'mixed\'', $indexHtml);
+        $this->assertStringContainsString('回 收 站', $indexHtml);
+        $this->assertStringContainsString('name="base_type"', $indexHtml);
+        $this->assertStringContainsString('class="mt10"', $indexHtml);
         $this->assertStringContainsString('name="type_select"', $formHtml);
         $this->assertStringContainsString('form-builder-schema', $formHtml);
     }
@@ -86,7 +92,8 @@ class BaseControllerTest extends SqliteIntegrationTestCase
 
         $result = $this->callIndexController([
             'output' => 'json',
-            'type' => 'identity',
+            'type' => 'index',
+            'base_type' => 'identity',
             'plugin_group' => 'index',
             'code' => 'base-hit',
             'create_time' => '2026-03-10 - 2026-03-10',
@@ -200,6 +207,40 @@ class BaseControllerTest extends SqliteIntegrationTestCase
         $this->assertSame(1, intval($remove['code'] ?? 0));
         $this->assertSame('数据删除成功！', $remove['info'] ?? '');
         $this->assertNotEmpty($afterRemove->getAttr('delete_time'));
+    }
+
+    public function testRecycleOnlyReturnsDisabledDictionaryRows(): void
+    {
+        $this->createSystemBaseFixture([
+            'type' => 'identity',
+            'code' => 'base-disabled',
+            'name' => '禁用字典',
+            'content' => '禁用内容',
+            'status' => 0,
+        ]);
+        $this->createSystemBaseFixture([
+            'type' => 'identity',
+            'code' => 'base-active',
+            'name' => '启用字典',
+            'content' => '启用内容',
+            'status' => 1,
+        ]);
+
+        $result = $this->callIndexController([
+            'output' => 'json',
+            'type' => 'recycle',
+            'base_type' => 'identity',
+            '_field_' => 'id',
+            '_order_' => 'asc',
+            'page' => 1,
+            'limit' => 20,
+        ]);
+
+        $codes = array_column($result['data']['list'] ?? [], 'code');
+
+        $this->assertSame(1, intval($result['code'] ?? 0));
+        $this->assertContains('base-disabled', $codes);
+        $this->assertNotContains('base-active', $codes);
     }
 
     protected function defineSchema(): void

@@ -33,6 +33,19 @@ use think\Request;
  */
 class FileControllerTest extends SqliteIntegrationTestCase
 {
+    public function testIndexGetRendersPageBuilderMarkup(): void
+    {
+        $html = $this->callActionHtml('index');
+
+        $this->assertStringContainsString('page-builder-schema', $html);
+        $this->assertStringContainsString('id="FileTable"', $html);
+        $this->assertStringContainsString('class="layui-tab-content"', $html);
+        $this->assertStringContainsString('data-line="1"', $html);
+        $this->assertStringContainsString('系统文件', $html);
+        $this->assertStringContainsString('清理重复', $html);
+        $this->assertStringContainsString('批量删除', $html);
+    }
+
     public function testIndexFiltersFilesByCurrentAdminTypeAndDateRange(): void
     {
         $this->createSystemFileFixture([
@@ -219,7 +232,7 @@ class FileControllerTest extends SqliteIntegrationTestCase
         $result = $this->callActionController('distinct');
 
         $this->assertSame(1, intval($result['code'] ?? 0));
-        $this->assertSame('清理重复文件成功！', $result['info'] ?? '');
+        $this->assertSame('Duplicate files cleared.', $result['info'] ?? '');
         $this->assertFalse(SystemFile::mk()->where(['id' => $duplicateA->getAttr('id')])->findOrEmpty()->isExists());
         $this->assertTrue(SystemFile::mk()->where(['id' => $duplicateB->getAttr('id')])->findOrEmpty()->isExists());
         $this->assertTrue(SystemFile::mk()->where(['id' => $safeDuplicate->getAttr('id')])->findOrEmpty()->isExists());
@@ -283,9 +296,9 @@ class FileControllerTest extends SqliteIntegrationTestCase
         $record = SystemFile::mk()->where(['id' => $other->getAttr('id')])->findOrEmpty();
 
         $this->assertSame(0, intval($view['code'] ?? 1));
-        $this->assertSame('文件记录不存在！', $view['info'] ?? '');
+        $this->assertSame('File record does not exist.', $view['info'] ?? '');
         $this->assertSame(0, intval($save['code'] ?? 1));
-        $this->assertSame('文件记录不存在！', $save['info'] ?? '');
+        $this->assertSame('File record does not exist.', $save['info'] ?? '');
         $this->assertSame('other-edit.png', $record->getAttr('name'));
     }
 
@@ -334,6 +347,27 @@ class FileControllerTest extends SqliteIntegrationTestCase
             self::fail("Expected FileController::{$action} to throw HttpResponseException.");
         } catch (HttpResponseException $exception) {
             return json_decode($exception->getResponse()->getContent(), true) ?: [];
+        }
+    }
+
+    private function callActionHtml(string $action, array $query = []): string
+    {
+        $request = (new Request())
+            ->withGet($query)
+            ->setMethod('GET')
+            ->setController('file')
+            ->setAction($action);
+
+        $this->bindAdminUser();
+        $this->setRequestPayload($request, $query);
+        $this->app->instance('request', $request);
+
+        try {
+            $controller = new FileController($this->app);
+            $controller->{$action}();
+            self::fail("Expected FileController::{$action} to throw HttpResponseException.");
+        } catch (HttpResponseException $exception) {
+            return $exception->getResponse()->getContent();
         }
     }
 

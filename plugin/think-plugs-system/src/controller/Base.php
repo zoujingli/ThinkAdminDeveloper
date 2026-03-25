@@ -20,10 +20,11 @@ declare(strict_types=1);
 
 namespace plugin\system\controller;
 
+use plugin\system\builder\BaseBuilder;
 use plugin\system\model\SystemBase;
-use plugin\system\service\BaseBuilder;
+use plugin\system\service\BaseService;
 use think\admin\Controller;
-use think\admin\helper\FormBuilder;
+use think\admin\Exception;
 use think\admin\helper\QueryHelper;
 use think\db\exception\DataNotFoundException;
 use think\db\exception\DbException;
@@ -45,22 +46,11 @@ class Base extends Controller
      */
     public function index()
     {
-        SystemBase::mQuery()->layTable(function () {
-            $this->title = '数据字典管理';
-            $this->types = SystemBase::types();
-            $this->type = $this->get['type'] ?? ($this->types[0] ?? '-');
-            $this->pluginGroups = SystemBase::groups($this->type);
-            BaseBuilder::buildIndexPage($this->type, $this->types, $this->pluginGroups, $this->request->url())->fetch([
-                'types' => $this->types,
-                'type' => $this->type,
-            ]);
-        }, static function (QueryHelper $query) {
-            $query->equal('type');
-            $query->like('code,name,status')->dateBetween('create_time');
-            if ($group = trim(strval(input('get.plugin_group', '')))) {
-                $ids = SystemBase::idsByPluginGroup($group, strval(input('get.type', '')));
-                empty($ids) ? $query->whereRaw('1 = 0') : $query->whereIn('id', $ids);
-            }
+        $context = BaseService::buildIndexContext();
+        SystemBase::mQuery()->layTable(function () use ($context) {
+            $this->respondWithPageBuilder(BaseBuilder::buildIndexPage($context), $context);
+        }, static function (QueryHelper $query) use ($context) {
+            BaseService::applyIndexQuery($query, $context);
         });
     }
 
@@ -70,15 +60,7 @@ class Base extends Controller
      */
     public function add()
     {
-        $builder = $this->buildFormBuilder();
-        if ($this->request->isGet()) {
-            $builder->fetch(['vo' => $this->loadFormData()]);
-        }
-
-        $data = $this->prepareSaveData($builder->validate());
-        $data['id'] = intval($this->request->param('id', 0));
-        $this->assertUniqueCode($data);
-        $this->saveFormData($data);
+        $this->handleForm('add');
     }
 
     /**
@@ -87,15 +69,7 @@ class Base extends Controller
      */
     public function edit()
     {
-        $builder = $this->buildFormBuilder();
-        if ($this->request->isGet()) {
-            $builder->fetch(['vo' => $this->loadFormData(intval($this->request->param('id', 0)))]);
-        }
-
-        $data = $this->prepareSaveData($builder->validate());
-        $data['id'] = intval($this->request->param('id', 0));
-        $this->assertUniqueCode($data);
-        $this->saveFormData($data);
+        $this->handleForm('edit');
     }
 
     /**
@@ -133,120 +107,19 @@ class Base extends Controller
         $data = SystemBase::appendPlugins($data);
     }
 
-    private function prepareSaveData(array $data): array
+    private function handleForm(string $action): void
     {
-        $data['content'] = SystemBase::packContent(
-            strval($data['content_text'] ?? $this->request->post('content_text', '')),
-            $data['plugin_code'] ?? $this->request->post('plugin_code', '')
-        );
-        unset($data['content_text'], $data['plugin_code'], $data['type_select']);
-        return $data;
-    }
-
-    private function assertUniqueCode(array $data): void
-    {
-        $exists = SystemBase::mk()
-            ->where([
-                'code' => strval($data['code'] ?? ''),
-                'type' => strval($data['type'] ?? ''),
-            ])
-            ->where('id', '<>', intval($data['id'] ?? 0))
-            ->count();
-        if ($exists > 0) {
-            $this->error('数据编码已经存在！');
-        }
-    }
-
-    private function saveFormData(array $data): void
-    {
-        $id = intval($data['id'] ?? 0);
-        $item = $id > 0 ? SystemBase::mk()->findOrEmpty($id) : SystemBase::mk();
-        if ($id > 0 && $item->isEmpty()) {
-            $this->error('数据记录不存在！');
-        }
-
-        $item->save([
-            'type' => strval($data['type'] ?? ''),
-            'code' => strval($data['code'] ?? ''),
-            'name' => strval($data['name'] ?? ''),
-            'content' => strval($data['content'] ?? ''),
-            'sort' => intval($this->request->post('sort', $item->getAttr('sort') ?? 0)),
-            'status' => intval($this->request->post('status', $item->getAttr('status') ?? 1)),
-        ]);
-        $this->success('数据保存成功！');
-    }
-
-    private function buildFormBuilder(): FormBuilder
-    {
-        $id = intval($this->request->param('id', 0));
-        $isEdit = $id > 0;
-        $types = SystemBase::types();
-        $typeOptions = BaseBuilder::buildTypeOptions($types);
-
-        $builder = FormBuilder::mk()->setAction(url($this->request->action(), array_filter([
-            'id' => $id ?: null,
-            'type' => strval($this->request->param('type', '')),
-        ]))->build());
-
-        if ($isEdit) {
-            $builder->addTextInput('type', '数据类型', 'Data Type', true, '请选择数据类型，数据创建后不能再次修改哦~', null, [
-                'readonly' => null,
-                'class' => 'think-bg-gray',
-            ]);
-        } else {
-            $builder->addSelectInput('type_select', '数据类型', 'Data Type', false, '请选择数据类型，数据创建后不能再次修改哦~', $typeOptions, '', [
-                'lay-filter' => 'BaseTypeSelect',
-            ])->addTextInput('type', '数据类型', 'Data Type', true, '请输入新的数据类型，数据创建后不能再次修改哦 ~', null, [
-                'maxlength' => 20,
-                'placeholder' => '请输入数据类型',
-            ])->addScript(<<<'SCRIPT'
-var $typeSelect = $('[name="type_select"]');
-var $typeField = $('[data-field-name="type"]');
-function syncBaseTypeField(value) {
-    if (value === '--- 新增类型 ---') {
-        $typeField.removeClass('layui-hide').find('input').val('').focus();
-    } else {
-        $typeField.addClass('layui-hide').find('input').val(value || '');
-    }
-}
-syncBaseTypeField($typeSelect.val());
-layui.form.on('select(BaseTypeSelect)', function (data) {
-    syncBaseTypeField(data.value);
-});
-SCRIPT);
-        }
-
-        $codeAttrs = ['maxlength' => 100];
-        if ($isEdit) {
-            $codeAttrs['readonly'] = null;
-            $codeAttrs['class'] = 'think-bg-gray';
-        }
-
-        return $builder
-            ->addTextInput('code', '数据编码', 'Data Code', true, '请输入新的数据编码，数据创建后不能再次修改，同种数据类型的数据编码不能出现重复 ~', null, $codeAttrs)
-            ->addTextInput('name', '数据名称', 'Data Name', true, '请输入当前数据名称，请尽量保持名称的唯一性，数据名称尽量不要出现重复 ~', null, ['maxlength' => 500])
-            ->addSelectInput('plugin_code', '所属插件', 'Plugin Scope', false, '可选。选择后会写入插件归属元数据，适合身份权限或插件专用字典项。', BaseBuilder::buildPluginOptions())
-            ->addTextArea('content_text', '数据内容', 'Data Content', false, '', ['placeholder' => '请输入数据内容'])
-            ->addSubmitButton()
-            ->addCancelButton();
-    }
-
-    private function loadFormData(int $id = 0): array
-    {
-        $data = [];
-        if ($id > 0) {
-            $item = SystemBase::mk()->findOrEmpty($id);
-            if ($item->isEmpty()) {
-                $this->error('数据记录不存在！');
+        $context = BaseService::buildFormContext($action);
+        $builder = BaseBuilder::buildForm($context);
+        try {
+            if ($this->request->isGet()) {
+                $this->respondWithFormBuilder($builder, $context, BaseService::loadFormData($context));
             }
-            $data = $item->toArray();
+            $data = BaseService::prepareFormData($builder->validate(), $context);
+            BaseService::saveFormData($data);
+            $this->success('数据保存成功！');
+        } catch (Exception $exception) {
+            $this->error($exception->getMessage());
         }
-        $meta = SystemBase::parseContent(strval($data['content'] ?? ''));
-        $codes = (array)($meta['plugin'] ?: $meta['plugins']);
-        $data['plugin_code'] = count($codes) === 1 ? strval(current($codes)) : '';
-        $data['content_text'] = strval($meta['text'] ?? ($data['content'] ?? ''));
-        $data['type_select'] = strval($data['type'] ?? $this->request->param('type', SystemBase::types()[0] ?? ''));
-        $data['type'] = strval($data['type'] ?? $this->request->param('type', ''));
-        return $data;
     }
 }

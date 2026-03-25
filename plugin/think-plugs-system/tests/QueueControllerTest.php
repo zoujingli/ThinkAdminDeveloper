@@ -36,6 +36,20 @@ use think\Request;
  */
 class QueueControllerTest extends SqliteIntegrationTestCase
 {
+    public function testIndexGetRendersPageBuilderMarkup(): void
+    {
+        $html = $this->callActionHtml('index');
+
+        $this->assertStringContainsString('page-builder-schema', $html);
+        $this->assertStringContainsString('id="QueueTable"', $html);
+        $this->assertStringContainsString('class="layui-tab-content"', $html);
+        $this->assertStringContainsString('系统任务', $html);
+        $this->assertStringContainsString('data-line="2"', $html);
+        $this->assertStringContainsString('class="mt10"', $html);
+        $this->assertStringContainsString('data-queue-message', $html);
+        $this->assertStringContainsString('批量删除', $html);
+    }
+
     public function testIndexFiltersQueueRowsAndBuildsStatusSummary(): void
     {
         $this->createSystemQueueFixture([
@@ -241,6 +255,27 @@ class QueueControllerTest extends SqliteIntegrationTestCase
             self::fail("Expected QueueController::{$action} to throw HttpResponseException.");
         } catch (HttpResponseException $exception) {
             return json_decode($exception->getResponse()->getContent(), true) ?: [];
+        }
+    }
+
+    private function callActionHtml(string $action, array $query = []): string
+    {
+        $request = (new Request())
+            ->withGet($query)
+            ->setMethod('GET')
+            ->setController('queue')
+            ->setAction($action);
+
+        $this->bindAdminUser();
+        $this->setRequestPayload($request, $query);
+        $this->app->instance('request', $request);
+
+        try {
+            $controller = new QueueController($this->app);
+            $controller->{$action}();
+            self::fail("Expected QueueController::{$action} to throw HttpResponseException.");
+        } catch (HttpResponseException $exception) {
+            return $exception->getResponse()->getContent();
         }
     }
 

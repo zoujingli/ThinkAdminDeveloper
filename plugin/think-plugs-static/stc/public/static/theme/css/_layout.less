@@ -307,7 +307,7 @@
         box-sizing: border-box;
 
         > .layui-card-html {
-          padding: 15px;
+          padding: 12px;
           min-width: 100%;
           position: absolute;
           box-sizing: border-box;
@@ -315,7 +315,7 @@
         }
 
         > .layui-card-table {
-          padding: 15px;
+          padding: 12px;
           box-sizing: border-box;
           #bodyLayout();
         }
@@ -323,7 +323,7 @@
         > div > .layui-tab.layui-tab-card {
           border: 1px solid var(--ta-border-color, @BoxBorderColor);
           border-radius: var(--ta-radius-md, @BoxBorderRadius);
-          box-shadow: var(--ta-shadow-sm, @ShadowOuterMax);
+          box-shadow: none;
 
           & > .layui-tab-content.think-box-shadow {
             box-shadow: none;
@@ -351,10 +351,11 @@
         right: 0;
         height: @LayoutBodyHeadHeight;
         z-index: 4;
-        padding: 0 15px;
+        padding: 0 12px;
         position: fixed;
         background: var(--ta-surface, #FFF);
         line-height: @LayoutBodyHeadHeight;
+        text-align: left;
 
         > div {
           margin-top: -1px

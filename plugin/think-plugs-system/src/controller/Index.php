@@ -20,6 +20,7 @@ declare(strict_types=1);
 
 namespace plugin\system\controller;
 
+use plugin\system\builder\UserBuilder;
 use plugin\system\model\SystemUser;
 use plugin\system\service\AuthService;
 use plugin\system\service\MenuService;
@@ -29,6 +30,7 @@ use think\admin\Exception;
 use think\db\exception\DataNotFoundException;
 use think\db\exception\DbException;
 use think\db\exception\ModelNotFoundException;
+use think\exception\HttpResponseException;
 
 /**
  * 后台界面入口.
@@ -97,11 +99,26 @@ class Index extends Controller
      */
     public function info()
     {
-        $id = $this->request->param('id');
-        if (AuthService::getUserId() == intval($id)) {
-            SystemUser::mForm('user/form', 'id', [], ['id' => $id]);
-        } else {
+        $id = intval($this->request->param('id', 0));
+        if (AuthService::getUserId() !== $id) {
             $this->error('只能修改自己的资料！');
+        }
+
+        try {
+            $context = UserService::buildInfoContext($id);
+            $builder = UserBuilder::buildInfoForm($context);
+
+            if ($this->request->isGet()) {
+                $this->respondWithFormBuilder($builder, $context, UserService::loadFormData($context));
+            }
+
+            $data = UserService::prepareInfoData($builder->validate(), $context);
+            UserService::saveFormData($data);
+            $this->success('用户资料修改成功！', 'javascript:location.reload()');
+        } catch (HttpResponseException $exception) {
+            throw $exception;
+        } catch (Exception|\Throwable $exception) {
+            $this->error($exception->getMessage());
         }
     }
 
@@ -117,10 +134,11 @@ class Index extends Controller
             $this->error('禁止修改他人密码！');
         }
 
-        $builder = UserService::buildPassForm(true);
+        $context = ['withOldPassword' => true];
+        $builder = UserBuilder::buildPassForm($context);
         if ($this->request->isGet()) {
             $this->verify = true;
-            $builder->fetch(['vo' => UserService::loadPassUser($id)]);
+            $this->respondWithFormBuilder($builder, $context, UserService::loadPassUser($id));
         } else {
             $data = $builder->validate();
             $user = SystemUser::mk()->findOrEmpty($id);
@@ -139,26 +157,6 @@ class Index extends Controller
             }
 
             $this->error('密码修改失败，请稍候再试！');
-        }
-    }
-
-    /**
-     * 资料修改表单处理.
-     */
-    protected function _info_form_filter(array &$data): void
-    {
-        if ($this->request->isPost()) {
-            unset($data['username'], $data['authorize']);
-        }
-    }
-
-    /**
-     * 资料修改结果处理.
-     */
-    protected function _info_form_result(bool $status): void
-    {
-        if ($status) {
-            $this->success('用户资料修改成功！', 'javascript:location.reload()');
         }
     }
 }

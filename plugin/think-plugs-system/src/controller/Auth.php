@@ -20,12 +20,12 @@ declare(strict_types=1);
 
 namespace plugin\system\controller;
 
+use plugin\system\builder\AuthBuilder;
 use plugin\system\model\SystemAuth;
-use plugin\system\model\SystemNode;
 use plugin\system\service\AuthService;
 use think\admin\Controller;
+use think\admin\Exception;
 use think\admin\helper\QueryHelper;
-use think\admin\service\AppService;
 use think\db\exception\DataNotFoundException;
 use think\db\exception\DbException;
 use think\db\exception\ModelNotFoundException;
@@ -46,15 +46,11 @@ class Auth extends Controller
      */
     public function index()
     {
-        SystemAuth::mQuery()->layTable(function () {
-            $this->title = '系统权限管理';
-            $this->authGroups = SystemAuth::groups();
-        }, static function (QueryHelper $query) {
-            $query->like('title,desc')->equal('status,utype')->dateBetween('create_time');
-            if ($group = trim(strval(input('get.plugin_group', '')))) {
-                $ids = SystemAuth::idsByPluginGroup($group);
-                empty($ids) ? $query->whereRaw('1 = 0') : $query->whereIn('id', $ids);
-            }
+        $context = AuthService::buildIndexContext();
+        SystemAuth::mQuery()->layTable(function () use ($context) {
+            $this->respondWithPageBuilder(AuthBuilder::buildIndexPage($context), $context);
+        }, static function (QueryHelper $query) use ($context) {
+            AuthService::applyIndexQuery($query, $context);
         });
     }
 
@@ -85,7 +81,7 @@ class Auth extends Controller
      */
     public function add()
     {
-        SystemAuth::mForm('form');
+        $this->handleForm('add');
     }
 
     /**
@@ -94,52 +90,7 @@ class Auth extends Controller
      */
     public function edit()
     {
-        SystemAuth::mForm('form');
-    }
-
-    /**
-     * 表单后置数据处理.
-     */
-    protected function _form_filter(array $data)
-    {
-        if ($this->request->isGet()) {
-            $this->title = empty($data['title']) ? '添加访问授权' : "编辑【{$data['title']}】授权";
-            $this->plugin = trim(strval($this->request->get('plugin', '')));
-        } elseif ($this->request->post('action') === 'json') {
-            if ($this->app->isDebug()) {
-                AuthService::clear();
-            }
-            $ztree = AuthService::getTree(empty($data['id']) ? [] : SystemNode::mk()->where(['auth' => $data['id']])->column('node'));
-            usort($ztree, static function ($a, $b) {
-                if (explode('-', $a['node'])[0] !== explode('-', $b['node'])[0]) {
-                    if (stripos($a['node'], 'plugin-') === 0) {
-                        return 1;
-                    }
-                }
-                return $a['node'] === $b['node'] ? 0 : ($a['node'] > $b['node'] ? 1 : -1);
-            });
-            $this->normalizePluginTree($ztree);
-            $this->success('获取权限节点成功！', $ztree);
-        } elseif (empty($data['nodes'])) {
-            $this->error('未配置功能节点！');
-        }
-    }
-
-    /**
-     * 节点更新处理.
-     */
-    protected function _form_result(bool $state, array $post)
-    {
-        if ($state && $this->request->post('action') === 'save') {
-            [$map, $data] = [['auth' => $post['id']], []];
-            foreach ($post['nodes'] ?? [] as $node) {
-                $data[] = $map + ['node' => $node];
-            }
-            SystemNode::mk()->where($map)->delete();
-            count($data) > 0 && SystemNode::mk()->insertAll($data);
-            sysoplog('系统权限管理', "配置系统权限[{$map['auth']}]授权成功");
-            $this->success('权限修改成功！', 'javascript:history.back()');
-        }
+        $this->handleForm('edit');
     }
 
     /**
@@ -150,27 +101,23 @@ class Auth extends Controller
         $data = SystemAuth::appendPlugins($data);
     }
 
-    /**
-     * 标准化插件权限树标题与分组信息.
-     * @param array<int, array<string, mixed>> $nodes
-     */
-    private function normalizePluginTree(array &$nodes, string $plugin = ''): void
+    private function handleForm(string $action): void
     {
-        foreach ($nodes as &$node) {
-            $current = $plugin;
-            if (strpos(strval($node['node'] ?? ''), '/') === false) {
-                $current = strval($node['node'] ?? '');
-                if ($pluginInfo = AppService::resolvePlugin($current, true)) {
-                    $node['title'] = lang(strval($pluginInfo['name'] ?? $node['title']));
-                } elseif ($app = AppService::get($current)) {
-                    $node['title'] = lang(strval($app['name'] ?? $node['title']));
-                }
+        $context = AuthService::buildFormContext($action);
+        $builder = AuthBuilder::buildForm($context);
+
+        try {
+            if ($this->request->isGet()) {
+                $this->respondWithFormBuilder($builder, $context, AuthService::loadFormData($context));
             }
-            $node['plugin'] = $current;
-            if (!empty($node['_sub_'])) {
-                $this->normalizePluginTree($node['_sub_'], $current);
+            if ($this->request->post('action') === 'json') {
+                $this->success('获取权限节点成功！', AuthService::loadFormTree($context));
             }
+            $data = AuthService::prepareFormData($builder->validate(), $context);
+            AuthService::saveFormData($data);
+            $this->success('权限修改成功！', 'javascript:history.back()');
+        } catch (Exception $exception) {
+            $this->error($exception->getMessage());
         }
-        unset($node);
     }
 }

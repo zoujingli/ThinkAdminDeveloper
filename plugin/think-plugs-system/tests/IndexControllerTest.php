@@ -47,7 +47,7 @@ class IndexControllerTest extends SqliteIntegrationTestCase
         ]);
 
         $row = SystemData::mk()->where(['name' => 'UserData_9101'])->findOrEmpty();
-        $payload = json_decode(strval($row->getData('value')), true)[0] ?? [];
+        $payload = (array)$row->getAttr('value');
 
         $this->assertSame(1, intval($result['code'] ?? 0));
         $this->assertSame('主题配置保存成功！', $result['info'] ?? '');
@@ -85,6 +85,26 @@ class IndexControllerTest extends SqliteIntegrationTestCase
         $this->assertSame(',1,2,', $updated->getData('authorize'));
         $this->assertSame('新昵称', $updated->getData('nickname'));
         $this->assertSame('13800139999', $updated->getData('contact_phone'));
+    }
+
+    public function testInfoGetRendersProfileFormBuilderMarkup(): void
+    {
+        $user = $this->createSystemUserFixture([
+            'id' => 9101,
+            'username' => 'tester',
+            'password' => $this->hashSystemPassword('changed-password'),
+            'nickname' => '原昵称',
+            'authorize' => ',1,2,',
+        ]);
+
+        $this->bindAdminUser(9101, 'tester', strval($user->getData('password')));
+
+        $html = $this->callActionHtml('info', ['id' => 9101]);
+
+        $this->assertStringContainsString('form-builder-schema', $html);
+        $this->assertStringContainsString('name="username"', $html);
+        $this->assertStringContainsString('name="nickname"', $html);
+        $this->assertStringNotContainsString('name="authorize[]"', $html);
     }
 
     public function testInfoRejectsEditingOtherUserProfile(): void

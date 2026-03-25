@@ -41,6 +41,11 @@ return [
     'super_user' => 'admin',
     // 默认时区
     'default_timezone' => 'Asia/Shanghai',
+    // 表现层模式：view 仅渲染页面，api 仅返回 JSON，mixed 根据控制器命名空间、Token 请求头与 Accept 自动切换
+    'presentation' => [
+        'mode' => 'mixed',
+        'api_header' => 'Authorization',
+    ],
     // 后台 JWT 有效期（秒，0 表示不过期）
     'system_token_expire' => 604800,
     // 后台 JWT 认证 Cookie 名称（Authorization 优先，其次读取此 Cookie）

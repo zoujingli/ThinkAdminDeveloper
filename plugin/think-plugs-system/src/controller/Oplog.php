@@ -20,6 +20,7 @@ declare(strict_types=1);
 
 namespace plugin\system\controller;
 
+use plugin\system\builder\OplogBuilder;
 use plugin\system\model\SystemOplog;
 use think\admin\Controller;
 use think\admin\helper\QueryHelper;
@@ -44,11 +45,17 @@ class Oplog extends Controller
      */
     public function index()
     {
-        SystemOplog::mQuery()->layTable(function () {
-            $this->title = '系统日志管理';
-            $columns = SystemOplog::mk()->column('action,username', 'id');
-            $this->users = array_unique(array_column($columns, 'username'));
-            $this->actions = array_unique(array_column($columns, 'action'));
+        $context = [
+            'requestBaseUrl' => $this->request->baseUrl(),
+            'title' => '系统日志管理',
+            'users' => [],
+            'actions' => [],
+        ];
+        $columns = SystemOplog::mk()->column('action,username', 'id');
+        $context['users'] = array_values(array_filter(array_unique(array_column($columns, 'username')), 'strlen'));
+        $context['actions'] = array_values(array_filter(array_unique(array_column($columns, 'action')), 'strlen'));
+        SystemOplog::mQuery()->layTable(function () use ($context) {
+            $this->respondWithPageBuilder(OplogBuilder::buildIndexPage($context), $context);
         }, static function (QueryHelper $query) {
             $query->dateBetween('create_time')->equal('username,action')->like('content,geoip,node');
         });

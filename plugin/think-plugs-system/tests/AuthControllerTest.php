@@ -60,8 +60,7 @@ class AuthControllerTest extends SqliteIntegrationTestCase
 
         $result = $this->callIndexController([
             'output' => 'json',
-            'status' => 1,
-            'utype' => 'staff',
+            'type' => 'index',
             'title' => '命中',
             'create_time' => '2026-03-10 - 2026-03-10',
             'plugin_group' => 'common',
@@ -77,6 +76,70 @@ class AuthControllerTest extends SqliteIntegrationTestCase
         $this->assertCount(1, $result['data']['list'] ?? []);
         $this->assertSame('命中权限', $result['data']['list'][0]['title'] ?? '');
         $this->assertSame('common', $result['data']['list'][0]['plugin_group'] ?? '');
+    }
+
+    public function testIndexGetRendersPageBuilderMarkup(): void
+    {
+        $html = $this->callActionHtml('index', ['plugin_group' => 'tester']);
+
+        $this->assertStringContainsString('page-builder-schema', $html);
+        $this->assertStringContainsString('id="RoleTable"', $html);
+        $this->assertStringContainsString('StatusSwitchRoleTable', $html);
+        $this->assertStringContainsString('data-open=', $html);
+        $this->assertStringNotContainsString('<fieldset><legend>条件搜索</legend>', $html);
+        $this->assertStringContainsString('class="layui-card-table"', $html);
+        $this->assertStringContainsString('class="layui-tab layui-tab-card"', $html);
+        $this->assertStringContainsString('class="layui-tab-content"', $html);
+        $this->assertStringContainsString('系统权限', $html);
+        $this->assertStringContainsString('回 收 站', $html);
+    }
+
+    public function testAddGetRendersBuilderFormMarkup(): void
+    {
+        $html = $this->callActionHtml('add', ['plugin' => 'tester']);
+
+        $this->assertStringContainsString('id="RoleForm"', $html);
+        $this->assertStringContainsString('form-builder-schema', $html);
+        $this->assertStringContainsString('AuthPluginFilter', $html);
+        $this->assertStringContainsString('data-target-backup', $html);
+        $this->assertStringContainsString('layui-card-header', $html);
+        $this->assertStringContainsString('layui-card-line', $html);
+        $this->assertStringContainsString('class="layui-card-table"', $html);
+        $this->assertStringContainsString('class="think-box-shadow"', $html);
+        $this->assertStringContainsString('id="AuthTreeKeyword"', $html);
+        $this->assertStringContainsString('搜索权限节点名称', $html);
+        $this->assertStringContainsString('id="AuthTreeSelectedOnly"', $html);
+        $this->assertStringContainsString('只看已选', $html);
+        $this->assertStringContainsString('data-tree-action="select-visible"', $html);
+        $this->assertStringContainsString('data-tree-action="clear-visible"', $html);
+        $this->assertStringContainsString('id="AuthTreePanel"', $html);
+        $this->assertStringContainsString('data-expand-node', $html);
+        $this->assertStringContainsString('auth-plugin-title', $html);
+        $this->assertStringContainsString('auth-group-title', $html);
+        $this->assertStringContainsString('.auth-group-grid', $html);
+        $this->assertStringContainsString('grid-template-columns: repeat(auto-fit, minmax(160px, max-content));', $html);
+        $this->assertStringContainsString('auth-plugin-card', $html);
+        $this->assertStringContainsString('data-batch-type="select"', $html);
+        $this->assertStringContainsString('data-batch-type="clear"', $html);
+        $this->assertStringContainsString('系统权限编辑', $html);
+        $this->assertStringContainsString('返回列表', $html);
+        $this->assertStringContainsString('class="pa40"', $html);
+        $this->assertStringContainsString("this.filter = 'tester';", $html);
+        $this->assertStringContainsString('system-auth-tree-state', $html);
+        $this->assertStringContainsString('localStorage.setItem', $html);
+        $this->assertStringContainsString('确认保存权限变更', $html);
+        $this->assertStringContainsString('本次权限变更', $html);
+        $this->assertStringNotContainsString('{$actionUrl', $html);
+        $this->assertStringNotContainsString('{$vo.id', $html);
+    }
+
+    public function testAddJsonReturnsTreePayload(): void
+    {
+        $result = $this->callFormController('add', ['action' => 'json']);
+
+        $this->assertSame(1, intval($result['code'] ?? 0));
+        $this->assertSame('获取权限节点成功！', $result['info'] ?? '');
+        $this->assertIsArray($result['data'] ?? null);
     }
 
     public function testAddAndEditPersistRoleNodes(): void
@@ -203,6 +266,27 @@ class AuthControllerTest extends SqliteIntegrationTestCase
     private function callFormController(string $action, array $post): array
     {
         return $this->callActionController($action, $post);
+    }
+
+    private function callActionHtml(string $action, array $query = []): string
+    {
+        $request = (new Request())
+            ->withGet($query)
+            ->setMethod('GET')
+            ->setController('auth')
+            ->setAction($action);
+
+        $this->bindAdminUser();
+        $this->setRequestPayload($request, $query);
+        $this->app->instance('request', $request);
+
+        try {
+            $controller = new AuthController($this->app);
+            $controller->{$action}();
+            self::fail("Expected AuthController::{$action} to throw HttpResponseException.");
+        } catch (HttpResponseException $exception) {
+            return $exception->getResponse()->getContent();
+        }
     }
 
     private function callActionController(string $action, array $post = []): array

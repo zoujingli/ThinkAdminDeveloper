@@ -26,10 +26,12 @@ use plugin\system\model\SystemUser;
 use think\admin\Exception;
 use think\admin\extend\ArrayTree;
 use think\admin\extend\CodeToolkit;
+use think\admin\helper\QueryHelper;
 use think\admin\Library;
 use think\admin\runtime\RequestContext;
 use think\admin\runtime\RequestTokenService;
 use think\admin\Service;
+use think\admin\service\AppService;
 use think\admin\service\CacheSession;
 use think\admin\service\JwtToken;
 use think\admin\service\NodeService;
@@ -81,6 +83,205 @@ class AuthService extends Service
      * 自定义回调处理.
      */
     private static array $checkCallables = [];
+
+    /**
+     * 构建权限列表上下文.
+     * @return array<string, mixed>
+     */
+    public static function buildIndexContext(): array
+    {
+        $groups = SystemAuth::groups();
+        $pluginGroup = trim(strval(request()->get('plugin_group', '')));
+        $type = self::normalizeIndexType(strval(request()->get('type', 'index')));
+        return [
+            'title' => '系统权限管理',
+            'type' => $type,
+            'requestBaseUrl' => request()->baseUrl(),
+            'pluginGroup' => $pluginGroup,
+            'authGroups' => $groups,
+            'pluginGroupOptions' => self::buildPluginGroupOptions($groups),
+        ];
+    }
+
+    /**
+     * 构建权限表单上下文.
+     * @return array<string, mixed>
+     */
+    public static function buildFormContext(string $action): array
+    {
+        $id = intval(request()->param('id', 0));
+        $plugin = trim(strval(request()->param('plugin', '')));
+        return [
+            'action' => $action,
+            'id' => $id,
+            'plugin' => $plugin,
+            'isEdit' => $action === 'edit' || $id > 0,
+            'actionUrl' => url($action, array_filter([
+                'id' => $id ?: null,
+                'plugin' => $plugin ?: null,
+            ]))->build(),
+        ];
+    }
+
+    /**
+     * 应用权限列表查询.
+     * @param array<string, mixed> $context
+     */
+    public static function applyIndexQuery(QueryHelper $query, array $context = []): void
+    {
+        $query->like('title,desc')->dateBetween('create_time');
+        $type = self::normalizeIndexType(strval($context['type'] ?? request()->get('type', 'index')));
+        $query->where(['status' => $type === 'recycle' ? 0 : 1]);
+        $group = trim(strval($context['pluginGroup'] ?? request()->get('plugin_group', '')));
+        if ($group !== '') {
+            $ids = SystemAuth::idsByPluginGroup($group);
+            empty($ids) ? $query->whereRaw('1 = 0') : $query->whereIn('id', $ids);
+        }
+    }
+
+    /**
+     * 构建插件组选项.
+     * @param array<int, array<string, mixed>> $groups
+     * @return array<string, string>
+     */
+    public static function buildPluginGroupOptions(array $groups): array
+    {
+        $options = [];
+        foreach ($groups as $group) {
+            $code = trim(strval($group['code'] ?? ''));
+            if ($code !== '') {
+                $options[$code] = strval($group['name'] ?? $code);
+            }
+        }
+        return $options;
+    }
+
+    private static function normalizeIndexType(string $type): string
+    {
+        return $type === 'recycle' ? 'recycle' : 'index';
+    }
+
+    /**
+     * 加载权限表单数据.
+     * @param array<string, mixed> $context
+     * @return array<string, mixed>
+     * @throws Exception
+     */
+    public static function loadFormData(array $context): array
+    {
+        $id = intval($context['id'] ?? 0);
+        if ($id < 1) {
+            return [];
+        }
+
+        $item = SystemAuth::mk()->findOrEmpty($id);
+        if ($item->isEmpty()) {
+            throw new Exception('权限记录不存在！');
+        }
+
+        return $item->toArray();
+    }
+
+    /**
+     * 加载权限树数据.
+     * @param array<string, mixed> $context
+     * @return array<int, array<string, mixed>>
+     */
+    public static function loadFormTree(array $context): array
+    {
+        if (Library::$sapp->isDebug()) {
+            self::clear();
+        }
+
+        $checkeds = [];
+        $id = intval($context['id'] ?? 0);
+        if ($id > 0) {
+            $checkeds = array_map('strval', SystemNode::mk()->where(['auth' => $id])->column('node'));
+        }
+
+        $tree = self::getTree($checkeds);
+        usort($tree, static function (array $a, array $b): int {
+            $anode = strval($a['node'] ?? '');
+            $bnode = strval($b['node'] ?? '');
+            if (explode('-', $anode)[0] !== explode('-', $bnode)[0] && stripos($anode, 'plugin-') === 0) {
+                return 1;
+            }
+            return $anode === $bnode ? 0 : ($anode > $bnode ? 1 : -1);
+        });
+        self::normalizePluginTree($tree);
+
+        return $tree;
+    }
+
+    /**
+     * 整理表单保存数据.
+     * @param array<string, mixed> $data
+     * @param array<string, mixed> $context
+     * @return array<string, mixed>
+     * @throws Exception
+     */
+    public static function prepareFormData(array $data, array $context): array
+    {
+        $status = intval(request()->post('status', 1));
+        if (!in_array($status, [0, 1], true)) {
+            throw new Exception('状态值范围异常！');
+        }
+
+        return [
+            'id' => intval($context['id'] ?? 0),
+            'title' => trim(strval($data['title'] ?? '')),
+            'desc' => trim(strval($data['desc'] ?? '')),
+            'utype' => trim(strval(request()->post('utype', ''))),
+            'sort' => intval(request()->post('sort', 0)),
+            'status' => $status,
+            'nodes' => self::normalizeNodes(request()->post('nodes', [])),
+        ];
+    }
+
+    /**
+     * 保存权限表单数据.
+     * @param array<string, mixed> $data
+     * @throws Exception
+     */
+    public static function saveFormData(array $data): void
+    {
+        $nodes = is_array($data['nodes'] ?? null) ? $data['nodes'] : [];
+        if (count($nodes) < 1) {
+            throw new Exception('未配置功能节点！');
+        }
+
+        $id = intval($data['id'] ?? 0);
+        $item = $id > 0 ? SystemAuth::mk()->findOrEmpty($id) : SystemAuth::mk();
+        if ($id > 0 && $item->isEmpty()) {
+            throw new Exception('权限记录不存在！');
+        }
+
+        Library::$sapp->db->transaction(function () use ($item, $data, $nodes): void {
+            if ($item->save([
+                'title' => strval($data['title'] ?? ''),
+                'utype' => strval($data['utype'] ?? ''),
+                'desc' => strval($data['desc'] ?? ''),
+                'sort' => intval($data['sort'] ?? 0),
+                'status' => intval($data['status'] ?? 1),
+            ]) === false) {
+                throw new Exception('权限保存失败，请稍候再试！');
+            }
+
+            $auth = intval($item->getAttr('id'));
+            $map = ['auth' => $auth];
+            $rows = [];
+            foreach ($nodes as $node) {
+                $rows[] = $map + ['node' => $node];
+            }
+
+            SystemNode::mk()->where($map)->delete();
+            if (count($rows) > 0) {
+                SystemNode::mk()->insertAll($rows);
+            }
+
+            sysoplog('系统权限管理', "配置系统权限[{$auth}]授权成功");
+        });
+    }
 
     /**
      * 是否已经登录.
@@ -511,6 +712,47 @@ class AuthService extends Service
     {
         Library::$sapp->cache->delete('SystemAuthNode');
         return true;
+    }
+
+    /**
+     * 标准化插件权限树标题与分组信息.
+     * @param array<int, array<string, mixed>> $nodes
+     */
+    private static function normalizePluginTree(array &$nodes, string $plugin = ''): void
+    {
+        foreach ($nodes as &$node) {
+            $current = $plugin;
+            if (strpos(strval($node['node'] ?? ''), '/') === false) {
+                $current = strval($node['node'] ?? '');
+                if ($pluginInfo = AppService::resolvePlugin($current, true)) {
+                    $node['title'] = lang(strval($pluginInfo['name'] ?? $node['title']));
+                } elseif ($app = AppService::get($current)) {
+                    $node['title'] = lang(strval($app['name'] ?? $node['title']));
+                }
+            }
+            $node['plugin'] = $current;
+            if (!empty($node['_sub_'])) {
+                self::normalizePluginTree($node['_sub_'], $current);
+            }
+        }
+        unset($node);
+    }
+
+    /**
+     * 标准化授权节点列表.
+     * @param mixed $nodes
+     * @return array<int, string>
+     */
+    private static function normalizeNodes(mixed $nodes): array
+    {
+        $result = [];
+        foreach (is_array($nodes) ? $nodes : str2arr(strval($nodes)) as $node) {
+            $value = trim(strval($node));
+            if ($value !== '' && !in_array($value, $result, true)) {
+                $result[] = $value;
+            }
+        }
+        return $result;
     }
 
     /**

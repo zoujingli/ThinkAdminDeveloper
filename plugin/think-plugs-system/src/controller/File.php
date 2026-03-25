@@ -20,9 +20,10 @@ declare(strict_types=1);
 
 namespace plugin\system\controller;
 
+use plugin\system\builder\FileBuilder;
 use plugin\system\model\SystemFile;
 use think\admin\Controller;
-use think\admin\helper\FormBuilder;
+use think\admin\builder\form\FormBuilder;
 use think\admin\helper\QueryHelper;
 use think\admin\runtime\SystemContext;
 use think\admin\Storage;
@@ -48,9 +49,14 @@ class File extends Controller
     public function index()
     {
         $this->authorizeView();
-        SystemFile::mQuery()->layTable(function () {
-            $this->title = '系统文件管理';
-            $this->xexts = SystemFile::mk()->distinct()->column('xext');
+        $context = [
+            'title' => '系统文件管理',
+            'requestBaseUrl' => request()->baseUrl(),
+            'xexts' => SystemFile::mk()->distinct()->column('xext'),
+            'types' => $this->types,
+        ];
+        SystemFile::mQuery()->layTable(function () use ($context) {
+            $this->respondWithPageBuilder(FileBuilder::buildIndexPage($context), $context);
         }, function (QueryHelper $query) {
             $query->like('name,hash,xext')->equal('type')->dateBetween('create_time');
             $query->where([
@@ -181,29 +187,30 @@ class File extends Controller
      */
     private function buildEditForm(): FormBuilder
     {
-        return FormBuilder::mk()
-            ->addTextInput('name', 'File Name', 'Name', true, '', null, [
-                'maxlength' => 100,
-                'required-error' => 'File name is required.',
-            ])
-            ->addTextInput('size_display', 'File Size', 'Size', false, '', null, [
-                'readonly' => null,
-                'class' => 'layui-bg-gray',
-            ])
-            ->addTextInput('type_display', 'Storage Driver', 'Type', false, '', null, [
-                'readonly' => null,
-                'class' => 'layui-bg-gray',
-            ])
-            ->addTextInput('hash', 'File Hash', 'Hash', false, '', null, [
-                'readonly' => null,
-                'class' => 'layui-bg-gray',
-            ])
-            ->addTextInput('xurl', 'File URL', 'Link', false, '', null, [
-                'readonly' => null,
-                'class' => 'layui-bg-gray',
-            ])
-            ->addSubmitButton()
-            ->addCancelButton();
+        return FormBuilder::make()
+            ->define(function ($form) {
+                $form->fields(function ($fields) {
+                    $fields->text('name', 'File Name', 'Name', true, '', null, [
+                        'maxlength' => 100,
+                        'required-error' => 'File name is required.',
+                    ])->text('size_display', 'File Size', 'Size', false, '', null, [
+                        'readonly' => null,
+                        'class' => 'layui-bg-gray',
+                    ])->text('type_display', 'Storage Driver', 'Type', false, '', null, [
+                        'readonly' => null,
+                        'class' => 'layui-bg-gray',
+                    ])->text('hash', 'File Hash', 'Hash', false, '', null, [
+                        'readonly' => null,
+                        'class' => 'layui-bg-gray',
+                    ])->text('xurl', 'File URL', 'Link', false, '', null, [
+                        'readonly' => null,
+                        'class' => 'layui-bg-gray',
+                    ]);
+                })->actions(function ($actions) {
+                    $actions->submit()->cancel();
+                });
+            })
+            ->build();
     }
 
     /**

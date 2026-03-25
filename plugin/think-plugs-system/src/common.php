@@ -63,6 +63,7 @@ if (!function_exists('system_uri')) {
     }
 }
 
+
 if (!function_exists('plguri')) {
     /**
      * 插件URL生成.
@@ -95,6 +96,24 @@ if (!function_exists('sysdata')) {
             return $context->getData($name);
         }
         return $context->setData($name, $value);
+    }
+}
+
+if (!function_exists('sysconf')) {
+    /**
+     * 读取系统配置项（默认从 system.site 读取）。
+     * @param string $name 配置名称
+     * @param mixed $default 默认值
+     */
+    function sysconf(string $name, mixed $default = null): mixed
+    {
+        $name = trim($name);
+        if ($name === '') {
+            return $default;
+        }
+
+        $key = str_contains($name, '.') ? $name : ('system.site.' . $name);
+        return SystemContext::instance()->getData($key, $default);
     }
 }
 

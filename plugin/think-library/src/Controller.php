@@ -20,11 +20,14 @@ declare(strict_types=1);
 
 namespace think\admin;
 
+use think\admin\builder\form\FormBuilder;
+use think\admin\builder\page\PageBuilder;
 use think\admin\helper\ValidateHelper;
 use think\admin\runtime\SystemContext;
 use think\admin\service\JwtToken;
 use think\admin\service\NodeService;
 use think\admin\service\QueueService;
+use think\admin\service\ResponseModeService;
 use think\App;
 use think\exception\HttpResponseException;
 use think\Request;
@@ -124,6 +127,87 @@ class Controller extends \stdClass
             $vars[$name] = $value;
         }
         throw new HttpResponseException(view($tpl, $vars));
+    }
+
+    /**
+     * 获取当前控制器表现层模式.
+     */
+    public function presentationMode(): string
+    {
+        return ResponseModeService::resolve($this->request, static::class);
+    }
+
+    /**
+     * 当前控制器是否走 API 模式.
+     */
+    public function usesApiPresentation(): bool
+    {
+        return ResponseModeService::prefersApi($this->request, static::class);
+    }
+
+    /**
+     * 响应页面 Builder.
+     * @param array<string, mixed> $context
+     * @param array<string, mixed> $payload
+     * @param null|callable(PageBuilder,array<string,mixed>):void $view
+     */
+    protected function respondWithPageBuilder(PageBuilder $builder, array $context = [], ?callable $view = null, array $payload = []): void
+    {
+        $mode = $this->presentationMode();
+        if ($mode === ResponseModeService::MODE_API) {
+            $this->success('获取页面成功！', array_merge([
+                'driver' => 'builder',
+                'scene' => 'page',
+                'mode' => $mode,
+                'token' => ['header' => ResponseModeService::apiHeader()],
+                'builder' => [
+                    'type' => 'page',
+                    'schema' => $builder->toArray(),
+                ],
+                'context' => $context,
+            ], $payload));
+        }
+
+        if (is_callable($view)) {
+            $view($builder, $context);
+            return;
+        }
+
+        $builder->fetch($context);
+    }
+
+    /**
+     * 响应表单 Builder.
+     * @param array<string, mixed> $context
+     * @param array<string, mixed> $data
+     * @param array<string, mixed> $payload
+     * @param null|callable(FormBuilder,array<string,mixed>,array<string,mixed>):void $view
+     */
+    protected function respondWithFormBuilder(FormBuilder $builder, array $context = [], array $data = [], ?callable $view = null, array $payload = []): void
+    {
+        $mode = $this->presentationMode();
+        if ($mode === ResponseModeService::MODE_API) {
+            $this->success('获取表单成功！', array_merge([
+                'driver' => 'builder',
+                'scene' => 'form',
+                'mode' => $mode,
+                'token' => ['header' => ResponseModeService::apiHeader()],
+                'builder' => [
+                    'type' => 'form',
+                    'schema' => $builder->toArray(),
+                    'rules' => $builder->getValidateRules(),
+                ],
+                'context' => $context,
+                'data' => $data,
+            ], $payload));
+        }
+
+        if (is_callable($view)) {
+            $view($builder, $context, $data);
+            return;
+        }
+
+        $builder->fetch(array_merge($context, ['vo' => $data]));
     }
 
     /**

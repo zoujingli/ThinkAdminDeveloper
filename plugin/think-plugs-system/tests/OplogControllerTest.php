@@ -32,6 +32,19 @@ use think\Request;
  */
 class OplogControllerTest extends SqliteIntegrationTestCase
 {
+    public function testIndexGetRendersPageBuilderMarkup(): void
+    {
+        $html = $this->callActionHtml('index');
+
+        $this->assertStringContainsString('page-builder-schema', $html);
+        $this->assertStringContainsString('id="OplogTable"', $html);
+        $this->assertStringContainsString('class="layui-tab-content"', $html);
+        $this->assertStringContainsString('data-line="1"', $html);
+        $this->assertStringContainsString('系统日志', $html);
+        $this->assertStringContainsString('批量删除', $html);
+        $this->assertStringContainsString('data-form-export=', $html);
+    }
+
     public function testIndexFiltersLogsByUsernameActionKeywordAndDateRange(): void
     {
         $this->createSystemOplogFixture([
@@ -194,6 +207,26 @@ class OplogControllerTest extends SqliteIntegrationTestCase
             self::fail("Expected OplogController::{$action} to throw HttpResponseException.");
         } catch (HttpResponseException $exception) {
             return json_decode($exception->getResponse()->getContent(), true) ?: [];
+        }
+    }
+
+    private function callActionHtml(string $action, array $query = []): string
+    {
+        $request = (new Request())
+            ->withGet($query)
+            ->setMethod('GET')
+            ->setController('oplog')
+            ->setAction($action);
+
+        $this->setRequestPayload($request, $query);
+        $this->app->instance('request', $request);
+
+        try {
+            $controller = new OplogController($this->app);
+            $controller->{$action}();
+            self::fail("Expected OplogController::{$action} to throw HttpResponseException.");
+        } catch (HttpResponseException $exception) {
+            return $exception->getResponse()->getContent();
         }
     }
 

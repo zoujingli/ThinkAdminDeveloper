@@ -120,6 +120,85 @@ class UserControllerTest extends SqliteIntegrationTestCase
         $this->assertSame('history-user-11', $result['data']['list'][0]['username'] ?? '');
     }
 
+    public function testIndexGetRendersPageBuilderMarkup(): void
+    {
+        $this->createSystemBaseFixture([
+            'type' => '身份权限',
+            'code' => 'staff',
+            'name' => '员工身份',
+            'content' => '员工说明',
+            'status' => 1,
+        ]);
+
+        $html = $this->callActionHtml('index', ['type' => 'index']);
+
+        $this->assertStringContainsString('page-builder-schema', $html);
+        $this->assertStringContainsString('id="UserTable"', $html);
+        $this->assertStringContainsString('StatusSwitchUserTable', $html);
+        $this->assertStringContainsString('data-modal=', $html);
+        $this->assertStringContainsString('添加用户', $html);
+    }
+
+    public function testAddGetRendersBuilderFormMarkup(): void
+    {
+        $this->createSystemBaseFixture([
+            'type' => '身份权限',
+            'code' => 'staff',
+            'name' => '员工身份',
+            'content' => '员工说明',
+            'status' => 1,
+        ]);
+
+        $html = $this->callActionHtml('add');
+
+        $this->assertStringContainsString('form-builder-schema', $html);
+        $this->assertStringContainsString('name="username"', $html);
+        $this->assertStringContainsString('name="nickname"', $html);
+        $this->assertStringContainsString('UserBasePluginFilter', $html);
+        $this->assertStringContainsString('data-table-id="UserTable"', $html);
+    }
+
+    public function testAddGetReturnsBuilderJsonWhenAcceptRequestsApi(): void
+    {
+        $this->createSystemBaseFixture([
+            'type' => '身份权限',
+            'code' => 'staff',
+            'name' => '员工身份',
+            'content' => '员工说明',
+            'status' => 1,
+        ]);
+
+        $result = $this->callActionJson('add', [], [
+            'Authorization' => 'Bearer builder-api-token',
+            'Accept' => 'application/json',
+        ]);
+
+        $this->assertSame(1, intval($result['code'] ?? 0));
+        $this->assertSame('获取表单成功！', $result['info'] ?? '');
+        $this->assertSame('builder', $result['data']['driver'] ?? '');
+        $this->assertSame('form', $result['data']['scene'] ?? '');
+        $this->assertSame('api', $result['data']['mode'] ?? '');
+        $this->assertSame('Authorization', $result['data']['token']['header'] ?? '');
+        $this->assertSame('form', $result['data']['builder']['type'] ?? '');
+        $this->assertSame('username', $result['data']['builder']['schema']['fields'][1]['name'] ?? '');
+    }
+
+    public function testIndexGetReturnsBuilderJsonWhenPresentationModeIsApi(): void
+    {
+        $this->setPresentationMode('api');
+
+        $result = $this->callActionJson('index', ['type' => 'index']);
+
+        $this->assertSame(1, intval($result['code'] ?? 0));
+        $this->assertSame('获取页面成功！', $result['info'] ?? '');
+        $this->assertSame('builder', $result['data']['driver'] ?? '');
+        $this->assertSame('page', $result['data']['scene'] ?? '');
+        $this->assertSame('api', $result['data']['mode'] ?? '');
+        $this->assertSame('page', $result['data']['builder']['type'] ?? '');
+        $this->assertSame('UserTable', $result['data']['builder']['schema']['table']['id'] ?? '');
+        $this->assertSame('系统用户管理', $result['data']['context']['title'] ?? '');
+    }
+
     public function testAddAndEditPersistUserProfileAndAuthorization(): void
     {
         $add = $this->callFormController('add', [
@@ -249,6 +328,8 @@ class UserControllerTest extends SqliteIntegrationTestCase
     protected function defineSchema(): void
     {
         $this->createSystemBaseTable();
+        $this->createSystemAuthTable();
+        $this->createSystemAuthNodeTable();
         $this->createSystemUserTable();
     }
 
@@ -299,6 +380,28 @@ class UserControllerTest extends SqliteIntegrationTestCase
         }
     }
 
+    private function callActionJson(string $action, array $query = [], array $headers = []): array
+    {
+        $request = (new Request())
+            ->withGet($query)
+            ->setMethod('GET')
+            ->withHeader($headers)
+            ->setController('user')
+            ->setAction($action);
+
+        $this->bindAdminUser();
+        $this->setRequestPayload($request, $query);
+        $this->app->instance('request', $request);
+
+        try {
+            $controller = new UserController($this->app);
+            $controller->{$action}();
+            self::fail("Expected UserController::{$action} to throw HttpResponseException.");
+        } catch (HttpResponseException $exception) {
+            return json_decode($exception->getResponse()->getContent(), true) ?: [];
+        }
+    }
+
     private function callActionController(string $action, array $post = []): array
     {
         $request = (new Request())
@@ -323,10 +426,21 @@ class UserControllerTest extends SqliteIntegrationTestCase
 
     private function bindAdminUser(): void
     {
+        $this->context->setUser([
+            'id' => 10000,
+            'username' => 'admin',
+        ], true, true);
         RequestContext::instance()->setAuth([
-            'id' => 9101,
-            'username' => 'tester',
+            'id' => 10000,
+            'username' => 'admin',
         ], '', true);
+    }
+
+    private function setPresentationMode(string $mode): void
+    {
+        $config = $this->app->config->get('app', []);
+        $config['presentation'] = array_merge($config['presentation'] ?? [], ['mode' => $mode]);
+        $this->app->config->set($config, 'app');
     }
 
     private function setRequestPayload(Request $request, array $data): void

@@ -44,7 +44,48 @@ class ConfigPageRenderTest extends SqliteIntegrationTestCase
 
         $this->assertStringContainsString('统一管理运行模式、存储中心与系统基础参数', $html);
         $this->assertStringContainsString('插件应用', $html);
-        $this->assertSame($expected, substr_count($html, 'class="plugin-showcase-card"'));
+        $this->assertStringContainsString('page-builder-schema', $html);
+        $this->assertStringContainsString('系统参数配置', $html);
+        $this->assertSame($expected, substr_count($html, 'class="layui-card ta-plugin-card"'));
+    }
+
+    public function testSystemRendersGroupedConfigurationSections(): void
+    {
+        $this->bindAdminUser();
+
+        $html = $this->callPageHtml('system');
+
+        $this->assertStringContainsString('统一管理登录入口、品牌信息与安全配置', $html);
+        $this->assertStringContainsString('class="layui-card system-config-form layui-form"', $html);
+        $this->assertStringContainsString('站点品牌信息', $html);
+        $this->assertStringContainsString('data-open-site-theme', $html);
+        $this->assertStringContainsString('form-builder-schema', $html);
+        $this->assertStringContainsString('运行参数', $html);
+    }
+
+    public function testStorageRendersBuilderDashboard(): void
+    {
+        $this->bindAdminUser();
+
+        $html = $this->callPageHtml('storage');
+
+        $this->assertStringContainsString('统一管理文件上传、命名策略与外链输出', $html);
+        $this->assertStringContainsString('存储引擎', $html);
+        $this->assertStringContainsString('page-builder-schema', $html);
+        $this->assertStringContainsString('当前默认驱动', $html);
+    }
+
+    public function testStorageDriverFormRendersWithBuilder(): void
+    {
+        $this->bindAdminUser();
+
+        $html = $this->callPageHtml('storage', ['type' => 'local']);
+
+        $this->assertStringContainsString('统一维护上传策略与驱动参数', $html);
+        $this->assertStringContainsString('全局上传策略', $html);
+        $this->assertStringContainsString('本地服务器存储 驱动参数', $html);
+        $this->assertStringContainsString('form-builder-schema', $html);
+        $this->assertStringContainsString('name="storage[default_driver]" value="local"', $html);
     }
 
     protected function defineSchema(): void
@@ -62,12 +103,13 @@ class ConfigPageRenderTest extends SqliteIntegrationTestCase
         ]);
     }
 
-    private function callPageHtml(string $action): string
+    private function callPageHtml(string $action, array $query = []): string
     {
         $request = (new Request())
             ->setMethod('GET')
             ->setController('config')
-            ->setAction($action);
+            ->setAction($action)
+            ->withGet($query);
 
         $this->app->instance('request', $request);
 

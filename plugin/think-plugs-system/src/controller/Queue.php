@@ -20,6 +20,7 @@ declare(strict_types=1);
 
 namespace plugin\system\controller;
 
+use plugin\system\builder\QueueBuilder;
 use plugin\system\service\AuthService;
 use plugin\worker\model\SystemQueue;
 use plugin\worker\service\ProcessService;
@@ -47,15 +48,21 @@ class Queue extends Controller
      */
     public function index()
     {
-        SystemQueue::mQuery()->layTable(function () {
-            $this->title = '系统任务管理';
-            $this->iswin = ProcessService::isWin();
-            if ($this->super = AuthService::isSuper()) {
-                $this->command = ProcessService::think(ProcessService::workerCommand('start', 'queue', true));
-                if (!$this->iswin && !empty($_SERVER['USER'])) {
-                    $this->command = "sudo -u {$_SERVER['USER']} {$this->command}";
-                }
+        $context = [
+            'title' => '系统任务管理',
+            'requestBaseUrl' => $this->request->baseUrl(),
+            'iswin' => ProcessService::isWin(),
+            'super' => AuthService::isSuper(),
+            'command' => '',
+        ];
+        if ($context['super']) {
+            $context['command'] = ProcessService::think(ProcessService::workerCommand('start', 'queue', true));
+            if (!$context['iswin'] && !empty($_SERVER['USER'])) {
+                $context['command'] = "sudo -u {$_SERVER['USER']} {$context['command']}";
             }
+        }
+        SystemQueue::mQuery()->layTable(function () use ($context) {
+            $this->respondWithPageBuilder(QueueBuilder::buildIndexPage($context), $context);
         }, static function (QueryHelper $query) {
             $query->equal('status')->like('code|title#title,command');
             $query->timeBetween('enter_time,exec_time')->dateBetween('create_time');

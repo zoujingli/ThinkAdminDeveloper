@@ -20,6 +20,7 @@ declare(strict_types=1);
 
 namespace plugin\system\controller;
 
+use plugin\system\builder\ConfigBuilder;
 use plugin\system\service\AuthService;
 use plugin\system\service\PluginService;
 use plugin\system\service\SystemService;
@@ -74,25 +75,48 @@ class Config extends Controller
     public function index()
     {
         StorageConfig::initialize();
-        $this->title = '系统参数配置';
-        $this->site = $this->siteConfig();
-        $this->runtime = $this->runtimeConfig();
-        $this->storage = StorageConfig::viewData();
-        $this->files = Storage::types();
-        $this->storageDriver = strtolower((string)StorageConfig::global('default_driver', 'local'));
-        $this->storageName = $this->files[$this->storageDriver] ?? $this->storageDriver;
-        $this->storageEditable = $this->canManageStorage();
-        $this->plugins = $this->configPlugins();
-        $this->issuper = AuthService::isSuper();
-        $this->systemid = ProcessService::getRunVar('uni');
-        $this->framework = AppService::getPluginLibrarys('topthink/framework');
-        $this->thinkadmin = AppService::getPluginLibrarys('zoujingli/think-library');
+        $site = $this->siteConfig();
+        $runtime = $this->runtimeConfig();
+        $storage = StorageConfig::viewData();
+        $files = Storage::types();
+        $storageDriver = strtolower((string)StorageConfig::global('default_driver', 'local'));
+        $storageName = $files[$storageDriver] ?? $storageDriver;
+        $storageEditable = $this->canManageStorage();
+        $plugins = $this->configPlugins();
+        $issuper = AuthService::isSuper();
+        $systemid = ProcessService::getRunVar('uni');
+        $framework = AppService::getPluginLibrarys('topthink/framework');
+        $thinkadmin = AppService::getPluginLibrarys('zoujingli/think-library');
+        $showErrorMessage = '';
         if (AuthService::isSuper() && UserService::verifyPassword('admin', strval(AuthService::getUser('password', '')))) {
             $url = url('system/index/pass', ['id' => AuthService::getUserId()]);
-            $this->showErrorMessage = lang("默认超管密码仍未修改，<a data-modal='%s'>立即修改</a>。", [$url]);
+            $showErrorMessage = lang("默认超管密码仍未修改，<a data-modal='%s'>立即修改</a>。", [$url]);
         }
-        [$this->pluginLeft, $this->pluginRight] = $this->splitPluginColumns($this->plugins);
-        $this->fetch();
+        $context = [
+            'site' => $site,
+            'runtime' => $runtime,
+            'storage' => $storage,
+            'files' => $files,
+            'storageDriver' => $storageDriver,
+            'storageName' => $storageName,
+            'storageEditable' => $storageEditable,
+            'plugins' => $plugins,
+            'issuper' => $issuper,
+            'appDebug' => $this->app->isDebug(),
+            'canEditSystem' => auth('system'),
+            'showErrorMessage' => $showErrorMessage,
+            'systemInfo' => [
+                '核心框架' => ['value' => 'ThinkPHP Version ' . strval($framework['version'] ?? 'None'), 'url' => 'https://www.thinkphp.cn'],
+                '平台框架' => ['value' => 'ThinkAdmin Version ' . strval($thinkadmin['version'] ?? '6.0.0'), 'url' => 'https://thinkadmin.top'],
+                '操作系统' => ['value' => php_uname()],
+                '运行环境' => ['value' => ucfirst($this->request->server('SERVER_SOFTWARE', php_sapi_name())) . ' / PHP ' . PHP_VERSION . ' / ' . ucfirst(app()->db->connect()->getConfig('type'))],
+            ],
+        ];
+        if (!empty($systemid)) {
+            $context['systemInfo']['系统序号'] = ['value' => strval($systemid)];
+        }
+
+        $this->respondWithPageBuilder(ConfigBuilder::buildIndexPage($context), $context);
     }
 
     /**
@@ -103,20 +127,34 @@ class Config extends Controller
     public function system()
     {
         if ($this->request->isGet()) {
-            $this->title = '修改系统参数';
-            $this->site = $this->siteConfig();
-            $this->security = $this->securityConfig();
-            $this->runtime = $this->runtimeConfig();
-            $this->siteLoginImagesText = join('|', $this->site['login_background_images']);
-            $theme = strval($this->site['theme'] ?? 'default');
+            $site = $this->siteConfig();
+            $security = $this->securityConfig();
+            $runtime = $this->runtimeConfig();
+            $theme = strval($site['theme'] ?? 'default');
             if (!isset(static::themeCatalog[$theme])) {
                 $theme = 'default';
             }
-            $this->themes = static::themeCatalog;
-            $this->siteThemeKey = $theme;
-            $this->siteThemeLabel = static::themeCatalog[$theme]['label'];
-            $this->pluginCenter = PluginService::getConfig();
-            $this->fetch();
+            $context = [
+                'title' => '修改系统参数',
+                'site' => $site,
+                'security' => $security,
+                'runtime' => $runtime,
+                'themes' => static::themeCatalog,
+                'siteThemeKey' => $theme,
+                'siteThemeLabel' => static::themeCatalog[$theme]['label'],
+                'themePickerUrl' => sysuri('system/index/theme'),
+                'pluginCenter' => PluginService::getConfig(),
+            ];
+            $this->respondWithFormBuilder(
+                ConfigBuilder::buildSystemForm($context),
+                $context,
+                [
+                    'site' => $site,
+                    'security' => $security,
+                    'runtime' => $runtime,
+                    'plugin_center' => $context['pluginCenter'],
+                ]
+            );
         } else {
             $post = $this->request->post();
             $site = $this->normalizeSiteConfig((array)($post['site'] ?? []));
@@ -151,24 +189,36 @@ class Config extends Controller
             $type = strtolower(trim(strval($this->request->get('type', ''))));
             if ($type == '') {
                 $this->authorizeStorageView();
-                $this->title = '存储配置中心';
-                $this->storage = StorageConfig::viewData();
-                $this->files = Storage::types();
-                $this->driver = strtolower((string)StorageConfig::global('default_driver', 'local'));
-                $this->driverName = $this->files[$this->driver] ?? $this->driver;
-                $this->canEdit = $this->canManageStorage();
-                $this->fetch('config/storage-index');
+                $storage = StorageConfig::viewData();
+                $files = Storage::types();
+                $driver = strtolower((string)StorageConfig::global('default_driver', 'local'));
+                $context = [
+                    'storage' => $storage,
+                    'files' => $files,
+                    'driver' => $driver,
+                    'driverName' => $files[$driver] ?? $driver,
+                    'canEdit' => $this->canManageStorage(),
+                ];
+                $this->respondWithPageBuilder(ConfigBuilder::buildStorageIndexPage($context), $context);
             } else {
                 $this->authorizeStorageManage();
-                $this->files = Storage::types();
-                if (!isset($this->files[$type])) {
-                    $type = array_key_first($this->files) ?: 'local';
+                $files = Storage::types();
+                if (!isset($files[$type])) {
+                    $type = array_key_first($files) ?: 'local';
                 }
-                $this->title = '修改存储驱动';
-                $this->type = $type;
-                $this->points = Storage::regions($type);
-                $this->storage = StorageConfig::viewData();
-                $this->fetch('config/' . Storage::template($type));
+                $storage = StorageConfig::viewData();
+                $context = [
+                    'title' => '修改存储驱动',
+                    'type' => $type,
+                    'driverName' => $files[$type] ?? $type,
+                    'points' => Storage::regions($type),
+                    'storage' => $storage,
+                ];
+                $this->respondWithFormBuilder(
+                    ConfigBuilder::buildStorageForm($context),
+                    $context,
+                    ['storage' => $storage]
+                );
             }
         } else {
             $this->authorizeStorageManage();

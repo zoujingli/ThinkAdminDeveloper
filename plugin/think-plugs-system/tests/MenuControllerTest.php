@@ -33,6 +33,22 @@ use think\Request;
  */
 class MenuControllerTest extends SqliteIntegrationTestCase
 {
+    public function testIndexGetRendersPageBuilderMarkup(): void
+    {
+        $html = $this->callActionHtml('index', ['type' => 'index']);
+
+        $this->assertStringContainsString('page-builder-schema', $html);
+        $this->assertStringContainsString('id="MenuTable"', $html);
+        $this->assertStringContainsString('class="layui-tab-content"', $html);
+        $this->assertStringContainsString('MenuStatusSwitchTpl', $html);
+        $this->assertStringContainsString('添加菜单', $html);
+        $this->assertStringNotContainsString('{:url(', $html);
+        $this->assertStringNotContainsString('{foreach', $html);
+        $this->assertStringNotContainsString('{$indexUrl', $html);
+        $this->assertStringContainsString('data-modal="/menu/add.html?pid={{d.id}}"', $html);
+        $this->assertStringContainsString('data-modal="/menu/edit.html?id={{d.id}}"', $html);
+    }
+
     public function testIndexFlattensTreeAndNormalizesInternalUrls(): void
     {
         $root = $this->createSystemMenuFixture([
@@ -128,6 +144,21 @@ class MenuControllerTest extends SqliteIntegrationTestCase
         $this->assertContains('已删除子菜单', $titles);
         $this->assertNotContains('有效子菜单', $titles);
         $this->assertNotContains('孤立禁用根菜单', $titles);
+    }
+
+    public function testAddGetRendersBuilderFormMarkup(): void
+    {
+        $this->createSystemMenuFixture([
+            'title' => '根菜单',
+            'url' => '#',
+        ]);
+
+        $html = $this->callActionHtml('add', ['pid' => 0]);
+
+        $this->assertStringContainsString('form-builder-schema', $html);
+        $this->assertStringContainsString('name="title"', $html);
+        $this->assertStringContainsString('MenuFormNodesJson', $html);
+        $this->assertStringContainsString('name="target"', $html);
     }
 
     public function testAddAndEditPersistMenuFields(): void
@@ -234,6 +265,27 @@ class MenuControllerTest extends SqliteIntegrationTestCase
     private function callFormController(string $action, array $post): array
     {
         return $this->callActionController($action, $post);
+    }
+
+    private function callActionHtml(string $action, array $query = []): string
+    {
+        $request = (new Request())
+            ->withGet($query)
+            ->setMethod('GET')
+            ->setController('menu')
+            ->setAction($action);
+
+        $this->bindAdminUser();
+        $this->setRequestPayload($request, $query);
+        $this->app->instance('request', $request);
+
+        try {
+            $controller = new MenuController($this->app);
+            $controller->{$action}();
+            self::fail("Expected MenuController::{$action} to throw HttpResponseException.");
+        } catch (HttpResponseException $exception) {
+            return $exception->getResponse()->getContent();
+        }
     }
 
     private function callActionController(string $action, array $post = []): array

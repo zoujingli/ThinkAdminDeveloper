@@ -384,6 +384,164 @@ $(function () {
         }
     };
 
+    /*! Builder 模块运行时 */
+    $.builder = new function () {
+        let that = this;
+
+        this.registry = {};
+
+        this.define = function (name, handler, deps) {
+            name = $.trim(String(name || ''));
+            if (!name.length) return this;
+            if (typeof handler === 'function') {
+                this.registry[name] = {init: handler, deps: this.normalizeNames(deps)};
+            } else if (handler && typeof handler === 'object') {
+                this.registry[name] = handler;
+            }
+            return this;
+        };
+
+        this.normalizeNames = function (value) {
+            if (!value) return [];
+            return (Array.isArray(value) ? value : [value]).map(function (item) {
+                return $.trim(String(item || ''));
+            }).filter(function (item) {
+                return item.length > 0;
+            });
+        };
+
+        this.parseSchemaNode = function (node) {
+            let content = $.trim($(node).html());
+            if (!content.length) return null;
+            try {
+                return JSON.parse(content);
+            } catch (e) {
+                console.error('Builder schema parse failed.', e);
+                return null;
+            }
+        };
+
+        this.parseModules = function (value) {
+            if (typeof value !== 'string' || !value.length) return [];
+            try {
+                value = JSON.parse(value);
+            } catch (e) {
+                console.error('Builder modules parse failed.', e);
+                return [];
+            }
+            return $.map(Array.isArray(value) ? value : [value], function (item) {
+                if (!item || typeof item !== 'object') return null;
+                let name = $.trim(String(item.name || ''));
+                if (!name.length) return null;
+                return {name: name, config: item.config || {}};
+            });
+        };
+
+        this.getScope = function ($node) {
+            let $scope = $node.is('[data-builder-scope]') ? $node : $node.closest('[data-builder-scope]');
+            return $scope.length ? $scope.eq(0) : $();
+        };
+
+        this.getScopeMeta = function ($scope) {
+            if (!$scope.length) return {type: '', schemas: {}, schema: null};
+            let cached = $scope.data('builder.scope.meta');
+            if (cached) return cached;
+            let meta = {
+                type: $.trim(String($scope.attr('data-builder-scope') || '')),
+                schemas: {
+                    page: that.parseSchemaNode($scope.find('script.page-builder-schema:first')),
+                    form: that.parseSchemaNode($scope.find('script.form-builder-schema:first')),
+                },
+                schema: null,
+            };
+            meta.schema = meta.type && meta.schemas[meta.type] ? meta.schemas[meta.type] : (meta.schemas.page || meta.schemas.form || null);
+            $scope.data('builder.scope.meta', meta);
+            return meta;
+        };
+
+        this.resolveEntry = function (name) {
+            return this.registry[name] && typeof this.registry[name] === 'object' ? this.registry[name] : null;
+        };
+
+        this.loadEntry = function (name) {
+            let entry = this.resolveEntry(name), deps = [];
+            if (entry && entry.module) deps = this.normalizeNames(entry.module);
+            else if (entry && entry.deps) deps = this.normalizeNames(entry.deps);
+            else if ($.module.registry && $.module.registry[name]) deps = [name];
+            if (deps.length < 1) {
+                return Promise.resolve({entry: entry, module: null, modules: []});
+            }
+            return $.module.use(deps).then(function (mods) {
+                return {entry: entry, module: mods[0] || null, modules: mods};
+            });
+        };
+
+        this.resolveInitializer = function (name, entry, module) {
+            if (entry && typeof entry.init === 'function') return entry.init;
+            if (typeof module === 'function') return module;
+            if (module && typeof module.builderInit === 'function') return module.builderInit;
+            if (module && typeof module.init === 'function') return module.init;
+            return null;
+        };
+
+        this.initNode = function (node) {
+            let $node = $(node), modules = this.parseModules($node.attr('data-builder-modules'));
+            if (modules.length < 1) return Promise.resolve([]);
+
+            let state = $node.data('builder.modules.state') || {};
+            let $scope = this.getScope($node), meta = this.getScopeMeta($scope);
+
+            return Promise.all(modules.map(function (item) {
+                if (state[item.name] === 'pending' || state[item.name] === 'done') {
+                    return Promise.resolve();
+                }
+                state[item.name] = 'pending';
+                $node.data('builder.modules.state', state);
+                return that.loadEntry(item.name).then(function (loaded) {
+                    let callable = that.resolveInitializer(item.name, loaded.entry, loaded.module);
+                    if (typeof callable !== 'function') {
+                        state[item.name] = 'missed';
+                        $node.data('builder.modules.state', state);
+                        return null;
+                    }
+                    let context = {
+                        name: item.name,
+                        config: item.config || {},
+                        node: node,
+                        $node: $node,
+                        scope: $scope.get(0) || null,
+                        $scope: $scope,
+                        type: meta.type,
+                        schema: meta.schema,
+                        pageSchema: meta.schemas.page || null,
+                        formSchema: meta.schemas.form || null,
+                        module: loaded.module,
+                        modules: loaded.modules,
+                    };
+                    return Promise.resolve(callable.call(node, context, that)).then(function (result) {
+                        state[item.name] = 'done';
+                        $node.data('builder.modules.state', state);
+                        return result;
+                    });
+                }).catch(function (e) {
+                    state[item.name] = 'error';
+                    $node.data('builder.modules.state', state);
+                    console.error('Builder module init failed: ' + item.name, e);
+                    return null;
+                });
+            }));
+        };
+
+        this.init = function ($dom) {
+            let $root = $($dom || $body);
+            let $nodes = $root.find('[data-builder-modules]');
+            $nodes = $nodes.add($root.filter('[data-builder-modules]'));
+            return Promise.all($nodes.get().map(function (node) {
+                return that.initNode(node);
+            }));
+        };
+    };
+
     /*! 消息组件实例 */
     $.msg = new function () {
         this.idx = [];
@@ -489,27 +647,34 @@ $(function () {
         };
         /*! 内容区域动态加载后初始化 */
         this.reInit = function ($dom) {
+            $dom = $dom || $(this.selecter);
             layui.form.render() && layui.element.render() && $(window).trigger('scroll');
-            $.vali.listen($dom = $dom || $(this.selecter)) && $body.trigger('reInit', $dom);
-            return $dom.find('[required]').map(function () {
+            $.vali.listen($dom);
+            $dom.find('[required]').map(function () {
                 this.$parent = $(this).parent();
                 if (this.$parent.is('label')) this.$parent.addClass('label-required-prev'); else this.$parent.prevAll('label.layui-form-label').addClass('label-required-next');
-            }), $dom.find('[data-lazy-src]:not([data-lazy-loaded])').map(function () {
+            });
+            $dom.find('[data-lazy-src]:not([data-lazy-loaded])').map(function () {
                 if (this.dataset.lazyLoaded === 'true') return; else this.dataset.lazyLoaded = 'true';
                 if (this.nodeName === 'IMG') this.src = this.dataset.lazySrc; else this.style.backgroundImage = 'url(' + this.dataset.lazySrc + ')';
-            }), $dom.find('input[data-date-range]').map(function () {
+            });
+            $dom.find('input[data-date-range]').map(function () {
                 this.setAttribute('autocomplete', 'off'), laydate.render({
                     type: this.dataset.dateRange || 'date', range: true, elem: this, done: function (value) {
                         $(this.elem).val(value).trigger('change');
                     }
                 });
-            }), $dom.find('input[data-date-input]').map(function () {
+            });
+            $dom.find('input[data-date-input]').map(function () {
                 this.setAttribute('autocomplete', 'off'), laydate.render({
                     type: this.dataset.dateInput || 'date', range: false, elem: this, done: function (value) {
                         $(this.elem).val(value).trigger('change');
                     }
                 });
-            }), $dom;
+            });
+            $.builder.init($dom);
+            $body.trigger('reInit', $dom);
+            return $dom;
         };
         /*! 在内容区显示视图 */
         this.show = function (html) {

@@ -153,11 +153,19 @@ class MultAccess
         $this->app->setNamespace($this->appSpace ?: NodeService::space($appName))->setAppPath($this->appPath);
         $this->app->http->setBind($appBind)->name($appName)->path($this->appPath)->setRoutePath($this->appPath . 'route' . DIRECTORY_SEPARATOR);
 
-        $uris = array_merge($this->app->config->get('view.tpl_replace_string', []), AppService::uris());
-        $this->app->config->set([
+        $replace = $this->app->config->get('view.tpl_replace_string', []);
+        $replace = is_array($replace) ? $replace : [];
+        $replace = array_filter($replace, static function ($value, $key) {
+            return is_string($key) && (is_scalar($value) || $value === null);
+        }, ARRAY_FILTER_USE_BOTH);
+        $replace = array_map(static fn ($value) => strval($value ?? ''), $replace);
+        $uris = array_merge($replace, AppService::uris());
+        $viewConfig = [
             'view_path' => $this->appPath . 'view' . DIRECTORY_SEPARATOR,
             'tpl_replace_string' => $uris,
-        ], 'view');
+        ];
+        $this->app->config->set($viewConfig, 'view');
+        $this->app->view->engine()->config($viewConfig);
 
         return $this->loadMultiApp($this->appPath);
     }
