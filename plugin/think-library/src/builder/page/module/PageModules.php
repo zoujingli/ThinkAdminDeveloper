@@ -225,7 +225,7 @@ class PageModules
             self::card($col, [
                 'title' => strval($plugin['name'] ?? ''),
                 'remark' => '版本 ' . strval($plugin['version_text'] ?? 'unknown'),
-                'class' => trim(strval($config['card_class'] ?? 'layui-card ta-plugin-card')),
+                'class' => trim(strval($config['card_class'] ?? 'layui-card')),
             ], function (PageNode $body) use ($plugin) {
                 self::kvGrid($body, [
                     ['label' => '插件标识', 'value' => strval($plugin['code'] ?? '-')],
@@ -236,6 +236,31 @@ class PageModules
                 $body->div()->class('mt10 color-desc lh24')->text(strval($plugin['description_text'] ?? ''));
             });
         }
+        return $grid;
+    }
+
+    /**
+     * @param array<int, array<string, mixed>> $plugins
+     * @param array<string, mixed> $config
+     */
+    public static function pluginCenterCards(PageNode $parent, array $plugins, array $config = []): PageNode
+    {
+        $grid = $parent->div()->class(trim(strval($config['class'] ?? 'plugin-center-grid')));
+        if ($plugins === []) {
+            $empty = $grid->div()->class('plugin-center-grid__item plugin-center-grid__item--empty');
+            $box = $empty->div()->class('plugin-empty');
+            $box->div()->class('plugin-empty__title')->text('暂无可展示插件');
+            $box->div()->class('plugin-empty__desc')->text('安装并配置菜单后，插件入口会出现在这里。');
+            return $grid;
+        }
+
+        foreach ($plugins as $plugin) {
+            $item = $grid->div()->class('plugin-center-grid__item');
+            $card = $item->article()->class('plugin-card');
+            self::buildPluginCenterCover($card, $plugin);
+            self::buildPluginCenterBody($card, $plugin);
+        }
+
         return $grid;
     }
 
@@ -252,5 +277,77 @@ class PageModules
             }
         }
         return $values === [] ? $default : join($glue, $values);
+    }
+
+    /**
+     * @param array<string, mixed> $plugin
+     */
+    private static function buildPluginCenterCover(PageNode $card, array $plugin): void
+    {
+        $coverClass = 'plugin-card__cover';
+        $cover = $card->div()->class(trim($coverClass . (!empty($plugin['cover']) ? ' has-cover uploadimage' : '')));
+        if (!empty($plugin['cover'])) {
+            $cover->attr('data-lazy-src', strval($plugin['cover']));
+        }
+        if (!empty($plugin['plugmenus'])) {
+            $cover->attr('data-plugs-click', strval($plugin['encode'] ?? ''));
+        }
+
+        $cover->div()->class('plugin-card__cover-mask');
+        $badges = $cover->div()->class('plugin-card__badges');
+        $badges->node('span')->class('plugin-card__badge plugin-card__badge--ghost')->text(strval($plugin['code'] ?? ''));
+
+        $version = trim(strval($plugin['version'] ?? ''));
+        if ($version !== '') {
+            $badges->node('span')->class('plugin-card__badge')->text("v{$version}");
+        }
+
+        $main = $cover->div()->class('plugin-card__cover-main');
+        $main->div()->class('plugin-card__cover-kicker')->text('插件工作台');
+        $main->div()->class('plugin-card__cover-title')->text(strval($plugin['name'] ?? ''));
+        $main->div()->class('plugin-card__cover-hint')->text(!empty($plugin['plugmenus']) ? '点击卡片可直接进入插件' : '当前插件未配置可见菜单');
+    }
+
+    /**
+     * @param array<string, mixed> $plugin
+     */
+    private static function buildPluginCenterBody(PageNode $card, array $plugin): void
+    {
+        $body = $card->div()->class('plugin-card__body');
+        $titleRow = $body->div()->class('plugin-card__title-row');
+        $titleRow->div()->class('plugin-card__title')->text(strval($plugin['name'] ?? ''));
+
+        $license = trim(strval($plugin['license'] ?? ''));
+        if ($license !== '' && $license !== 'unknow') {
+            $titleRow->div()->class('plugin-card__tag')->text(strtoupper($license));
+        }
+
+        $remark = trim(strval($plugin['remark'] ?? ''));
+        $body->div()->class('plugin-card__desc')->text($remark !== '' ? $remark : '暂无插件说明，当前页面仅展示插件入口与管理能力。');
+
+        $platforms = self::joinValues(is_array($plugin['platforms'] ?? null) ? $plugin['platforms'] : [], ' / ', '通用后台');
+        $meta = $body->div()->class('plugin-card__meta');
+        foreach ([
+            ['label' => '菜单', 'value' => strval(count((array)($plugin['plugmenus'] ?? []))) . ' 项'],
+            ['label' => '平台', 'value' => $platforms],
+        ] as $row) {
+            $metaItem = $meta->div()->class('plugin-card__meta-item');
+            $metaItem->node('span')->class('plugin-card__meta-label')->text($row['label']);
+            $value = $metaItem->node('span')->class('plugin-card__meta-value')->text($row['value']);
+            if ($row['label'] === '平台') {
+                $value->attr('title', $row['value']);
+            }
+        }
+
+        $footer = $body->div()->class('plugin-card__footer');
+        if (!empty($plugin['plugmenus'])) {
+            $footer->node('a')->class('layui-btn layui-btn-sm plugin-card__action')
+                ->attr('id', 'p' . strval($plugin['encode'] ?? ''))
+                ->attr('data-href', strval($plugin['center'] ?? ''))
+                ->text('进入插件');
+            return;
+        }
+
+        $footer->node('span')->class('layui-btn layui-btn-sm layui-btn-disabled plugin-card__action plugin-card__action--disabled')->text('未配置菜单');
     }
 }

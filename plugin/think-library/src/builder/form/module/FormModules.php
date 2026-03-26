@@ -152,6 +152,101 @@ class FormModules
         return $node;
     }
 
+    /**
+     * @param array<string, array<string, mixed>> $themes
+     * @param array<string, mixed> $config
+     */
+    public static function themePalette(FormNode $parent, array $themes, string $current = '', array $config = []): FormNode
+    {
+        $node = $parent->div()->class(trim(strval($config['class'] ?? 'layui-form-item mb5 label-required-prev')));
+
+        $label = $node->div()->class(trim(strval($config['label_class'] ?? 'help-label')));
+        $title = trim(strval($config['title'] ?? ''));
+        if ($title !== '') {
+            $label->node('b')->html(self::escape($title));
+        }
+
+        $subtitle = trim(strval($config['subtitle'] ?? ''));
+        if ($subtitle !== '') {
+            $label->node('span')->class(trim(strval($config['subtitle_class'] ?? 'color-desc')))->html(self::escape($subtitle));
+        }
+
+        $description = trim(strval($config['description'] ?? ''));
+        if ($description !== '') {
+            $node->div()->class(trim(strval($config['description_class'] ?? 'help-block')))->html(self::escape($description));
+        }
+
+        $palette = $node->div()->class(trim(strval($config['palette_class'] ?? 'theme-palette')));
+        $inputName = trim(strval($config['input_name'] ?? 'site_theme'));
+
+        foreach ($themes as $key => $theme) {
+            $labelText = trim(strval($theme['label'] ?? $key));
+            $card = $palette->node('label')->class(trim('theme-palette-card' . ($current === $key ? ' active' : '')));
+            $card->data('theme-card', $key)
+                ->data('theme-label', $labelText)
+                ->attr('title', trim($labelText . ' / ' . $key, ' /'));
+
+            $input = $card->node('input')->attrs([
+                'name' => $inputName,
+                'type' => 'radio',
+                'value' => strval($key),
+            ]);
+            if ($current === $key) {
+                $input->attr('checked', null);
+            }
+
+            $preview = $card->node('span')->class(trim('theme-palette-preview ' . strval($theme['layout'] ?? 'default')));
+            $preview->attr('style', self::themePreviewStyle($theme));
+            foreach ([
+                'theme-palette-preview-header',
+                'theme-palette-preview-side',
+                'theme-palette-preview-side-alt',
+                'theme-palette-preview-card theme-palette-preview-hero',
+                'theme-palette-preview-card theme-palette-preview-panel',
+                'theme-palette-preview-card theme-palette-preview-panel-right',
+                'theme-palette-preview-line theme-palette-preview-tone',
+                'theme-palette-preview-line theme-palette-preview-copy-1',
+                'theme-palette-preview-line theme-palette-preview-copy-2',
+                'theme-palette-preview-line theme-palette-preview-copy-3',
+                'theme-palette-preview-line theme-palette-preview-copy-4',
+            ] as $class) {
+                $preview->node('span')->class($class);
+            }
+
+            $meta = $card->node('span')->class('theme-palette-meta');
+            $meta->node('span')->class('theme-palette-title')->html(self::escape($labelText));
+            $meta->node('span')->class('theme-palette-layout')->html(self::escape(strval($theme['layout_label'] ?? '')));
+            $card->node('span')->class('theme-palette-check layui-icon layui-icon-ok');
+        }
+
+        $help = trim(strval($config['help'] ?? ''));
+        if ($help !== '') {
+            $node->node('p')->class(trim(strval($config['help_class'] ?? 'help-block')))->html(self::escape($help));
+        }
+
+        return $node;
+    }
+
+    /**
+     * @param array<string, mixed> $theme
+     */
+    private static function themePreviewStyle(array $theme): string
+    {
+        $styles = [];
+        foreach ([
+            'theme-accent' => strval($theme['primary'] ?? ''),
+            'theme-header' => strval($theme['header'] ?? ''),
+            'theme-side' => strval($theme['side'] ?? ''),
+            'theme-surface' => strval($theme['surface'] ?? ''),
+            'theme-body' => strval($theme['body'] ?? ''),
+        ] as $name => $value) {
+            if ($value !== '') {
+                $styles[] = '--' . $name . ':' . $value;
+            }
+        }
+        return join(';', $styles);
+    }
+
     private static function escape(string $content): string
     {
         return htmlentities($content, ENT_QUOTES, 'UTF-8');

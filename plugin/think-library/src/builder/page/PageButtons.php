@@ -67,6 +67,18 @@ class PageButtons
         return $this;
     }
 
+    public function button(string $label, array $attrs = [], ?string $auth = null, string $tag = 'a'): self
+    {
+        $this->append([
+            'type' => 'button',
+            'label' => $label,
+            'tag' => $tag,
+            'auth' => $auth,
+            'attrs' => $attrs,
+        ]);
+        return $this;
+    }
+
     public function modalItem(string $label, string $url, string $title = '', array $attrs = [], ?string $auth = null): PageAction
     {
         return $this->append([
@@ -133,6 +145,17 @@ class PageButtons
     public function htmlItem(string $html, array $schema = []): PageAction
     {
         return $this->append(array_merge($schema, ['type' => 'html', 'html' => $html]));
+    }
+
+    public function buttonItem(string $label, array $attrs = [], ?string $auth = null, string $tag = 'a'): PageAction
+    {
+        return $this->append([
+            'type' => 'button',
+            'label' => $label,
+            'tag' => $tag,
+            'auth' => $auth,
+            'attrs' => $attrs,
+        ]);
     }
 
     public function item(array $button): self

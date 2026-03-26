@@ -179,6 +179,32 @@ class PageBuilderTest extends TestCase
         $this->assertStringContainsString('data-target-search="form.form-search"', $html);
     }
 
+    public function testButtonHelpersCanRenderGenericButtonsAndTags(): void
+    {
+        $builder = $this->newBuilder();
+        $builder->define(function ($page) {
+            $page->title('按钮辅助')
+                ->buttons(function ($buttons) {
+                    $buttons->button('导出', ['type' => 'button', 'data-export' => '/export'], null, 'button');
+                })
+                ->table('ButtonTable', '/button', function ($table) {
+                    $table->rows(function ($rows) {
+                        $rows->button('日志', ['onclick' => "$.loadQueue('{{d.code}}',false,this)", 'class' => 'layui-btn-normal']);
+                    })->toolbar();
+                });
+        })->build();
+
+        $schema = $builder->toArray();
+        $html = $this->invokePrivate($builder, 'render');
+
+        $this->assertSame('button', $schema['buttons'][0]['type'] ?? null);
+        $this->assertSame('button', $schema['buttons'][0]['tag'] ?? null);
+        $this->assertSame('/export', $schema['buttons'][0]['attrs']['data-export'] ?? null);
+        $this->assertStringContainsString('<button', $html);
+        $this->assertStringContainsString('data-export="/export"', $html);
+        $this->assertStringContainsString('onclick="$.loadQueue(&#039;{{d.code}}&#039;,false,this)"', $html);
+    }
+
     public function testTabsCardHelperCanRenderSearchAndTableLayout(): void
     {
         $builder = $this->newBuilder();

@@ -28,6 +28,7 @@ use think\admin\service\JwtToken;
 use think\admin\service\NodeService;
 use think\admin\service\QueueService;
 use think\admin\service\ResponseModeService;
+use think\admin\service\AppService;
 use think\App;
 use think\exception\HttpResponseException;
 use think\Request;
@@ -126,6 +127,7 @@ class Controller extends \stdClass
         foreach (get_object_vars($this) as $name => $value) {
             $vars[$name] = $value;
         }
+        $vars['staticRoot'] = strval($vars['staticRoot'] ?? AppService::uri('static'));
         throw new HttpResponseException(view($tpl, $vars));
     }
 

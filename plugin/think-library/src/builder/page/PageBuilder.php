@@ -30,6 +30,7 @@ use think\admin\builder\page\render\PageScriptRenderContext;
 use think\admin\builder\page\render\PageTableRenderContext;
 use think\admin\Controller;
 use think\admin\Library;
+use think\admin\service\AppService;
 use think\exception\HttpResponseException;
 
 /**
@@ -800,14 +801,16 @@ class PageBuilder
      */
     public function fetch(array $vars = [])
     {
-        $vars['title'] = $vars['title'] ?? $this->title;
-        $vars['pageBuilder'] = $vars['pageBuilder'] ?? $this;
-        $vars['pageSchema'] = $vars['pageSchema'] ?? $this->toArray();
-        foreach (get_object_vars($this->class) as $k => $v) {
-            $vars[$k] = $v;
-        }
-        $this->renderVars = $vars;
-        throw new HttpResponseException(display($this->render(), $vars));
+        throw new HttpResponseException($this->renderResponse($vars));
+    }
+
+    /**
+     * 渲染页面 HTML.
+     * @param array<string, mixed> $vars
+     */
+    public function renderHtml(array $vars = []): string
+    {
+        return $this->renderResponse($vars)->getContent();
     }
 
     /**
@@ -844,6 +847,22 @@ class PageBuilder
             }
         }
         return $origin;
+    }
+
+    /**
+     * @param array<string, mixed> $vars
+     */
+    private function renderResponse(array $vars = [])
+    {
+        $vars['title'] = $vars['title'] ?? $this->title;
+        $vars['pageBuilder'] = $vars['pageBuilder'] ?? $this;
+        $vars['pageSchema'] = $vars['pageSchema'] ?? $this->toArray();
+        $vars['staticRoot'] = strval($vars['staticRoot'] ?? AppService::uri('static'));
+        foreach (get_object_vars($this->class) as $k => $v) {
+            $vars[$k] = $v;
+        }
+        $this->renderVars = $vars;
+        return display($this->render(), $vars);
     }
 
     /**

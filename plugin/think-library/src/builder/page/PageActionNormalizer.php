@@ -37,6 +37,7 @@ class PageActionNormalizer
             ], [
                 'data-title' => $action['title'],
             ]),
+            'button' => $this->buildAttrs($action['attrs'], 'layui-btn layui-btn-sm layui-btn-primary'),
             'open' => $this->buildAttrs($action['attrs'], 'layui-btn layui-btn-sm layui-btn-primary', [
                 'data-open' => $action['url'],
             ]),
@@ -62,7 +63,7 @@ class PageActionNormalizer
 
         return array_merge($action, [
             'attrs' => $attrs,
-            'html' => $this->renderer->render(strval($action['label']), $attrs),
+            'html' => $this->renderer->render(strval($action['label']), $attrs, strval($action['tag'] ?? 'a')),
         ]);
     }
 
@@ -83,6 +84,7 @@ class PageActionNormalizer
             ], [
                 'data-title' => $action['title'],
             ]),
+            'button' => $this->buildAttrs($action['attrs'], 'layui-btn layui-btn-sm'),
             'open' => $this->buildAttrs($action['attrs'], 'layui-btn layui-btn-sm', [
                 'data-open' => $action['url'],
             ], [
@@ -99,7 +101,7 @@ class PageActionNormalizer
 
         return array_merge($action, [
             'attrs' => $attrs,
-            'html' => $this->renderer->render(strval($action['label']), $attrs),
+            'html' => $this->renderer->render(strval($action['label']), $attrs, strval($action['tag'] ?? 'a')),
         ]);
     }
 
@@ -121,6 +123,7 @@ class PageActionNormalizer
             'html' => '',
             'attrs' => [],
             'class' => '',
+            'tag' => 'a',
         ], $action);
 
         $auth = $action['auth'];
@@ -134,6 +137,7 @@ class PageActionNormalizer
         $action['html'] = strval($action['html']);
         $action['attrs'] = is_array($action['attrs']) ? $action['attrs'] : [];
         $action['auth'] = $auth === null ? null : (trim(strval($auth)) ?: null);
+        $action['tag'] = trim(strval($action['tag'])) ?: 'a';
 
         $class = trim(strval($action['class']));
         if ($class !== '') {

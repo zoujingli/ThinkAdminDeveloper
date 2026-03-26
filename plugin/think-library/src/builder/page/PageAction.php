@@ -55,6 +55,12 @@ class PageAction
         return $this->sync();
     }
 
+    public function tag(string $tag): self
+    {
+        $this->action['tag'] = trim($tag);
+        return $this->sync();
+    }
+
     public function value(string $value): self
     {
         $this->action['value'] = $value;

@@ -31,6 +31,7 @@ use think\admin\builder\form\render\FormRenderState;
 use think\admin\Controller;
 use think\admin\Exception;
 use think\admin\Library;
+use think\admin\service\AppService;
 use think\admin\helper\ValidateHelper;
 use think\exception\HttpResponseException;
 
@@ -887,6 +888,7 @@ class FormBuilder
         $vars['formBuilder'] = $vars['formBuilder'] ?? $this;
         $vars['formSchema'] = $vars['formSchema'] ?? $this->toArray();
         $vars['formRules'] = $vars['formRules'] ?? $this->getValidateRules();
+        $vars['staticRoot'] = strval($vars['staticRoot'] ?? AppService::uri('static'));
         foreach (get_object_vars($this->class) as $k => $v) {
             $vars[$k] = $v;
         }
