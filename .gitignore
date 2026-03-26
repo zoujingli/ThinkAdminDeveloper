@@ -50,8 +50,8 @@
 
 /public/static/plugs
 /public/static/theme
-/public/static/admin.js
 /public/static/login.js
+/public/static/system.js
 
 ### 屏蔽数据库发布产物
 /database/migrations/*
