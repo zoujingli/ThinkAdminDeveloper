@@ -36,6 +36,29 @@ use think\Request;
  */
 class UploadControllerTest extends SqliteIntegrationTestCase
 {
+    public function testImageRendersHtmlDialogWithoutTemplatePlaceholders(): void
+    {
+        $html = $this->callHtmlController('image', [
+            'id' => 'upload-trigger',
+            'file' => 'images',
+            'type' => 'png,jpg',
+            'path' => 'system/example',
+            'size' => 4096,
+        ], 9101);
+
+        $this->assertStringContainsString('id="ImageDialog"', $html);
+        $this->assertStringContainsString('var config = {"buttonSelector":"#upload-trigger"', $html);
+        $this->assertStringContainsString('"multiple":true', $html);
+        $this->assertStringContainsString('"imageUrl":"/api/system/upload/image"', $html);
+        $this->assertStringContainsString('data-file="mul"', $html);
+        $this->assertStringContainsString('data-path="system/example"', $html);
+        $this->assertStringContainsString("$.form.load(config.imageUrl, this.params, 'get'", $html);
+        $this->assertStringContainsString('上传图片', $html);
+        $this->assertStringNotContainsString('{$get', $html);
+        $this->assertStringNotContainsString('{:url', $html);
+        $this->assertStringNotContainsString('{if ', $html);
+    }
+
     public function testIndexBuildsUploadScriptUsingTokenRestrictedExtensions(): void
     {
         $response = $this->callIndexController([
@@ -50,7 +73,7 @@ class UploadControllerTest extends SqliteIntegrationTestCase
         $this->assertStringContainsString('"mp4":"video\/mp4"', $content);
         $this->assertStringNotContainsString('"jpg":"image\/jpeg"', $content);
         $this->assertStringNotContainsString('"pdf":"application\/pdf"', $content);
-        $this->assertStringContainsString("let IsDate = 'date'", $content);
+        $this->assertStringContainsString("indexOf('date') > -1", $content);
     }
 
     public function testDoneMarksOwnedFileAsUploaded(): void
@@ -122,6 +145,28 @@ class UploadControllerTest extends SqliteIntegrationTestCase
         $controller = new UploadController($this->app);
 
         return $controller->index();
+    }
+
+    private function callHtmlController(string $action, array $query = [], int $userId = 9101): string
+    {
+        $request = (new Request())
+            ->withGet($query)
+            ->withPost($query)
+            ->setMethod('GET')
+            ->setController('upload')
+            ->setAction($action);
+
+        $this->bindAdminUser($userId);
+        $this->setRequestPayload($request, $query);
+        $this->app->instance('request', $request);
+
+        try {
+            $controller = new UploadController($this->app);
+            $controller->{$action}();
+            self::fail("Expected UploadController::{$action} to throw HttpResponseException.");
+        } catch (HttpResponseException $exception) {
+            return strval($exception->getResponse()->getContent());
+        }
     }
 
     private function callActionController(string $action, array $payload, int $userId): array

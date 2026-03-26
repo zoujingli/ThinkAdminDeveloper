@@ -21,6 +21,7 @@ declare(strict_types=1);
 namespace plugin\system\builder;
 
 use think\admin\builder\form\FormBuilder;
+use think\admin\builder\form\module\FormModules;
 use think\admin\builder\page\PageBuilder;
 
 /**
@@ -62,10 +63,7 @@ class BaseBuilder
 
         return PageBuilder::make()
             ->define(function ($page) use ($context, $mode, $baseType, $requestBaseUrl, $pluginGroupOptions, $typeOptions) {
-                $page->title(strval($context['title'] ?? '数据字典管理'))
-                    ->contentClass('')
-                    ->showSearchLegend(false)
-                    ->searchAttrs(['action' => $requestBaseUrl])
+                SystemListPage::apply($page, strval($context['title'] ?? '数据字典管理'), $requestBaseUrl)
                     ->buttons(function ($buttons) use ($mode) {
                         if ($mode === 'index') {
                             $buttons->modal('添加数据', url('add')->build(), '', ['data-table-id' => 'BaseTable'], 'add')
@@ -121,8 +119,18 @@ class BaseBuilder
         return FormBuilder::make()
             ->define(function ($form) use ($context, $isEdit, $types) {
                 $form->action(strval($context['actionUrl'] ?? ''))
-                    ->bodyClass('pa20')
-                    ->fields(function ($fields) use ($isEdit, $types, $context) {
+                    ->class('system-base-form');
+
+                FormModules::intro($form, [
+                    'title' => $isEdit ? '编辑数据字典' : '新增数据字典',
+                    'description' => '统一维护字典类型、数据编码、名称与插件归属，保存后会同步进入系统字典能力。',
+                ]);
+
+                FormModules::section($form, [
+                    'title' => '基础信息',
+                    'description' => '先确认数据类型和编码，再补充名称、插件归属与实际内容。',
+                ], function ($section) use ($isEdit, $types, $context) {
+                    $section->fields(function ($fields) use ($isEdit, $types, $context) {
                         if ($isEdit) {
                             $fields->text('type', '数据类型', 'Data Type', true, '请选择数据类型，数据创建后不能再次修改哦~', null, [
                                 'readonly' => null,
@@ -145,6 +153,7 @@ class BaseBuilder
                             ->select('plugin_code', '所属插件', 'Plugin Scope', false, '可选。选择后会写入插件归属元数据，适合身份权限或插件专用字典项。', is_array($context['pluginOptions'] ?? null) ? $context['pluginOptions'] : [])
                             ->textarea('content_text', '数据内容', 'Data Content', false, '', ['placeholder' => '请输入数据内容']);
                     });
+                });
                 if (!$isEdit) {
                     $form->script(<<<'SCRIPT'
 var $typeSelect = $('[name="type_select"]');

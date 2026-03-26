@@ -22,6 +22,7 @@ namespace plugin\system\builder;
 
 use think\admin\builder\form\FormBuilder;
 use think\admin\builder\form\FormBlocks;
+use think\admin\builder\form\FormNode;
 use think\admin\builder\page\PageBuilder;
 
 /**
@@ -73,9 +74,7 @@ class AuthBuilder
 
         return PageBuilder::make()
             ->define(function ($page) use ($context, $type, $requestBaseUrl, $pluginGroup, $pluginGroupOptions) {
-                $page->title(strval($context['title'] ?? '系统权限管理'))
-                    ->contentClass('')
-                    ->showSearchLegend(false)
+                SystemListPage::apply($page, strval($context['title'] ?? '系统权限管理'), $requestBaseUrl)
                     ->buttons(function ($buttons) use ($type, $pluginGroup) {
                         if ($type === 'index') {
                             $buttons->open('添加权限', self::buildAddUrl($pluginGroup), ['data-table-id' => 'RoleTable'], 'add')
@@ -128,6 +127,9 @@ class AuthBuilder
                     ->headerButton('返回列表', 'button', '', ['data-target-backup' => null], 'layui-btn-primary layui-btn-sm')
                     ->action(strval($context['actionUrl'] ?? ''))
                     ->attrs(['id' => 'RoleForm'])
+                    ->data('role-id', intval($context['id'] ?? 0))
+                    ->data('role-plugin', strval($context['plugin'] ?? ''))
+                    ->data('role-action-url', strval($context['actionUrl'] ?? ''))
                     ->fields(function ($fields) {
                         $fields->text('title', '权限名称', 'Auth Name', true, '访问权限名称需要保持不重复，在给用户授权时需要根据名称选择！', null, [
                             'maxlength' => 100,
@@ -149,11 +151,7 @@ class AuthBuilder
                     '仅切换当前显示的权限树分组，不会丢失其它插件已勾选的授权节点。'
                 );
 
-                $tree = $form->div()->class('layui-form-item');
-                $tree->html('<span class="help-label label-required-prev"><b>功能节点</b>Auth Nodes</span>');
-                $tree->div()->class('system-auth-tree')->html('<div class="auth-tree-toolbar"><div class="auth-tree-search"><input type="text" class="layui-input" id="AuthTreeKeyword" placeholder="搜索权限节点名称"></div><div class="auth-tree-toolbar-group auth-tree-toolbar-group-mode"><button type="button" class="layui-btn layui-btn-xs layui-btn-primary auth-tree-mode" id="AuthTreeSelectedOnly" data-selected-only="false">只看已选</button><button type="button" class="layui-btn layui-btn-xs layui-btn-primary auth-tree-ghost" data-tree-action="expand-visible">展开全部分组</button><button type="button" class="layui-btn layui-btn-xs layui-btn-primary auth-tree-ghost" data-tree-action="collapse-visible">收起未选分组</button></div><div class="auth-tree-toolbar-group auth-tree-toolbar-group-batch"><button type="button" class="layui-btn layui-btn-xs layui-btn-normal" data-tree-action="select-visible">全选当前视图</button><button type="button" class="layui-btn layui-btn-xs layui-btn-primary auth-tree-danger" data-tree-action="clear-visible">取消当前视图</button></div></div><div id="AuthTreePanel" class="auth-tree-panel"></div>');
-                $form->html(self::renderFormStyle());
-                $form->div()->html('<input type="hidden" name="id" value="{$vo.id|default=\'\'}">');
+                self::buildTreeSection($form);
                 $form->actions(function ($actions) {
                     $actions->submit()->cancel();
                 })->rules([
@@ -182,15 +180,17 @@ class AuthBuilder
 $.module.use([], function () {
     new function () {
         let that = this;
+        let $roleForm = $('#RoleForm');
         this.storageKey = 'system-auth-tree-state';
         this.data = [];
         this.states = {};
         this.initialStates = {};
         this.expanded = {};
-        this.filter = '{$plugin|default=""}';
+        this.filter = String($roleForm.data('rolePlugin') || '');
         this.keyword = '';
         this.selectedOnly = false;
-        this.actionUrl = '{$actionUrl|default=""}';
+        this.actionUrl = String($roleForm.data('roleActionUrl') || $roleForm.attr('action') || '');
+        this.roleId = Number($roleForm.data('roleId') || 0);
         this.escape = function (text) {
             return String(text || '').replace(/[&<>"']/g, function (char) {
                 return {'&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'}[char];
@@ -265,6 +265,18 @@ $.module.use([], function () {
             }
             return results;
         };
+        this.collectSubmitMap = function (list, results) {
+            results = results || {};
+            for (let i in list) {
+                let item = list[i];
+                let node = String(item.node || '');
+                if (node.indexOf('/') >= 0) {
+                    results[node] = item.title || node;
+                }
+                this.collectSubmitMap(item.children || [], results);
+            }
+            return results;
+        };
         this.setListState = function (list, checked) {
             for (let i in list) {
                 this.setBranchState(list[i], checked);
@@ -309,6 +321,19 @@ $.module.use([], function () {
                 if (child.checked || child.indeterminate) any = true;
             }
             return {checked: checked || all, indeterminate: any && !(checked || all)};
+        };
+        this.countLeaves = function (node) {
+            let children = node.children || [];
+            if (children.length < 1) {
+                return {selected: this.states[node.node] ? 1 : 0, total: 1};
+            }
+            let counts = {selected: 0, total: 0};
+            for (let i in children) {
+                let child = this.countLeaves(children[i]);
+                counts.selected += child.selected;
+                counts.total += child.total;
+            }
+            return counts;
         };
         this.shouldExpand = function (node) {
             if (Object.prototype.hasOwnProperty.call(this.expanded, node.node)) {
@@ -355,20 +380,21 @@ $.module.use([], function () {
             let title = this.escape(node.title);
             let children = node.children || [];
             let expanded = this.shouldExpand(node);
+            let counts = this.countLeaves(node);
             let html = '' +
                 '<section class="auth-group' + (expanded ? ' is-expanded' : ' is-collapsed') + '">' +
                 '<div class="auth-group-head">' +
                 '<span class="auth-group-toggle">' +
                 '<input type="checkbox" class="layui-input" data-node="' + key + '"' + (status.checked ? ' checked' : '') + (status.indeterminate ? ' data-indeterminate="true"' : '') + '>' +
                 '</span>' +
-                '<button type="button" class="auth-group-title" data-expand-node="' + key + '">' + title + '</button>' +
+                '<button type="button" class="auth-group-title" data-expand-node="' + key + '">' + title + '<span class="auth-node-count">' + counts.selected + '/' + counts.total + '</span></button>' +
                 '<div class="auth-group-actions">' +
                 '<button type="button" class="auth-group-action" data-batch-node="' + key + '" data-batch-type="select">全选</button>' +
                 '<button type="button" class="auth-group-action" data-batch-node="' + key + '" data-batch-type="clear">取消</button>' +
                 '</div>' +
                 '</div>';
             if (children.length > 0) {
-                html += '<div class="auth-group-grid"' + (expanded ? '' : ' style="display:none"') + '>';
+                html += '<div class="auth-group-grid">';
                 for (let i in children) html += this.renderNode(children[i], path.concat(node));
                 html += '</div>';
             }
@@ -388,27 +414,28 @@ $.module.use([], function () {
                 if (this.filter && item.plugin !== this.filter) continue;
                 let status = this.computeStatus(item);
                 let expanded = this.shouldExpand(item);
+                let counts = this.countLeaves(item);
                 html.push(
                     '<section class="auth-plugin-card' + (expanded ? ' is-expanded' : ' is-collapsed') + '" data-plugin="' + this.escape(item.plugin) + '">' +
                     '<header class="auth-plugin-head">' +
                     '<span class="auth-plugin-toggle">' +
                     '<input type="checkbox" class="layui-input" data-node="' + this.escape(item.node) + '"' + (status.checked ? ' checked' : '') + (status.indeterminate ? ' data-indeterminate="true"' : '') + '>' +
                     '</span>' +
-                    '<button type="button" class="auth-plugin-title" data-expand-node="' + this.escape(item.node) + '">' + this.escape(item.title) + '</button>' +
+                    '<button type="button" class="auth-plugin-title" data-expand-node="' + this.escape(item.node) + '">' + this.escape(item.title) + '<span class="auth-node-count">' + counts.selected + '/' + counts.total + '</span></button>' +
                     '<div class="auth-plugin-actions">' +
                     '<span class="auth-plugin-code">' + this.escape(item.plugin) + '</span>' +
                     '<button type="button" class="auth-group-action" data-batch-node="' + this.escape(item.node) + '" data-batch-type="select">全选</button>' +
                     '<button type="button" class="auth-group-action" data-batch-node="' + this.escape(item.node) + '" data-batch-type="clear">取消</button>' +
                     '</div>' +
                     '</header>' +
-                    '<div class="auth-plugin-body"' + (expanded ? '' : ' style="display:none"') + '>' + $.map(item.children || [], function (child) { return that.renderNode(child, [item]); }).join('') + '</div>' +
+                    '<div class="auth-plugin-body">' + $.map(item.children || [], function (child) { return that.renderNode(child, [item]); }).join('') + '</div>' +
                     '</section>'
                 );
             }
             return html.join('');
         };
         this.syncData = function () {
-            $.form.load(this.actionUrl, {id: '{$vo.id|default=0}', action: 'json'}, 'post', function (ret) {
+            $.form.load(this.actionUrl, {id: this.roleId, action: 'json'}, 'post', function (ret) {
                 that.data = that.normalizeChildren(ret.data, '');
                 that.renderOptions();
                 return that.showTree(), false;
@@ -441,7 +468,7 @@ $.module.use([], function () {
             return html.join('');
         };
         this.buildSubmitDiff = function () {
-            let titles = this.collectLeafMap(this.data, {});
+            let titles = this.collectSubmitMap(this.data, {});
             let current = [];
             let initial = [];
             for (let node in titles) {
@@ -470,8 +497,22 @@ $.module.use([], function () {
         };
         this.loadViewState();
         this.syncData();
+        $(document).on('keydown.auth-tree-search', function (event) {
+            let target = event.target || {};
+            let tagName = String(target.tagName || '').toLowerCase();
+            if (event.key !== '/' || tagName === 'input' || tagName === 'textarea' || target.isContentEditable) {
+                return;
+            }
+            event.preventDefault();
+            $('#AuthTreeKeyword').trigger('focus');
+        });
         $('#AuthTreeKeyword').on('input', function () {
             that.keyword = String(this.value || '');
+            that.showTree();
+        });
+        $('#AuthTreeKeywordClear').on('click', function () {
+            that.keyword = '';
+            $('#AuthTreeKeyword').val('').trigger('focus');
             that.showTree();
         });
         $('#AuthTreeSelectedOnly').on('click', function () {
@@ -540,8 +581,14 @@ $.module.use([], function () {
             that.showTree();
         });
         $('#RoleForm').vali(function (form) {
+            let $form = $(this);
             let diff = that.buildSubmitDiff();
-            Object.assign(form, {nodes: diff.current, action: 'save'});
+            $form.find('[data-role-node-input]').remove();
+            for (let i in diff.current) {
+                $('<input type="hidden" data-role-node-input name="nodes[]">').val(diff.current[i]).appendTo($form);
+            }
+            form = $form.formToJson();
+            form.action = 'save';
             let content = '' +
                 '<div class="auth-submit-diff">' +
                 '<div class="auth-submit-diff-head">本次权限变更</div>' +
@@ -568,295 +615,48 @@ $.module.use([], function () {
 });
 SCRIPT;
     }
-
-    private static function renderFormStyle(): string
+    private static function buildTreeSection(FormNode $form): void
     {
-        return <<<'HTML'
-<style>
-    .system-auth-tree {
-        padding: 18px 20px;
-        border: 1px solid #e8eef5;
-        border-radius: 10px;
-        background: #f8fbfd;
+        $tree = $form->div()->class('layui-form-item');
+
+        $label = $tree->node('span')->class('help-label label-required-prev');
+        $label->node('b')->html('功能节点');
+        $label->node('span')->class('ml5')->html('Auth Nodes');
+
+        $shell = $tree->div()->class('system-auth-tree');
+        $toolbar = $shell->div()->class('auth-tree-toolbar');
+
+        $search = $toolbar->div()->class('auth-tree-search');
+        $search->node('input')->attrs([
+            'type' => 'text',
+            'class' => 'layui-input',
+            'id' => 'AuthTreeKeyword',
+            'placeholder' => '搜索权限节点名称，按 / 快速聚焦',
+        ]);
+        $search->node('button')->attrs([
+            'type' => 'button',
+            'class' => 'auth-tree-search-clear',
+            'id' => 'AuthTreeKeywordClear',
+        ])->html('清空');
+
+        $mode = $toolbar->div()->class('auth-tree-toolbar-group auth-tree-toolbar-group-mode');
+        self::buildTreeButton($mode, '只看已选', ['id' => 'AuthTreeSelectedOnly', 'data-selected-only' => 'false'], 'layui-btn layui-btn-xs layui-btn-primary auth-tree-mode');
+        self::buildTreeButton($mode, '展开全部分组', ['data-tree-action' => 'expand-visible'], 'layui-btn layui-btn-xs layui-btn-primary auth-tree-ghost');
+        self::buildTreeButton($mode, '收起未选分组', ['data-tree-action' => 'collapse-visible'], 'layui-btn layui-btn-xs layui-btn-primary auth-tree-ghost');
+
+        $batch = $toolbar->div()->class('auth-tree-toolbar-group auth-tree-toolbar-group-batch');
+        self::buildTreeButton($batch, '全选当前视图', ['data-tree-action' => 'select-visible'], 'layui-btn layui-btn-xs layui-btn-normal');
+        self::buildTreeButton($batch, '取消当前视图', ['data-tree-action' => 'clear-visible'], 'layui-btn layui-btn-xs layui-btn-primary auth-tree-danger');
+
+        $shell->div()->attrs(['id' => 'AuthTreePanel', 'class' => 'auth-tree-panel']);
     }
 
-    .auth-tree-panel {
-        display: grid;
-        gap: 16px;
-    }
-
-    .auth-tree-toolbar {
-        display: flex;
-        flex-wrap: wrap;
-        gap: 8px;
-        margin-bottom: 12px;
-    }
-
-    .auth-tree-toolbar-group {
-        display: inline-flex;
-        flex-wrap: wrap;
-        gap: 8px;
-    }
-
-    .auth-tree-toolbar-group-mode {
-        margin-left: auto;
-    }
-
-    .auth-tree-search {
-        flex: 1;
-        min-width: 240px;
-    }
-
-    .auth-tree-mode[data-selected-only="true"] {
-        color: #fff;
-        background: #0f766e;
-        border-color: #0f766e;
-    }
-
-    .auth-tree-ghost {
-        color: #475569;
-        background: #fff;
-        border-color: #d7e1ea;
-    }
-
-    .auth-tree-danger {
-        color: #b42318;
-        background: #fff;
-        border-color: #f1c7c4;
-    }
-
-    .auth-submit-diff {
-        padding-top: 6px;
-    }
-
-    .auth-submit-diff-head {
-        margin-bottom: 12px;
-        font-weight: 600;
-        color: #334155;
-    }
-
-    .auth-submit-diff-section + .auth-submit-diff-section {
-        margin-top: 12px;
-    }
-
-    .auth-submit-diff-title {
-        margin-bottom: 8px;
-        color: #475569;
-        font-size: 12px;
-    }
-
-    .auth-submit-diff-tags {
-        display: flex;
-        flex-wrap: wrap;
-        gap: 8px;
-        max-height: 180px;
-        overflow: auto;
-    }
-
-    .auth-diff-tag {
-        display: inline-flex;
-        align-items: center;
-        padding: 4px 8px;
-        color: #334155;
-        font-size: 12px;
-        border-radius: 999px;
-        background: #f1f5f9;
-    }
-
-    .auth-tree-empty {
-        padding: 18px;
-        color: #6b7280;
-        text-align: center;
-        background: #fff;
-        border-radius: 8px;
-    }
-
-    .auth-plugin-card {
-        overflow: hidden;
-        border: 1px solid #e5edf5;
-        border-radius: 8px;
-        background: #fff;
-    }
-
-    .auth-plugin-head {
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        gap: 12px;
-        padding: 12px 16px;
-        background: linear-gradient(180deg, #ffffff 0%, #f7fafc 100%);
-        border-bottom: 1px solid #eef3f8;
-    }
-
-    .auth-plugin-toggle,
-    .auth-group-toggle,
-    .auth-leaf-item {
-        display: inline-flex;
-        align-items: center;
-        gap: 8px;
-        cursor: pointer;
-        color: #1f2937;
-    }
-
-    .auth-plugin-title,
-    .auth-group-title {
-        padding: 0;
-        color: #1f2937;
-        font-weight: 600;
-        text-align: left;
-        border: none;
-        background: transparent;
-        cursor: pointer;
-    }
-
-    .auth-plugin-toggle {
-        flex: 0 0 auto;
-    }
-
-    .auth-plugin-title {
-        flex: 1 1 auto;
-        justify-content: flex-start;
-        margin-right: auto;
-    }
-
-    .auth-plugin-card.is-collapsed .auth-plugin-title::after,
-    .auth-group.is-collapsed .auth-group-title::after {
-        content: '展开';
-        margin-left: 8px;
-        color: #94a3b8;
-        font-size: 12px;
-        font-weight: 400;
-    }
-
-    .auth-plugin-card.is-expanded .auth-plugin-title::after,
-    .auth-group.is-expanded .auth-group-title::after {
-        content: '收起';
-        margin-left: 8px;
-        color: #94a3b8;
-        font-size: 12px;
-        font-weight: 400;
-    }
-
-    .auth-plugin-code {
-        padding: 2px 8px;
-        color: #0369a1;
-        font-size: 12px;
-        background: #e0f2fe;
-        border-radius: 999px;
-    }
-
-    .auth-plugin-actions,
-    .auth-group-actions {
-        display: inline-flex;
-        align-items: center;
-        flex-wrap: wrap;
-        gap: 8px;
-    }
-
-    .auth-plugin-body {
-        display: grid;
-        gap: 14px;
-        padding: 14px 16px 16px;
-    }
-
-    .auth-group {
-        padding: 12px 14px;
-        border: 1px solid #eef3f8;
-        border-radius: 8px;
-        background: #fbfdff;
-    }
-
-    .auth-group-head {
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        gap: 12px;
-    }
-
-    .auth-group-toggle {
-        flex: 0 0 auto;
-    }
-
-    .auth-group-title {
-        flex: 1 1 auto;
-        justify-content: flex-start;
-        margin-right: auto;
-    }
-
-    .auth-group-action {
-        padding: 0;
-        color: #0369a1;
-        border: none;
-        background: transparent;
-        cursor: pointer;
-    }
-
-    .auth-plugin-title:hover,
-    .auth-group-title:hover,
-    .auth-group-action:hover,
-    .auth-group-switch:hover {
-        color: #0f766e;
-    }
-
-    .auth-group-grid {
-        display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(160px, max-content));
-        gap: 8px 10px;
-        margin-top: 12px;
-        padding-left: 18px;
-        align-items: start;
-    }
-
-    .auth-leaf-item {
-        min-height: 30px;
-        padding: 5px 10px;
-        border: 1px solid #dbe7f3;
-        border-radius: 999px;
-        background: #fff;
-        transition: border-color .2s ease, background-color .2s ease, box-shadow .2s ease;
-    }
-
-    .auth-leaf-item:hover {
-        border-color: #93c5fd;
-        background: #f8fbff;
-    }
-
-    .auth-leaf-item:has(input:checked) {
-        border-color: #67b99a;
-        background: #edf9f3;
-        box-shadow: inset 0 0 0 1px rgba(0, 150, 136, 0.08);
-    }
-
-    .auth-plugin-toggle input,
-    .auth-group-head input,
-    .auth-leaf-item input {
-        margin: 0;
-    }
-
-    .auth-leaf-item span {
-        font-size: 12px;
-        line-height: 18px;
-        white-space: nowrap;
-    }
-
-    @media (max-width: 768px) {
-        .auth-plugin-head {
-            align-items: flex-start;
-            flex-direction: column;
-        }
-
-        .auth-group-head {
-            align-items: flex-start;
-            flex-direction: column;
-        }
-
-        .auth-group-grid {
-            grid-template-columns: 1fr;
-            padding-left: 0;
-        }
-    }
-</style>
-HTML;
+    private static function buildTreeButton(FormNode $parent, string $label, array $attrs, string $class): void
+    {
+        $parent->node('button')->attrs(array_merge([
+            'type' => 'button',
+            'class' => $class,
+        ], $attrs))->html($label);
     }
 
 }

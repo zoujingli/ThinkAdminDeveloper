@@ -40,6 +40,20 @@ use think\Request;
  */
 class PlugsControllerTest extends SqliteIntegrationTestCase
 {
+    public function testIconRendersHtmlPickerWithoutTemplatePlaceholders(): void
+    {
+        $html = $this->callHtmlController('icon', ['field' => 'menu_icon']);
+
+        $this->assertStringContainsString('<title>图标选择器</title>', $html);
+        $this->assertStringContainsString('data-icon-picker', $html);
+        $this->assertStringContainsString('data-field="menu_icon"', $html);
+        $this->assertStringContainsString('/static/plugs/layui/css/layui.css', $html);
+        $this->assertStringContainsString('/static/plugs/jquery/jquery.min.js', $html);
+        $this->assertStringContainsString('top.$(\'[name="\' + field + \'"]\')', $html);
+        $this->assertStringNotContainsString('__ROOT__', $html);
+        $this->assertStringNotContainsString('{foreach', $html);
+    }
+
     public function testScriptBuildsJavascriptConfigWithAbsoluteUrlsWhenUploadTokenIsValid(): void
     {
         $uptoken = AuthService::withUploadToken(321, 'jpg,png');
@@ -51,7 +65,7 @@ class PlugsControllerTest extends SqliteIntegrationTestCase
         $content = strval($response->getContent());
 
         $this->assertStringContainsString('application/javascript', $contentType);
-        $this->assertStringContainsString('window.taDebug = true;', $content);
+        $this->assertStringContainsString(sprintf('window.taDebug = %s;', $this->app->isDebug() ? 'true' : 'false'), $content);
         $this->assertStringContainsString("window.taApiPrefix = 'api';", $content);
         $this->assertStringContainsString("window.taSystem = 'https://admin.example.com/system", $content);
         $this->assertStringContainsString("window.taStorage = 'https://admin.example.com/system/config/storage", $content);
@@ -128,6 +142,27 @@ class PlugsControllerTest extends SqliteIntegrationTestCase
         $controller = new PlugsController($this->app);
 
         return $controller->script();
+    }
+
+    private function callHtmlController(string $action, array $query = []): string
+    {
+        $request = (new Request())
+            ->withGet($query)
+            ->setMethod('GET')
+            ->setController('plugs')
+            ->setAction($action);
+
+        $this->bindAdminUser(true);
+        $this->setRequestPayload($request, $query);
+        $this->app->instance('request', $request);
+
+        try {
+            $controller = new PlugsController($this->app);
+            $controller->{$action}();
+            self::fail("Expected PlugsController::{$action} to throw HttpResponseException.");
+        } catch (HttpResponseException $exception) {
+            return strval($exception->getResponse()->getContent());
+        }
     }
 
     private function callActionController(string $action, array $payload = [], bool $super = true): array

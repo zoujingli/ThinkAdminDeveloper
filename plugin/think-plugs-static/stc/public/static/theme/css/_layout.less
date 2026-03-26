@@ -13,6 +13,7 @@
     position: absolute;
     box-sizing: content-box;
     background: @TopHeaderBackColor !important;
+    border-bottom: 1px solid var(--ta-border-color, rgba(0, 0, 0, 0.08));
     #notSelect();
 
     > ul.layui-nav {
@@ -133,7 +134,8 @@
     z-index: 333;
     position: fixed;
     overflow: hidden;
-    box-shadow: @ShadowBodyLeft;
+    box-shadow: none;
+    border-right: 1px solid var(--ta-border-color, rgba(0, 0, 0, 0.08));
     background-color: @LeftMainBackColor;
     #notSelect();
 
@@ -147,7 +149,7 @@
       text-align: center;
       box-shadow: none !important;
       line-height: @LayoutHeadTopHeight;
-      border-bottom: @BoxBottomLine;
+      border-bottom: 1px solid var(--ta-border-color, rgba(0, 0, 0, 0.08));
 
       .headimg {
         margin: 0 10px 0 0;
@@ -286,7 +288,7 @@
     left: @LayoutLeftDefaSize;
     padding: 0;
     z-index: 111;
-    background: radial-gradient(circle at top right, var(--ta-accent-soft, rgba(0, 150, 136, 0.08)), transparent 24%), var(--ta-body-bg, @BodyMainBackColor);
+    background: var(--ta-body-bg, @BodyMainBackColor);
 
     > .think-page-loader {
       left: @LayoutLeftDefaSize
@@ -337,7 +339,8 @@
         right: 0;
         z-index: 3;
         position: absolute;
-        box-shadow: var(--ta-shadow-xs, @ShadowBodyTop);
+        border-top: 1px solid var(--ta-border-color, rgba(0, 0, 0, 0.08));
+        box-shadow: none;
       }
 
       > .layui-card-header {

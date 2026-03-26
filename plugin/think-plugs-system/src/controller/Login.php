@@ -26,6 +26,7 @@ use plugin\system\service\SystemService;
 use plugin\system\service\UserService;
 use think\admin\Controller;
 use think\admin\extend\CodeToolkit;
+use think\admin\service\AppService;
 use think\admin\service\ImageSliderVerify;
 use think\admin\service\RuntimeService;
 use think\exception\HttpResponseException;
@@ -301,6 +302,7 @@ class Login extends Controller
     private function renderLoginPage(): void
     {
         $vars = get_object_vars($this);
+        $vars['staticRoot'] = strval($vars['staticRoot'] ?? AppService::uri('static'));
         throw new HttpResponseException(view('', $vars)->header($this->noStoreHeaders()));
     }
 

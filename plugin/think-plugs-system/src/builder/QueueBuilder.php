@@ -24,22 +24,37 @@ class QueueBuilder
 
         return PageBuilder::make()
             ->define(function ($page) use ($requestBaseUrl, $super, $iswin, $command) {
-                $page->title('系统任务管理')
-                    ->contentClass('')
-                    ->showSearchLegend(false)
-                    ->searchAttrs(['action' => $requestBaseUrl])
+                SystemListPage::apply($page, '系统任务管理', $requestBaseUrl)
                     ->buttons(function ($buttons) use ($super, $iswin, $command) {
                         if ($super) {
-                            $buttons->html('<a data-table-id="QueueTable" class="layui-btn layui-btn-sm layui-btn-primary" data-queue="' . apiuri('system/plugs/optimize') . '">优化数据库</a>');
+                            $buttons->button('优化数据库', [
+                                'data-table-id' => 'QueueTable',
+                                'data-queue' => apiuri('system/plugs/optimize'),
+                            ]);
                             if ($iswin || php_sapi_name() === 'cli') {
-                                $buttons->html('<button data-queue-service data-service-url="' . apiuri('system/queue/start') . '" class="layui-btn layui-btn-sm layui-btn-primary">启动服务</button>');
-                                $buttons->html('<button data-queue-service data-service-url="' . apiuri('system/queue/stop') . '" class="layui-btn layui-btn-sm layui-btn-primary">关闭服务</button>');
+                                $buttons->button('启动服务', [
+                                    'type' => 'button',
+                                    'data-queue-service' => null,
+                                    'data-service-url' => apiuri('system/queue/start'),
+                                ], null, 'button');
+                                $buttons->button('关闭服务', [
+                                    'type' => 'button',
+                                    'data-queue-service' => null,
+                                    'data-service-url' => apiuri('system/queue/stop'),
+                                ], null, 'button');
                             }
-                            $buttons->html('<button data-table-id="QueueTable" data-queue="' . url('clean')->build() . '" class="layui-btn layui-btn-sm layui-btn-primary">定时清理</button>');
+                            $buttons->button('定时清理', [
+                                'type' => 'button',
+                                'data-table-id' => 'QueueTable',
+                                'data-queue' => url('clean')->build(),
+                            ], null, 'button');
                         }
                         $buttons->batchAction('批量删除', url('remove')->build(), 'id#{id}', '确定批量删除记录吗？', [], 'remove');
                         if ($super) {
-                            $buttons->html('<span class="layui-btn layui-btn-sm layui-btn-primary layui-btn-disabled" data-copy="' . htmlentities($command, ENT_QUOTES, 'UTF-8') . '">复制启动命令</span>');
+                            $buttons->button('复制启动命令', [
+                                'data-copy' => $command,
+                                'class' => 'layui-btn-disabled',
+                            ], null, 'span');
                         }
                     });
 
@@ -116,7 +131,7 @@ SCRIPT)])
                         ->rows(function ($rows) {
                             $rows->html('<!--{if auth(\'redo\')}-->{{# if(d.status===4||d.status===3){ }}<a class="layui-btn layui-btn-sm" data-confirm="确定要重置该任务吗？" data-queue="' . url('redo')->build() . '?code={{d.code}}">重置</a>{{# }else{ }}<a class="layui-btn layui-btn-sm layui-btn-disabled">重置</a>{{# } }}<!--{/if}-->')
                                 ->action('删除', url('remove')->build(), 'id#{{d.id}}', '确定要删除该记录吗？', ['class' => 'layui-btn-danger'], 'remove')
-                                ->html('<a class="layui-btn layui-btn-sm layui-btn-normal" onclick="$.loadQueue(\'{{d.code}}\',false,this)">日志</a>');
+                                ->button('日志', ['onclick' => "$.loadQueue('{{d.code}}',false,this)", 'class' => 'layui-btn-normal']);
                         })
                         ->toolbar('操作面板', SystemTablePreset::toolbar('操作面板', 210, ['fixed' => 'right']));
                 });

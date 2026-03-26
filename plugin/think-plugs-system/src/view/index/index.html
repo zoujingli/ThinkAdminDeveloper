@@ -2,7 +2,7 @@
 <html lang="zh">
 
 <head>
-    <title>{block name="title"}{$title|default=''}{if !empty($title)} · {/if}{:sysdata('system.site.website_name')}{/block}</title>
+    <title>{block name="title"}{:isset($title) && is_scalar($title) ? $title : ''}{if !empty($title)} · {/if}{:is_scalar(sysdata('system.site.website_name')) ? sysdata('system.site.website_name') : ''}{/block}</title>
     <meta charset="utf-8">
     <meta name="renderer" content="webkit">
     <meta name="format-detection" content="telephone=no">
@@ -10,22 +10,22 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
     <meta name="apple-mobile-web-app-status-bar-style" content="black">
     <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=0.4">
-    <link rel="stylesheet" href="__ROOT__/static/plugs/layui/css/layui.css?at={:date('md')}">
-    <link rel="stylesheet" href="__ROOT__/static/theme/css/iconfont.css?at={:date('md')}">
+    <link rel="stylesheet" href="{$staticRoot|default=''}/plugs/layui/css/layui.css?at={:date('md')}">
+    <link rel="stylesheet" href="{$staticRoot|default=''}/theme/css/iconfont.css?at={:date('md')}">
     {if file_exists(syspath("public/static/extra/icon/iconfont.css"))}
-    <link rel="stylesheet" href="__ROOT__/static/extra/icon/iconfont.css?at={:date('md')}">
+    <link rel="stylesheet" href="{$staticRoot|default=''}/extra/icon/iconfont.css?at={:date('md')}">
     {/if}
-    <link rel="stylesheet" href="__ROOT__/static/theme/css/console.css?at={:date('md')}">
-    <link rel="stylesheet" href="__ROOT__/static/extra/style.css?at={:date('md')}">
+    <link rel="stylesheet" href="{$staticRoot|default=''}/theme/css/console.css?at={:date('md')}">
+    <link rel="stylesheet" href="{$staticRoot|default=''}/extra/style.css?at={:date('md')}">
     {block name="style"}{/block}
-    <script src="__ROOT__/static/plugs/jquery/pace.min.js"></script>
+    <script src="{$staticRoot|default=''}/plugs/jquery/pace.min.js"></script>
     <script>
         window.taTokenValue = {$tokenValueJson|default='""'|raw};
     </script>
     <script src="{:apiuri('system/plugs/script',[],false,false)}"></script>
 </head>
 
-<body class="layui-layout-body layui-layout-theme-{$theme|default='default'}">
+<body class="layui-layout-body layui-layout-theme-{:isset($theme) && is_scalar($theme) && $theme !== '' ? $theme : 'default'}">
 
 {block name='body'}
 <div class="layui-layout layui-layout-admin layui-layout-left-hide">
@@ -58,9 +58,9 @@
 <!-- 加载动画 结束 -->
 
 {/block}
-<script src="__ROOT__/static/plugs/layui/layui.js"></script>
-<script src="__ROOT__/static/system.js"></script>
-<script src="__ROOT__/static/extra/script.js"></script>
+<script src="{$staticRoot|default=''}/plugs/layui/layui.js"></script>
+<script src="{$staticRoot|default=''}/system.js"></script>
+<script src="{$staticRoot|default=''}/extra/script.js"></script>
 {block name='script'}{/block}
 </body>
 

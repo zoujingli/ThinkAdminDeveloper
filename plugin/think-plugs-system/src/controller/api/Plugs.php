@@ -20,11 +20,13 @@ declare(strict_types=1);
 
 namespace plugin\system\controller\api;
 
+use plugin\system\builder\IconPickerBuilder;
 use plugin\system\service\AuthService;
 use think\admin\Controller;
 use think\admin\Exception;
 use think\admin\service\AppService;
 use think\Response;
+use think\exception\HttpResponseException;
 
 /**
  * 扩展插件管理.
@@ -38,7 +40,6 @@ class Plugs extends Controller
      */
     public function icon()
     {
-        $this->title = '图标选择器';
         // 读取 layui 字体图标
         if (empty($this->layuiIcons = $this->app->cache->get('LayuiIcons', []))) {
             $style = file_get_contents(syspath('public/static/plugs/layui/css/layui.css'));
@@ -69,8 +70,13 @@ class Plugs extends Controller
                 }
             }
         }
-        $this->field = $this->app->request->get('field', 'icon');
-        $this->fetch(dirname(__DIR__, 2) . '/view/api/icon.html');
+        throw new HttpResponseException(Response::create(IconPickerBuilder::render([
+            'title' => '图标选择器',
+            'field' => $this->app->request->get('field', 'icon'),
+            'layuiIcons' => $this->layuiIcons,
+            'thinkIcons' => $this->thinkIcons,
+            'extraIcons' => $this->extraIcons,
+        ]), 'html'));
     }
 
     /**

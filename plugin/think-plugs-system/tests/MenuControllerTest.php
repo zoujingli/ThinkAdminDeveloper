@@ -40,13 +40,14 @@ class MenuControllerTest extends SqliteIntegrationTestCase
         $this->assertStringContainsString('page-builder-schema', $html);
         $this->assertStringContainsString('id="MenuTable"', $html);
         $this->assertStringContainsString('class="layui-tab-content"', $html);
-        $this->assertStringContainsString('MenuStatusSwitchTpl', $html);
         $this->assertStringContainsString('添加菜单', $html);
         $this->assertStringNotContainsString('{:url(', $html);
         $this->assertStringNotContainsString('{foreach', $html);
         $this->assertStringNotContainsString('{$indexUrl', $html);
-        $this->assertStringContainsString('data-modal="/menu/add.html?pid={{d.id}}"', $html);
-        $this->assertStringContainsString('data-modal="/menu/edit.html?id={{d.id}}"', $html);
+        $this->assertStringNotContainsString('MenuStatusSwitchTpl', $html);
+        $this->assertStringNotContainsString('MenuToolbarTpl', $html);
+        $this->assertStringContainsString("/menu/add.html?pid=' + d.id", $html);
+        $this->assertStringContainsString("/menu/edit.html?id=' + d.id", $html);
     }
 
     public function testIndexFlattensTreeAndNormalizesInternalUrls(): void
@@ -157,7 +158,8 @@ class MenuControllerTest extends SqliteIntegrationTestCase
 
         $this->assertStringContainsString('form-builder-schema', $html);
         $this->assertStringContainsString('name="title"', $html);
-        $this->assertStringContainsString('MenuFormNodesJson', $html);
+        $this->assertStringContainsString('data-menu-nodes=', $html);
+        $this->assertStringContainsString('data-menu-auths=', $html);
         $this->assertStringContainsString('name="target"', $html);
     }
 

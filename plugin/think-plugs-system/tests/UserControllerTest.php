@@ -22,6 +22,7 @@ namespace think\admin\tests;
 
 use plugin\system\controller\User as UserController;
 use plugin\system\model\SystemUser;
+use plugin\system\service\AuthService;
 use think\admin\runtime\RequestContext;
 use think\admin\tests\Support\SqliteIntegrationTestCase;
 use think\exception\HttpResponseException;
@@ -156,6 +157,36 @@ class UserControllerTest extends SqliteIntegrationTestCase
         $this->assertStringContainsString('name="nickname"', $html);
         $this->assertStringContainsString('UserBasePluginFilter', $html);
         $this->assertStringContainsString('data-table-id="UserTable"', $html);
+    }
+
+    public function testEditGetRendersSuperUserPermissionToggleWithoutTemplateConditionals(): void
+    {
+        $this->createSystemBaseFixture([
+            'type' => '身份权限',
+            'code' => 'staff',
+            'name' => '员工身份',
+            'content' => '员工说明',
+            'status' => 1,
+        ]);
+        $this->createSystemAuthFixture([
+            'title' => '用户管理',
+            'node' => 'system/user/index',
+            'status' => 1,
+        ]);
+        $user = $this->createSystemUserFixture([
+            'username' => AuthService::getSuperName(),
+            'nickname' => '系统超管',
+            'authorize' => ',1,',
+            'status' => 1,
+        ]);
+
+        $html = $this->callActionHtml('edit', ['id' => intval($user->getAttr('id'))]);
+
+        $this->assertStringContainsString('user-super-notice', $html);
+        $this->assertStringContainsString('user-auth-wrap', $html);
+        $this->assertStringContainsString('syncSuperUser', $html);
+        $this->assertStringNotContainsString('{if isset($vo.username)', $html);
+        $this->assertStringNotContainsString('{/if}', $html);
     }
 
     public function testAddGetReturnsBuilderJsonWhenAcceptRequestsApi(): void

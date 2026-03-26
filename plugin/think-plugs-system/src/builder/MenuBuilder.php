@@ -21,6 +21,7 @@ declare(strict_types=1);
 namespace plugin\system\builder;
 
 use think\admin\builder\form\FormBuilder;
+use think\admin\builder\form\module\FormModules;
 use think\admin\builder\page\PageBuilder;
 
 /**
@@ -73,9 +74,7 @@ class MenuBuilder
 
         return PageBuilder::make()
             ->define(function ($page) use ($context, $type, $pid, $requestBaseUrl, $stateUrl, $sortActionUrl) {
-                $page->title(strval($context['title'] ?? '系统菜单管理'))
-                    ->contentClass('')
-                    ->showSearchLegend(false)
+                SystemListPage::apply($page, strval($context['title'] ?? '系统菜单管理'), $requestBaseUrl)
                     ->buttons(function ($buttons) use ($type, $stateUrl) {
                         if ($type === 'index') {
                             $buttons->modal('添加菜单', url('add')->build(), '添加系统菜单', ['data-table-id' => 'MenuTable'], 'add')
@@ -91,8 +90,7 @@ class MenuBuilder
                     $pid,
                     is_array($context['menuRootList'] ?? null) ? $context['menuRootList'] : []
                 ), 'MenuTable', $requestBaseUrl, null, function ($table) use ($type, $pid, $stateUrl, $sortActionUrl) {
-                    $table->toolbarId('MenuToolbarTpl')
-                        ->options([
+                    $table->options([
                             'even' => true,
                             'height' => 'full',
                             'page' => false,
@@ -111,12 +109,20 @@ SCRIPT),
                         ->column(SystemTablePreset::iconColumn())
                         ->column(['field' => 'title', 'title' => '菜单名称', 'minWidth' => 220, 'templet' => '<div><span class="color-desc">{{d.spl}}</span>{{d.title}}</div>'])
                         ->column(SystemTablePreset::linkColumn('url', '跳转链接'))
-                        ->column(['field' => 'status', 'title' => '使用状态', 'minWidth' => 120, 'align' => 'center', 'templet' => '#MenuStatusSwitchTpl'])
-                        ->toolbar('操作面板', SystemTablePreset::toolbar('操作面板'))
-                        ->template('MenuStatusSwitchTpl', self::renderStatusTemplate($type))
-                        ->template('MenuToolbarTpl', $type === 'index'
-                            ? self::renderIndexToolbarTemplate(url('add')->build(), url('edit')->build())
-                            : self::renderRecycleToolbarTemplate(url('remove')->build()))
+                        ->column(['field' => 'status', 'title' => '使用状态', 'minWidth' => 120, 'align' => 'center', 'templet' => PageBuilder::js(self::renderStatusScript($type))])
+                        ->column([
+                            'field' => 'toolbar',
+                            'title' => '操作面板',
+                            'align' => 'center',
+                            'minWidth' => 150,
+                            'fixed' => 'right',
+                            'templet' => PageBuilder::js(self::renderToolbarScript(
+                                $type,
+                                url('add')->build(),
+                                url('edit')->build(),
+                                url('remove')->build(),
+                            )),
+                        ])
                         ->script(<<<SCRIPT
 layui.form.on('switch(MenuStatusSwitch)', function (obj) {
     var data = {status: obj.elem.checked > 0 ? 1 : 0};
@@ -145,8 +151,18 @@ SCRIPT);
             ->define(function ($form) use ($context) {
                 $form->action(strval($context['actionUrl'] ?? ''))
                     ->attrs(['id' => 'MenuForm', 'data-table-id' => 'MenuTable'])
-                    ->bodyClass('pa20')
-                    ->fields(function ($fields) use ($context) {
+                    ->class('system-menu-form');
+
+                FormModules::intro($form, [
+                    'title' => '维护系统菜单节点',
+                    'description' => '统一维护菜单层级、跳转地址、权限节点和显示状态，当前菜单最多支持三级结构。',
+                ]);
+
+                FormModules::section($form, [
+                    'title' => '菜单基础信息',
+                    'description' => '先确认层级和名称，再配置链接、权限节点与展示参数。',
+                ], function ($section) use ($context) {
+                    $section->fields(function ($fields) use ($context) {
                         $fields->select('pid', '上级菜单', 'Parent Menu', true, '请选择上级菜单或顶级菜单（目前最多支持三级菜单）', self::buildParentOptions(is_array($context['menus'] ?? null) ? $context['menus'] : []), '', ['lay-search' => null])
                             ->text('title', '菜单名称', 'Menu Title', true, '请填写菜单名称（如：系统管理），建议字数不要太长，一般 4-6 个汉字）', null, [
                                 'placeholder' => '请输入菜单名称',
@@ -179,13 +195,9 @@ SCRIPT);
                                 0 => '已禁用',
                             ]);
                     });
-
-                $form->div()->html('<input type="hidden" name="id" value="{$vo.id|default=\'\'}">');
-                $form->div()->html(sprintf(
-                    '<script type="application/json" id="MenuFormNodesJson">%s</script><script type="application/json" id="MenuFormAuthsJson">%s</script>',
-                    self::encodeJson(is_array($context['nodes'] ?? null) ? $context['nodes'] : []),
-                    self::encodeJson(is_array($context['auths'] ?? null) ? $context['auths'] : [])
-                ));
+                });
+                $form->data('menu-nodes', self::encodeJson(is_array($context['nodes'] ?? null) ? $context['nodes'] : []))
+                    ->data('menu-auths', self::encodeJson(is_array($context['auths'] ?? null) ? $context['auths'] : []));
                 $form->actions(function ($actions) {
                     $actions->submit()->cancel();
                 })->rules([
@@ -213,44 +225,43 @@ SCRIPT);
     /**
      * 渲染状态模板.
      */
-    private static function renderStatusTemplate(string $type): string
+    private static function renderStatusScript(string $type): string
     {
-        return sprintf(<<<'HTML'
-{{# if( "%s"==='index' || (d.spc<1 || d.status<1)){ }}
-<input type="checkbox" value="{{d.sps}}|{{d.spp}}" lay-text="已激活|已禁用" lay-filter="MenuStatusSwitch" lay-skin="switch" {{-d.status>0?'checked':''}}>
-{{# }else{ }}
-{{-d.status ? '<b class="color-green">已激活</b>' : '<b class="color-red">已禁用</b>'}}
-{{# } }}
-HTML, addslashes($type));
+        $typeLiteral = addslashes($type);
+        return <<<SCRIPT
+function (d) {
+    if ('{$typeLiteral}' === 'index' || Number(d.spc || 0) < 1 || Number(d.status || 0) < 1) {
+        return '<input type="checkbox" value="' + (d.sps || '') + '|' + (d.spp || '') + '" lay-text="已激活|已禁用" lay-filter="MenuStatusSwitch" lay-skin="switch"' + (Number(d.status || 0) > 0 ? ' checked' : '') + '>';
+    }
+    return Number(d.status || 0) > 0 ? '<b class="color-green">已激活</b>' : '<b class="color-red">已禁用</b>';
+}
+SCRIPT;
     }
 
-    /**
-     * 渲染列表工具条模板.
-     */
-    private static function renderIndexToolbarTemplate(string $addUrl, string $editUrl): string
+    private static function renderToolbarScript(string $type, string $addUrl, string $editUrl, string $removeUrl): string
     {
-        return sprintf(<<<'HTML'
-{{# if(d.spt<2){ }}
-<a class="layui-btn layui-btn-sm layui-btn-primary" data-title="添加系统菜单" data-modal="%s?pid={{d.id}}">添加</a>
-{{# }else{ }}
-<a class="layui-btn layui-btn-sm layui-btn-disabled">添加</a>
-{{# } }}
-<a class="layui-btn layui-btn-sm" data-title="编辑系统菜单" data-modal="%s?id={{d.id}}">编辑</a>
-HTML, addslashes($addUrl), addslashes($editUrl));
+        $typeLiteral = addslashes($type);
+        $addLiteral = addslashes($addUrl);
+        $editLiteral = addslashes($editUrl);
+        $removeLiteral = addslashes($removeUrl);
+        return <<<SCRIPT
+function (d) {
+    var html = [];
+    if ('{$typeLiteral}' === 'index') {
+        if (Number(d.spt || 0) < 2) {
+            html.push('<a class="layui-btn layui-btn-sm layui-btn-primary" data-title="添加系统菜单" data-modal="{$addLiteral}?pid=' + d.id + '">添加</a>');
+        } else {
+            html.push('<a class="layui-btn layui-btn-sm layui-btn-disabled">添加</a>');
+        }
+        html.push('<a class="layui-btn layui-btn-sm" data-title="编辑系统菜单" data-modal="{$editLiteral}?id=' + d.id + '">编辑</a>');
+        return html.join('');
     }
-
-    /**
-     * 渲染回收站工具条模板.
-     */
-    private static function renderRecycleToolbarTemplate(string $removeUrl): string
-    {
-        return sprintf(<<<'HTML'
-{{# if( (d.spc<1 || d.status<1)){ }}
-<a class="layui-btn layui-btn-sm layui-btn-danger" data-confirm="确定要删除菜单吗？" data-action="%s" data-value="id#{{d.sps}}">删除</a>
-{{# }else{ }}
-<a class="layui-btn layui-btn-disabled layui-btn-sm">删除</a>
-{{# } }}
-HTML, addslashes($removeUrl));
+    if (Number(d.spc || 0) < 1 || Number(d.status || 0) < 1) {
+        return '<a class="layui-btn layui-btn-sm layui-btn-danger" data-confirm="确定要删除菜单吗？" data-action="{$removeLiteral}" data-value="id#' + (d.sps || '') + '">删除</a>';
+    }
+    return '<a class="layui-btn layui-btn-disabled layui-btn-sm">删除</a>';
+}
+SCRIPT;
     }
 
     private static function encodeJson(mixed $value): string
@@ -262,8 +273,9 @@ HTML, addslashes($removeUrl));
     {
         return <<<'SCRIPT'
 $.module.use(['jquery.autocompleter'], function () {
-    var menuFormNodes = JSON.parse(((document.getElementById('MenuFormNodesJson') || {}).text || '[]'));
-    var menuFormAuths = JSON.parse(((document.getElementById('MenuFormAuthsJson') || {}).text || '[]'));
+    var menuForm = document.getElementById('MenuForm') || {};
+    var menuFormNodes = JSON.parse((menuForm.dataset || {}).menuNodes || '[]');
+    var menuFormAuths = JSON.parse((menuForm.dataset || {}).menuAuths || '[]');
     $('[name="icon"]').on('change', function () {
         $(this).closest('[data-field-name="icon"]').find('[data-menu-icon-preview]').get(0).className = this.value;
     });

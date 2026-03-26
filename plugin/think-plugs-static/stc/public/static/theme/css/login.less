@@ -25,7 +25,6 @@ body, .login-container {
     width: 100%;
     height: 48px;
     position: absolute;
-    text-shadow: #000 .1em .1em .1em;
 
     .title {
       color: #fff;
@@ -63,47 +62,51 @@ body, .login-container {
   form {
     top: 50%;
     left: 50%;
-    width: 300px;
+    width: 340px;
     position: absolute;
-    margin-top: -250px;
-    margin-left: -150px;
+    padding: 22px 24px 24px;
+    margin-top: -230px;
+    margin-left: -170px;
+    border: 1px solid rgba(255, 255, 255, .38);
+    border-radius: 8px;
+    background: rgba(255, 255, 255, .9);
+    box-shadow: none;
 
     h2 {
-      color: #fff;
-      padding: 20px 0;
-      font-size: 25px;
+      color: #1f2937;
+      padding: 0 0 18px;
+      font-size: 22px;
       text-align: center;
-      font-weight: 700;
-      letter-spacing: 3px;
-      text-shadow: #000 .05em .05em .05em;
+      font-weight: 600;
+      letter-spacing: 1px;
     }
 
     ul li {
-      margin-top: 20px;
-      text-shadow: #000 .1em .1em .1em;
+      margin-top: 14px;
 
       &.verify {
         .slider-title {
-          color: rgba(255, 255, 255, .82);
+          color: #64748b;
           font-size: 12px;
           line-height: 1.6em;
-          margin-bottom: 10px;
-          letter-spacing: 1px;
+          margin-bottom: 8px;
+          letter-spacing: 0;
         }
 
         .slider-panel {
-          padding: 12px;
-          border-radius: @BoxBorderRadius;
-          background: rgba(0, 0, 0, .2);
-          box-shadow: 0 10px 24px 0 rgba(0, 0, 0, .18);
+          padding: 10px;
+          border: 1px solid #e2e8f0;
+          border-radius: 6px;
+          background: #fff;
+          box-shadow: none;
         }
 
         .slider-stage {
           height: 150px;
           overflow: hidden;
           position: relative;
-          border-radius: @BoxBorderRadius;
-          background: rgba(255, 255, 255, .08);
+          border-radius: 6px;
+          background: #f8fafc;
         }
 
         .slider-bg, .slider-piece {
@@ -122,17 +125,18 @@ body, .login-container {
         .slider-piece {
           width: 16.6667%;
           pointer-events: none;
-          box-shadow: 0 8px 18px 0 rgba(0, 0, 0, .22);
+          box-shadow: none;
         }
 
         .slider-bar {
           height: 44px;
-          margin-top: 12px;
+          margin-top: 10px;
           overflow: hidden;
           position: relative;
-          border-radius: @BoxBorderRadius;
-          background: rgba(255, 255, 255, .12);
-          box-shadow: 0 2px 4px 0 rgba(0, 0, 0, .2) inset;
+          border: 1px solid #e2e8f0;
+          border-radius: 6px;
+          background: #f8fafc;
+          box-shadow: none;
         }
 
         .slider-bar-track {
@@ -149,12 +153,12 @@ body, .login-container {
           left: 0;
           right: 0;
           z-index: 1;
-          color: rgba(255, 255, 255, .82);
+          color: #64748b;
           font-size: 13px;
           line-height: 44px;
           position: absolute;
           text-align: center;
-          letter-spacing: 1px;
+          letter-spacing: 0;
         }
 
         .slider-handle {
@@ -169,9 +173,10 @@ body, .login-container {
           position: absolute;
           align-items: center;
           justify-content: center;
-          border-radius: @BoxBorderRadius;
-          background: rgba(255, 255, 255, .96);
-          box-shadow: 0 4px 14px 0 rgba(0, 0, 0, .16);
+          border: 1px solid #dbe5ef;
+          border-radius: 6px;
+          background: #fff;
+          box-shadow: none;
 
           &.is-active {
             cursor: grabbing;
@@ -188,14 +193,14 @@ body, .login-container {
         .slider-actions {
           display: flex;
           font-size: 12px;
-          margin-top: 10px;
+          margin-top: 8px;
           align-items: center;
           justify-content: space-between;
-          color: rgba(255, 255, 255, .72);
-          letter-spacing: 1px;
+          color: #64748b;
+          letter-spacing: 0;
 
           a {
-            color: #fff;
+            color: #0f766e;
             text-decoration: none;
           }
         }
@@ -222,34 +227,34 @@ body, .login-container {
       }
 
       i.layui-icon {
-        color: #fff;
+        color: #64748b;
         font-size: 18px;
         position: absolute;
         padding: 8px 15px 8px 20px;
       }
 
       input {
-        color: #fff;
+        color: #1f2937;
         height: 45px;
         padding: 0 15px;
         font-size: 14px;
         line-height: 1em;
         text-indent: 35px;
-        border: #DDD !important;
-        border-radius: @BoxBorderRadius;
-        letter-spacing: 2px;
-        background: rgba(0, 0, 0, .12);
-        text-shadow: #000 .1em .1em .1em;
-        -webkit-text-fill-color: #fff !important;
-        box-shadow: 0 2px 3px 0 rgba(0, 0, 0, .3) inset !important;
+        border: 1px solid #dbe5ef !important;
+        border-radius: 6px;
+        letter-spacing: 0;
+        background: #fff;
+        text-shadow: none;
+        -webkit-text-fill-color: #1f2937 !important;
+        box-shadow: none !important;
 
         &:hover, &:focus, &:active,
         &:-webkit-autofill, &:-webkit-autofill:hover,
         &:-webkit-autofill:focus, &:-webkit-autofill:active {
-          border: #DDD !important;
-          text-shadow: #000 .1em .1em .1em;
-          box-shadow: 0 2px 4px 0 rgba(0, 0, 0, .4) inset !important;
-          -webkit-text-fill-color: #fff !important;
+          border: 1px solid #b7c6d8 !important;
+          text-shadow: none;
+          box-shadow: none !important;
+          -webkit-text-fill-color: #1f2937 !important;
           -webkit-transition-delay: 9999s !important;
           -webkit-transition: color 9999s ease-out, background-color 9999s ease-out !important;
         }
@@ -261,13 +266,13 @@ body, .login-container {
       }
 
       button {
-        color: #333 !important;
+        color: #fff !important;
         height: 45px !important;
         border: none !important;
-        background: #fff !important;
-        border-radius: @BoxBorderRadius !important;
+        background: #0f766e !important;
+        border-radius: 6px !important;
         letter-spacing: 1px !important;
-        box-shadow: 0 15px 30px 0 hsla(0, 0%, 100%, .25) inset, 0 2px 7px 0 rgba(0, 0, 0, .2);
+        box-shadow: none;
 
         &:hover {
           opacity: 1;
@@ -285,7 +290,7 @@ body, .login-container {
     text-align: center;
     line-height: 30px;
     padding-bottom: 10px;
-    text-shadow: #000 .1em .1em .1em;
+    text-shadow: none;
 
     a, span {
       color: #fff;

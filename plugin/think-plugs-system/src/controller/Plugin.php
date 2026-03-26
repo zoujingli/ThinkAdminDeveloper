@@ -20,6 +20,7 @@ declare(strict_types=1);
 
 namespace plugin\system\controller;
 
+use plugin\system\builder\PluginBuilder;
 use plugin\system\service\AuthService;
 use plugin\system\service\PluginService;
 use think\admin\Controller;
@@ -32,6 +33,8 @@ use think\admin\service\AppService;
  */
 class Plugin extends Controller
 {
+    private const PLUGIN_LAYOUT_VIEW = __DIR__ . '/../view/plugin/layout.html';
+
     /**
      * 插件中心首页.
      *
@@ -43,13 +46,14 @@ class Plugin extends Controller
     public function index(): void
     {
         if (!PluginService::isEnabled()) {
-            $this->title = '插件应用中心';
-            $this->fetch('plugin/disabled');
-        } else {
-            $this->items = PluginService::getLocalPlugs(true);
-            $this->title = '插件应用中心';
-            $this->fetch();
+            $this->respondWithPageBuilder(PluginBuilder::buildDisabledPage());
+            return;
         }
+
+        $context = [
+            'items' => array_values(PluginService::getLocalPlugs(true)),
+        ];
+        $this->respondWithPageBuilder(PluginBuilder::buildIndexPage($context), $context);
     }
 
     /**
@@ -124,7 +128,7 @@ class Plugin extends Controller
         $this->title = strval($this->plugin['name'] ?? '');
         $this->theme = AuthService::getUserTheme();
         $this->tokenValueJson = json_encode(AuthService::buildToken(), JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
-        $this->fetch('plugin/layout');
+        $this->fetch(self::PLUGIN_LAYOUT_VIEW);
     }
 
     /**
@@ -143,7 +147,13 @@ class Plugin extends Controller
         $this->theme = AuthService::getUserTheme();
         $this->tokenValueJson = json_encode(AuthService::buildToken(), JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
         $this->title = strval($this->plugin['name'] ?? '插件中心') . ' - 打开失败';
-        $this->content = $content;
-        $this->fetch('plugin/error');
+        $builder = PluginBuilder::buildErrorPage([
+            'content' => $content,
+            'returnUrl' => $this->returnUrl,
+        ]);
+        $this->contentHtml = $builder->renderHtml([
+            'showErrorMessage' => '',
+        ]);
+        $this->fetch(self::PLUGIN_LAYOUT_VIEW);
     }
 }

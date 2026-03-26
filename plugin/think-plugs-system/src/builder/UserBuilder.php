@@ -23,6 +23,7 @@ namespace plugin\system\builder;
 use think\admin\builder\form\FormBuilder;
 use think\admin\builder\form\FormBlocks;
 use think\admin\builder\form\FormNode;
+use think\admin\builder\form\module\FormModules;
 use think\admin\builder\page\PageBuilder;
 
 /**
@@ -102,10 +103,7 @@ class UserBuilder
 
         return PageBuilder::make()
             ->define(function ($page) use ($context, $type, $requestBaseUrl, $bases) {
-                $page->title(strval($context['title'] ?? '系统用户管理'))
-                    ->contentClass('')
-                    ->showSearchLegend(false)
-                    ->searchAttrs(['action' => $requestBaseUrl])
+                SystemListPage::apply($page, strval($context['title'] ?? '系统用户管理'), $requestBaseUrl)
                     ->buttons(function ($buttons) use ($type) {
                         if ($type === 'index') {
                             $buttons->modal('添加用户', url('add')->build(), '添加用户', [], 'add')
@@ -179,28 +177,41 @@ SCRIPT),
         $passwordPattern = '^(?![\\d]+$)(?![a-zA-Z]+$)(?![^\\da-zA-Z]+$).{6,32}$';
         return FormBuilder::make()
             ->define(function ($form) use ($withOldPassword, $passwordPattern) {
-                $form->bodyClass('pa20')
-                    ->fields(function ($fields) use ($withOldPassword, $passwordPattern) {
-                    $fields->text('username', '登录用户账号', 'Username', false, '登录用户账号创建后，不允许再次修改。', null, [
-                        'readonly' => null,
-                        'class' => 'think-bg-gray',
-                    ]);
-                    if ($withOldPassword) {
-                        $fields->password('oldpassword', '当前登录密码', 'Current Password', true, '请先输入当前登录密码完成验证。', null, [
-                            'maxlength' => 32,
-                            'required-error' => '旧的密码不能为空！',
+                $form->class('system-user-pass-form');
+
+                FormModules::intro($form, [
+                    'title' => '设置登录密码',
+                    'description' => '统一管理当前账号的登录密码，保存后新密码立即生效。',
+                ]);
+
+                FormModules::section($form, [
+                    'title' => '密码信息',
+                    'description' => '建议使用字母、数字和符号的组合，避免与其它系统密码重复。',
+                ], function ($section) use ($withOldPassword, $passwordPattern) {
+                    $section->fields(function ($fields) use ($withOldPassword, $passwordPattern) {
+                        $fields->text('username', '登录用户账号', 'Username', false, '登录用户账号创建后，不允许再次修改。', null, [
+                            'readonly' => null,
+                            'class' => 'think-bg-gray',
                         ]);
-                    }
-                    $fields->password('password', '新的登录密码', 'New Password', true, '密码必须包含大小写字母、数字、符号的任意两者组合。', $passwordPattern, [
-                        'maxlength' => 32,
-                        'required-error' => '登录密码不能为空！',
-                        'pattern-error' => '登录密码格式错误！',
-                    ])->password('repassword', '重复登录密码', 'Repeat Password', true, '密码必须包含大小写字母、数字、符号的任意两者组合。', $passwordPattern, [
-                        'maxlength' => 32,
-                        'required-error' => '重复密码不能为空！',
-                        'pattern-error' => '重复密码格式错误！',
-                    ]);
-                })->rule('repassword', 'confirm:password', '两次输入的密码不一致！')
+                        if ($withOldPassword) {
+                            $fields->password('oldpassword', '当前登录密码', 'Current Password', true, '请先输入当前登录密码完成验证。', null, [
+                                'maxlength' => 32,
+                                'required-error' => '旧的密码不能为空！',
+                            ]);
+                        }
+                        $fields->password('password', '新的登录密码', 'New Password', true, '密码必须包含大小写字母、数字、符号的任意两者组合。', $passwordPattern, [
+                            'maxlength' => 32,
+                            'required-error' => '登录密码不能为空！',
+                            'pattern-error' => '登录密码格式错误！',
+                        ])->password('repassword', '重复登录密码', 'Repeat Password', true, '密码必须包含大小写字母、数字、符号的任意两者组合。', $passwordPattern, [
+                            'maxlength' => 32,
+                            'required-error' => '重复密码不能为空！',
+                            'pattern-error' => '重复密码格式错误！',
+                        ]);
+                    });
+                });
+
+                $form->rule('repassword', 'confirm:password', '两次输入的密码不一致！')
                     ->actions(function ($actions) {
                         $actions->submit()->cancel();
                     });
@@ -231,19 +242,23 @@ SCRIPT),
             ->define(function ($form) use ($context, $usernamePattern, $usernameAttrs) {
                 $form->action(strval($context['actionUrl'] ?? ''))
                     ->attrs(['id' => 'UserForm', 'data-table-id' => 'UserTable'])
-                    ->bodyClass('pa20');
+                    ->class('system-user-form');
+
+                FormModules::intro($form, [
+                    'title' => !empty($context['isEdit']) ? '编辑系统用户' : '新增系统用户',
+                    'description' => '统一维护账号、身份权限和联系资料，保存后会同步到系统用户与访问授权。',
+                ]);
 
                 self::buildAccountSection($form, $usernamePattern, $usernameAttrs);
                 self::buildPermissionSection($form, $context);
                 self::buildProfileSection($form);
 
-                $form->div()->html('<input type="hidden" name="id" value="{$vo.id|default=\'\'}">')
-                    ->actions(function ($actions) {
+                $form->actions(function ($actions) {
                         $actions->submit()->cancel();
                     });
 
                 if (count((array)($context['baseGroups'] ?? [])) > 0 || count((array)($context['authGroups'] ?? [])) > 0) {
-                    $form->script(self::renderFormScript());
+                    $form->script(self::renderFormScript(strval($context['super'] ?? '')));
                 }
             })
             ->build();
@@ -340,17 +355,14 @@ SCRIPT),
                     '只切换显示的权限分组，不会影响已选中的其它插件权限。'
                 );
                 if (strval($context['super'] ?? '') !== '') {
-                    $fieldset->html(sprintf(
-                        '{if isset($vo.username) and $vo.username eq \'%s\'}<div class="layui-form-item"><span class="color-desc pl5">超级用户拥有所有访问权限，不需要配置权限。</span></div>{else}{/if}',
-                        addslashes(strval($context['super']))
-                    ));
+                    $fieldset->div(function (FormNode $notice) {
+                        $notice->node('span', function (FormNode $span) {
+                            $span->class('color-desc pl5')->html('超级用户拥有所有访问权限，不需要配置权限。');
+                        });
+                    })->class('layui-form-item layui-hide user-super-notice');
                 }
-                $authWrap = $fieldset->div()->html(sprintf(
-                    '{if !(isset($vo.username) and $vo.username eq \'%s\')}',
-                    addslashes(strval($context['super'] ?? ''))
-                ));
+                $authWrap = $fieldset->div()->class('user-auth-wrap');
                 FormBlocks::groupedTemplateChoices($authWrap, $authGroups, 'checkbox', 'authorize', 'user-auth-group', 'auth-group', 'authorize');
-                $authWrap->html('{/if}');
             }
         });
     }
@@ -393,10 +405,23 @@ SCRIPT),
         });
     }
 
-    private static function renderFormScript(): string
+    private static function renderFormScript(string $super): string
     {
-        return <<<'SCRIPT'
+        $superLiteral = addslashes($super);
+        return <<<SCRIPT
 $.module.use([], function () {
+    var superUser = '{$superLiteral}';
+    var \$username = $('[name="username"]');
+    var \$superNotice = $('.user-super-notice');
+    var \$authWrap = $('.user-auth-wrap');
+
+    var syncSuperUser = function () {
+        if (!superUser || \$superNotice.length < 1 || \$authWrap.length < 1) return;
+        var active = $.trim(String(\$username.val() || '')) === superUser;
+        \$superNotice[active ? 'show' : 'hide']();
+        \$authWrap[active ? 'hide' : 'show']();
+    };
+
     layui.form.on('select(UserBasePluginFilter)', function (object) {
         $('.user-base-group').each(function () {
             let active = !object.value || $(this).data('base-group') === object.value;
@@ -410,6 +435,9 @@ $.module.use([], function () {
             $(this)[active ? 'show' : 'hide']();
         });
     });
+
+    syncSuperUser();
+    \$username.on('change input', syncSuperUser);
 });
 SCRIPT;
     }

@@ -6,8 +6,8 @@
             </a>
         </li>
         <li class="layui-nav-item" lay-unselect>
-            <a class="layui-logo-hide layui-elip" href="{:sysuri('@')}" title="{:sysdata('system.site.application_name')}">
-                <span class="headimg headimg-no headimg-xs" data-lazy-src="{:sysdata('system.site.browser_icon')}"></span>
+            <a class="layui-logo-hide layui-elip" href="{:sysuri('@')}" title="{:is_scalar(sysdata('system.site.application_name')) ? sysdata('system.site.application_name') : ''}">
+                <span class="headimg headimg-no headimg-xs" data-lazy-src="{:is_scalar(sysdata('system.site.browser_icon')) ? sysdata('system.site.browser_icon') : ''}"></span>
             </a>
         </li>
         {foreach $menus as $one}

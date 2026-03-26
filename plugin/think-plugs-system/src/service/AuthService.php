@@ -234,7 +234,7 @@ class AuthService extends Service
             'utype' => trim(strval(request()->post('utype', ''))),
             'sort' => intval(request()->post('sort', 0)),
             'status' => $status,
-            'nodes' => self::normalizeNodes(request()->post('nodes', [])),
+            'nodes' => self::normalizeNodes(request()->param('nodes', $data['nodes'] ?? [])),
         ];
     }
 

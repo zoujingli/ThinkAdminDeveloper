@@ -35,18 +35,18 @@ use think\Request;
  */
 class ConfigPageRenderTest extends SqliteIntegrationTestCase
 {
-    public function testIndexRendersDashboardAndAllPluginCards(): void
+    public function testIndexRendersDashboardWithoutPluginCards(): void
     {
         $this->bindAdminUser();
 
         $html = $this->callPageHtml('index');
-        $expected = $this->countLocalPluginApps();
 
         $this->assertStringContainsString('统一管理运行模式、存储中心与系统基础参数', $html);
-        $this->assertStringContainsString('插件应用', $html);
+        $this->assertStringContainsString('站点名称', $html);
         $this->assertStringContainsString('page-builder-schema', $html);
         $this->assertStringContainsString('系统参数配置', $html);
-        $this->assertSame($expected, substr_count($html, 'class="layui-card ta-plugin-card"'));
+        $this->assertStringNotContainsString('插件应用', $html);
+        $this->assertStringNotContainsString('插件标识', $html);
     }
 
     public function testSystemRendersGroupedConfigurationSections(): void
@@ -56,7 +56,10 @@ class ConfigPageRenderTest extends SqliteIntegrationTestCase
         $html = $this->callPageHtml('system');
 
         $this->assertStringContainsString('统一管理登录入口、品牌信息与安全配置', $html);
-        $this->assertStringContainsString('class="layui-card system-config-form layui-form"', $html);
+        $this->assertStringContainsString('系统参数设置', $html);
+        $this->assertStringContainsString('返回配置首页', $html);
+        $this->assertStringContainsString('class="system-config-form layui-form"', $html);
+        $this->assertStringContainsString('data-builder-scope="page"', $html);
         $this->assertStringContainsString('站点品牌信息', $html);
         $this->assertStringContainsString('data-open-site-theme', $html);
         $this->assertStringContainsString('form-builder-schema', $html);
@@ -82,6 +85,8 @@ class ConfigPageRenderTest extends SqliteIntegrationTestCase
         $html = $this->callPageHtml('storage', ['type' => 'local']);
 
         $this->assertStringContainsString('统一维护上传策略与驱动参数', $html);
+        $this->assertStringContainsString('本地服务器存储 存储配置', $html);
+        $this->assertStringContainsString('返回存储中心', $html);
         $this->assertStringContainsString('全局上传策略', $html);
         $this->assertStringContainsString('本地服务器存储 驱动参数', $html);
         $this->assertStringContainsString('form-builder-schema', $html);
@@ -129,21 +134,5 @@ class ConfigPageRenderTest extends SqliteIntegrationTestCase
             'username' => 'tester',
             'password' => $this->hashSystemPassword('changed-password'),
         ], '', true);
-    }
-
-    private function countLocalPluginApps(): int
-    {
-        $count = 0;
-        $pluginPath = TEST_PROJECT_ROOT . '/plugin';
-        foreach (glob($pluginPath . '/*/composer.json') ?: [] as $file) {
-            $content = file_get_contents($file);
-            $config = is_string($content) ? json_decode($content, true) : null;
-            $app = is_array($config) ? ($config['extra']['xadmin']['app'] ?? null) : null;
-            $code = is_array($app) ? trim(strval($app['code'] ?? '')) : '';
-            if ($code !== '' && $code !== 'system') {
-                ++$count;
-            }
-        }
-        return $count;
     }
 }

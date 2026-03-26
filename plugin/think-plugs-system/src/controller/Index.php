@@ -20,6 +20,7 @@ declare(strict_types=1);
 
 namespace plugin\system\controller;
 
+use plugin\system\builder\ThemeBuilder;
 use plugin\system\builder\UserBuilder;
 use plugin\system\model\SystemUser;
 use plugin\system\service\AuthService;
@@ -68,28 +69,36 @@ class Index extends Controller
      */
     public function theme()
     {
+        $scene = strval($this->request->param('scene', 'user'));
+        $theme = strval($this->request->param('value', ''));
+        $themes = Config::themeCatalog;
+        if (!isset($themes[$theme])) {
+            $theme = $scene === 'config' ? strval(sysdata('system.site.theme') ?: 'default') : AuthService::getUserTheme();
+        }
+        if (!isset($themes[$theme])) {
+            $theme = 'default';
+        }
+
+        $context = [
+            'scene' => $scene === 'config' ? 'config' : 'user',
+            'picker' => strval($this->request->param('picker', '')),
+            'theme' => $theme,
+            'themes' => $themes,
+        ];
+        $builder = $context['scene'] === 'config'
+            ? ThemeBuilder::buildConfigThemeForm($context)
+            : ThemeBuilder::buildUserThemeForm($context);
+
         if ($this->request->isGet()) {
-            $scene = strval($this->request->param('scene', 'user'));
-            $theme = strval($this->request->param('value', ''));
-            $themes = Config::themeCatalog;
-            if (!isset($themes[$theme])) {
-                $theme = $scene === 'config' ? strval(sysdata('system.site.theme') ?: 'default') : AuthService::getUserTheme();
-            }
-            if (!isset($themes[$theme])) {
-                $theme = 'default';
-            }
-            $this->scene = $scene === 'config' ? 'config' : 'user';
-            $this->picker = strval($this->request->param('picker', ''));
-            $this->theme = $theme;
-            $this->themes = $themes;
-            $this->fetch($this->scene === 'config' ? 'index/theme-config' : 'index/theme');
+            $this->respondWithFormBuilder($builder, $context, ['site_theme' => $theme]);
+            return;
+        }
+
+        $data = $this->_vali(['site_theme.require' => '主题名称不能为空！']);
+        if (AuthService::setUserTheme($data['site_theme'])) {
+            $this->success('主题配置保存成功！');
         } else {
-            $data = $this->_vali(['site_theme.require' => '主题名称不能为空！']);
-            if (AuthService::setUserTheme($data['site_theme'])) {
-                $this->success('主题配置保存成功！');
-            } else {
-                $this->error('主题配置保存失败！');
-            }
+            $this->error('主题配置保存失败！');
         }
     }
 

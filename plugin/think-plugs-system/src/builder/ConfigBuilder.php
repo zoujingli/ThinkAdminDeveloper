@@ -24,7 +24,6 @@ class ConfigBuilder
         $site = is_array($context['site'] ?? null) ? $context['site'] : [];
         $runtime = is_array($context['runtime'] ?? null) ? $context['runtime'] : [];
         $storage = is_array($context['storage'] ?? null) ? $context['storage'] : [];
-        $plugins = array_values(is_array($context['plugins'] ?? null) ? $context['plugins'] : []);
         $isSuper = !empty($context['issuper']);
         $isDebug = !empty($context['appDebug']);
         $storageEditable = !empty($context['storageEditable']);
@@ -34,22 +33,22 @@ class ConfigBuilder
         $showSystemButton = !empty($context['canEditSystem']);
 
         return PageBuilder::make()
-            ->define(function ($page) use ($site, $runtime, $storage, $plugins, $isSuper, $isDebug, $storageEditable, $storageDriver, $storageName, $systemInfo, $showSystemButton) {
+            ->define(function ($page) use ($site, $runtime, $storage, $isSuper, $isDebug, $storageEditable, $storageDriver, $storageName, $systemInfo, $showSystemButton) {
                 $page->title('系统参数配置')->contentClass('');
 
                 self::buildHeaderButtons($page, $isSuper, $showSystemButton);
 
-                PageModules::hero($page, [
-                    'class' => 'layui-card mb15',
-                    'title' => '统一管理运行模式、存储中心与系统基础参数',
-                    'description' => '当前后台使用 System 统一维护运行模式、富编辑器、文件存储、系统参数与插件应用信息。',
-                    'stats' => [
+                PageModules::card($page, ['title' => '系统概览', 'remark' => '统一管理运行模式、存储中心与系统基础参数', 'class' => 'layui-card mb15'], function (PageNode $body) use ($isDebug, $storageName, $runtime) {
+                    PageModules::paragraphs($body, [
+                        '当前后台使用 System 统一维护运行模式、富编辑器、文件存储与系统基础参数。',
+                    ], ['class' => 'ta-desc mt0']);
+                    PageModules::kvGrid($body, [
                         ['label' => '运行模式', 'value' => $isDebug ? '开发模式' : '生产模式'],
                         ['label' => '默认存储驱动', 'value' => $storageName],
                         ['label' => '默认编辑器', 'value' => strval($runtime['editor_driver'] ?? 'ckeditor5')],
-                        ['label' => '插件应用数量', 'value' => strval(count($plugins))],
-                    ],
-                ]);
+                        ['label' => '站点名称', 'value' => strval($site['name'] ?? '-')],
+                    ]);
+                });
 
                 if ($isSuper) {
                     self::buildSummaryPanels($page, [
@@ -62,13 +61,6 @@ class ConfigBuilder
                         'site' => $site,
                         'systemInfo' => $systemInfo,
                     ]);
-                }
-
-                if ($plugins !== []) {
-                    PageModules::card($page, ['title' => '插件应用', 'class' => 'layui-card mb15'], function (PageNode $body) use ($plugins) {
-                        $body->div()->class('mb15 color-desc')->text('这里展示当前已注册的插件应用，不包含 System 自身。');
-                        PageModules::pluginCards($body, $plugins);
-                    });
                 }
             })
             ->build();
@@ -94,17 +86,17 @@ class ConfigBuilder
                             ->open('返回系统配置', sysuri('system/config/index'));
                     });
 
-                PageModules::hero($page, [
-                    'class' => 'layui-card mb15',
-                    'title' => '统一管理文件上传、命名策略与外链输出',
-                    'description' => '系统所有上传驱动共享一套全局策略，切换默认驱动后，上传入口、命名方式和链接输出会同步生效。',
-                    'stats' => [
+                PageModules::card($page, ['title' => '存储概览', 'remark' => '统一管理文件上传、命名策略与外链输出', 'class' => 'layui-card mb15'], function (PageNode $body) use ($driverName, $storage, $files) {
+                    PageModules::paragraphs($body, [
+                        '系统所有上传驱动共享一套全局策略，切换默认驱动后，上传入口、命名方式和链接输出会同步生效。',
+                    ], ['class' => 'ta-desc mt0']);
+                    PageModules::kvGrid($body, [
                         ['label' => '当前默认驱动', 'value' => $driverName],
                         ['label' => '命名策略', 'value' => strval($storage['naming_rule'] ?? 'xmd5')],
                         ['label' => '链接策略', 'value' => strval($storage['link_mode'] ?? 'none')],
                         ['label' => '可用驱动数量', 'value' => strval(count($files))],
-                    ],
-                ]);
+                    ]);
+                });
 
                 PageModules::card($page, ['title' => '存储引擎', 'remark' => '系统默认文件存储方式，可按驱动分别配置', 'class' => 'layui-card mb15'], function (PageNode $body) use ($files, $driver, $canEdit, $allowedExtensionsText) {
                     $grid = $body->div()->class('layui-row layui-col-space15');
@@ -136,10 +128,11 @@ class ConfigBuilder
         $siteThemeLabel = strval($context['siteThemeLabel'] ?? $siteThemeKey);
         $themePickerUrl = strval($context['themePickerUrl'] ?? '/system/index/theme');
 
-        return FormBuilder::make()
+        return FormBuilder::make('form', 'page')
             ->define(function ($form) use ($site, $security, $runtime, $pluginCenter, $themes, $siteThemeKey, $siteThemeLabel, $themePickerUrl) {
-                $form->class('layui-card system-config-form')
-                    ->bodyClass('pa20')
+                $form->title('系统参数设置')
+                    ->headerButton('返回配置首页', 'button', '', ['data-target-backup' => null], 'layui-btn-primary layui-btn-sm')
+                    ->class('system-config-form')
                     ->data('auto', 'true')
                     ->action(sysuri());
 
@@ -335,10 +328,11 @@ SCRIPT);
         $driverName = strval($context['driverName'] ?? strtoupper($type));
         $points = is_array($context['points'] ?? null) ? $context['points'] : [];
 
-        return FormBuilder::make()
+        return FormBuilder::make('form', 'page')
             ->define(function ($form) use ($type, $driverName, $points) {
-                $form->class('layui-card storage-form')
-                    ->bodyClass('pa20')
+                $form->title($driverName . ' 存储配置')
+                    ->headerButton('返回存储中心', 'button', '', ['data-target-backup' => null], 'layui-btn-primary layui-btn-sm')
+                    ->class('storage-form')
                     ->data('auto', 'true')
                     ->action(sysuri());
 
@@ -403,9 +397,7 @@ SCRIPT);
                 $buttons->load('清理无效配置', apiuri('system/system/config'));
             }
             if ($showSystemButton) {
-                $buttons->modal('修改系统参数', url('system')->build(), '修改系统参数', [
-                    'data-width' => '1180px',
-                ]);
+                $buttons->open('系统参数设置', url('system')->build());
             }
         });
     }
@@ -464,7 +456,7 @@ SCRIPT);
             if ($storageEditable) {
                 PageModules::buttonGroup($body, [
                     ['label' => '进入存储中心', 'url' => sysuri('system/config/storage'), 'data_key' => 'data-open', 'class' => 'layui-btn layui-btn-sm layui-btn-active'],
-                    ['label' => "配置当前驱动", 'url' => sysuri('system/config/storage') . '?type=' . $storageDriver, 'data_key' => 'data-modal', 'class' => 'layui-btn layui-btn-sm layui-btn-primary', 'attrs' => ['data-title' => "配置{$storageName}", 'data-width' => '980px']],
+                    ['label' => "配置当前驱动", 'url' => sysuri('system/config/storage') . '?type=' . $storageDriver, 'data_key' => 'data-open', 'class' => 'layui-btn layui-btn-sm layui-btn-primary'],
                 ]);
             } else {
                 PageModules::buttonGroup($body, [

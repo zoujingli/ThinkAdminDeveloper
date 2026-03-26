@@ -38,6 +38,32 @@ use think\Request;
  */
 class IndexControllerTest extends SqliteIntegrationTestCase
 {
+    public function testThemeGetRendersUserThemeFormBuilderMarkup(): void
+    {
+        $this->bindAdminUser(9101, 'tester', $this->hashSystemPassword('changed-password'));
+
+        $html = $this->callActionHtml('theme');
+
+        $this->assertStringContainsString('form-builder-schema', $html);
+        $this->assertStringContainsString('data-theme-card="default"', $html);
+        $this->assertStringContainsString('name="site_theme"', $html);
+        $this->assertStringContainsString('保存配置', $html);
+        $this->assertStringNotContainsString('ThemeCatalogJson', $html);
+    }
+
+    public function testThemeConfigGetRendersPickerFormBuilderMarkup(): void
+    {
+        $this->bindAdminUser(9101, 'tester', $this->hashSystemPassword('changed-password'));
+
+        $html = $this->callActionHtml('theme', ['scene' => 'config', 'picker' => '__themeConfigPicker']);
+
+        $this->assertStringContainsString('form-builder-schema', $html);
+        $this->assertStringContainsString('data-theme-card="default"', $html);
+        $this->assertStringContainsString('data-theme-confirm', $html);
+        $this->assertStringContainsString('data-theme-cancel', $html);
+        $this->assertStringNotContainsString('ThemeCatalogJson', $html);
+    }
+
     public function testThemePersistsCurrentUserThemeIntoSystemData(): void
     {
         $this->bindAdminUser(9101, 'tester', $this->hashSystemPassword('changed-password'));

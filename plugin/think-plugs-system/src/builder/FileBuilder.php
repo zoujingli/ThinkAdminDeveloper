@@ -23,10 +23,7 @@ class FileBuilder
 
         return PageBuilder::make()
             ->define(function ($page) use ($requestBaseUrl, $types, $xexts) {
-                $page->title('系统文件管理')
-                    ->contentClass('')
-                    ->showSearchLegend(false)
-                    ->searchAttrs(['action' => $requestBaseUrl])
+                SystemListPage::apply($page, '系统文件管理', $requestBaseUrl)
                     ->buttons(function ($buttons) {
                         $buttons->action('清理重复', url('distinct')->build(), '', '', ['data-table-id' => 'FileTable'], 'distinct')
                             ->batchAction('批量删除', url('remove')->build(), 'id#{id}', '确定删除这些记录吗？', [], 'remove');

@@ -23,14 +23,14 @@ class OplogBuilder
 
         return PageBuilder::make()
             ->define(function ($page) use ($requestBaseUrl, $users, $actions) {
-                $page->title('系统日志管理')
-                    ->contentClass('')
-                    ->showSearchLegend(false)
-                    ->searchAttrs(['action' => $requestBaseUrl])
+                SystemListPage::apply($page, '系统日志管理', $requestBaseUrl)
                     ->buttons(function ($buttons) use ($requestBaseUrl) {
                         $buttons->batchAction('批量删除', url('remove')->build(), 'id#{id}', '确定要删除选中的日志吗？', [], 'remove')
                             ->action('清空数据', url('clear')->build(), '', '确定要清空所有日志吗？', [], 'clear')
-                            ->html(sprintf('<button type="button" data-form-export="%s" class="layui-btn layui-btn-sm layui-btn-primary"><i class="layui-icon layui-icon-export"></i> 导 出</button>', $requestBaseUrl));
+                            ->button('<i class="layui-icon layui-icon-export"></i> 导 出', [
+                                'type' => 'button',
+                                'data-form-export' => $requestBaseUrl,
+                            ], null, 'button');
                     });
 
                 $page->tabsList(SystemListTabs::single('系统日志'), 'OplogTable', $requestBaseUrl, function ($search) use ($users, $actions) {
@@ -56,10 +56,11 @@ class OplogBuilder
                         ->column(['field' => 'geoisp', 'title' => '网络服务商', 'minWidth' => 100])
                         ->column(SystemTablePreset::timeColumn())
                         ->rows(function ($rows) {
-                            $rows->action('删 除', url('remove')->build(), 'id#{{d.id}}', '确认要删除这条记录吗？', ['class' => 'layui-btn-danger'], 'remove');
+                            $rows->action('删除', url('remove')->build(), 'id#{{d.id}}', '确认要删除这条记录吗？', [], 'remove');
                         })
-                        ->toolbar('操作面板', SystemTablePreset::toolbar('操作面板', 90));
+                        ->toolbar('操作面板', SystemTablePreset::toolbar('操作面板', 180, ['fixed' => 'right']));
                 });
+                $page->script(self::renderToolbarAlignScript());
                 $page->script(self::renderExportScript());
             })
             ->build();
@@ -92,6 +93,16 @@ $.module.use(['excel'], function (excel) {
         data.unshift(['ID', '操作账号', '操作节点', '访问地址', '网络服务商', '操作行为', '操作内容', '创建时间']);
         return this.withStyle(data, {A: 60, B: 80, C: 99, E: 120, G: 120});
     }, '操作日志' + layui.util.toDateString(Date.now(), '_yyyyMMdd_HHmmss'));
+});
+SCRIPT;
+    }
+
+    private static function renderToolbarAlignScript(): string
+    {
+        return <<<'SCRIPT'
+$(function () {
+    if ($('#OplogToolbarAlignStyle').length > 0) return;
+    $('<style id="OplogToolbarAlignStyle">#OplogTable+.layui-table-view .layui-table-body td:last-child .layui-table-cell{display:flex;align-items:center;justify-content:center;min-height:38px;padding-top:0;padding-bottom:0}#OplogTable+.layui-table-view .layui-table-body td:last-child .layui-btn{margin:0}</style>').appendTo('head');
 });
 SCRIPT;
     }

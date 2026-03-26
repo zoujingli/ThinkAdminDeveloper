@@ -20,6 +20,7 @@ declare(strict_types=1);
 
 namespace plugin\system\controller\api;
 
+use plugin\system\builder\UploadImageDialogBuilder;
 use plugin\system\model\SystemFile;
 use plugin\system\storage\LocalStorage;
 use plugin\system\storage\StorageConfig;
@@ -64,6 +65,9 @@ class Upload extends Controller
     public function image(): void
     {
         [$uuid, $unid] = $this->initUnid();
+        if (!$this->wantsTableOutput()) {
+            throw new HttpResponseException(Response::create(UploadImageDialogBuilder::render($this->buildImageDialogContext()), 'html'));
+        }
         SystemFile::mQuery()->layTable(function () {
             $this->title = 'File Picker';
         }, function (QueryHelper $query) use ($unid, $uuid) {
@@ -247,6 +251,34 @@ class Upload extends Controller
             $this->error('Login is required before upload.');
         }
         return [$uuid, $unid, $exts];
+    }
+
+    /**
+     * @return array<string, mixed>
+     */
+    private function buildImageDialogContext(): array
+    {
+        $get = $this->request->get();
+        $file = strtolower(trim(strval($get['file'] ?? 'image'))) === 'images' ? 'images' : 'image';
+        return [
+            'id' => trim(strval($get['id'] ?? '')),
+            'file' => $file,
+            'type' => trim(strval($get['type'] ?? 'gif,png,jpg,jpeg')) ?: 'gif,png,jpg,jpeg',
+            'path' => trim(strval($get['path'] ?? '')),
+            'size' => intval($get['size'] ?? 0),
+            'cutWidth' => intval($get['cutWidth'] ?? 0),
+            'cutHeight' => intval($get['cutHeight'] ?? 0),
+            'maxWidth' => intval($get['maxWidth'] ?? 0),
+            'maxHeight' => intval($get['maxHeight'] ?? 0),
+            'removeAllowed' => auth('system/file/remove'),
+            'removeUrl' => sysuri('system/file/remove', [], false, false),
+            'imageUrl' => apiuri('system/upload/image', [], false, false),
+        ];
+    }
+
+    private function wantsTableOutput(): bool
+    {
+        return in_array(strtolower(strval($this->request->request('output', 'default'))), ['json', 'layui.table'], true);
     }
 
     private function imgNotSafe(string $filename): bool
