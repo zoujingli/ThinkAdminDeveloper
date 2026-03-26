@@ -168,7 +168,7 @@ class Level extends Controller
                             ->script(<<<'SCRIPT'
 layui.form.on('switch(StatusSwitch)', function (obj) {
     var data = {id: obj.value, status: obj.elem.checked > 0 ? 1 : 0};
-    $.form.load("state", data, "post", function (ret) {
+                            $.form.load("state", data, "post", function (ret) {
         if (ret.code < 1) $.msg.error(ret.info, 3, function () {
             $("#UpgradeTable").trigger("reload");
         });
