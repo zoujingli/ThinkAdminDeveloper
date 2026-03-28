@@ -41,4 +41,23 @@ class CommonFunctionsTest extends TestCase
             );
         }
     }
+
+    public function testInputRightIconStopsMouseAndTouchStartPropagation(): void
+    {
+        $files = [
+            TEST_PROJECT_ROOT . '/public/static/system.js',
+            TEST_PROJECT_ROOT . '/plugin/think-plugs-static/stc/public/static/system.js',
+        ];
+
+        foreach ($files as $file) {
+            $this->assertFileExists($file);
+
+            $content = file_get_contents($file) ?: '';
+
+            $this->assertStringContainsString("$.base.onEvent('mousedown', '.input-right-icon', function (event) {", $content);
+            $this->assertStringContainsString("$.base.onEvent('touchstart', '.input-right-icon', function (event) {", $content);
+            $this->assertStringContainsString('event.preventDefault();', $content);
+            $this->assertStringContainsString('event.stopPropagation();', $content);
+        }
+    }
 }

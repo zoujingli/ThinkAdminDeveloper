@@ -61,15 +61,20 @@ class ConfigPageRenderTest extends SqliteIntegrationTestCase
         $html = $this->callPageHtml('system');
 
         $this->assertStringContainsString('系统参数设置', $html);
-        $this->assertStringContainsString('返回配置首页', $html);
+        $this->assertStringContainsString('保存修改', $html);
+        $this->assertStringContainsString('取消修改', $html);
         $this->assertStringContainsString('class="system-config-form layui-form"', $html);
         $this->assertStringContainsString('data-builder-scope="page"', $html);
         $this->assertStringContainsString('站点品牌信息', $html);
+        $this->assertStringContainsString('data-target-submit', $html);
+        $this->assertStringContainsString('data-target-backup', $html);
         $this->assertStringContainsString('data-open-site-theme', $html);
+        $this->assertStringContainsString("'760px'", $html);
         $this->assertStringContainsString('form-builder-schema', $html);
         $this->assertStringContainsString('运行参数', $html);
         $this->assertStringContainsString('id="RefreshJwtKey"', $html);
         $this->assertStringContainsString('type="password"', $html);
+        $this->assertStringContainsString('name="site[login_entry]"', $html);
         $this->assertStringContainsString('data-field="site[browser_icon]"', $html);
         $this->assertStringContainsString('name="site[host]"', $html);
         $this->assertStringContainsString('站点基础域名', $html);
@@ -132,9 +137,11 @@ class ConfigPageRenderTest extends SqliteIntegrationTestCase
         $html = $this->callPageHtml('system');
 
         $this->assertStringContainsString('System Parameter Settings', $html);
-        $this->assertStringContainsString('Back to Config Home', $html);
+        $this->assertStringContainsString('Save Changes', $html);
+        $this->assertStringContainsString('Cancel Modification', $html);
         $this->assertStringContainsString('Site Branding', $html);
         $this->assertStringContainsString('Runtime Settings', $html);
+        $this->assertStringContainsString('Login Entry', $html);
         $this->assertStringContainsString('Site Base URL', $html);
         $this->assertStringContainsString('Site Name', $html);
         $this->assertStringContainsString('Choose Backend Default Theme', $html);

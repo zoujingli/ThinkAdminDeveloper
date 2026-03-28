@@ -49,6 +49,10 @@ class QueueControllerTest extends SqliteIntegrationTestCase
         $this->assertStringContainsString('class="mt10"', $html);
         $this->assertStringContainsString('data-queue-message', $html);
         $this->assertStringContainsString('批量删除', $html);
+        $this->assertStringContainsString('const queueStatusUrl = "/api/system/queue/status.html";', $html);
+        $this->assertStringContainsString('const queueStatusEnabled = false;', $html);
+        $this->assertStringNotContainsString('{$queueStatusUrl}', $html);
+        $this->assertStringNotContainsString('{$enabled}', $html);
     }
 
     public function testIndexRendersEnglishTextsWhenLangSetIsEnUs(): void

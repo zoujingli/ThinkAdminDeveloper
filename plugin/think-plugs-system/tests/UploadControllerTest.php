@@ -53,6 +53,8 @@ class UploadControllerTest extends SqliteIntegrationTestCase
         $this->assertStringContainsString('data-file="mul"', $html);
         $this->assertStringContainsString('data-path="system/example"', $html);
         $this->assertStringContainsString("$.form.load(config.imageUrl, this.params, 'get'", $html);
+        $this->assertStringContainsString('centerLayer: function () {', $html);
+        $this->assertStringContainsString("\$layer.css({left: left + 'px', top: top + 'px', marginLeft: 0, marginTop: 0});", $html);
         $this->assertStringContainsString('上传图片', $html);
         $this->assertStringNotContainsString('{$get', $html);
         $this->assertStringNotContainsString('{:url', $html);

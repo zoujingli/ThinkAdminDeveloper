@@ -35,6 +35,7 @@
             <file>plugin/think-plugs-system/tests/UploadControllerTest.php</file>
             <file>plugin/think-plugs-system/tests/UserControllerTest.php</file>
             <file>plugin/think-plugs-system/tests/FileControllerTest.php</file>
+            <file>plugin/think-plugs-system/tests/ConsoleCssUtilityTest.php</file>
             <file>plugin/think-plugs-account/tests/AccountRuntimeTest.php</file>
             <file>plugin/think-plugs-account/tests/AccountIntegrationTest.php</file>
             <file>plugin/think-plugs-account/tests/AccountCenterControllerTest.php</file>

@@ -85,6 +85,7 @@ class IndexControllerTest extends SqliteIntegrationTestCase
         $this->assertStringContainsString('用户管理', $html);
         $this->assertStringContainsString('/system/index/info.html?id=9101', $html);
         $this->assertStringContainsString('/system/index/pass.html?id=9101', $html);
+        $this->assertStringContainsString('data-width="760px"', $html);
     }
 
     public function testThemeGetRendersUserThemeFormBuilderMarkup(): void
@@ -96,6 +97,17 @@ class IndexControllerTest extends SqliteIntegrationTestCase
         $this->assertStringContainsString('form-builder-schema', $html);
         $this->assertStringContainsString('data-theme-card="default"', $html);
         $this->assertStringContainsString('name="site_theme"', $html);
+        $this->assertStringContainsString('lay-ignore="true"', $html);
+        $this->assertStringContainsString('class="layui-form-item mb0 theme-picker-field"', $html);
+        $this->assertStringContainsString('theme-picker-form--compact', $html);
+        $this->assertStringContainsString('theme-palette--compact', $html);
+        $this->assertStringContainsString('.theme-picker-form--compact .layui-form-radio,', $html);
+        $this->assertStringContainsString('.theme-picker-form--compact .theme-palette--compact .theme-palette-preview.split .theme-palette-preview-header{', $html);
+        $this->assertStringContainsString('.theme-picker-form--compact .theme-palette--compact .theme-palette-meta{', $html);
+        $this->assertStringContainsString('position:absolute;', $html);
+        $this->assertStringContainsString('color:#fff;', $html);
+        $this->assertStringContainsString('bottom:6px;', $html);
+        $this->assertStringContainsString('background:transparent;', $html);
         $this->assertStringContainsString('保存配置', $html);
         $this->assertStringNotContainsString('ThemeCatalogJson', $html);
     }
@@ -110,6 +122,8 @@ class IndexControllerTest extends SqliteIntegrationTestCase
         $this->assertStringContainsString('data-theme-card="default"', $html);
         $this->assertStringContainsString('data-theme-confirm', $html);
         $this->assertStringContainsString('data-theme-cancel', $html);
+        $this->assertStringContainsString('theme-picker-form--compact', $html);
+        $this->assertStringContainsString('theme-palette--compact', $html);
         $this->assertStringNotContainsString('ThemeCatalogJson', $html);
     }
 

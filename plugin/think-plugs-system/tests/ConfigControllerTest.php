@@ -46,6 +46,7 @@ class ConfigControllerTest extends SqliteIntegrationTestCase
         $result = $this->callActionController('system', [
             'site' => [
                 'login_title' => '  ',
+                'login_entry' => ' Admin-Entry/login.html ',
                 'theme' => 'unknown-theme',
                 'browser_icon' => '/static/app-icon.png',
                 'website_name' => '',
@@ -80,6 +81,7 @@ class ConfigControllerTest extends SqliteIntegrationTestCase
         $this->assertSame('系统参数保存成功。', $result['info'] ?? '');
 
         $this->assertSame('系统管理', $site['login_title'] ?? '');
+        $this->assertSame('admin-entry', $site['login_entry'] ?? '');
         $this->assertSame('default', $site['theme'] ?? '');
         $this->assertSame('/static/app-icon.png', $site['browser_icon'] ?? '');
         $this->assertSame('ThinkAdmin', $site['website_name'] ?? '');
@@ -103,6 +105,8 @@ class ConfigControllerTest extends SqliteIntegrationTestCase
         $this->assertSame(1, intval($pluginCenter['show_menu'] ?? 0));
 
         $this->assertSame('https://admin.example.com', ConfigService::getSiteHost());
+        $this->assertSame('/admin-entry/login.html', sysuri('system/login/index'));
+        $this->assertSame('/admin-entry.html#/admin-entry/config.html', strval($result['data'] ?? ''));
         $this->assertTrue($oplog->isExists());
         $this->assertSame('系统参数配置', $oplog->getAttr('action'));
         $this->assertSame('更新系统参数', $oplog->getAttr('content'));
@@ -140,6 +144,51 @@ class ConfigControllerTest extends SqliteIntegrationTestCase
 
         $this->assertSame(1, intval($result['code'] ?? 0));
         $this->assertSame('1234567890abcdef1234567890abcdef', strval($security['jwt_secret'] ?? ''));
+    }
+
+    public function testSystemPostRejectsConflictingLoginEntry(): void
+    {
+        $this->bindAdminUser();
+
+        $result = $this->callActionController('system', [
+            'site' => [
+                'login_title' => '系统管理',
+                'login_entry' => 'index',
+                'theme' => 'default',
+                'browser_icon' => 'https://example.com/icon.png',
+                'website_name' => 'ThinkAdmin',
+                'application_name' => 'ThinkAdmin',
+                'application_version' => 'v8',
+                'host' => 'https://admin.example.com',
+            ],
+            'security' => [
+                'jwt_secret' => '1234567890abcdef1234567890abcdef',
+            ],
+            'runtime' => [
+                'editor_driver' => 'ckeditor5',
+                'queue_retain_days' => 7,
+            ],
+            'plugin_center' => [
+                'enabled' => '1',
+                'show_menu' => '1',
+            ],
+        ]);
+
+        $site = SystemData::mk()->where(['name' => 'system.site'])->findOrEmpty();
+
+        $this->assertSame(0, intval($result['code'] ?? 1));
+        $this->assertSame('后台登录入口不能与本地应用名称冲突！', $result['info'] ?? '');
+        $this->assertFalse($site->isExists());
+    }
+
+    public function testBootSystemLoginEntryBindingUsesSavedEntry(): void
+    {
+        sysdata('system.site', ['login_entry' => 'gateway']);
+
+        ConfigService::bootSystemLoginEntryBinding();
+
+        $this->assertSame('gateway', strval($this->app->config->get('app.plugin.bindings.system', '')));
+        $this->assertSame('/gateway/login.html', sysuri('system/login/index'));
     }
 
     public function testStoragePostKeepsMaskedSensitiveValues(): void
