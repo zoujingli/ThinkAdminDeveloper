@@ -1,0 +1,46 @@
+// +----------------------------------------------------------------------
+// | Static Plugin for ThinkAdmin
+// +----------------------------------------------------------------------
+// | 官方网站: https://thinkadmin.top
+// +----------------------------------------------------------------------
+// | 版权所有 2014~2025 ThinkAdmin [ thinkadmin.top ]
+// +----------------------------------------------------------------------
+// | 开源协议 ( https://mit-license.org )
+// | 免责声明 ( https://thinkadmin.top/disclaimer )
+// +----------------------------------------------------------------------
+// | gitee 代码仓库：https://gitee.com/zoujingli/think-plugs-static
+// | github 代码仓库：https://github.com/zoujingli/think-plugs-static
+// +----------------------------------------------------------------------
+// | 自定义后台扩展脚本，需要在加载 system.js 后载入
+// | 使用 composer require zoujingli/think-plugs-static 时不会更新此文件
+// +----------------------------------------------------------------------
+
+$(function () {
+    window.$body = $('body');
+
+    /*! 初始化异步加载的内容扩展动作 */
+    // $body.on('reInit', function (evt, $dom) {
+    //     console.log('Event.reInit', $dom);
+    // });
+
+    /*! 追加模块加载示例 */
+    // $.module.use(['vue', 'md5'], function (vue, md5) {
+    //     console.log(vue)
+    //     console.log(md5.hash('content'))
+    // });
+
+    /*! 其他 javascript 脚本代码 */
+
+    // 显示表格图片
+    window.showTableImage = function (image, circle, size, title) {
+        return $.layTable.showImage(image, circle, size, title);
+    };
+
+    // 显示商品规格
+    window.showSpec = function (spec) {
+        let names = [];
+        return layui.each(spec.split(';;'), function (i, vv) {
+            names.push(vv.split('::').pop());
+        }), names.join(' ');
+    }
+});
