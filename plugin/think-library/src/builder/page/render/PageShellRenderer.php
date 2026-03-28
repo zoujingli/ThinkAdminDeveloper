@@ -14,6 +14,7 @@ class PageShellRenderer
      * @param array<int, string> $buttons
      */
     public function render(
+        string $preset,
         string $title,
         array $buttons,
         string $message,
@@ -27,7 +28,10 @@ class PageShellRenderer
         $notice = (new PageNoticeRenderer())->render($message);
         $contentHtml = (new PageContentRenderer())->render($notice, $contentClass, $content);
 
-        $html = '<div class="layui-card" data-builder-scope="page">';
+        $html = sprintf(
+            '<div class="layui-card" data-builder-scope="page" data-builder-preset="%s">',
+            htmlentities($preset, ENT_QUOTES, 'UTF-8')
+        );
         if ($header !== '') {
             $html .= "\n\t" . $header;
         }

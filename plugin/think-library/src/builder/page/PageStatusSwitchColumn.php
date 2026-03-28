@@ -100,7 +100,9 @@ class PageStatusSwitchColumn extends PagePresetColumn
 
     protected function sync(): self
     {
-        if ($this->isAttached()) {
+        if (is_callable($this->syncHandler)) {
+            $this->syncResult(($this->syncHandler)($this));
+        } elseif ($this->canSync()) {
             $this->syncResult($this->builder->replaceStatusSwitchColumn($this->index(), $this->actionUrl, $this->export(), $this->meta()));
         }
         return $this;

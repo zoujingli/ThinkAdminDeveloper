@@ -15,6 +15,16 @@ class FormUploadField extends FormTextField
         return $this->uploadConfig()->types($types)->end();
     }
 
+    public function inputTrigger(): static
+    {
+        return $this->uploadConfig()->inputTrigger()->end();
+    }
+
+    public function previewOnly(): static
+    {
+        return $this->uploadConfig()->previewOnly()->end();
+    }
+
     public function uploadConfig(): FormUploadConfig
     {
         $config = is_array($this->field['upload'] ?? null) ? $this->field['upload'] : [];
@@ -40,11 +50,16 @@ class FormUploadField extends FormTextField
     {
         $config = array_merge([
             'types' => '',
+            'display' => '',
             'trigger' => [],
             'runtime' => [],
         ], $config);
 
         $config['types'] = trim(strval($config['types']));
+        $config['display'] = strtolower(trim(strval($config['display'])));
+        if (!in_array($config['display'], ['', 'input', 'preview'], true)) {
+            $config['display'] = '';
+        }
         $config['trigger'] = is_array($config['trigger']) ? $config['trigger'] : [];
         $config['runtime'] = is_array($config['runtime']) ? $config['runtime'] : [];
         $config['trigger']['attrs'] = is_array($config['trigger']['attrs'] ?? null) ? $config['trigger']['attrs'] : [];

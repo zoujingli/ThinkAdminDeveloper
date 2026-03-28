@@ -11,6 +11,8 @@ namespace think\admin\builder\page;
 class PageColumn
 {
     private ?int $index = null;
+    private ?int $version = null;
+    private $syncHandler = null;
 
     /**
      * @param array<string, mixed> $column
@@ -22,10 +24,20 @@ class PageColumn
     /**
      * @param array<string, mixed> $column
      */
-    public function attach(int $index, array $column): self
+    public function attach(int $index, array $column, ?int $version = null): self
     {
         $this->index = $index;
+        $this->version = $version;
+        $this->syncHandler = null;
         $this->column = $column;
+        return $this;
+    }
+
+    public function attachSync(callable $syncHandler): self
+    {
+        $this->index = null;
+        $this->version = null;
+        $this->syncHandler = $syncHandler;
         return $this;
     }
 
@@ -136,9 +148,16 @@ class PageColumn
 
     private function sync(): self
     {
-        if ($this->index !== null) {
+        if (is_callable($this->syncHandler)) {
+            $this->column = ($this->syncHandler)($this->column);
+        } elseif ($this->canSync()) {
             $this->column = $this->builder->replaceColumn($this->index, $this->column);
         }
         return $this;
+    }
+
+    private function canSync(): bool
+    {
+        return $this->index !== null && $this->builder->canSyncTableAttachment($this->version);
     }
 }

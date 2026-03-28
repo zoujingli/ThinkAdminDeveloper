@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace think\admin\builder\page\render;
 
+use think\admin\builder\BuilderLang;
+
 /**
  * 页面搜索字段渲染基类.
  * @class AbstractPageSearchFieldRenderer
@@ -18,7 +20,7 @@ abstract class AbstractPageSearchFieldRenderer implements PageSearchFieldRendere
         $wrapClass = trim(sprintf('layui-form-item layui-inline %s', strval($field['wrapClass'] ?? '')));
         $html = sprintf('<div class="%s">', $context->escape($wrapClass));
         if (($label = strval($field['label'] ?? '')) !== '') {
-            $html .= '<label class="layui-form-label">' . $context->escape($label) . '</label>';
+            $html .= '<label class="layui-form-label">' . $context->escape(BuilderLang::text($label)) . '</label>';
         }
         return $html . $control . '</div>';
     }

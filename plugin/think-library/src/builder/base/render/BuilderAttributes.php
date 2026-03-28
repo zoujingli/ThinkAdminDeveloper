@@ -51,6 +51,36 @@ class BuilderAttributes
         return $this;
     }
 
+    public function removeClass(string|array $class): self
+    {
+        $current = self::normalizeClasses(strval($this->attrs['class'] ?? ''));
+        $remove = self::normalizeClasses($class);
+        if ($current === [] || $remove === []) {
+            return $this;
+        }
+        $merged = array_values(array_diff($current, $remove));
+        if ($merged === []) {
+            unset($this->attrs['class']);
+        } else {
+            $this->attrs['class'] = join(' ', $merged);
+        }
+        return $this;
+    }
+
+    public function toggleClass(string|array $class, ?bool $force = null): self
+    {
+        $classes = self::normalizeClasses($class);
+        if ($classes === []) {
+            return $this;
+        }
+
+        $current = self::normalizeClasses(strval($this->attrs['class'] ?? ''));
+        $active = count(array_intersect($current, $classes)) === count($classes);
+        $enabled = $force ?? !$active;
+
+        return $enabled ? $this->class($classes) : $this->removeClass($classes);
+    }
+
     public function default(string $name, mixed $value): self
     {
         if (!array_key_exists($name, $this->attrs)) {
@@ -115,7 +145,7 @@ class BuilderAttributes
     /**
      * @return array<int, string>
      */
-    private static function normalizeClasses(string|array $classes): array
+    public static function normalizeClasses(string|array $classes): array
     {
         if (is_array($classes)) {
             $items = array_map('strval', $classes);

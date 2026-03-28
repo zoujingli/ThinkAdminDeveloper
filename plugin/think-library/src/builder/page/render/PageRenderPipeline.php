@@ -17,6 +17,7 @@ class PageRenderPipeline extends BuilderRenderPipeline
      */
     public function renderShell(
         PageRenderState $state,
+        string $preset,
         string $title,
         array $buttons,
         string $message,
@@ -26,6 +27,7 @@ class PageRenderPipeline extends BuilderRenderPipeline
         string $scripts
     ): string {
         return (new PageShellRenderer())->render(
+            $preset,
             $title,
             $buttons,
             $message,
@@ -79,34 +81,21 @@ class PageRenderPipeline extends BuilderRenderPipeline
 
     /**
      * @param array<string, string> $templates
-     * @param array<int, string> $rowActions
      */
-    public function renderTemplates(array $templates, string $toolbarId, array $rowActions): string
+    public function renderTemplates(array $templates): string
     {
-        return (new PageTemplateRenderer())->render($templates, $toolbarId, $rowActions);
+        return (new PageTemplateRenderer())->render($templates);
     }
 
     /**
-     * @param array<string, mixed> $options
-     * @param array<int, string> $bootScripts
+     * @param array<int, string> $readyScripts
      * @param array<int, string> $initScripts
      * @param array<int, string> $scripts
      */
     public function renderScripts(
-        string $tableId,
-        array $options,
-        array $bootScripts,
-        array $initScripts,
-        array $scripts,
-        PageRenderState $state
+        array $readyScripts,
+        array $scripts
     ): string {
-        return (new PageScriptRenderer())->render(
-            $tableId,
-            $options,
-            $bootScripts,
-            $initScripts,
-            $scripts,
-            $state->scriptRenderContext()
-        );
+        return (new PageScriptRenderer())->render($readyScripts, $scripts);
     }
 }

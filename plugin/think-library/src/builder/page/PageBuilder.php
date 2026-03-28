@@ -20,6 +20,8 @@ declare(strict_types=1);
 
 namespace think\admin\builder\page;
 
+use think\admin\builder\BuilderLang;
+use think\admin\builder\base\render\BuilderAttributes;
 use think\admin\builder\base\render\BuilderAttributesRenderer;
 use think\admin\builder\page\render\PageNodeRenderContext;
 use think\admin\builder\page\render\PageNodeRendererFactory;
@@ -90,7 +92,7 @@ class PageBuilder
     /**
      * 表格 URL.
      */
-    private string $tableUrl;
+    private ?string $tableUrl = null;
 
     /**
      * 表格属性.
@@ -128,6 +130,11 @@ class PageBuilder
     private array $contentNodes = [];
 
     /**
+     * 当前布局根节点.
+     */
+    private ?PageLayout $layout = null;
+
+    /**
      * 初始化前脚本.
      */
     private array $bootScripts = [];
@@ -148,6 +155,11 @@ class PageBuilder
     private string $contentClass = 'think-box-shadow';
 
     /**
+     * 页面预设.
+     */
+    private string $preset = 'dom-page';
+
+    /**
      * 渲染时附带变量.
      */
     private array $renderVars = [];
@@ -156,6 +168,59 @@ class PageBuilder
      * 当前页面节点渲染上下文.
      */
     private ?PageRenderState $renderState = null;
+
+    /**
+     * 当前活动搜索节点.
+     */
+    private ?PageSearch $searchNode = null;
+
+    /**
+     * 搜索状态版本号.
+     */
+    private int $searchVersion = 0;
+
+    /**
+     * 搜索表单自增编号.
+     */
+    private int $searchNodeSeed = 0;
+
+    /**
+     * 旧式搜索区导出的表单编号。
+     */
+    private string $legacySearchFormId = '';
+
+    /**
+     * 搜索节点同步属性.
+     */
+    private array $searchNodeAttrs = [];
+
+    /**
+     * 当前活动表格节点.
+     */
+    private ?PageTable $tableNode = null;
+
+    /**
+     * 表格状态版本号.
+     */
+    private int $tableVersion = 0;
+
+    /**
+     * 表格生成的模板键.
+     * @var array<int, string>
+     */
+    private array $tableTemplateKeys = [];
+
+    /**
+     * 表格生成的启动脚本索引.
+     * @var array<int, int>
+     */
+    private array $tableBootScriptIndexes = [];
+
+    /**
+     * 表格生成的脚本索引.
+     * @var array<int, int>
+     */
+    private array $tableScriptIndexes = [];
 
     /**
      * PageBuilder 构造函数.
@@ -177,6 +242,30 @@ class PageBuilder
     }
 
     /**
+     * 创建普通 DOM 页面.
+     */
+    public static function domPage(): self
+    {
+        return self::make()->preset('dom-page');
+    }
+
+    /**
+     * 创建整页表格页面.
+     */
+    public static function tablePage(): self
+    {
+        return self::make()->preset('table-page');
+    }
+
+    /**
+     * 创建弹层列表页面.
+     */
+    public static function dialogList(): self
+    {
+        return self::make()->preset('dialog-list');
+    }
+
+    /**
      * 创建原始 JS 片段包装对象
      *
      * @param string $script JavaScript 代码
@@ -195,8 +284,8 @@ class PageBuilder
     public function define(callable $callback): self
     {
         $layout = new PageLayout($this);
+        $this->layout = $layout;
         $callback($layout);
-        $this->contentNodes = array_merge($this->contentNodes, $layout->exportChildren());
         return $this;
     }
 
@@ -207,6 +296,20 @@ class PageBuilder
     public function build(): self
     {
         return $this;
+    }
+
+    public function preset(string $preset): self
+    {
+        $preset = trim($preset);
+        if ($preset !== '') {
+            $this->preset = $preset;
+        }
+        return $this;
+    }
+
+    public function getPreset(): string
+    {
+        return $this->preset;
     }
 
     /**
@@ -235,8 +338,57 @@ class PageBuilder
      */
     public function setSearchAttrs(array $attrs): self
     {
-        $this->searchAttrs = array_merge($this->searchAttrs, $attrs);
+        $this->searchAttrs = BuilderAttributes::make($this->searchAttrs)->merge($attrs)->all();
         return $this;
+    }
+
+    public function syncSearchNode(PageSearch $node, array $attrs): self
+    {
+        if ($this->searchNode === $node) {
+            $this->searchNodeAttrs = BuilderAttributes::make($attrs)->all();
+        }
+        return $this;
+    }
+
+    public function activateSearchNode(PageSearch $node): self
+    {
+        ++$this->searchVersion;
+        $this->searchNode = $node;
+        $this->searchFields = [];
+        $this->searchNodeAttrs = [];
+        return $this;
+    }
+
+    public function deactivateSearchNode(PageSearch $node): self
+    {
+        if ($this->searchNode === $node) {
+            ++$this->searchVersion;
+            $this->searchNode = null;
+            $this->searchFields = [];
+            $this->searchNodeAttrs = [];
+        }
+        return $this;
+    }
+
+    public function isActiveSearchNode(PageSearch $node): bool
+    {
+        return $this->searchNode === $node;
+    }
+
+    public function currentSearchVersion(): int
+    {
+        return $this->searchVersion;
+    }
+
+    public function nextSearchFormId(): string
+    {
+        ++$this->searchNodeSeed;
+        return 'PageSearchForm' . $this->searchNodeSeed;
+    }
+
+    public function canSyncSearchAttachment(?int $version): bool
+    {
+        return $version === null || ($this->searchNode instanceof PageSearch && $this->searchVersion === $version);
     }
 
     /**
@@ -267,8 +419,48 @@ class PageBuilder
     {
         $this->tableId = $id;
         $this->tableUrl = $url;
-        $this->tableAttrs = array_merge($this->tableAttrs, $attrs);
+        $this->tableAttrs = BuilderAttributes::make($attrs)->all();
         return $this;
+    }
+
+    public function activateTableNode(PageTable $node, string $id = 'PageDataTable', ?string $url = null, array $attrs = []): self
+    {
+        ++$this->tableVersion;
+        if ($this->tableNode !== $node) {
+            $this->resetTableState();
+        }
+        $this->tableNode = $node;
+        return $this->setTable($id, $url, $attrs);
+    }
+
+    public function deactivateTableNode(PageTable $node): self
+    {
+        if ($this->tableNode === $node) {
+            ++$this->tableVersion;
+            $this->tableNode = null;
+            $this->resetTableState();
+        }
+        return $this;
+    }
+
+    public function isActiveTableNode(PageTable $node): bool
+    {
+        return $this->tableNode === $node;
+    }
+
+    public function currentTableVersion(): int
+    {
+        return $this->tableVersion;
+    }
+
+    public function canSyncTableAttachment(?int $version): bool
+    {
+        return $version === null || ($this->tableNode instanceof PageTable && $this->tableVersion === $version);
+    }
+
+    public function encodeJsValue(mixed $value): string
+    {
+        return $this->encodeJs($value);
     }
 
     /**
@@ -278,6 +470,55 @@ class PageBuilder
     public function setTableOptions(array $options): self
     {
         $this->tableOptions = $this->mergeAssoc($this->tableOptions, $options);
+        return $this;
+    }
+
+    public function addTableBootScript(PageTable $node, string $script): self
+    {
+        if (!$this->isActiveTableNode($node)) {
+            return $this;
+        }
+        $script = trim($script);
+        if ($script === '') {
+            return $this;
+        }
+        $this->bootScripts[] = $script;
+        end($this->bootScripts);
+        $index = key($this->bootScripts);
+        if (is_int($index)) {
+            $this->tableBootScriptIndexes[] = $index;
+        }
+        return $this;
+    }
+
+    public function addTableScript(PageTable $node, string $script): self
+    {
+        if (!$this->isActiveTableNode($node)) {
+            return $this;
+        }
+        $script = trim($script);
+        if ($script === '') {
+            return $this;
+        }
+        $this->scripts[] = $script;
+        end($this->scripts);
+        $index = key($this->scripts);
+        if (is_int($index)) {
+            $this->tableScriptIndexes[] = $index;
+        }
+        return $this;
+    }
+
+    public function addTableTemplate(PageTable $node, string $id, string $html): self
+    {
+        if (!$this->isActiveTableNode($node)) {
+            return $this;
+        }
+        $id = trim($id);
+        if ($id !== '') {
+            $this->templates[$id] = $html;
+            $this->trackTableTemplateKeys([$id], []);
+        }
         return $this;
     }
 
@@ -299,7 +540,7 @@ class PageBuilder
 
     public function attachTableOptions(PageTableOptions $options): PageTableOptions
     {
-        return $options->attach($this->replaceTableOptions($options->export()));
+        return $options->attach($this->replaceTableOptions($options->export()), $this->currentTableVersion());
     }
 
     /**
@@ -479,7 +720,7 @@ class PageBuilder
         $index = count($this->searchFields);
         $normalized = $this->searchFieldNormalizer()->field($field->export());
         $this->searchFields[$index] = $normalized;
-        return $field->attach($index, $normalized);
+        return $field->attach($index, $normalized, $this->currentSearchVersion());
     }
 
     /**
@@ -590,7 +831,7 @@ class PageBuilder
     {
         $index = count($this->columns);
         $this->columns[$index] = $column->export();
-        return $column->attach($index, $this->columns[$index]);
+        return $column->attach($index, $this->columns[$index], $this->currentTableVersion());
     }
 
     /**
@@ -726,7 +967,7 @@ class PageBuilder
     {
         $index = count($this->rowActions);
         $this->storeRowAction($action->export(), $index);
-        return $action->attach($index);
+        return $action->attach($index, $this->currentTableVersion());
     }
 
     /**
@@ -818,19 +1059,13 @@ class PageBuilder
      */
     public function toArray(): array
     {
+        $content = $this->schemaContentNodes();
         return [
-            'title' => $this->title,
-            'buttons' => $this->buttonItems,
-            'content' => $this->normalizeSchemaValue($this->contentNodes),
-            'searchFields' => $this->normalizeSchemaValue($this->searchFields),
-            'table' => [
-                'id' => $this->tableId,
-                'url' => $this->tableUrl ?? '',
-                'attrs' => $this->tableAttrs,
-                'options' => $this->normalizeSchemaValue($this->buildTableOptions()),
-                'columns' => $this->normalizeSchemaValue($this->columns),
-            ],
-            'templates' => array_keys($this->templates),
+            'preset' => $this->preset,
+            'title' => BuilderLang::text($this->title),
+            'buttons' => $this->normalizeSchemaValue($this->resolveButtonItems($content)),
+            'content' => $this->normalizeSchemaValue($content),
+            'templates' => array_keys($this->collectTemplateMap($content, false)),
         ];
     }
 
@@ -854,7 +1089,7 @@ class PageBuilder
      */
     private function renderResponse(array $vars = [])
     {
-        $vars['title'] = $vars['title'] ?? $this->title;
+        $vars['title'] = $vars['title'] ?? BuilderLang::text($this->title);
         $vars['pageBuilder'] = $vars['pageBuilder'] ?? $this;
         $vars['pageSchema'] = $vars['pageSchema'] ?? $this->toArray();
         $vars['staticRoot'] = strval($vars['staticRoot'] ?? AppService::uri('static'));
@@ -875,8 +1110,24 @@ class PageBuilder
             return ['type' => 'js', 'code' => $value['__raw__']];
         }
         if (is_array($value)) {
+            if (array_is_list($value)) {
+                $result = [];
+                foreach ($value as $key => $item) {
+                    $result[$key] = $this->normalizeSchemaValue($item);
+                }
+                return $result;
+            }
+
             $result = [];
             foreach ($value as $key => $item) {
+                if ($key === 'attrs' && is_array($item)) {
+                    $result[$key] = BuilderLang::attrs($item);
+                    continue;
+                }
+                if (in_array(strval($key), ['title', 'label', 'legend', 'placeholder', 'remark', 'subtitle', 'confirm', 'html'], true) && is_string($item)) {
+                    $result[$key] = BuilderLang::text($item);
+                    continue;
+                }
                 $result[$key] = $this->normalizeSchemaValue($item);
             }
             return $result;
@@ -1033,8 +1284,11 @@ class PageBuilder
         }
         $templateKeys = $this->replacePresetTemplates((array)($preset['templates'] ?? []), (array)($meta['templateKeys'] ?? []));
         $scriptIndexes = $this->replacePresetScripts((array)($preset['scripts'] ?? []), (array)($meta['scriptIndexes'] ?? []));
+        $this->trackTableTemplateKeys($templateKeys, (array)($meta['templateKeys'] ?? []));
+        $this->trackTableScriptIndexes($scriptIndexes, (array)($meta['scriptIndexes'] ?? []));
         return [
             'index' => $columnIndex,
+            'version' => $this->currentTableVersion(),
             'column' => $this->columns[$columnIndex] ?? [],
             'templateKeys' => $templateKeys,
             'scriptIndexes' => $scriptIndexes,
@@ -1102,17 +1356,80 @@ class PageBuilder
     }
 
     /**
+     * @param array<int, string> $keys
+     * @param array<int, string> $replaced
+     */
+    private function trackTableTemplateKeys(array $keys, array $replaced): void
+    {
+        $current = array_flip($this->tableTemplateKeys);
+        foreach ($replaced as $key) {
+            unset($current[strval($key)]);
+        }
+        foreach ($keys as $key) {
+            $key = trim(strval($key));
+            if ($key !== '') {
+                $current[$key] = true;
+            }
+        }
+        $this->tableTemplateKeys = array_keys($current);
+    }
+
+    /**
+     * @param array<int, int> $indexes
+     * @param array<int, int> $replaced
+     */
+    private function trackTableScriptIndexes(array $indexes, array $replaced): void
+    {
+        $current = array_flip(array_map('intval', $this->tableScriptIndexes));
+        foreach ($replaced as $index) {
+            unset($current[(int)$index]);
+        }
+        foreach ($indexes as $index) {
+            $current[(int)$index] = true;
+        }
+        $this->tableScriptIndexes = array_map('intval', array_keys($current));
+    }
+
+    private function resetTableState(): void
+    {
+        foreach ($this->tableTemplateKeys as $key) {
+            unset($this->templates[$key]);
+        }
+        foreach ($this->tableBootScriptIndexes as $index) {
+            unset($this->bootScripts[$index]);
+        }
+        foreach ($this->tableScriptIndexes as $index) {
+            unset($this->scripts[$index]);
+        }
+
+        $this->tableId = '';
+        $this->tableUrl = null;
+        $this->tableAttrs = [];
+        $this->tableOptions = $this->normalizeTableOptions([]);
+        $this->columns = [];
+        $this->toolbarId = 'toolbar';
+        $this->rowActions = [];
+        $this->tableTemplateKeys = [];
+        $this->tableBootScriptIndexes = [];
+        $this->tableScriptIndexes = [];
+    }
+
+    /**
      * 渲染页面.
      */
     private function render(): string
     {
         $schema = $this->toArray();
+        $buttons = $this->layout instanceof PageLayout
+            ? array_values(array_filter(array_map(static fn(array $button): string => strval($button['html'] ?? ''), $schema['buttons'] ?? [])))
+            : $this->buttons;
         $this->renderState = $this->createRenderState($schema);
         try {
             return $this->renderPipeline()->renderShell(
                 $this->renderState,
+                $this->preset,
                 $this->title,
-                $this->buttons,
+                $buttons,
                 strval($this->renderVars['showErrorMessage'] ?? ''),
                 $this->contentClass,
                 $this->renderPageContent(),
@@ -1136,13 +1453,37 @@ class PageBuilder
     /**
      * 渲染搜索表单.
      */
-    private function renderSearchForm(): string
+    /**
+     * @param array<string, mixed>|null $node
+     */
+    private function renderSearchForm(?array $node = null): string
     {
+        if ($node !== null) {
+            $nodeAttrs = is_array($node['attrs'] ?? null) ? $node['attrs'] : [];
+            $attrs = BuilderAttributes::make($this->searchAttrs)->merge($nodeAttrs)->all();
+            $formId = trim(strval($attrs['id'] ?? $node['formId'] ?? ''));
+            if ($formId !== '') {
+                $attrs['id'] = $formId;
+            }
+            $legend = array_key_exists('legend', $node) && $node['legend'] !== null ? strval($node['legend']) : $this->searchLegend;
+            $legendEnabled = array_key_exists('legendEnabled', $node) && $node['legendEnabled'] !== null ? boolval($node['legendEnabled']) : $this->searchLegendEnabled;
+            return $this->renderPipeline()->renderSearch(
+                is_array($node['fields'] ?? null) ? $node['fields'] : [],
+                $attrs,
+                trim(strval($node['tableId'] ?? '')),
+                strval($attrs['action'] ?? $this->resolveCurrentUrl()),
+                $legend,
+                $legendEnabled,
+                $this->currentRenderState()
+            );
+        }
+
+        $attrs = BuilderAttributes::make($this->searchAttrs)->merge($this->searchNodeAttrs)->all();
         return $this->renderPipeline()->renderSearch(
             $this->searchFields,
-            $this->searchAttrs,
+            $attrs,
             $this->tableId,
-            strval($this->searchAttrs['action'] ?? $this->resolveCurrentUrl()),
+            strval($attrs['action'] ?? $this->resolveCurrentUrl()),
             $this->searchLegend,
             $this->searchLegendEnabled,
             $this->currentRenderState()
@@ -1184,21 +1525,35 @@ class PageBuilder
     private function resolveSearchOptions(array $field): array
     {
         if (!empty($field['source']) && isset($this->renderVars[$field['source']]) && is_array($this->renderVars[$field['source']])) {
-            return $this->renderVars[$field['source']];
+            return BuilderLang::options($this->renderVars[$field['source']]);
         }
-        return is_array($field['options'] ?? null) ? $field['options'] : [];
+        return BuilderLang::options(is_array($field['options'] ?? null) ? $field['options'] : []);
     }
 
     /**
      * 渲染表格节点.
      */
-    private function renderTable(): string
+    /**
+     * @param array<string, mixed>|null $node
+     */
+    private function renderTable(?array $node = null): string
     {
+        if ($node !== null) {
+            $nodeAttrs = is_array($node['attrs'] ?? null) ? $node['attrs'] : [];
+            $attrs = $this->tableNormalizer()->table(
+                trim(strval($node['id'] ?? '')),
+                strval($node['url'] ?? $this->resolveCurrentUrl()),
+                $nodeAttrs,
+                trim(strval($node['searchTarget'] ?? ''))
+            );
+            return $this->renderPipeline()->renderTable($attrs, $this->currentRenderState());
+        }
+
         $attrs = $this->tableNormalizer()->table(
             $this->tableId,
             strval($this->tableUrl ?? $this->resolveCurrentUrl()),
             $this->tableAttrs,
-            count($this->searchFields) > 0
+            count($this->searchFields) > 0 ? 'form.form-search' : ''
         );
         return $this->renderPipeline()->renderTable($attrs, $this->currentRenderState());
     }
@@ -1208,8 +1563,12 @@ class PageBuilder
      */
     private function renderPageContent(): string
     {
-        if (count($this->contentNodes) > 0) {
-            return $this->renderContentNodes($this->contentNodes);
+        $contentNodes = $this->currentContentNodes();
+        if (count($contentNodes) > 0) {
+            return $this->renderContentNodes($contentNodes);
+        }
+        if ($this->layout instanceof PageLayout) {
+            return '';
         }
 
         $content = [];
@@ -1225,7 +1584,90 @@ class PageBuilder
      */
     private function renderTemplates(): string
     {
-        return $this->renderPipeline()->renderTemplates($this->templates, $this->toolbarId, $this->rowActions);
+        if ($this->layout instanceof PageLayout) {
+            return $this->renderPipeline()->renderTemplates($this->collectTemplateMap($this->currentContentNodes(), true));
+        }
+        return $this->renderPipeline()->renderTemplates($this->templates);
+    }
+
+    /**
+     * @return array<int, array<string, mixed>>
+     */
+    private function currentContentNodes(): array
+    {
+        if (!($this->layout instanceof PageLayout)) {
+            return $this->contentNodes;
+        }
+
+        [$nodes] = $this->resolveContentNodes($this->layout->exportChildren());
+        return $this->assignSearchTableIds($nodes, $this->collectSearchTableIds($nodes));
+    }
+
+    /**
+     * @return array<int, array<string, mixed>>
+     */
+    private function schemaContentNodes(): array
+    {
+        $content = $this->currentContentNodes();
+        if (count($content) > 0 || $this->layout instanceof PageLayout) {
+            return $content;
+        }
+
+        return $this->buildLegacySchemaContentNodes();
+    }
+
+    /**
+     * 把旧式 page state 投影成新的 content 节点树 schema。
+     *
+     * @return array<int, array<string, mixed>>
+     */
+    private function buildLegacySchemaContentNodes(): array
+    {
+        $content = [];
+        $searchSelector = '';
+
+        if (count($this->searchFields) > 0) {
+            $formId = $this->resolveLegacySearchFormId();
+            $searchSelector = "#{$formId}";
+            $content[] = [
+                'type' => 'search',
+                'formId' => $formId,
+                'searchSelector' => $searchSelector,
+                'attrs' => BuilderAttributes::make($this->searchAttrs)->all(),
+                'modules' => [],
+                'fields' => $this->searchFields,
+                'legend' => $this->searchLegend,
+                'legendEnabled' => $this->searchLegendEnabled,
+                'tableId' => $this->tableId,
+            ];
+        }
+
+        $content[] = [
+            'type' => 'table',
+            'id' => $this->tableId,
+            'url' => strval($this->tableUrl ?? ''),
+            'attrs' => $this->tableAttrs,
+            'modules' => [],
+            'options' => $this->tableOptions,
+            'columns' => $this->columns,
+            'toolbarId' => $this->toolbarId,
+            'rowActions' => $this->rowActions,
+            'templates' => $this->templates,
+            'bootScripts' => [],
+            'scripts' => [],
+            'searchTarget' => $searchSelector,
+        ];
+
+        return $content;
+    }
+
+    private function resolveLegacySearchFormId(): string
+    {
+        if ($this->legacySearchFormId === '') {
+            $this->legacySearchFormId = $this->nextSearchFormId();
+        }
+
+        return $this->legacySearchFormId;
     }
 
     /**
@@ -1233,14 +1675,300 @@ class PageBuilder
      */
     private function renderScripts(): string
     {
-        return $this->renderPipeline()->renderScripts(
-            $this->tableId,
-            $this->buildTableOptions(),
-            $this->bootScripts,
-            $this->initScripts,
-            $this->scripts,
-            $this->currentRenderState()
+        if ($this->layout instanceof PageLayout) {
+            $readyScripts = [];
+            foreach ($this->bootScripts as $script) {
+                $script = trim($script);
+                if ($script !== '') {
+                    $readyScripts[] = $script;
+                }
+            }
+
+            $scriptContext = $this->currentRenderState()->scriptRenderContext();
+            foreach ($this->collectNodesOfType($this->currentContentNodes(), 'table') as $table) {
+                foreach ((array)($table['bootScripts'] ?? []) as $script) {
+                    $script = trim(strval($script));
+                    if ($script !== '') {
+                        $readyScripts[] = $script;
+                    }
+                }
+
+                $tableId = trim(strval($table['id'] ?? ''));
+                if ($tableId !== '') {
+                    $readyScripts[] = (new \think\admin\builder\page\render\PageTableInitScriptRenderer())->render(
+                        $tableId,
+                        $this->buildTableOptionsFromNode($table),
+                        $scriptContext
+                    );
+                }
+            }
+
+            foreach ($this->initScripts as $script) {
+                $script = trim($script);
+                if ($script !== '') {
+                    $readyScripts[] = $script;
+                }
+            }
+
+            $scripts = [];
+            foreach ($this->scripts as $script) {
+                $script = trim($script);
+                if ($script !== '') {
+                    $scripts[] = $script;
+                }
+            }
+            foreach ($this->collectNodesOfType($this->currentContentNodes(), 'table') as $table) {
+                foreach ((array)($table['scripts'] ?? []) as $script) {
+                    $script = trim(strval($script));
+                    if ($script !== '') {
+                        $scripts[] = $script;
+                    }
+                }
+            }
+
+            return $this->renderPipeline()->renderScripts($readyScripts, $scripts);
+        }
+
+        $readyScripts = array_merge(
+            array_values(array_filter(array_map('trim', $this->bootScripts))),
+            [($this->tableNode instanceof PageTable || !($this->layout instanceof PageLayout))
+                ? (new \think\admin\builder\page\render\PageTableInitScriptRenderer())->render(
+                    $this->tableId,
+                    $this->buildTableOptions(),
+                    $this->currentRenderState()->scriptRenderContext()
+                )
+                : ''
+            ],
+            array_values(array_filter(array_map('trim', $this->initScripts)))
         );
+
+        return $this->renderPipeline()->renderScripts(
+            array_values(array_filter($readyScripts, static fn(string $script): bool => $script !== '')),
+            array_values(array_filter(array_map('trim', $this->scripts)))
+        );
+    }
+
+    /**
+     * @param array<int, array<string, mixed>> $nodes
+     * @return array{0: array<int, array<string, mixed>>, 1: string|null}
+     */
+    private function resolveContentNodes(array $nodes, ?string $lastSearchSelector = null): array
+    {
+        $resolved = [];
+        foreach ($nodes as $node) {
+            if (!is_array($node)) {
+                continue;
+            }
+
+            if (strval($node['type'] ?? '') === 'search') {
+                $selector = $this->resolveSearchSelector($node);
+                if ($selector !== null) {
+                    $node['searchSelector'] = $selector;
+                    $lastSearchSelector = $selector;
+                }
+            }
+
+            if (is_array($node['children'] ?? null)) {
+                [$children, $lastSearchSelector] = $this->resolveContentNodes($node['children'], $lastSearchSelector);
+                $node['children'] = $children;
+            }
+
+            if (strval($node['type'] ?? '') === 'table') {
+                $attrs = is_array($node['attrs'] ?? null) ? $node['attrs'] : [];
+                $target = trim(strval($attrs['data-target-search'] ?? ''));
+                if ($target === '' && $lastSearchSelector !== null) {
+                    $node['searchTarget'] = $lastSearchSelector;
+                }
+            }
+
+            $resolved[] = $node;
+        }
+
+        return [$resolved, $lastSearchSelector];
+    }
+
+    /**
+     * @param array<string, mixed> $node
+     */
+    private function resolveSearchSelector(array $node): ?string
+    {
+        $attrs = is_array($node['attrs'] ?? null) ? $node['attrs'] : [];
+        $formId = trim(strval($attrs['id'] ?? $node['formId'] ?? ''));
+        return $formId === '' ? null : "#{$formId}";
+    }
+
+    /**
+     * @param array<int, array<string, mixed>> $nodes
+     * @return array<string, string>
+     */
+    private function collectSearchTableIds(array $nodes, array $map = []): array
+    {
+        foreach ($nodes as $node) {
+            if (!is_array($node)) {
+                continue;
+            }
+
+            if (strval($node['type'] ?? '') === 'table') {
+                $attrs = is_array($node['attrs'] ?? null) ? $node['attrs'] : [];
+                $target = trim(strval($attrs['data-target-search'] ?? $node['searchTarget'] ?? ''));
+                $tableId = trim(strval($node['id'] ?? ''));
+                if ($target !== '' && $tableId !== '' && !isset($map[$target])) {
+                    $map[$target] = $tableId;
+                }
+            }
+
+            if (is_array($node['children'] ?? null)) {
+                $map = $this->collectSearchTableIds($node['children'], $map);
+            }
+        }
+
+        return $map;
+    }
+
+    /**
+     * @param array<int, array<string, mixed>> $nodes
+     * @param array<string, string> $map
+     * @return array<int, array<string, mixed>>
+     */
+    private function assignSearchTableIds(array $nodes, array $map): array
+    {
+        $resolved = [];
+        foreach ($nodes as $node) {
+            if (!is_array($node)) {
+                continue;
+            }
+
+            if (strval($node['type'] ?? '') === 'search') {
+                $selector = trim(strval($node['searchSelector'] ?? ''));
+                if ($selector !== '' && isset($map[$selector])) {
+                    $node['tableId'] = $map[$selector];
+                }
+            }
+
+            if (is_array($node['children'] ?? null)) {
+                $node['children'] = $this->assignSearchTableIds($node['children'], $map);
+            }
+
+            $resolved[] = $node;
+        }
+
+        return $resolved;
+    }
+
+    /**
+     * @param array<int, array<string, mixed>> $nodes
+     */
+    private function firstNodeOfType(array $nodes, string $type): ?array
+    {
+        foreach ($nodes as $node) {
+            if (!is_array($node)) {
+                continue;
+            }
+            if (strval($node['type'] ?? '') === $type) {
+                return $node;
+            }
+            if (is_array($node['children'] ?? null)) {
+                $child = $this->firstNodeOfType($node['children'], $type);
+                if ($child !== null) {
+                    return $child;
+                }
+            }
+        }
+        return null;
+    }
+
+    /**
+     * @param array<int, array<string, mixed>> $nodes
+     * @return array<int, array<string, mixed>>
+     */
+    private function collectNodesOfType(array $nodes, string $type): array
+    {
+        $result = [];
+        foreach ($nodes as $node) {
+            if (!is_array($node)) {
+                continue;
+            }
+            if (strval($node['type'] ?? '') === $type) {
+                $result[] = $node;
+            }
+            if (is_array($node['children'] ?? null)) {
+                $result = array_merge($result, $this->collectNodesOfType($node['children'], $type));
+            }
+        }
+        return $result;
+    }
+
+    /**
+     * @param array<int, array<string, mixed>> $nodes
+     * @return array<string, string>
+     */
+    private function collectTemplateMap(array $nodes, bool $includeGeneratedToolbars): array
+    {
+        $templates = $this->templates;
+        foreach ($this->collectNodesOfType($nodes, 'table') as $table) {
+            foreach ((array)($table['templates'] ?? []) as $id => $html) {
+                $id = trim(strval($id));
+                if ($id !== '') {
+                    $templates[$id] = strval($html);
+                }
+            }
+
+            $toolbarId = trim(strval($table['toolbarId'] ?? ''));
+            $rowActions = is_array($table['rowActions'] ?? null) ? $table['rowActions'] : [];
+            if ($includeGeneratedToolbars && $toolbarId !== '' && count($rowActions) > 0 && !isset($templates[$toolbarId])) {
+                $html = [];
+                foreach ($rowActions as $action) {
+                    if (is_array($action)) {
+                        $item = strval($action['html'] ?? '');
+                        if ($item !== '') {
+                            $html[] = $item;
+                        }
+                    }
+                }
+                $templates[$toolbarId] = join("\n", $html);
+            }
+        }
+        return $templates;
+    }
+
+    /**
+     * @param array<string, mixed> $node
+     * @return array<string, mixed>
+     */
+    private function buildTableOptionsFromNode(array $node): array
+    {
+        $options = is_array($node['options'] ?? null) ? $node['options'] : $this->normalizeTableOptions([]);
+        $columns = is_array($node['columns'] ?? null) ? $node['columns'] : [];
+        if (count($columns) > 0) {
+            $options['cols'] = [array_map(function ($column): mixed {
+                if (!is_array($column)) {
+                    return $column;
+                }
+                if (isset($column['title'])) {
+                    $column['title'] = BuilderLang::text(strval($column['title']));
+                }
+                return $column;
+            }, $columns)];
+        }
+        return $options;
+    }
+
+    /**
+     * @param array<int, array<string, mixed>> $content
+     * @return array<int, array<string, mixed>>
+     */
+    private function resolveButtonItems(array $content): array
+    {
+        $table = $this->firstNodeOfType($content, 'table');
+        $tableId = trim(strval($table['id'] ?? $this->tableId ?: 'PageDataTable'));
+        $normalizer = new PageActionNormalizer($tableId);
+        $items = [];
+        foreach ($this->buttonItems as $button) {
+            if (is_array($button)) {
+                $items[] = $normalizer->button($button);
+            }
+        }
+        return $items;
     }
 
     /**
@@ -1294,8 +2022,8 @@ class PageBuilder
             new PageNodeRenderContext(
                 fn(array $nodes): string => $this->renderContentNodes($nodes),
                 [$attrsRenderer, 'render'],
-                fn(): string => $this->renderSearchForm(),
-                fn(): string => $this->renderTable(),
+                fn(array $node): string => $this->renderSearchForm($node),
+                fn(array $node): string => $this->renderTable($node),
             ),
             new PageSearchRenderContext(
                 [$attrsRenderer, 'render'],

@@ -14,6 +14,8 @@ use think\admin\builder\base\render\BuilderAttributes;
 class PageSearchField
 {
     private ?int $index = null;
+    private ?int $version = null;
+    private $syncHandler = null;
 
     /**
      * @param array<string, mixed> $field
@@ -22,10 +24,20 @@ class PageSearchField
     {
     }
 
-    public function attach(int $index, array $field): self
+    public function attach(int $index, array $field, ?int $version = null): self
     {
         $this->index = $index;
+        $this->version = $version;
+        $this->syncHandler = null;
         $this->field = $field;
+        return $this;
+    }
+
+    public function attachSync(callable $syncHandler): self
+    {
+        $this->index = null;
+        $this->version = null;
+        $this->syncHandler = $syncHandler;
         return $this;
     }
 
@@ -135,10 +147,17 @@ class PageSearchField
 
     private function sync(): self
     {
-        if ($this->index !== null) {
+        if (is_callable($this->syncHandler)) {
+            $this->field = ($this->syncHandler)($this->field);
+        } elseif ($this->canSync()) {
             $this->field = $this->builder->replaceSearchField($this->index, $this->field);
         }
         return $this;
+    }
+
+    private function canSync(): bool
+    {
+        return $this->index !== null && $this->builder->canSyncSearchAttachment($this->version);
     }
 
     /**
@@ -149,7 +168,9 @@ class PageSearchField
     {
         $this->field['options'] = is_array($state['options'] ?? null) ? $state['options'] : [];
         $this->field['source'] = trim(strval($state['source'] ?? ''));
-        if ($this->index !== null) {
+        if (is_callable($this->syncHandler)) {
+            $this->field = ($this->syncHandler)($this->field);
+        } elseif ($this->canSync()) {
             $this->field = $this->builder->replaceSearchField($this->index, $this->field);
         }
         return [
@@ -166,7 +187,9 @@ class PageSearchField
     {
         $this->field['attrs'] = is_array($state['attrs'] ?? null) ? BuilderAttributes::make($state['attrs'])->all() : [];
         $this->field['class'] = trim(strval($state['class'] ?? $this->field['class'] ?? ''));
-        if ($this->index !== null) {
+        if (is_callable($this->syncHandler)) {
+            $this->field = ($this->syncHandler)($this->field);
+        } elseif ($this->canSync()) {
             $this->field = $this->builder->replaceSearchField($this->index, $this->field);
         }
         return [

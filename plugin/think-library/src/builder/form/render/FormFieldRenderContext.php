@@ -41,7 +41,7 @@ extends BuilderAttributesRenderContext
 
     public function valueExpression(?string $name = null): string
     {
-        return sprintf('{%s.%s|default=\'\'}', $this->variable, $this->valuePath($name));
+        return sprintf('{%s.%s|default=%s}', $this->variable, $this->valuePath($name), $this->templateLiteral($this->defaultValue()));
     }
 
     public function joinedValueExpression(string $separator = '|', ?string $name = null): string
@@ -63,6 +63,38 @@ extends BuilderAttributesRenderContext
     public function variable(): string
     {
         return $this->variable;
+    }
+
+    public function defaultValue(): mixed
+    {
+        if (array_key_exists('default', $this->field)) {
+            return $this->field['default'];
+        }
+        return $this->type() === 'checkbox' ? [] : '';
+    }
+
+    public function scalarDefaultLiteral(): string
+    {
+        return $this->templateLiteral($this->defaultValue());
+    }
+
+    /**
+     * @return array<int, string>
+     */
+    public function arrayDefaultValues(): array
+    {
+        $value = $this->defaultValue();
+        if (is_array($value)) {
+            return array_values(array_map('strval', $value));
+        }
+        $value = trim(strval($value));
+        return $value === '' ? [] : array_values(array_map('strval', str2arr($value)));
+    }
+
+    public function arrayDefaultLiteral(): string
+    {
+        $items = array_map(static fn(string $item): string => var_export($item, true), $this->arrayDefaultValues());
+        return '[' . join(', ', $items) . ']';
     }
 
     public function openContainer(string $tag, string $class): string
@@ -103,6 +135,11 @@ extends BuilderAttributesRenderContext
         }
         $attrs = BuilderAttributes::make($this->buildPartAttrs($part))->class('help-block')->all();
         return sprintf('<span %s>%s</span>', $this->attrs($attrs), $content);
+    }
+
+    public function renderInputContent(): string
+    {
+        return strval($this->resolveFieldPart('input')['content'] ?? '');
     }
 
     /**
@@ -174,5 +211,20 @@ extends BuilderAttributesRenderContext
     private function optionRenderer(): FormOptionRenderer
     {
         return $this->optionRenderer ??= new FormOptionRenderer();
+    }
+
+    private function templateLiteral(mixed $value): string
+    {
+        if (is_bool($value)) {
+            return $value ? '\'1\'' : '\'0\'';
+        }
+        if (is_int($value) || is_float($value)) {
+            return var_export($value, true);
+        }
+        if (is_array($value)) {
+            return '\'\'';
+        }
+
+        return '\'' . addslashes(strval($value)) . '\'';
     }
 }

@@ -73,6 +73,28 @@ class BuilderAttributeBag
         return $this->sync();
     }
 
+    public function removeClass(string|array $class): self
+    {
+        if ($this->detachedClass) {
+            $attrs = BuilderAttributes::make(['class' => $this->className])->removeClass($class)->all();
+            $this->className = trim(strval($attrs['class'] ?? ''));
+        } else {
+            $this->attrs = BuilderAttributes::make($this->attrs)->removeClass($class)->all();
+        }
+        return $this->sync();
+    }
+
+    public function toggleClass(string|array $class, ?bool $force = null): self
+    {
+        if ($this->detachedClass) {
+            $attrs = BuilderAttributes::make(['class' => $this->className])->toggleClass($class, $force)->all();
+            $this->className = trim(strval($attrs['class'] ?? ''));
+        } else {
+            $this->attrs = BuilderAttributes::make($this->attrs)->toggleClass($class, $force)->all();
+        }
+        return $this->sync();
+    }
+
     public function data(string $name, mixed $value = null): self
     {
         $name = trim($name);

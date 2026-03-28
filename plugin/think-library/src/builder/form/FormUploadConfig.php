@@ -43,6 +43,26 @@ class FormUploadConfig
         return $this;
     }
 
+    public function display(string $mode): self
+    {
+        $mode = strtolower(trim($mode));
+        if (in_array($mode, ['input', 'preview'], true)) {
+            $this->config['display'] = $mode;
+            $this->sync();
+        }
+        return $this;
+    }
+
+    public function inputTrigger(): self
+    {
+        return $this->display('input');
+    }
+
+    public function previewOnly(): self
+    {
+        return $this->display('preview');
+    }
+
     public function option(string $name, mixed $value): self
     {
         $name = trim($name);

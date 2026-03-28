@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace think\admin\builder\form;
 
+use think\admin\builder\BuilderLang;
+
 /**
  * 表单结构通用块。
  * @class FormBlocks
@@ -39,7 +41,7 @@ class FormBlocks
         $node->div()->class('help-label')->html(sprintf('<b>%s</b>%s', self::escape($title), self::escape($subtitle)));
 
         $bar = $node->div()->class('mb10');
-        $options = ['<option value="">全部插件</option>'];
+        $options = [sprintf('<option value="">%s</option>', self::escape('全部插件'))];
         foreach ($groups as $group) {
             $code = self::escape(strval($group['code'] ?? ''));
             $nameText = self::escape(strval($group['name'] ?? $code));
@@ -107,6 +109,6 @@ class FormBlocks
 
     private static function escape(string $content): string
     {
-        return htmlentities($content, ENT_QUOTES, 'UTF-8');
+        return htmlentities(BuilderLang::text($content), ENT_QUOTES, 'UTF-8');
     }
 }

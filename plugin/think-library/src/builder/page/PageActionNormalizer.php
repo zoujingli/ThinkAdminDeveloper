@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace think\admin\builder\page;
 
+use think\admin\builder\BuilderLang;
 use think\admin\builder\base\render\BuilderActionRenderer;
 use think\admin\builder\base\render\BuilderAttributes;
 
@@ -128,14 +129,14 @@ class PageActionNormalizer
 
         $auth = $action['auth'];
         $action['type'] = trim(strval($action['type']));
-        $action['label'] = strval($action['label']);
+        $action['label'] = BuilderLang::text(strval($action['label']));
         $action['url'] = strval($action['url']);
-        $action['title'] = strval($action['title']);
+        $action['title'] = BuilderLang::text(strval($action['title']));
         $action['value'] = strval($action['value']);
-        $action['confirm'] = strval($action['confirm']);
+        $action['confirm'] = BuilderLang::text(strval($action['confirm']));
         $action['rule'] = strval($action['rule']);
         $action['html'] = strval($action['html']);
-        $action['attrs'] = is_array($action['attrs']) ? $action['attrs'] : [];
+        $action['attrs'] = BuilderLang::attrs(is_array($action['attrs']) ? $action['attrs'] : []);
         $action['auth'] = $auth === null ? null : (trim(strval($auth)) ?: null);
         $action['tag'] = trim(strval($action['tag'])) ?: 'a';
 
@@ -164,6 +165,6 @@ class PageActionNormalizer
                 $attrs[$name] = $value;
             }
         }
-        return $attrs;
+        return BuilderLang::attrs($attrs);
     }
 }

@@ -6,6 +6,7 @@ namespace think\admin\builder\page;
 
 use think\admin\builder\base\BuilderNode;
 use think\admin\builder\base\render\BuilderAttributes;
+use think\admin\builder\page\component\PageComponentInterface;
 
 /**
  * 页面节点定义器.
@@ -13,9 +14,14 @@ use think\admin\builder\base\render\BuilderAttributes;
  */
 class PageNode extends BuilderNode
 {
+    protected function createNodeInstance(string $type = 'element', string $tag = 'div'): self
+    {
+        return new self($this->builder, $type, $tag);
+    }
+
     public function html(string $html): static
     {
-        $child = new self($this->builder, 'html');
+        $child = $this->createNodeInstance('html');
         $child->html = $html;
         $this->appendChild($child);
         return $this;
@@ -31,12 +37,63 @@ class PageNode extends BuilderNode
      */
     public function node(string $tag = 'div', ?callable $callback = null): self
     {
-        $child = new self($this->builder, 'element', trim($tag) ?: 'div');
+        $child = $this->createNodeInstance('element', trim($tag) ?: 'div');
         $this->appendChild($child);
         if (is_callable($callback)) {
             $callback($child);
         }
         return $child;
+    }
+
+    /**
+     * @param (callable(PageNode): void)|null $callback
+     */
+    public function prepend(string $tag = 'div', ?callable $callback = null): self
+    {
+        $child = $this->createNodeInstance('element', trim($tag) ?: 'div');
+        $this->prependNode($child);
+        if (is_callable($callback)) {
+            $callback($child);
+        }
+        return $child;
+    }
+
+    /**
+     * @param (callable(PageNode): void)|null $callback
+     */
+    public function before(string $tag = 'div', ?callable $callback = null): self
+    {
+        $child = $this->createNodeInstance('element', trim($tag) ?: 'div');
+        $this->beforeNode($child);
+        if (is_callable($callback)) {
+            $callback($child);
+        }
+        return $child;
+    }
+
+    /**
+     * @param (callable(PageNode): void)|null $callback
+     */
+    public function after(string $tag = 'div', ?callable $callback = null): self
+    {
+        $child = $this->createNodeInstance('element', trim($tag) ?: 'div');
+        $this->afterNode($child);
+        if (is_callable($callback)) {
+            $callback($child);
+        }
+        return $child;
+    }
+
+    /**
+     * @param null|callable(PageNode): void $callback
+     */
+    public function component(PageComponentInterface $component, ?callable $callback = null): self
+    {
+        $node = $component->mount($this);
+        if (is_callable($callback)) {
+            $callback($node);
+        }
+        return $node;
     }
 
     public function div(?callable $callback = null): self

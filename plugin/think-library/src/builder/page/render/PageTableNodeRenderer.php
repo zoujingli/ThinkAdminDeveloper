@@ -14,6 +14,6 @@ class PageTableNodeRenderer extends BuilderCallbackNodeRenderer implements PageN
 {
     public function render(array $node, PageNodeRenderContext $context): string
     {
-        return $this->invoke([$context, 'renderTable']);
+        return $this->invoke([$context, 'renderTable'], $node);
     }
 }

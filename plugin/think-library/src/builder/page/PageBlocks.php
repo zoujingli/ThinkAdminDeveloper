@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace think\admin\builder\page;
 
+use think\admin\builder\BuilderLang;
+
 /**
  * 页面结构通用块。
  * @class PageBlocks
@@ -92,6 +94,6 @@ class PageBlocks
 
     private static function escape(string $content): string
     {
-        return htmlentities($content, ENT_QUOTES, 'UTF-8');
+        return htmlentities(BuilderLang::text($content), ENT_QUOTES, 'UTF-8');
     }
 }

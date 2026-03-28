@@ -14,6 +14,8 @@ use think\admin\builder\base\render\BuilderAttributes;
 class PageAction
 {
     private ?int $index = null;
+    private ?int $version = null;
+    private $syncHandler = null;
 
     /**
      * @param array<string, mixed> $action
@@ -25,9 +27,19 @@ class PageAction
     /**
      * @param array<string, mixed> $action
      */
-    public function attach(int $index): self
+    public function attach(int $index, ?int $version = null): self
     {
         $this->index = $index;
+        $this->version = $version;
+        $this->syncHandler = null;
+        return $this;
+    }
+
+    public function attachSync(callable $syncHandler): self
+    {
+        $this->index = null;
+        $this->version = null;
+        $this->syncHandler = $syncHandler;
         return $this;
     }
 
@@ -140,7 +152,12 @@ class PageAction
 
     private function sync(): self
     {
-        if ($this->index === null) {
+        if (is_callable($this->syncHandler)) {
+            $this->action = ($this->syncHandler)($this->action);
+            return $this;
+        }
+
+        if (!$this->canSync()) {
             return $this;
         }
 
@@ -153,6 +170,14 @@ class PageAction
         return $this;
     }
 
+    private function canSync(): bool
+    {
+        if ($this->index === null) {
+            return false;
+        }
+        return $this->scope !== 'row' || $this->builder->canSyncTableAttachment($this->version);
+    }
+
     /**
      * @param array<string, mixed> $state
      * @return array<string, mixed>
@@ -162,7 +187,9 @@ class PageAction
         $this->action['attrs'] = is_array($state['attrs'] ?? null) ? BuilderAttributes::make($state['attrs'])->all() : [];
         $this->action['class'] = trim(strval($state['class'] ?? $this->action['class'] ?? ''));
 
-        if ($this->index !== null) {
+        if (is_callable($this->syncHandler)) {
+            $this->action = ($this->syncHandler)($this->action);
+        } elseif ($this->canSync()) {
             if ($this->scope === 'row') {
                 $this->action = $this->builder->replaceRowAction($this->index, $this->action);
             } else {

@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace think\admin\builder\page;
 
+use think\admin\builder\BuilderLang;
+
 /**
  * 页面搜索字段配置归一器.
  * @class PageSearchFieldNormalizer
@@ -30,10 +32,10 @@ class PageSearchFieldNormalizer
 
         $field['type'] = strtolower((string)$field['type']);
         $field['name'] = trim((string)$field['name']);
-        $field['label'] = (string)$field['label'];
-        $field['placeholder'] = (string)$field['placeholder'];
-        $field['attrs'] = is_array($field['attrs']) ? $field['attrs'] : [];
-        $field['options'] = is_array($field['options']) ? $field['options'] : [];
+        $field['label'] = BuilderLang::text((string)$field['label']);
+        $field['placeholder'] = BuilderLang::text((string)$field['placeholder']);
+        $field['attrs'] = BuilderLang::attrs(is_array($field['attrs']) ? $field['attrs'] : []);
+        $field['options'] = BuilderLang::options(is_array($field['options']) ? $field['options'] : []);
         $field['source'] = trim((string)$field['source']);
         $field['class'] = trim((string)$field['class']);
         $field['wrapClass'] = trim((string)$field['wrapClass']);

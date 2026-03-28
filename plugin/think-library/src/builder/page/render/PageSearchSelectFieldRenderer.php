@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace think\admin\builder\page\render;
 
+use think\admin\builder\BuilderLang;
+
 /**
  * 页面搜索下拉字段渲染器.
  * @class PageSearchSelectFieldRenderer
@@ -17,7 +19,7 @@ class PageSearchSelectFieldRenderer extends AbstractPageSearchFieldRenderer
         $attrs['class'] = $context->mergeClass(strval($attrs['class'] ?? ''), trim('layui-select ' . strval($field['class'] ?? '')));
 
         $control = '<div class="layui-input-inline"><select ' . $context->attrs($attrs) . '>';
-        $control .= '<option value="">-- 全部 --</option>';
+        $control .= '<option value="">' . $context->escape(BuilderLang::text('-- 全部 --')) . '</option>';
         $control .= $this->renderOptions($field, $context);
         $control .= '</select></div>';
 
@@ -38,7 +40,7 @@ class PageSearchSelectFieldRenderer extends AbstractPageSearchFieldRenderer
                 '<option%s value="%s">%s</option>',
                 $selected,
                 $context->escape($value),
-                $context->escape(strval($label))
+                $context->escape(BuilderLang::text(strval($label)))
             );
         }
         return $html;

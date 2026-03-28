@@ -61,6 +61,12 @@ extends FormNode
         return $this;
     }
 
+    public function removeAttr(string $name): static
+    {
+        $this->builder->removeFormAttr($name);
+        return $this;
+    }
+
     public function attrsItem(): BuilderAttributeBag
     {
         return $this->builder->attachFormAttributes($this->builder->createFormAttributes());
@@ -89,6 +95,12 @@ extends FormNode
         return $this;
     }
 
+    public function removeClass(string|array $class): static
+    {
+        $this->builder->removeFormClass($class);
+        return $this;
+    }
+
     public function bodyClass(string|array $class): static
     {
         $this->builder->addBodyClass($class);
@@ -98,6 +110,12 @@ extends FormNode
     public function data(string $name, mixed $value = null): static
     {
         $this->builder->setFormData($name, $value);
+        return $this;
+    }
+
+    public function removeData(string $name): static
+    {
+        $this->builder->removeFormData($name);
         return $this;
     }
 

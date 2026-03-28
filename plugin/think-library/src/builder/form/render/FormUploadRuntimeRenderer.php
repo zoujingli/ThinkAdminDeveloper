@@ -15,6 +15,18 @@ class FormUploadRuntimeRenderer
     /**
      * @param array<string, mixed> $field
      */
+    public function resolveDisplayMode(array $field, string $type): string
+    {
+        if ($type !== 'image') {
+            return 'input';
+        }
+        $mode = strtolower(trim(strval($field['upload']['display'] ?? '')));
+        return in_array($mode, ['input', 'preview'], true) ? $mode : 'input';
+    }
+
+    /**
+     * @param array<string, mixed> $field
+     */
     public function resolveUploadTypes(array $field, string $type): string
     {
         return strval($field['upload']['types'] ?? ($type === 'image' ? 'gif,png,jpg,jpeg' : 'mp4'));
@@ -52,19 +64,20 @@ class FormUploadRuntimeRenderer
     public function renderInitScript(array $field, string $type): string
     {
         $runtime = is_array($field['upload']['runtime'] ?? null) ? $field['upload']['runtime'] : [];
+        $display = $this->resolveDisplayMode($field, $type);
         $name = strval($field['name'] ?? '');
         $selector = trim(strval($runtime['selector'] ?? sprintf('input[name="%s"]', $name)));
-        $method = trim(strval($runtime['method'] ?? $this->runtimeMethod($type)));
+        $method = trim(strval($runtime['method'] ?? $this->runtimeMethod($type, $display)));
         if ($selector === '' || $method === '') {
             return '';
         }
         return sprintf('$(%s).%s()', json_encode($selector, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES) ?: '""', $method);
     }
 
-    private function runtimeMethod(string $type): string
+    private function runtimeMethod(string $type, string $display): string
     {
         return match ($type) {
-            'image' => 'uploadOneImage',
+            'image' => $display === 'preview' ? 'uploadOneImage' : '',
             'video' => 'uploadOneVideo',
             'images' => 'uploadMultipleImage',
             default => throw new \InvalidArgumentException("FormBuilder 上传字段类型无效: {$type}"),

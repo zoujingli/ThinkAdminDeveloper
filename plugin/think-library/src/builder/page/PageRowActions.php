@@ -10,7 +10,7 @@ namespace think\admin\builder\page;
  */
 class PageRowActions
 {
-    public function __construct(private PageBuilder $builder)
+    public function __construct(private PageBuilder $builder, private ?PageTable $table = null)
     {
     }
 
@@ -28,30 +28,49 @@ class PageRowActions
     public function append(array|PageAction $action): PageAction
     {
         $item = $action instanceof PageAction ? $action : $this->create($action);
-        return $this->builder->attachRowAction($item);
+        if ($this->table instanceof PageTable) {
+            return $this->table->attachRowAction($item);
+        }
+        return $this->active() ? $this->builder->attachRowAction($item) : $item;
     }
 
     public function modal(string $label, string $url, string $title = '', array $attrs = [], ?string $auth = null): self
     {
-        $this->builder->addRowModalAction($label, $url, $title, $attrs, $auth);
+        if ($this->table instanceof PageTable) {
+            $this->table->addRowModalAction($label, $url, $title, $attrs, $auth);
+        } elseif ($this->active()) {
+            $this->builder->addRowModalAction($label, $url, $title, $attrs, $auth);
+        }
         return $this;
     }
 
     public function open(string $label, string $url, string $title = '', array $attrs = [], ?string $auth = null): self
     {
-        $this->builder->addRowOpenAction($label, $url, $title, $attrs, $auth);
+        if ($this->table instanceof PageTable) {
+            $this->table->addRowOpenAction($label, $url, $title, $attrs, $auth);
+        } elseif ($this->active()) {
+            $this->builder->addRowOpenAction($label, $url, $title, $attrs, $auth);
+        }
         return $this;
     }
 
     public function action(string $label, string $url, string $value = 'id#{{d.id}}', string $confirm = '', array $attrs = [], ?string $auth = null): self
     {
-        $this->builder->addRowActionButton($label, $url, $value, $confirm, $attrs, $auth);
+        if ($this->table instanceof PageTable) {
+            $this->table->addRowActionButton($label, $url, $value, $confirm, $attrs, $auth);
+        } elseif ($this->active()) {
+            $this->builder->addRowActionButton($label, $url, $value, $confirm, $attrs, $auth);
+        }
         return $this;
     }
 
     public function html(string $html): self
     {
-        $this->builder->addRowActionHtml($html);
+        if ($this->table instanceof PageTable) {
+            $this->table->addRowActionHtml($html);
+        } elseif ($this->active()) {
+            $this->builder->addRowActionHtml($html);
+        }
         return $this;
     }
 
@@ -125,7 +144,16 @@ class PageRowActions
 
     public function item(array $action): self
     {
-        $this->builder->addRowAction($action);
+        if ($this->table instanceof PageTable) {
+            $this->table->addRowAction($action);
+        } elseif ($this->active()) {
+            $this->builder->addRowAction($action);
+        }
         return $this;
+    }
+
+    private function active(): bool
+    {
+        return $this->table === null || $this->builder->isActiveTableNode($this->table);
     }
 }

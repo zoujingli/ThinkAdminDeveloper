@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace think\admin\builder\form\render;
 
+use think\admin\builder\BuilderLang;
+
 /**
  * 上传字段渲染器.
  * @class UploadFieldRenderer
@@ -21,13 +23,20 @@ class UploadFieldRenderer extends AbstractFormFieldRenderer
     {
         $field = $context->field();
         $type = $context->type();
-        $attrs = $context->resolveInputAttrs('layui-input layui-bg-gray');
-        $attrs['type'] = 'text';
-        $attrs['placeholder'] = $attrs['placeholder'] ?? "请上传{$field['title']}";
+        $display = $this->runtimeRenderer()->resolveDisplayMode($field, $type);
+        $attrs = $context->resolveInputAttrs($display === 'preview' ? '' : 'layui-input layui-bg-gray');
+        $attrs['type'] = $display === 'preview' ? 'hidden' : 'text';
+        if ($display === 'preview') {
+            $attrs['data-upload-display'] = 'preview';
+        } else {
+            $attrs['placeholder'] = $attrs['placeholder'] ?? BuilderLang::format('请上传%s', [strval($field['title'])]);
+        }
 
         $uploadTypes = $this->runtimeRenderer()->resolveUploadTypes($field, $type);
         $body = "\n\t\t\t\t" . sprintf('<input name="%s" %s value="%s">', $field['name'], $context->attrs($attrs), $context->valueExpression());
-        $body .= "\n\t\t\t\t" . $this->runtimeRenderer()->renderTrigger($context, $field['name'], $type, $uploadTypes);
+        if ($display === 'input') {
+            $body .= "\n\t\t\t\t" . $this->runtimeRenderer()->renderTrigger($context, $field['name'], $type, $uploadTypes);
+        }
 
         $html = $this->renderFieldShell(
             $context,
@@ -45,7 +54,7 @@ class UploadFieldRenderer extends AbstractFormFieldRenderer
         $field = $context->field();
         $attrs = $context->resolveInputAttrs();
         $attrs['type'] = 'hidden';
-        $attrs['placeholder'] = $attrs['placeholder'] ?? "请上传{$field['title']} ( 多图 )";
+        $attrs['placeholder'] = $attrs['placeholder'] ?? BuilderLang::format('请上传%s ( 多图 )', [strval($field['title'])]);
 
         $body = "\n\t\t\t\t" . sprintf('<input name="%s" %s value="%s">', $field['name'], $context->attrs($attrs), $context->joinedValueExpression()) . "\n\t\t\t";
         return $this->appendInlineScript(

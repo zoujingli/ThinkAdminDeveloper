@@ -5,6 +5,8 @@ declare(strict_types=1);
 namespace think\admin\builder\form;
 
 use think\admin\builder\base\BuilderNode;
+use think\admin\builder\base\render\BuilderAttributes;
+use think\admin\builder\form\component\FormComponentInterface;
 
 /**
  * 表单节点定义器.
@@ -17,12 +19,22 @@ class FormNode extends BuilderNode
      */
     protected ?FormActionBar $actionBar = null;
 
+    protected function createNodeInstance(string $type = 'element', string $tag = 'div'): self
+    {
+        return new self($this->builder, $type, $tag);
+    }
+
     public function html(string $html): static
     {
-        $child = new self($this->builder, 'html');
+        $child = $this->createNodeInstance('html');
         $child->html = $html;
         $this->appendChild($child);
         return $this;
+    }
+
+    public function textNode(string $text): static
+    {
+        return $this->html(BuilderAttributes::escape($text));
     }
 
     /**
@@ -30,12 +42,63 @@ class FormNode extends BuilderNode
      */
     public function node(string $tag = 'div', ?callable $callback = null): self
     {
-        $child = new self($this->builder, 'element', trim($tag) ?: 'div');
+        $child = $this->createNodeInstance('element', trim($tag) ?: 'div');
         $this->appendChild($child);
         if (is_callable($callback)) {
             $callback($child);
         }
         return $child;
+    }
+
+    /**
+     * @param (callable(FormNode): void)|null $callback
+     */
+    public function prepend(string $tag = 'div', ?callable $callback = null): self
+    {
+        $child = $this->createNodeInstance('element', trim($tag) ?: 'div');
+        $this->prependNode($child);
+        if (is_callable($callback)) {
+            $callback($child);
+        }
+        return $child;
+    }
+
+    /**
+     * @param (callable(FormNode): void)|null $callback
+     */
+    public function before(string $tag = 'div', ?callable $callback = null): self
+    {
+        $child = $this->createNodeInstance('element', trim($tag) ?: 'div');
+        $this->beforeNode($child);
+        if (is_callable($callback)) {
+            $callback($child);
+        }
+        return $child;
+    }
+
+    /**
+     * @param (callable(FormNode): void)|null $callback
+     */
+    public function after(string $tag = 'div', ?callable $callback = null): self
+    {
+        $child = $this->createNodeInstance('element', trim($tag) ?: 'div');
+        $this->afterNode($child);
+        if (is_callable($callback)) {
+            $callback($child);
+        }
+        return $child;
+    }
+
+    /**
+     * @param null|callable(FormNode): void $callback
+     */
+    public function component(FormComponentInterface $component, ?callable $callback = null): self
+    {
+        $node = $component->mount($this);
+        if (is_callable($callback)) {
+            $callback($node);
+        }
+        return $node;
     }
 
     public function div(?callable $callback = null): self
@@ -115,6 +178,13 @@ class FormNode extends BuilderNode
     public function append(FormNode $node): FormNode
     {
         return $this->appendChild($node);
+    }
+
+    protected function onChildDetached(object $child): void
+    {
+        if ($child === $this->actionBar) {
+            $this->actionBar = null;
+        }
     }
 
     /**

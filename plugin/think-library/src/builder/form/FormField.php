@@ -122,6 +122,12 @@ class FormField extends FormNode
         return $this->setFieldAttr('placeholder', $placeholder);
     }
 
+    public function defaultValue(mixed $value): static
+    {
+        $this->field['default'] = $value;
+        return $this;
+    }
+
     public function readonly(bool $readonly = true): static
     {
         return $readonly ? $this->setFieldAttr('readonly', null) : $this->unsetFieldAttr('readonly');

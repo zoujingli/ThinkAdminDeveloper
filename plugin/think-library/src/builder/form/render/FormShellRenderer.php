@@ -99,7 +99,10 @@ class FormShellRenderer
         $form .= "\n\t\t\t" . '</form>';
         $form .= (new InlineScriptRenderer())->render($scripts);
 
-        $html = '<div class="layui-card" data-builder-scope="page">';
+        $html = sprintf(
+            '<div class="layui-card" data-builder-scope="page" data-builder-preset="%s">',
+            htmlentities(strval($schema['preset'] ?? 'page-form'), ENT_QUOTES, 'UTF-8')
+        );
         if ($header !== '') {
             $html .= "\n\t" . $header;
             $html .= "\n\t" . '<div class="layui-card-line"></div>';

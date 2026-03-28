@@ -927,10 +927,12 @@ $(function () {
     $.fn.uploadOneImage = function () {
         return this.each(function () {
             if (this.dataset.inited) return; else this.dataset.inited = 'true';
+            let previewUploadOnly = $(this).data('uploadDisplay') === 'preview';
             let $bt = $('<div class="uploadimage"><span><a data-file class="layui-icon layui-icon-upload-drag"></a><i class="layui-icon layui-icon-search"></i><i class="layui-icon layui-icon-close"></i></span><span data-file="image"></span></div>');
             let $in = $(this).on('change', function () {
                 if (this.value) $bt.css('backgroundImage', 'url(' + encodeURI(this.value) + ')');
             }).after($bt).trigger('change');
+            if (previewUploadOnly) $bt.find('a[data-file]').remove();
             $bt.on('click', 'i.layui-icon-search', function (event) {
                 event.stopPropagation(), $in.val() && $.previewImage(encodeURI($in.val()));
             }).on('click', 'i.layui-icon-close', function (event) {

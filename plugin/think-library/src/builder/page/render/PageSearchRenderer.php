@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace think\admin\builder\page\render;
 
+use think\admin\builder\BuilderLang;
+
 /**
  * 页面搜索渲染器.
  * @class PageSearchRenderer
@@ -48,13 +50,13 @@ class PageSearchRenderer
             $hasSubmit = $hasSubmit || strval($field['type'] ?? '') === 'submit';
         }
         if (!$hasSubmit) {
-            $field = $this->normalizeField(['type' => 'submit', 'label' => '搜 索', 'attrs' => []]);
+            $field = $this->normalizeField(['type' => 'submit', 'label' => BuilderLang::text('搜 索'), 'attrs' => []]);
             $items[] = $factory->create($field)->render($field, $context);
         }
 
         $html = '';
         if ($legendEnabled) {
-            $html .= '<fieldset><legend>' . $context->escape($legend) . '</legend>';
+            $html .= '<fieldset><legend>' . $context->escape(BuilderLang::text($legend)) . '</legend>';
         }
         $html .= sprintf('<form %s>', $context->attrs($attrs));
         $html .= "\n\t" . join("\n\t", array_filter($items));

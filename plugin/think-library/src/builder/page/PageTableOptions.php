@@ -10,6 +10,9 @@ namespace think\admin\builder\page;
  */
 class PageTableOptions
 {
+    private ?int $version = null;
+    private $syncHandler = null;
+
     /**
      * @param array<string, mixed> $options
      */
@@ -20,9 +23,18 @@ class PageTableOptions
     /**
      * @param array<string, mixed> $options
      */
-    public function attach(array $options): self
+    public function attach(array $options, ?int $version = null): self
     {
         $this->options = $options;
+        $this->version = $version;
+        $this->syncHandler = null;
+        return $this;
+    }
+
+    public function attachSync(callable $syncHandler): self
+    {
+        $this->version = null;
+        $this->syncHandler = $syncHandler;
         return $this;
     }
 
@@ -157,7 +169,11 @@ class PageTableOptions
 
     private function sync(): self
     {
-        $this->options = $this->builder->replaceTableOptions($this->options);
+        if (is_callable($this->syncHandler)) {
+            $this->options = ($this->syncHandler)($this->options);
+        } elseif ($this->builder->canSyncTableAttachment($this->version)) {
+            $this->options = $this->builder->replaceTableOptions($this->options);
+        }
         return $this;
     }
 }

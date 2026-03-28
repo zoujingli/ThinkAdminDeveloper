@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace think\admin\builder\page;
 
+use think\admin\builder\BuilderLang;
 use think\admin\builder\base\render\BuilderAttributesRenderer;
 
 /**
@@ -44,6 +45,7 @@ class PageColumnNormalizer
             'sort' => true,
             'templet' => "#{$templateId}",
         ], $options);
+        $column['title'] = BuilderLang::text(strval($column['title'] ?? ''));
 
         $attrs = array_merge([
             'type' => 'number',
@@ -72,7 +74,7 @@ class PageColumnNormalizer
         return [
             'column' => array_merge([
                 'toolbar' => "#{$this->toolbarId}",
-                'title' => $title,
+                'title' => BuilderLang::text($title),
                 'align' => 'center',
                 'minWidth' => 150,
                 'fixed' => 'right',
@@ -93,13 +95,13 @@ class PageColumnNormalizer
         $auth = trim(strval($options['auth'] ?? 'state'));
         $valueExpr = strval($options['value'] ?? '{{d.id}}');
         $checkedExpr = strval($options['checked'] ?? "{{-d.status>0?'checked':''}}");
-        $toggleText = strval($options['text'] ?? '已激活|已禁用');
-        $activeHtml = strval($options['activeHtml'] ?? '<b class="color-green">已激活</b>');
-        $inactiveHtml = strval($options['inactiveHtml'] ?? '<b class="color-red">已禁用</b>');
+        $toggleText = strval($options['text'] ?? BuilderLang::pipeText('已激活|已禁用'));
+        $activeHtml = strval($options['activeHtml'] ?? sprintf('<b class="color-green">%s</b>', BuilderLang::text('已激活')));
+        $inactiveHtml = strval($options['inactiveHtml'] ?? sprintf('<b class="color-red">%s</b>', BuilderLang::text('已禁用')));
         $dataScript = trim(strval($options['dataScript'] ?? 'var data = {id: obj.value, status: obj.elem.checked > 0 ? 1 : 0};'));
         $reloadSelector = strval($options['reloadSelector'] ?? "#{$this->tableId}");
         $reloadOnError = !array_key_exists('reloadOnError', $options) || intval($options['reloadOnError']) > 0;
-        $reloadOnSuccess = intval($options['reloadOnSuccess'] ?? 0) > 0;
+        $reloadOnSuccess = !array_key_exists('reloadOnSuccess', $options) || intval($options['reloadOnSuccess']) > 0;
         unset(
             $options['templateId'],
             $options['filter'],
@@ -122,12 +124,13 @@ class PageColumnNormalizer
             'minWidth' => 110,
             'templet' => "#{$templateId}",
         ], $options);
+        $column['title'] = BuilderLang::text(strval($column['title'] ?? ''));
 
         $attrs = [
             'type' => 'checkbox',
             'value' => $valueExpr,
             'lay-skin' => 'switch',
-            'lay-text' => $toggleText,
+            'lay-text' => BuilderLang::pipeText($toggleText),
             'lay-filter' => $filter,
         ];
         $toggle = '<input ' . $this->attributesRenderer->render($attrs) . ' ' . $checkedExpr . '>';

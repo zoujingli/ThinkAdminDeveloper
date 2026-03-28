@@ -14,6 +14,6 @@ class PageSearchNodeRenderer extends BuilderCallbackNodeRenderer implements Page
 {
     public function render(array $node, PageNodeRenderContext $context): string
     {
-        return $this->invoke([$context, 'renderSearch']);
+        return $this->invoke([$context, 'renderSearch'], $node);
     }
 }

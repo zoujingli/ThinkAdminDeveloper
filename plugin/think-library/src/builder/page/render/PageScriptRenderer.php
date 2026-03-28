@@ -11,23 +11,13 @@ namespace think\admin\builder\page\render;
 class PageScriptRenderer
 {
     /**
-     * @param array<string, mixed> $options
-     * @param array<int, string> $bootScripts
-     * @param array<int, string> $initScripts
+     * @param array<int, string> $readyScripts
      * @param array<int, string> $scripts
      */
-    public function render(
-        string $tableId,
-        array $options,
-        array $bootScripts,
-        array $initScripts,
-        array $scripts,
-        PageScriptRenderContext $context
-    ): string {
+    public function render(array $readyScripts, array $scripts): string
+    {
         $ready = (new PageReadyScriptRenderer())->render(
-            (new PageBootScriptRenderer())->render($bootScripts),
-            (new PageTableInitScriptRenderer())->render($tableId, $options, $context),
-            (new PageInitScriptRenderer())->render($initScripts),
+            (new PageBootScriptRenderer())->render($readyScripts),
         );
         return $ready . (new PageCustomScriptRenderer())->render($scripts);
     }

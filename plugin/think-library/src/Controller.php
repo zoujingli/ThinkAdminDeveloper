@@ -124,10 +124,16 @@ class Controller extends \stdClass
      */
     public function fetch(string $tpl = '', array $vars = [], ?string $node = null): void
     {
+        if (function_exists('system_view_context')) {
+            $vars = array_merge(system_view_context(), $vars);
+        }
         foreach (get_object_vars($this) as $name => $value) {
             $vars[$name] = $value;
         }
         $vars['staticRoot'] = strval($vars['staticRoot'] ?? AppService::uri('static'));
+        if (!isset($vars['pageTitle']) || !is_scalar($vars['pageTitle']) || strval($vars['pageTitle']) === '') {
+            $vars['pageTitle'] = isset($vars['title']) && is_scalar($vars['title']) ? strval($vars['title']) : '';
+        }
         throw new HttpResponseException(view($tpl, $vars));
     }
 

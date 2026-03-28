@@ -15,8 +15,8 @@ class PageNodeRenderContext extends BuilderNodeRenderContext
     /**
      * @param callable(array<int, array<string, mixed>>): string $contentRenderer
      * @param callable(array<string, mixed>): string $attrsRenderer
-     * @param callable(): string $searchRenderer
-     * @param callable(): string $tableRenderer
+     * @param callable(array<string, mixed>): string $searchRenderer
+     * @param callable(array<string, mixed>): string $tableRenderer
      */
     public function __construct(
         callable $contentRenderer,
@@ -27,13 +27,13 @@ class PageNodeRenderContext extends BuilderNodeRenderContext
         parent::__construct($contentRenderer, $attrsRenderer);
     }
 
-    public function renderSearch(): string
+    public function renderSearch(array $node): string
     {
-        return ($this->searchRenderer)();
+        return ($this->searchRenderer)($node);
     }
 
-    public function renderTable(): string
+    public function renderTable(array $node): string
     {
-        return ($this->tableRenderer)();
+        return ($this->tableRenderer)($node);
     }
 }

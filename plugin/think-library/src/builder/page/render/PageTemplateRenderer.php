@@ -12,12 +12,9 @@ class PageTemplateRenderer
 {
     /**
      * @param array<string, string> $templates
-     * @param array<int, string> $rowActions
      */
-    public function render(array $templates, string $toolbarId, array $rowActions): string
+    public function render(array $templates): string
     {
-        $templates = (new PageToolbarTemplateRenderer())->render($templates, $toolbarId, $rowActions);
-
         $html = '';
         $renderer = new PageTemplateScriptRenderer();
         foreach ($templates as $id => $tpl) {

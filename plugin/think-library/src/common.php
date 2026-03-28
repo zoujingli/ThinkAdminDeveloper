@@ -386,6 +386,48 @@ if (!function_exists('xss_safe')) {
     }
 }
 
+if (!function_exists('password_mask')) {
+    /**
+     * 返回编辑态密码占位符。
+     *
+     * 默认固定为 6 个星号，前端展示统一使用该值，
+     * 用户保留全星号提交时可视为“不修改密码”。
+     */
+    function password_mask(int $length = 6): string
+    {
+        return str_repeat('*', max(1, $length));
+    }
+}
+
+if (!function_exists('password_is_mask')) {
+    /**
+     * 判断输入是否为纯星号密码占位。
+     *
+     * 只要输入内容全部由 `*` 组成，且长度大于 0，
+     * 就认为它是保留旧密码的占位内容。
+     */
+    function password_is_mask(mixed $value): bool
+    {
+        $value = trim(strval($value));
+        return $value !== '' && preg_match('/^\*+$/', $value) === 1;
+    }
+}
+
+if (!function_exists('password_is_unchanged')) {
+    /**
+     * 判断编辑态密码输入是否表示“保持不变”。
+     *
+     * 兼容两种历史/新标准：
+     * - 空字符串：历史“留空不修改”
+     * - 纯星号：新标准“保留星号不修改”
+     */
+    function password_is_unchanged(mixed $value): bool
+    {
+        $value = trim(strval($value));
+        return $value === '' || password_is_mask($value);
+    }
+}
+
 if (!function_exists('http_get')) {
     /**
      * 发送 GET 请求。

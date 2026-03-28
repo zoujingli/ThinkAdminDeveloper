@@ -11,6 +11,8 @@ namespace think\admin\builder\page;
 abstract class PagePresetColumn
 {
     private ?int $index = null;
+    private ?int $version = null;
+    protected $syncHandler = null;
 
     /**
      * @var array<int, string>
@@ -35,8 +37,17 @@ abstract class PagePresetColumn
     public function attachResult(array $result): self
     {
         $this->index = intval($result['index'] ?? 0);
+        $this->version = isset($result['version']) ? intval($result['version']) : null;
         $this->templateKeys = array_values(array_filter((array)($result['templateKeys'] ?? []), 'is_string'));
         $this->scriptIndexes = array_values(array_map('intval', (array)($result['scriptIndexes'] ?? [])));
+        return $this;
+    }
+
+    public function attachSync(callable $syncHandler): self
+    {
+        $this->index = null;
+        $this->version = null;
+        $this->syncHandler = $syncHandler;
         return $this;
     }
 
@@ -118,6 +129,11 @@ abstract class PagePresetColumn
     protected function isAttached(): bool
     {
         return $this->index !== null;
+    }
+
+    protected function canSync(): bool
+    {
+        return $this->isAttached() && $this->builder->canSyncTableAttachment($this->version);
     }
 
     protected function index(): int

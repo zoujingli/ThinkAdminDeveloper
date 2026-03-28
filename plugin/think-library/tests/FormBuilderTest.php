@@ -23,6 +23,7 @@ namespace think\admin\tests;
 use PHPUnit\Framework\TestCase;
 use think\admin\Controller;
 use think\admin\builder\form\FormBuilder;
+use think\admin\builder\form\FormComponents;
 use think\admin\builder\form\FormChoiceField;
 use think\admin\builder\form\FormSelectField;
 use think\admin\builder\form\FormTextField;
@@ -67,6 +68,38 @@ class FormBuilderTest extends TestCase
         $this->assertSame('小程序格式错误！', $rules['appid.regex:/^wx[0-9a-z]{16}$/']);
         $this->assertSame('备注不能为空！', $rules['remark.require']);
         $this->assertSame('备注最多100个字符！', $rules['remark.max:100']);
+    }
+
+    public function testFieldDefaultsCanRenderAndValidateWithoutInitialVo(): void
+    {
+        $builder = $this->newBuilder();
+        $builder->define(function ($form) {
+            $form->fields(function ($fields) {
+                $fields->text('sort', '排序', 'Sort', false, '', null, ['type' => 'number'])->defaultValue(0);
+                $fields->select('driver', '驱动', 'Driver', false, '', [
+                    'local' => '本地',
+                    'qiniu' => '七牛',
+                ])->defaultValue('local');
+                $fields->radio('status', '状态', 'Status', '', false)
+                    ->options([1 => '启用', 0 => '禁用'])
+                    ->defaultValue('1');
+                $fields->checkbox('scene', '场景', 'Scene', '', false)
+                    ->options(['index' => '列表', 'form' => '表单'])
+                    ->defaultValue(['index']);
+            });
+        })->build();
+
+        $requestRules = $builder->getRequestRules();
+        $html = $this->invokePrivate($builder, '_buildFormModal');
+
+        $this->assertSame('0', $requestRules['sort.default']);
+        $this->assertSame('local', $requestRules['driver.default']);
+        $this->assertSame('1', $requestRules['status.default']);
+        $this->assertSame(['index'], $requestRules['scene.default']);
+        $this->assertStringContainsString('value="{$vo.sort|default=0}"', $html);
+        $this->assertStringContainsString("!isset(\$vo.driver) and strval('local') eq 'local'", $html);
+        $this->assertStringContainsString("!isset(\$vo.status) and strval('1')==strval('1')", $html);
+        $this->assertStringContainsString("!isset(\$vo.scene) and in_array('index',['index'])", $html);
     }
 
     public function testCheckboxTemplateUsesRealFieldNameAndVariable()
@@ -154,9 +187,53 @@ class FormBuilderTest extends TestCase
         $this->assertStringContainsString('data-type="jpg,png"', $html);
         $this->assertStringContainsString('data-field="intro_video"', $html);
         $this->assertStringContainsString("join('|', \$vo.gallery)", $html);
-        $this->assertStringContainsString('uploadOneImage()', $html);
+        $this->assertStringNotContainsString('uploadOneImage()', $html);
         $this->assertStringContainsString('uploadOneVideo()', $html);
         $this->assertStringContainsString('uploadMultipleImage()', $html);
+    }
+
+    public function testImageUploadFieldCanRenderPreviewOnlyMode(): void
+    {
+        $builder = $this->newBuilder();
+        $builder->define(function ($form) {
+            $form->fields(function ($fields) {
+                $fields->image('headimg', '头像')->previewOnly();
+            });
+        })->build();
+
+        $schema = $builder->toArray();
+        $html = $this->invokePrivate($builder, '_buildFormModal');
+
+        $this->assertSame('preview', $schema['fields'][0]['upload']['display'] ?? null);
+        $this->assertMatchesRegularExpression('/<input[^>]*name="headimg"[^>]*type="hidden"[^>]*data-upload-display="preview"/', $html);
+        $this->assertStringNotContainsString('data-field="headimg"', $html);
+        $this->assertStringContainsString('uploadOneImage()', $html);
+    }
+
+    public function testTextFieldInputContentCanRenderRightAddon(): void
+    {
+        $builder = $this->newBuilder();
+        $builder->define(function ($form) {
+            $form->fields(function ($fields) {
+                $field = $fields->text('browser_icon', '浏览器小图标', 'Browser Icon', true, '', 'url', [
+                    'placeholder' => '请上传浏览器图标',
+                ]);
+                $field->inputRightIcon('layui-icon-upload-drag', [
+                    'data-file' => 'btn',
+                    'data-type' => 'png,jpg,jpeg',
+                    'data-field' => 'browser_icon',
+                ]);
+            });
+        })->build();
+
+        $html = $this->invokePrivate($builder, '_buildFormModal');
+
+        $this->assertStringContainsString('name="browser_icon"', $html);
+        $this->assertStringContainsString('class="pr40 layui-input"', $html);
+        $this->assertStringContainsString('data-field="browser_icon"', $html);
+        $this->assertStringContainsString('layui-icon-upload-drag', $html);
+        $this->assertStringContainsString('onmousedown="event.stopPropagation();"', $html);
+        $this->assertStringContainsString('ontouchstart="event.stopPropagation();"', $html);
     }
 
     public function testSelectAndStaticChoiceFieldsCanRenderWithoutTemplateVariables()
@@ -556,6 +633,54 @@ class FormBuilderTest extends TestCase
         $this->assertStringContainsString('<!--{foreach $roleOptions as $k=>$v}item-->', $html);
     }
 
+    public function testFormPresetsAndComponentsCanRenderStructuredNodes(): void
+    {
+        $builder = $this->newBuilder('form', 'page')->preset('page-form');
+        $builder->define(function ($form) {
+            $form->title('资料设置');
+
+            $form->component(FormComponents::intro()->config([
+                'title' => '基础资料',
+                'description' => '通过组件对象输出表单结构。',
+            ]));
+
+            $section = $form->component(FormComponents::section()->config([
+                'title' => '账号信息',
+                'description' => '支持 DOM 级插入和字段组合。',
+            ])->body(function ($body) {
+                $body->component(FormComponents::note('请确认账号信息后再保存。'));
+                $body->fields(function ($fields) {
+                    $fields->text('nickname', '用户名称');
+                });
+            }));
+
+            $section->prepend('div', function ($node) {
+                $node->class('section-prefix')->html('前置提示');
+            });
+        })->build();
+
+        $schema = $builder->toArray();
+        $html = $this->invokePrivate($builder, '_buildFormPage');
+
+        $this->assertSame('page-form', $schema['preset']);
+        $this->assertStringContainsString('data-builder-mode="page"', $html);
+        $this->assertStringContainsString('data-builder-preset="page-form"', $html);
+        $this->assertStringContainsString('通过组件对象输出表单结构。', $html);
+        $this->assertStringContainsString('前置提示', $html);
+        $this->assertStringContainsString('请确认账号信息后再保存。', $html);
+    }
+
+    public function testDialogFormPresetCanExposeExpectedSchema(): void
+    {
+        $builder = $this->newBuilder('form', 'modal')->preset('dialog-form')->build();
+        $schema = $builder->toArray();
+        $html = $this->invokePrivate($builder, '_buildFormModal');
+
+        $this->assertSame('dialog-form', $schema['preset'] ?? null);
+        $this->assertStringContainsString('data-builder-mode="modal"', $html);
+        $this->assertStringContainsString('data-builder-preset="dialog-form"', $html);
+    }
+
     public function testMultipleActionBarsOnlyRenderIdentityFieldOnce(): void
     {
         $builder = $this->newBuilder();
@@ -632,6 +757,93 @@ class FormBuilderTest extends TestCase
         }
         $this->assertStringContainsString('data-scene="profile"', $html);
         $this->assertStringContainsString('data-mode="modal"', $html);
+    }
+
+    public function testRemovingFormNodesKeepsSchemaAndHtmlConsistent(): void
+    {
+        $builder = $this->newBuilder();
+        $builder->define(function ($form) {
+            $field = $form->fieldsNode()->text('name', '名称');
+            $form->actions(function ($actions) {
+                $actions->submit('保存');
+            });
+
+            $field->remove();
+            $form->actionBar()->remove();
+        })->build();
+
+        $schema = $builder->toArray();
+        $html = $this->invokePrivate($builder, '_buildFormModal');
+
+        $this->assertSame([], $schema['content']);
+        $this->assertSame([], $schema['fields']);
+        $this->assertSame([], $schema['buttons']);
+        $this->assertStringNotContainsString('name="name"', $html);
+        $this->assertStringNotContainsString('>保存</button>', $html);
+    }
+
+    public function testActionBarCanBeRecreatedAfterRemoval(): void
+    {
+        $builder = $this->newBuilder();
+        $builder->define(function ($form) {
+            $bar = $form->actionBar();
+            $bar->class('first-bar');
+            $bar->remove();
+
+            $form->actionBar()->class('second-bar');
+            $form->actions(function ($actions) {
+                $actions->submit('保存');
+            });
+        })->build();
+
+        $schema = $builder->toArray();
+        $html = $this->invokePrivate($builder, '_buildFormModal');
+
+        $this->assertSame(1, count($schema['buttons']));
+        $this->assertStringNotContainsString('first-bar', $html);
+        $this->assertStringContainsString('second-bar', $html);
+        $this->assertStringContainsString('>保存</button>', $html);
+    }
+
+    public function testFormLayoutRemoveApisCanUpdateRootAttributes(): void
+    {
+        $builder = $this->newBuilder();
+        $builder->define(function ($form) {
+            $form->class('alpha')
+                ->attr('data-scene', 'demo')
+                ->data('mode', 'modal')
+                ->removeClass('alpha')
+                ->removeAttr('data-scene')
+                ->removeData('mode');
+        })->build();
+
+        $schema = $builder->toArray();
+        $html = $this->invokePrivate($builder, '_buildFormModal');
+
+        $this->assertStringNotContainsString('alpha', strval($schema['attrs']['class'] ?? ''));
+        $this->assertArrayNotHasKey('data-scene', $schema['attrs']);
+        $this->assertArrayNotHasKey('data-mode', $schema['attrs']);
+        $this->assertStringNotContainsString('data-scene="demo"', $html);
+        $this->assertStringNotContainsString('data-mode="modal"', $html);
+    }
+
+    public function testFormNodesPreventCyclicReparenting(): void
+    {
+        $builder = $this->newBuilder();
+        $builder->define(function ($form) {
+            $outer = $form->div()->class('outer');
+            $inner = $outer->div()->class('inner');
+            $inner->appendNode($form);
+        })->build();
+
+        $schema = $builder->toArray();
+        $html = $this->invokePrivate($builder, '_buildFormModal');
+
+        $this->assertCount(1, $schema['content']);
+        $this->assertSame('outer', $schema['content'][0]['attrs']['class'] ?? null);
+        $this->assertSame('inner', $schema['content'][0]['children'][0]['attrs']['class'] ?? null);
+        $this->assertStringContainsString('class="outer"', $html);
+        $this->assertStringContainsString('class="inner"', $html);
     }
 
     private function newBuilder(string $type = 'form', string $mode = 'modal'): FormBuilder

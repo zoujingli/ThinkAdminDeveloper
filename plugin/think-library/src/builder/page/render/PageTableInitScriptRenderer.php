@@ -15,6 +15,6 @@ class PageTableInitScriptRenderer
      */
     public function render(string $tableId, array $options, PageScriptRenderContext $context): string
     {
-        return "        let \$table = $('#" . addslashes($tableId) . "').layTable(" . $context->encodeJs($options) . ');';
+        return "        $('#" . addslashes($tableId) . "').layTable(" . $context->encodeJs($options) . ');';
     }
 }

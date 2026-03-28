@@ -44,12 +44,12 @@ class ArchitectureBoundaryTest extends TestCase
         $this->assertFileExists($this->path('plugin/think-library/src/service/JwtToken.php'));
         $this->assertFileExists($this->path('plugin/think-library/src/service/NodeService.php'));
         $this->assertFileExists($this->path('plugin/think-library/src/service/AppService.php'));
-        $this->assertFileExists($this->path('plugin/think-library/src/helper/Helper.php'));
+        $this->assertFileExists($this->path('plugin/think-library/src/Helper.php'));
         $this->assertFileExists($this->path('plugin/think-library/src/runtime/RequestTokenService.php'));
-        $this->assertFileExists($this->path('plugin/think-library/src/helper/FormBuilder.php'));
-        $this->assertFileExists($this->path('plugin/think-library/src/helper/PageBuilder.php'));
+        $this->assertFileExists($this->path('plugin/think-library/src/builder/form/FormBuilder.php'));
+        $this->assertFileExists($this->path('plugin/think-library/src/builder/page/PageBuilder.php'));
 
-        $this->assertFileDoesNotExist($this->path('plugin/think-library/src/Helper.php'));
+        $this->assertFileDoesNotExist($this->path('plugin/think-library/src/helper/Helper.php'));
         $this->assertFileDoesNotExist($this->path('plugin/think-library/src/service/FormBuilder.php'));
         $this->assertFileDoesNotExist($this->path('plugin/think-library/src/service/PageBuilder.php'));
         $this->assertFileDoesNotExist($this->path('plugin/think-plugs-system/src/service/FormBuilder.php'));
@@ -82,7 +82,7 @@ class ArchitectureBoundaryTest extends TestCase
         }));
         sort($dirs);
 
-        $this->assertSame(['contract', 'extend', 'helper', 'middleware', 'model', 'route', 'runtime', 'service'], $dirs);
+        $this->assertSame(['builder', 'contract', 'extend', 'helper', 'middleware', 'model', 'route', 'runtime', 'service'], $dirs);
     }
 
     public function testLibraryRouteFilesStayInRouteDirectory(): void
@@ -116,7 +116,7 @@ class ArchitectureBoundaryTest extends TestCase
         }));
         sort($files);
 
-        $this->assertSame(['ArrayTree.php', 'CodeToolkit.php', 'FileTools.php', 'HttpClient.php', 'README.md'], $files);
+        $this->assertSame(['ArrayTree.php', 'CodeToolkit.php', 'FileTools.php', 'HttpClient.php'], $files);
     }
 
     public function testCaptchaServiceLivesInSystemServiceDirectory(): void
@@ -136,7 +136,7 @@ class ArchitectureBoundaryTest extends TestCase
         $this->assertFileExists($this->path('plugin/think-library/src/runtime/NullSystemContext.php'));
         $this->assertFileExists($this->path('plugin/think-plugs-system/src/service/SystemContext.php'));
         $this->assertFileExists($this->path('plugin/think-plugs-system/src/service/SystemService.php'));
-        $this->assertFileExists($this->path('plugin/think-plugs-system/src/service/SystemAuthService.php'));
+        $this->assertFileExists($this->path('plugin/think-plugs-system/src/service/AuthService.php'));
         $this->assertFileExists($this->path('plugin/think-plugs-system/src/middleware/JwtTokenAuth.php'));
         $this->assertFileExists($this->path('plugin/think-plugs-system/src/middleware/RbacAccess.php'));
 
@@ -162,7 +162,7 @@ class ArchitectureBoundaryTest extends TestCase
         }));
         sort($dirs);
 
-        $this->assertSame(['controller', 'lang', 'middleware', 'model', 'route', 'service', 'storage', 'view'], $dirs);
+        $this->assertSame(['builder', 'controller', 'lang', 'middleware', 'model', 'route', 'service', 'storage', 'view'], $dirs);
     }
 
     /**
@@ -170,7 +170,8 @@ class ArchitectureBoundaryTest extends TestCase
      */
     public function testSystemPluginStorageSourceLayout(): void
     {
-        $this->assertDirectoryDoesNotExist($this->path('plugin/think-plugs-storage'));
+        $this->assertDirectoryDoesNotExist($this->path('plugin/think-plugs-storage/src'));
+        $this->assertFileDoesNotExist($this->path('plugin/think-plugs-storage/Service.php'));
         $this->assertFileExists($this->path('plugin/think-plugs-system/src/storage/StorageConfig.php'));
         $this->assertFileExists($this->path('plugin/think-plugs-system/src/storage/StorageManager.php'));
         $this->assertFileExists($this->path('plugin/think-plugs-system/src/storage/StorageAuthorize.php'));
@@ -313,7 +314,8 @@ class ArchitectureBoundaryTest extends TestCase
             $this->assertSame($expected, $files, "{$plugin} has unexpected source root files");
         }
 
-        $this->assertDirectoryDoesNotExist($this->path('plugin/think-plugs-center'));
+        $this->assertDirectoryDoesNotExist($this->path('plugin/think-plugs-center/src'));
+        $this->assertFileDoesNotExist($this->path('plugin/think-plugs-center/Service.php'));
         $this->assertFileDoesNotExist($this->path('plugin/think-plugs-wemall/src/helper.php'));
         $this->assertFileDoesNotExist($this->path('plugin/think-plugs-wuma/src/Query.php'));
         $this->assertFileDoesNotExist($this->path('plugin/think-plugs-wuma/src/Script.php'));
@@ -328,7 +330,7 @@ class ArchitectureBoundaryTest extends TestCase
         }));
         sort($files);
 
-        $this->assertSame(['Command.php', 'Controller.php', 'Exception.php', 'Library.php', 'Model.php', 'Plugin.php', 'Service.php', 'Storage.php', 'common.php'], $files);
+        $this->assertSame(['Command.php', 'Controller.php', 'Exception.php', 'Helper.php', 'Library.php', 'Model.php', 'Plugin.php', 'Service.php', 'Storage.php', 'common.php'], $files);
     }
 
     public function testPhpSourcesDoNotReferenceLegacyBoundaryNamespaces(): void
@@ -355,7 +357,6 @@ class ArchitectureBoundaryTest extends TestCase
             'think\admin\extend\ImageSliderVerify',
             'think\admin\extend\JsonRpcHttpClient',
             'think\admin\extend\JsonRpcHttpServer',
-            'think\admin\Helper',
             'think\admin\contract\AdminContextInterface',
             'think\admin\runtime\AdminContext',
             'think\admin\runtime\NullAdminContext',
