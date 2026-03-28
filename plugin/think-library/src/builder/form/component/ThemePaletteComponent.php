@@ -78,6 +78,8 @@ class ThemePaletteComponent extends AbstractFormComponent
                 'name' => $inputName,
                 'type' => 'radio',
                 'value' => strval($key),
+                'lay-ignore' => 'true',
+                'class' => 'theme-palette-input',
             ]);
             if ($this->current === $key) {
                 $input->attr('checked', null);

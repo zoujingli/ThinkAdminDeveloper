@@ -34,8 +34,8 @@ class FormTextField extends FormField
         }
 
         $renderer = new BuilderAttributesRenderer();
-        $attrs['onmousedown'] = $this->mergeEventHandler(strval($attrs['onmousedown'] ?? ''), 'event.stopPropagation();');
-        $attrs['ontouchstart'] = $this->mergeEventHandler(strval($attrs['ontouchstart'] ?? ''), 'event.stopPropagation();');
+        $attrs['onmousedown'] = $this->mergeEventHandler(strval($attrs['onmousedown'] ?? ''), 'event.preventDefault();event.stopPropagation();');
+        $attrs['ontouchstart'] = $this->mergeEventHandler(strval($attrs['ontouchstart'] ?? ''), 'event.preventDefault();event.stopPropagation();');
         $attrs = BuilderAttributes::make($attrs)
             ->class(trim("input-right-icon layui-icon {$iconClass}"))
             ->all();

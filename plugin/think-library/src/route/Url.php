@@ -324,7 +324,82 @@ class Url extends ThinkUrl
             return '';
         }
 
+        if (isset($segments[0])) {
+            $segments[0] = self::normalizeWebPrefix($segments[0]);
+        }
+
         return join('/', self::shrinkWebSegments($segments, true));
+    }
+
+    /**
+     * 将插件编码或别名统一映射为当前生效前缀。
+     */
+    private static function normalizeWebPrefix(string $segment): string
+    {
+        $segment = Str::lower(trim($segment));
+        if ($segment === '') {
+            return '';
+        }
+
+        if ($prefix = self::configuredPluginPrefix($segment)) {
+            return $prefix;
+        }
+
+        $plugin = AppService::resolvePlugin($segment);
+        if ($plugin === null) {
+            return $segment;
+        }
+
+        $prefix = trim(strval(AppService::pluginPrefix(strval($plugin['code'] ?? ''))), '/');
+        return $prefix !== '' ? Str::lower($prefix) : $segment;
+    }
+
+    /**
+     * 在插件元数据未初始化时，直接从运行时配置读取绑定前缀。
+     */
+    private static function configuredPluginPrefix(string $code): string
+    {
+        $bindings = (array)Library::$sapp->config->get('app.plugin.bindings', []);
+        if (array_key_exists($code, $bindings)) {
+            return self::normalizeConfiguredPrefix($bindings[$code]);
+        }
+
+        foreach ($bindings as $item) {
+            if (!is_array($item)) {
+                continue;
+            }
+
+            $name = Str::lower(strval($item['code'] ?? $item['plugin'] ?? ''));
+            if ($name === $code) {
+                return self::normalizeConfiguredPrefix($item['prefixes'] ?? ($item['prefix'] ?? []));
+            }
+        }
+
+        return '';
+    }
+
+    /**
+     * 标准化运行时配置中的插件前缀。
+     */
+    private static function normalizeConfiguredPrefix(mixed $value): string
+    {
+        foreach ((array)$value as $prefix) {
+            $prefix = Str::lower(trim(strval($prefix), " \t\n\r\0\x0B\\/"));
+            if ($prefix === '') {
+                continue;
+            }
+            if (str_contains($prefix, '/')) {
+                $prefix = strstr($prefix, '/', true) ?: $prefix;
+            }
+            if (str_contains($prefix, '.')) {
+                $prefix = strstr($prefix, '.', true) ?: $prefix;
+            }
+            if ($prefix !== '') {
+                return $prefix;
+            }
+        }
+
+        return '';
     }
 
     /**

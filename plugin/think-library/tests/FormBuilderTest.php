@@ -232,8 +232,8 @@ class FormBuilderTest extends TestCase
         $this->assertStringContainsString('class="pr40 layui-input"', $html);
         $this->assertStringContainsString('data-field="browser_icon"', $html);
         $this->assertStringContainsString('layui-icon-upload-drag', $html);
-        $this->assertStringContainsString('onmousedown="event.stopPropagation();"', $html);
-        $this->assertStringContainsString('ontouchstart="event.stopPropagation();"', $html);
+        $this->assertStringContainsString('onmousedown="event.preventDefault();event.stopPropagation();"', $html);
+        $this->assertStringContainsString('ontouchstart="event.preventDefault();event.stopPropagation();"', $html);
     }
 
     public function testSelectAndStaticChoiceFieldsCanRenderWithoutTemplateVariables()

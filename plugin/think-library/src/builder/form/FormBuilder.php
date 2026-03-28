@@ -20,20 +20,20 @@ declare(strict_types=1);
 
 namespace think\admin\builder\form;
 
-use think\admin\builder\BuilderLang;
 use think\admin\builder\base\BuilderAttributeBag;
 use think\admin\builder\base\BuilderModule;
 use think\admin\builder\base\render\BuilderAttributes;
 use think\admin\builder\base\render\BuilderAttributesRenderer;
+use think\admin\builder\BuilderLang;
 use think\admin\builder\form\render\FormNodeRenderContext;
 use think\admin\builder\form\render\FormNodeRendererFactory;
 use think\admin\builder\form\render\FormRenderPipeline;
 use think\admin\builder\form\render\FormRenderState;
 use think\admin\Controller;
 use think\admin\Exception;
+use think\admin\helper\ValidateHelper;
 use think\admin\Library;
 use think\admin\service\AppService;
-use think\admin\helper\ValidateHelper;
 use think\exception\HttpResponseException;
 
 /**
@@ -316,12 +316,12 @@ class FormBuilder
 
     public function attachFormAttributes(BuilderAttributeBag $attributes): BuilderAttributeBag
     {
-        return $attributes->attach(fn(array $state): array => $this->replaceFormAttributes($state));
+        return $attributes->attach(fn (array $state): array => $this->replaceFormAttributes($state));
     }
 
     public function attachBodyAttributes(BuilderAttributeBag $attributes): BuilderAttributeBag
     {
-        return $attributes->attach(fn(array $state): array => $this->replaceBodyAttributes($state));
+        return $attributes->attach(fn (array $state): array => $this->replaceBodyAttributes($state));
     }
 
     /**
@@ -384,16 +384,16 @@ class FormBuilder
     /**
      * 添加表单样式类.
      *
-     * @param string|array $class 样式类
+     * @param array|string $class 样式类
      * @return $this
      */
-    public function addFormClass(string|array $class): self
+    public function addFormClass(array|string $class): self
     {
         $this->formAttrs = BuilderAttributes::make($this->formAttrs)->class($class)->all();
         return $this;
     }
 
-    public function removeFormClass(string|array $class): self
+    public function removeFormClass(array|string $class): self
     {
         $this->formAttrs = BuilderAttributes::make($this->formAttrs)->removeClass($class)->all();
         return $this;
@@ -466,16 +466,16 @@ class FormBuilder
     /**
      * 添加表单主体样式类.
      *
-     * @param string|array $class 样式类
+     * @param array|string $class 样式类
      * @return $this
      */
-    public function addBodyClass(string|array $class): self
+    public function addBodyClass(array|string $class): self
     {
         $this->bodyAttrs = BuilderAttributes::make($this->bodyAttrs)->class($class)->all();
         return $this;
     }
 
-    public function removeBodyClass(string|array $class): self
+    public function removeBodyClass(array|string $class): self
     {
         $this->bodyAttrs = BuilderAttributes::make($this->bodyAttrs)->removeClass($class)->all();
         return $this;
@@ -557,7 +557,7 @@ class FormBuilder
         }
         $index = count($this->formModules);
         $this->formModules[$index] = $normalized;
-        return $module->attach($index, $normalized, fn(int $index, array $module): array => $this->replaceFormModule($index, $module));
+        return $module->attach($index, $normalized, fn (int $index, array $module): array => $this->replaceFormModule($index, $module));
     }
 
     /**
@@ -667,33 +667,6 @@ class FormBuilder
             $this->fields[] = $this->renderField($field);
         }
         return $parent->append($this->createFieldNode($parent, $field));
-    }
-
-    /**
-     * 创建字段节点对象.
-     * @param array<string, mixed> $field
-     */
-    private function createFieldNode(FormNode $parent, array $field): FormField
-    {
-        return match ($field['type']) {
-            'text', 'password', 'textarea' => new FormTextField($this, $parent, $field),
-            'select' => new FormSelectField($this, $parent, $field),
-            'checkbox', 'radio' => new FormChoiceField($this, $parent, $field),
-            'image', 'video', 'images' => new FormUploadField($this, $parent, $field),
-            default => new FormField($this, $parent, $field),
-        };
-    }
-
-    /**
-     * @param array<string, mixed> $module
-     * @return array<string, mixed>
-     */
-    private function normalizeFormModule(array $module): array
-    {
-        return [
-            'name' => trim(strval($module['name'] ?? '')),
-            'config' => is_array($module['config'] ?? null) ? $module['config'] : [],
-        ];
     }
 
     /**
@@ -1081,6 +1054,32 @@ class FormBuilder
     }
 
     /**
+     * 添加标题栏按钮.
+     */
+    public function addHeaderButton(string $name, string $type = 'button', string $confirm = '', array $attrs = [], string $class = ''): self
+    {
+        $renderer = new BuilderAttributesRenderer();
+        $name = BuilderLang::text($name);
+        $confirm = BuilderLang::text($confirm);
+        $attrs['type'] = $type;
+        if ($confirm !== '') {
+            $attrs['data-confirm'] = $confirm;
+        }
+        $attrs = BuilderLang::attrs(BuilderAttributes::make($attrs)->class(trim("layui-btn {$class}"))->all());
+        $html = sprintf('<button %s>%s</button>', $renderer->render($attrs), $name);
+        $button = [
+            'name' => $name,
+            'confirm' => $confirm,
+            'type' => $type,
+            'class' => trim("layui-btn {$class}"),
+            'attrs' => $attrs,
+        ];
+        $this->headerButtons[] = $html;
+        $this->headerButtonItems[] = $button;
+        return $this;
+    }
+
+    /**
      * 添加表单按钮.
      * @param string $name 按钮名称
      * @param string $confirm 确认提示
@@ -1113,32 +1112,6 @@ class FormBuilder
             $bar = $this->layout->actionBar();
             $bar->append(new FormButton($this, $button, $html));
         }
-        return $this;
-    }
-
-    /**
-     * 添加标题栏按钮.
-     */
-    public function addHeaderButton(string $name, string $type = 'button', string $confirm = '', array $attrs = [], string $class = ''): self
-    {
-        $renderer = new BuilderAttributesRenderer();
-        $name = BuilderLang::text($name);
-        $confirm = BuilderLang::text($confirm);
-        $attrs['type'] = $type;
-        if ($confirm !== '') {
-            $attrs['data-confirm'] = $confirm;
-        }
-        $attrs = BuilderLang::attrs(BuilderAttributes::make($attrs)->class(trim("layui-btn {$class}"))->all());
-        $html = sprintf('<button %s>%s</button>', $renderer->render($attrs), $name);
-        $button = [
-            'name' => $name,
-            'confirm' => $confirm,
-            'type' => $type,
-            'class' => trim("layui-btn {$class}"),
-            'attrs' => $attrs,
-        ];
-        $this->headerButtons[] = $html;
-        $this->headerButtonItems[] = $button;
         return $this;
     }
 
@@ -1190,6 +1163,33 @@ class FormBuilder
             'pattern' => $attrs['pattern'] ?? null,
             'attrs' => $attrs,
         ]);
+    }
+
+    /**
+     * 创建字段节点对象.
+     * @param array<string, mixed> $field
+     */
+    private function createFieldNode(FormNode $parent, array $field): FormField
+    {
+        return match ($field['type']) {
+            'text', 'password', 'textarea' => new FormTextField($this, $parent, $field),
+            'select' => new FormSelectField($this, $parent, $field),
+            'checkbox', 'radio' => new FormChoiceField($this, $parent, $field),
+            'image', 'video', 'images' => new FormUploadField($this, $parent, $field),
+            default => new FormField($this, $parent, $field),
+        };
+    }
+
+    /**
+     * @param array<string, mixed> $module
+     * @return array<string, mixed>
+     */
+    private function normalizeFormModule(array $module): array
+    {
+        return [
+            'name' => trim(strval($module['name'] ?? '')),
+            'config' => is_array($module['config'] ?? null) ? $module['config'] : [],
+        ];
     }
 
     /**
@@ -1320,15 +1320,13 @@ class FormBuilder
             $attrs['required'] = 'required';
             $attrs['required-error'] = $attrs['required-error'] ?? BuilderLang::format('%s不能为空！', [$field['title']]);
         } else {
-            unset($attrs['required']);
-            unset($attrs['required-error']);
+            unset($attrs['required'], $attrs['required-error']);
         }
         if (is_string($field['pattern'])) {
             $attrs['pattern'] = $field['pattern'];
             $attrs['pattern-error'] = $attrs['pattern-error'] ?? BuilderLang::format('%s格式错误！', [$field['title']]);
         } else {
-            unset($attrs['pattern']);
-            unset($attrs['pattern-error']);
+            unset($attrs['pattern'], $attrs['pattern-error']);
         }
         return $attrs;
     }
@@ -1583,7 +1581,7 @@ class FormBuilder
      */
     private function buildBodyAttrs(): array
     {
-        $class = $this->mode === 'page' ? 'pa40' : 'layui-card-body pa40';
+        $class = $this->mode === 'page' ? 'pa40' : 'layui-card-body pl40 pr40 pt20 pb20';
         return BuilderAttributes::make($this->bodyAttrs)
             ->class($class)
             ->all();
@@ -1613,9 +1611,9 @@ class FormBuilder
             new FormNodeRendererFactory(),
             new FormNodeRenderContext(
                 $this->variable,
-                fn(array $nodes): string => $this->renderContentNodes($nodes),
+                fn (array $nodes): string => $this->renderContentNodes($nodes),
                 [$attrsRenderer, 'render'],
-                fn(array $field): string => $this->renderField($field)
+                fn (array $field): string => $this->renderField($field)
             )
         );
     }
@@ -1682,7 +1680,7 @@ class FormBuilder
     private function renderConditionBlocks(string $html, array $vars): string
     {
         $patterns = [
-            '/\{notempty\s+name="([^"]+)"\}(.*?)\{\/notempty\}/s' => fn(array $m) => $this->isNotEmptyValue($this->resolveTemplateValue($vars, $m[1])) ? $this->renderRuntimeTemplate($m[2], $vars) : '',
+            '/\{notempty\s+name="([^"]+)"\}(.*?)\{\/notempty\}/s' => fn (array $m) => $this->isNotEmptyValue($this->resolveTemplateValue($vars, $m[1])) ? $this->renderRuntimeTemplate($m[2], $vars) : '',
             '/\{if\s+(.+?)\}(.*?)(?:\{else\}(.*?))?\{\/if\}/s' => function (array $m) use ($vars): string {
                 return $this->evaluateTemplateCondition($m[1], $vars)
                     ? $this->renderRuntimeTemplate($m[2], $vars)
@@ -1728,8 +1726,8 @@ class FormBuilder
     private function renderVariableExpressions(string $html, array $vars): string
     {
         $patterns = [
-            '/\{(\$?[A-Za-z_]\w*(?:\.[A-Za-z_]\w*)*)\|default=(["\'])(.*?)\2\}/' => fn(array $match): string => $this->replaceVariableExpression($match, $vars, stripcslashes($match[3])),
-            '/\{(\$?[A-Za-z_]\w*(?:\.[A-Za-z_]\w*)*)\|default=([^}\'"]+)\}/' => fn(array $match): string => $this->replaceVariableExpression($match, $vars, trim($match[2])),
+            '/\{(\$?[A-Za-z_]\w*(?:\.[A-Za-z_]\w*)*)\|default=(["\'])(.*?)\2\}/' => fn (array $match): string => $this->replaceVariableExpression($match, $vars, stripcslashes($match[3])),
+            '/\{(\$?[A-Za-z_]\w*(?:\.[A-Za-z_]\w*)*)\|default=([^}\'"]+)\}/' => fn (array $match): string => $this->replaceVariableExpression($match, $vars, trim($match[2])),
         ];
 
         foreach ($patterns as $pattern => $renderer) {
@@ -1755,7 +1753,7 @@ class FormBuilder
      */
     private function resolveTemplateValue(array $vars, string $path): mixed
     {
-        $segments = array_values(array_filter(explode('.', ltrim($path, '$')), static fn(string $item): bool => $item !== ''));
+        $segments = array_values(array_filter(explode('.', ltrim($path, '$')), static fn (string $item): bool => $item !== ''));
         if (count($segments) < 1) {
             return null;
         }
@@ -1871,5 +1869,4 @@ class FormBuilder
         $value = $this->resolveTemplateValue($vars, $match[1]);
         return $this->stringifyTemplateValue($value === null || $value === '' ? $default : $value);
     }
-
 }
