@@ -38,7 +38,7 @@
                 <div class="layui-col-xs4 pt0 pb0">
                     <label class="layui-form-item block">
                         <span class="help-label"><b>{:lang('登录密码')}</b>Password</span>
-                        <input class="layui-input" name="user.password" placeholder="{:lang('请输入登录密码，不填写则修改')}">
+                        <input class="layui-input" name="user.password" type="password" lay-affix="eye" autocomplete="new-password" placeholder="{:lang('保留默认星号则不修改密码')}" value="{notempty name='vo.unid'}{:password_mask()}{/notempty}">
                     </label>
                 </div>
             </div>

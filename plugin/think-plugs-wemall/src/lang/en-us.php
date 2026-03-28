@@ -345,6 +345,7 @@ return array_merge($extra, [
     '请输入手机号' => 'Please enter mobile number',
     '请输入用户昵称' => 'Please enter user nickname',
     '请输入登录密码，不填写则修改' => 'Please enter login password, leave blank to not modify',
+    '保留默认星号则不修改密码' => 'Keep the default asterisks to leave the password unchanged',
     '用户备注' => 'User Remark',
     '请输入等级描述' => 'Please enter level description',
     '请输入用户账号' => 'Please enter user account',

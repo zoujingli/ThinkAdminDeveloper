@@ -20,6 +20,7 @@ declare(strict_types=1);
 
 namespace plugin\wechat\service\controller;
 
+use plugin\wechat\service\service\ConfigService as WechatConfigService;
 use think\admin\Controller;
 use think\admin\Exception;
 use think\admin\builder\form\FormBuilder;
@@ -40,6 +41,9 @@ class Config extends Controller
             $this->geoip = gethostbyname($this->request->host());
             $this->app->cache->set('mygeoip', $this->geoip, 360);
         }
+        foreach (WechatConfigService::buildAdminContext() as $name => $value) {
+            $this->{$name} = $value;
+        }
         $this->fetch();
     }
 
@@ -52,15 +56,11 @@ class Config extends Controller
         $builder = $this->buildConfigForm();
 
         if ($this->request->isGet()) {
-            $builder->fetch(['vo' => $this->loadConfigFormData()]);
+            $builder->fetch(['vo' => WechatConfigService::buildFormData()]);
             return;
         }
 
-        $data = $builder->validate();
-        sysdata(self::serviceKey('component_appid'), $data['component_appid']);
-        sysdata(self::serviceKey('component_appsecret'), $data['component_appsecret']);
-        sysdata(self::serviceKey('component_token'), $data['component_token']);
-        sysdata(self::serviceKey('component_encodingaeskey'), $data['component_encodingaeskey']);
+        WechatConfigService::saveServiceSettings($builder->validate());
         $this->success('参数修改成功！');
     }
 
@@ -89,20 +89,5 @@ class Config extends Controller
                 });
             })
             ->build();
-    }
-
-    private function loadConfigFormData(): array
-    {
-        return [
-            'component_appid' => strval(sysget(self::serviceKey('component_appid'), '')),
-            'component_appsecret' => strval(sysget(self::serviceKey('component_appsecret'), '')),
-            'component_token' => strval(sysget(self::serviceKey('component_token'), '')),
-            'component_encodingaeskey' => strval(sysget(self::serviceKey('component_encodingaeskey'), '')),
-        ];
-    }
-
-    private static function serviceKey(string $name): string
-    {
-        return self::SERVICE_GROUP . '.' . $name;
     }
 }

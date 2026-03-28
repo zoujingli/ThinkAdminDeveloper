@@ -86,6 +86,28 @@ class AccountCenterControllerTest extends SqliteIntegrationTestCase
         $this->assertSame(0, intval($bind->getAttr('unid')));
     }
 
+    public function testSetControllerKeepsExistingPasswordWhenMaskIsSubmitted(): void
+    {
+        $phone = $this->randomPhone('1380099');
+        $account = $this->createBoundAccountFixture(Account::WAP, ['phone' => $phone]);
+        $account->pwdModify('Secret@123', false);
+        $login = $account->token()->get(true);
+
+        $response = $this->callCenterController('set', [
+            'nickname' => '星号保留昵称',
+            'password' => password_mask(),
+        ], strval($login['token'] ?? ''));
+
+        $bind = PluginAccountBind::mk()->findOrEmpty($account->getUsid());
+        $user = PluginAccountUser::mk()->findOrEmpty($account->getUnid());
+
+        $this->assertSame(1, intval($response['code'] ?? 0));
+        $this->assertSame('修改成功', $response['info'] ?? '');
+        $this->assertSame('星号保留昵称', $response['data']['user']['nickname'] ?? '');
+        $this->assertTrue(password_verify('Secret@123', strval($bind->getAttr('password'))));
+        $this->assertTrue(password_verify('Secret@123', strval($user->getAttr('password'))));
+    }
+
     protected function defineSchema(): void
     {
         $this->createAccountTables();

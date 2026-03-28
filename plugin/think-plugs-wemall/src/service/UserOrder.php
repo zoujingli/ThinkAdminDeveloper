@@ -47,7 +47,7 @@ abstract class UserOrder
      */
     public static function reduct(): string
     {
-        $config = sysdata('plugin.wemall.config');
+        $config = ConfigService::get();
         if (empty($config['enable_reduct'])) {
             return '0.00';
         }

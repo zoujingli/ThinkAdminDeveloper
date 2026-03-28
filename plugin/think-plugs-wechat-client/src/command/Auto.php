@@ -23,6 +23,7 @@ namespace plugin\wechat\client\command;
 use plugin\wechat\client\model\WechatAuto;
 use plugin\wechat\client\service\MediaService;
 use plugin\wechat\client\service\WechatService;
+use plugin\system\service\ConfigService as SystemConfigService;
 use think\admin\Command;
 use think\console\Input;
 use think\console\input\Argument;
@@ -113,7 +114,8 @@ class Auto extends Command
         if ($type === 'news') {
             [$item, $news] = [MediaService::news($data['news_id']), []];
             if (isset($item['articles']) && is_array($item['articles'])) {
-                $host = strval(sysget('system.site.host', '')) ?: true;
+                $host = SystemConfigService::getSiteHost();
+                $host = $host !== '' ? $host : true;
                 foreach ($item['articles'] as $vo) {
                     if (empty($news)) {
                         $news[] = [

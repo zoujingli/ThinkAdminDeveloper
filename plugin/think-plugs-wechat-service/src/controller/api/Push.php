@@ -22,6 +22,7 @@ namespace plugin\wechat\service\controller\api;
 
 use plugin\wechat\service\model\WechatAuth;
 use plugin\wechat\service\service\AuthService;
+use plugin\wechat\service\service\ConfigService;
 use plugin\wechat\service\service\PublishHandle;
 use plugin\wechat\service\service\ReceiveHandle;
 use think\admin\Controller;
@@ -82,7 +83,7 @@ class Push extends Controller
                 return 'Ticket event handling failed.';
             }
             if (!empty($data['ComponentVerifyTicket'])) {
-                sysdata('wechat.service.ticket_push_date', date('Y-m-d H:i:s'));
+                ConfigService::markTicketPushDate();
             }
         } catch (\Exception $exception) {
             $message = "Ticket event handling failed, {$exception->getMessage()}";

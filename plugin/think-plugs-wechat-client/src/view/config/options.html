@@ -77,7 +77,7 @@
             $(this).find('[data-wechat-type]').prop('checked', true).trigger('change');
         });
 
-        let value = '{:sysget("wechat.client.type", "api")}' || 'api';
+        let value = '{$clientType|default="api"}' || 'api';
         let $current = $("[data-wechat-type='" + value + "']");
         if ($current.length < 1) {
             $current = $("[data-wechat-type='api']");

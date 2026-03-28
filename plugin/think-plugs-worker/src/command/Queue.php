@@ -20,6 +20,7 @@ declare(strict_types=1);
 
 namespace plugin\worker\command;
 
+use plugin\system\service\ConfigService as SystemConfigService;
 use plugin\worker\model\SystemQueue;
 use plugin\worker\service\QueueExecutor;
 use plugin\worker\service\QueueService;
@@ -70,9 +71,7 @@ class Queue extends Command
      */
     protected function cleanAction(): void
     {
-        $retainDays = function_exists('sysget')
-            ? intval(sysget('system.runtime.queue_retain_days', $this->queueConfig('retain_days', 7)))
-            : intval($this->queueConfig('retain_days', 7));
+        $retainDays = intval(SystemConfigService::getRuntimeConfig()['queue_retain_days'] ?? $this->queueConfig('retain_days', 7));
         $retainDays = max(1, $retainDays);
         $lockTimeout = max(60, intval($this->queueConfig('lock_timeout', 3600)));
 

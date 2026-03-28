@@ -38,9 +38,9 @@
                     <label class="relative block">
                         <span class="help-label"><b>登录密码</b></span>
                         {if empty($vo.id)}
-                        <input name="password" required placeholder="请输入登录密码" class="layui-input">
+                        <input name="password" type="password" autocomplete="new-password" required placeholder="请输入登录密码" class="layui-input">
                         {else}
-                        <input name="password" placeholder="请输入登录密码" class="layui-input">
+                        <input name="password" type="password" autocomplete="new-password" value="{:password_mask()}" placeholder="保留默认星号则不更新密码" class="layui-input">
                         {/if}
                     </label>
                 </div>

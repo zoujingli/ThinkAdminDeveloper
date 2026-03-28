@@ -34,6 +34,7 @@ declare(strict_types=1);
 
 namespace plugin\wemall\service;
 
+use plugin\system\service\ConfigService as SystemConfigService;
 use think\admin\Exception;
 
 /**
@@ -67,7 +68,7 @@ abstract class ConfigService
     {
         $syscfg = sysvar(self::$skey) ?: sysvar(self::$skey, sysdata(self::$skey));
         if (empty($syscfg['base_domain'])) {
-            $host = rtrim(strval(sysget('system.site.host', '')), '/');
+            $host = rtrim(SystemConfigService::getSiteHost(), '/');
             $syscfg['base_domain'] = $host === '' ? '/h5' : $host . '/h5';
         }
         return is_null($name) ? $syscfg : ($syscfg[$name] ?? $default);

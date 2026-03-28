@@ -231,6 +231,6 @@ class AuthService extends Service
 
     private function serviceConfigValue(string $name): string
     {
-        return strval(sysget(self::SERVICE_GROUP . '.' . $name, ''));
+        return ConfigService::getServiceSetting($name);
     }
 }

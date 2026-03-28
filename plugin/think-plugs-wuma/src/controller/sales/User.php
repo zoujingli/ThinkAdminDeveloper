@@ -133,9 +133,10 @@ class User extends Controller
             }
 
             // 代理密码处理，首次必须输入密码
-            if (!empty($data['id']) && empty($data['password'])) {
+            $password = trim(strval($data['password'] ?? ''));
+            if (!empty($data['id']) && password_is_unchanged($password)) {
                 unset($data['password']);
-            } elseif (empty($data['password'])) {
+            } elseif ($password === '') {
                 $this->error('登录密码不能为空！');
             }
 

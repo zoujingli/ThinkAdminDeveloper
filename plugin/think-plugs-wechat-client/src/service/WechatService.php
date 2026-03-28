@@ -121,6 +121,12 @@ class WechatService extends Service
 {
     private const CLIENT_GROUP = 'wechat.client';
 
+    private const DEFAULT_SERVICE_AUTH_URL = 'https://open.cuci.cc/service/api.push/auth?source=SOURCE';
+
+    private const DEFAULT_SERVICE_JSONRPC = 'https://open.cuci.cc/service/api.client/jsonrpc?token=TOKEN';
+
+    private const MENU_DATA_KEY = 'wechat_menu_data';
+
     /**
      * 静态初始化对象
      * @return mixed
@@ -197,7 +203,7 @@ class WechatService extends Service
      */
     public static function getWxconf(bool $ispay = false): array
     {
-        $wxapp = sysdata('plugin.wechat.wxapp');
+        $wxapp = static::getWxappConfig();
         $config = [
             'appid' => $wxapp['appid'] ?? '',
             'appsecret' => $wxapp['appkey'] ?? '',
@@ -213,7 +219,7 @@ class WechatService extends Service
     public static function withWxpayCert(array $options): array
     {
         // 文本模式主要是为了解决分布式部署
-        $data = sysdata('plugin.wechat.payment');
+        $data = static::getPaymentConfig();
         if (empty($data['mch_id'])) {
             throw new Exception('无效的支付配置！');
         }
@@ -354,7 +360,122 @@ class WechatService extends Service
      */
     public static function config(string $name, string $default = ''): string
     {
-        return strval(sysget(self::CLIENT_GROUP . '.' . $name, $default));
+        $config = static::getClientConfig();
+        return strval($config[$name] ?? $default);
+    }
+
+    /**
+     * 获取微信客户端配置。
+     *
+     * @return array<string, string>
+     */
+    public static function getClientConfig(): array
+    {
+        return [
+            'type' => static::normalizeClientType(static::clientValue('type', 'api')),
+            'token' => static::clientValue('token'),
+            'appid' => static::clientValue('appid'),
+            'appsecret' => static::clientValue('appsecret'),
+            'encodingaeskey' => static::clientValue('encodingaeskey'),
+            'thr_appid' => static::clientValue('thr_appid'),
+            'thr_appkey' => static::clientValue('thr_appkey'),
+            'service_authurl' => static::clientValue('service_authurl', self::DEFAULT_SERVICE_AUTH_URL),
+            'service_jsonrpc' => static::clientValue('service_jsonrpc', self::DEFAULT_SERVICE_JSONRPC),
+        ];
+    }
+
+    /**
+     * @return array{auth_url:string,json_rpc:string}
+     */
+    public static function getJsonRpcConfig(): array
+    {
+        $config = static::getClientConfig();
+        return [
+            'auth_url' => $config['service_authurl'],
+            'json_rpc' => $config['service_jsonrpc'],
+        ];
+    }
+
+    /**
+     * @param array<string, mixed> $data
+     */
+    public static function savePostedClientConfig(array $data): void
+    {
+        foreach ($data as $name => $value) {
+            $name = strval($name);
+            if (!str_starts_with($name, 'wechat.')) {
+                continue;
+            }
+
+            static::saveClientValue(substr($name, 7), $value);
+        }
+    }
+
+    public static function bindThirdPartyClient(string $appid, string $appkey): void
+    {
+        static::saveClientValue('type', 'thr');
+        static::saveClientValue('thr_appid', trim($appid));
+        static::saveClientValue('thr_appkey', trim($appkey));
+    }
+
+    /**
+     * @param array{auth_url:string,json_rpc:string} $data
+     */
+    public static function saveJsonRpcConfig(array $data): void
+    {
+        static::saveClientValue('service_authurl', trim(strval($data['auth_url'] ?? self::DEFAULT_SERVICE_AUTH_URL)));
+        static::saveClientValue('service_jsonrpc', trim(strval($data['json_rpc'] ?? self::DEFAULT_SERVICE_JSONRPC)));
+    }
+
+    /**
+     * @return array<string, string>
+     */
+    public static function getWxappConfig(): array
+    {
+        $data = sysdata('plugin.wechat.wxapp');
+        return is_array($data) ? $data : [];
+    }
+
+    /**
+     * @param array<string, mixed> $data
+     */
+    public static function saveWxappConfig(array $data): void
+    {
+        sysdata('plugin.wechat.wxapp', $data);
+    }
+
+    /**
+     * @return array<string, mixed>
+     */
+    public static function getPaymentConfig(): array
+    {
+        $data = sysdata('plugin.wechat.payment');
+        return is_array($data) ? $data : [];
+    }
+
+    /**
+     * @param array<string, mixed> $data
+     */
+    public static function savePaymentConfig(array $data): void
+    {
+        sysdata('plugin.wechat.payment', $data);
+    }
+
+    /**
+     * @return array<int, array<string, mixed>>
+     */
+    public static function getMenuData(): array
+    {
+        $data = sysdata(self::MENU_DATA_KEY);
+        return is_array($data) ? $data : [];
+    }
+
+    /**
+     * @param array<int, array<string, mixed>> $data
+     */
+    public static function saveMenuData(array $data): void
+    {
+        sysdata(self::MENU_DATA_KEY, $data);
     }
 
     /**
@@ -381,5 +502,23 @@ class WechatService extends Service
         return $redirect ? redirect($location) : response(join(";\n", [
             sprintf("location.replace('%s')", $location), '',
         ]));
+    }
+
+    private static function clientValue(string $name, string $default = ''): string
+    {
+        return trim(strval(sysget(self::CLIENT_GROUP . '.' . ltrim($name, '.'), $default)));
+    }
+
+    private static function saveClientValue(string $name, mixed $value): void
+    {
+        if ($name === 'type') {
+            $value = static::normalizeClientType(strval($value));
+        }
+        sysdata(self::CLIENT_GROUP . '.' . ltrim($name, '.'), $value);
+    }
+
+    private static function normalizeClientType(string $type): string
+    {
+        return in_array(strtolower($type), ['api', 'thr'], true) ? strtolower($type) : 'api';
     }
 }

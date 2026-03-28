@@ -36,6 +36,8 @@ use WeChat\Exceptions\LocalCacheException;
  */
 class ConfigService extends Service
 {
+    private const SERVICE_GROUP = 'wechat.service';
+
     /**
      * 数据查询条件.
      * @var array
@@ -144,5 +146,73 @@ class ConfigService extends Service
     public function jsSign(string $url): array
     {
         return AuthService::WeChatScript($this->appid)->getJsSign($url);
+    }
+
+    /**
+     * @return array<string, string>
+     */
+    public static function getServiceSettings(): array
+    {
+        return [
+            'component_appid' => self::getServiceSetting('component_appid'),
+            'component_appsecret' => self::getServiceSetting('component_appsecret'),
+            'component_token' => self::getServiceSetting('component_token'),
+            'component_encodingaeskey' => self::getServiceSetting('component_encodingaeskey'),
+            'ticket_push_date' => self::getServiceSetting('ticket_push_date'),
+        ];
+    }
+
+    public static function getServiceSetting(string $name, string $default = ''): string
+    {
+        return strval(sysget(self::serviceKey($name), $default));
+    }
+
+    /**
+     * @param array<string, mixed> $data
+     */
+    public static function saveServiceSettings(array $data): void
+    {
+        foreach (['component_appid', 'component_appsecret', 'component_token', 'component_encodingaeskey'] as $name) {
+            sysdata(self::serviceKey($name), trim(strval($data[$name] ?? '')));
+        }
+    }
+
+    public static function markTicketPushDate(?string $time = null): void
+    {
+        sysdata(self::serviceKey('ticket_push_date'), $time ?? date('Y-m-d H:i:s'));
+    }
+
+    /**
+     * @return array<string, string>
+     */
+    public static function buildAdminContext(): array
+    {
+        $settings = self::getServiceSettings();
+        return [
+            'ticketPushDate' => $settings['ticket_push_date'],
+            'componentAppid' => $settings['component_appid'],
+            'componentAppsecret' => $settings['component_appsecret'],
+            'componentToken' => $settings['component_token'],
+            'componentEncodingaeskey' => $settings['component_encodingaeskey'],
+        ];
+    }
+
+    /**
+     * @return array<string, string>
+     */
+    public static function buildFormData(): array
+    {
+        $settings = self::getServiceSettings();
+        return [
+            'component_appid' => $settings['component_appid'],
+            'component_appsecret' => $settings['component_appsecret'],
+            'component_token' => $settings['component_token'],
+            'component_encodingaeskey' => $settings['component_encodingaeskey'],
+        ];
+    }
+
+    private static function serviceKey(string $name): string
+    {
+        return self::SERVICE_GROUP . '.' . ltrim($name, '.');
     }
 }

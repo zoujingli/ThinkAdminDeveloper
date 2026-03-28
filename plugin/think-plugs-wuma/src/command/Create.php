@@ -20,6 +20,7 @@ declare(strict_types=1);
 
 namespace plugin\wuma\command;
 
+use plugin\system\service\ConfigService as SystemConfigService;
 use plugin\worker\service\ProcessService as Process;
 use think\admin\Command;
 use think\admin\extend\CodeToolkit;
@@ -90,7 +91,7 @@ class Create extends Command
         $this->app->cache->set("create_auth_{$this->batch}", $auth, 360);
         $token = base64_encode(json_encode([
             'auth' => $auth,
-            'host' => strval(sysget('system.site.host', '')),
+            'host' => SystemConfigService::getSiteHost(),
             'target' => runpath('safefile/code/'),
         ]));
         $binary = dirname(__DIR__, 2) . '/stc/bin/' . (Process::isWin() ? 'coder.exe' : 'coder');

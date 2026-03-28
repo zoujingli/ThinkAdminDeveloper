@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="zh">
 <head>
-    <title>{block name="title"}{$title|default=''}{if !empty($title)} · {/if}{:sysdata('system.site.website_name')}{/block}</title>
+    <title>{block name="title"}{$title|default=''}{if !empty($title)} · {/if}{$websiteName|default='ThinkAdmin'}{/block}</title>
     <meta charset="utf-8">
     <meta name="renderer" content="webkit">
     <meta name="format-detection" content="telephone=no">

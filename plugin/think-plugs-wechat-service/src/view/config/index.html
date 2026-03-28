@@ -1,8 +1,8 @@
 {extend name='main'}
 
 {block name="button"}
-<!--{if sysdata('wechat.service.ticket_push_date')}-->
-<span class='layui-btn layui-btn-sm layui-btn-disabled'>TICKET TIME {:sysdata('wechat.service.ticket_push_date')}</span>
+<!--{if !empty($ticketPushDate)}-->
+<span class='layui-btn layui-btn-sm layui-btn-disabled'>TICKET TIME {$ticketPushDate}</span>
 <!--{/if}-->
 
 <!--{if auth("edit")}-->
@@ -21,32 +21,32 @@
                 <div class="layui-form-item">
                     <span class="help-label"><b>{:lang('开放平台账号')}</b>AppId</span>
                     <label class="relative block">
-                        <input disabled class="layui-input layui-bg-gray" value="{:sysdata('wechat.service.component_appid')?:lang('未配置')}">
-                        <a data-copy="{:sysdata('wechat.service.component_appid')}" data-tips-text="复制" class="layui-icon layui-icon-release input-right-icon"></a>
+                        <input disabled class="layui-input layui-bg-gray" value="{$componentAppid|default=lang('未配置')}">
+                        <a data-copy="{$componentAppid|default=''}" data-tips-text="复制" class="layui-icon layui-icon-release input-right-icon"></a>
                     </label>
                     <p class="help-block">{:lang('开放平台服务 AppId，需要在微信开放平台获取')}</p>
                 </div>
                 <div class="layui-form-item">
                     <span class="help-label"><b>{:lang('开放平台密钥')}</b>AppSecret</span>
                     <label class="relative block">
-                        <input disabled class="layui-input layui-bg-gray" value="{:sysdata('wechat.service.component_appsecret')?:lang('未配置')}">
-                        <a data-copy="{:sysdata('wechat.service.component_appsecret')}" data-tips-text="复制" class="layui-icon layui-icon-release input-right-icon"></a>
+                        <input disabled class="layui-input layui-bg-gray" value="{$componentAppsecret|default=lang('未配置')}">
+                        <a data-copy="{$componentAppsecret|default=''}" data-tips-text="复制" class="layui-icon layui-icon-release input-right-icon"></a>
                     </label>
                     <p class="help-block">{:lang('开放平台服务 AppSecret，需要在微信开放平台获取')}</p>
                 </div>
                 <div class="layui-form-item">
                     <span class="help-label"><b>{:lang('开放平台消息校验')}</b>Token</span>
                     <label class="relative block">
-                        <input disabled class="layui-input layui-bg-gray" value="{:sysdata('wechat.service.component_token')?:lang('未配置')}">
-                        <a data-copy="{:sysdata('wechat.service.component_token')}" data-tips-text="复制" class="layui-icon layui-icon-release input-right-icon"></a>
+                        <input disabled class="layui-input layui-bg-gray" value="{$componentToken|default=lang('未配置')}">
+                        <a data-copy="{$componentToken|default=''}" data-tips-text="复制" class="layui-icon layui-icon-release input-right-icon"></a>
                     </label>
                     <p class="help-block">{:lang('开发者在代替微信接收到消息时，用此 TOKEN 来校验消息')}</p>
                 </div>
                 <div class="layui-form-item">
                     <span class="help-label"><b>{:lang('开放平台消息加解密')}</b>AesKey</span>
                     <label class="relative block">
-                        <input disabled class="layui-input layui-bg-gray" value="{:sysdata('wechat.service.component_encodingaeskey')?:lang('未配置')}">
-                        <a data-copy="{:sysdata('wechat.service.component_encodingaeskey')}" data-tips-text="复制" class="layui-icon layui-icon-release input-right-icon"></a>
+                        <input disabled class="layui-input layui-bg-gray" value="{$componentEncodingaeskey|default=lang('未配置')}">
+                        <a data-copy="{$componentEncodingaeskey|default=''}" data-tips-text="复制" class="layui-icon layui-icon-release input-right-icon"></a>
                     </label>
                     <p class="help-block">{:lang('在代替微信收发消息时使用，必须是长度为43位字母和数字组合的字符串')}</p>
                 </div>

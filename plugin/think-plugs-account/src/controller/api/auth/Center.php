@@ -61,10 +61,11 @@ class Center extends Auth
                 $data['headimg'] = Storage::saveImage($data['headimg'], 'headimg')['url'] ?? '';
             }
             // 修改登录密码
-            if (!empty($data['password']) && strlen($data['password']) > 4) {
-                $this->account->pwdModify($data['password']);
-                unset($data['password']);
+            $password = trim(strval($data['password'] ?? ''));
+            if (!password_is_unchanged($password) && strlen($password) > 4) {
+                $this->account->pwdModify($password);
             }
+            unset($data['password']);
             foreach ($data as $k => $v) {
                 if ($v === '') {
                     unset($data[$k]);

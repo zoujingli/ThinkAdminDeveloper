@@ -167,13 +167,17 @@ class Admin extends Controller
     {
         if ($this->request->isPost()) {
             $account = Account::mk('', ['unid' => $data['unid']]);
+            $password = trim(strval($data['user']['password'] ?? ''));
+
+            if (password_is_unchanged($password)) {
+                unset($data['user']['password']);
+            }
 
             // 更新当前用户代理线，同时更新账号的 user 数据
             $account->bind(['id' => $data['unid']], $data['user'] ?? []);
             // 修改用户登录密码
             if (!empty($data['user']['password'])) {
-                $account->pwdModify($data['user']['password']);
-                unset($data['user']['password']);
+                $account->pwdModify(strval($data['user']['password']));
             }
         }
     }
