@@ -6,6 +6,8 @@ namespace plugin\system\service;
 
 use plugin\system\storage\StorageConfig;
 use plugin\worker\service\ProcessService;
+use think\admin\Exception;
+use think\admin\Library;
 use think\admin\Service;
 use think\admin\service\AppService;
 use think\admin\Storage;
@@ -195,6 +197,36 @@ class ConfigService extends Service
     }
 
     /**
+     * 启动时同步 System 登录入口绑定。
+     */
+    public static function bootSystemLoginEntryBinding(): void
+    {
+        self::applySystemLoginEntryBinding(self::storedSystemLoginEntry());
+    }
+
+    /**
+     * 将 System 登录入口同步到运行时插件绑定配置。
+     */
+    public static function applySystemLoginEntryBinding(string $entry = ''): string
+    {
+        $entry = self::normalizeLoginEntry($entry);
+        if ($entry === '') {
+            $entry = self::defaultSystemLoginEntry(true);
+        }
+
+        $app = (array)Library::$sapp->config->get('app', []);
+        $plugin = is_array($app['plugin'] ?? null) ? $app['plugin'] : [];
+        $bindings = is_array($plugin['bindings'] ?? null) ? $plugin['bindings'] : [];
+        $bindings['system'] = $entry;
+        $plugin['bindings'] = $bindings;
+        $app['plugin'] = $plugin;
+        Library::$sapp->config->set($app, 'app');
+        AppService::clear();
+
+        return AppService::pluginPrefix('system', true) ?: $entry;
+    }
+
+    /**
      * @param array<string, mixed> $post
      * @param array<string, array<string, string>> $themes
      */
@@ -218,6 +250,7 @@ class ConfigService extends Service
         sysdata('system.security', $security);
         sysdata('system.runtime', $runtime);
         PluginService::setConfig($pluginCenter);
+        self::applySystemLoginEntryBinding(strval($site['login_entry'] ?? ''));
         sysoplog('系统参数配置', '更新系统参数');
     }
 
@@ -316,6 +349,7 @@ class ConfigService extends Service
     {
         $site = array_replace_recursive([
             'login_title' => '系统管理',
+            'login_entry' => self::defaultSystemLoginEntry(),
             'theme' => 'default',
             'login_background_images' => [],
             'browser_icon' => 'https://thinkadmin.top/static/img/logo.png',
@@ -329,6 +363,7 @@ class ConfigService extends Service
         ], (array)sysget('system.site', []));
 
         $site['login_title'] = strval($site['login_title']);
+        $site['login_entry'] = self::normalizeLoginEntry(strval($site['login_entry'] ?? ''));
         $site['theme'] = strval($site['theme']) ?: 'default';
         $site['browser_icon'] = strval($site['browser_icon']);
         $site['website_name'] = strval($site['website_name']);
@@ -339,6 +374,9 @@ class ConfigService extends Service
         $site['copyright'] = strval($site['copyright']);
         $site['host'] = self::normalizeSiteHost(strval($site['host']));
         $site['login_background_images'] = array_values(array_filter(array_map('strval', (array)$site['login_background_images'])));
+        if ($site['login_entry'] === '') {
+            $site['login_entry'] = self::defaultSystemLoginEntry();
+        }
 
         if (!isset($themes[$site['theme']]) && $themes !== []) {
             $site['theme'] = 'default';
@@ -392,6 +430,7 @@ class ConfigService extends Service
     {
         $site = array_replace_recursive(self::siteConfig($themes), $data);
         $site['login_title'] = trim(strval($site['login_title'] ?? ''));
+        $site['login_entry'] = self::validateSystemLoginEntry(self::normalizeLoginEntry(strval($site['login_entry'] ?? '')));
         $site['theme'] = trim(strval($site['theme'] ?? 'default'));
         $site['browser_icon'] = trim(strval($site['browser_icon'] ?? ''));
         $site['website_name'] = trim(strval($site['website_name'] ?? ''));
@@ -531,6 +570,71 @@ class ConfigService extends Service
             'enabled' => empty($data['enabled']) ? 0 : 1,
             'show_menu' => empty($data['show_menu']) ? 0 : 1,
         ];
+    }
+
+    private static function validateSystemLoginEntry(string $entry): string
+    {
+        if ($entry === '') {
+            $entry = self::defaultSystemLoginEntry(true);
+        }
+
+        if (!preg_match('/^[a-z][a-z0-9_-]*$/i', $entry)) {
+            throw new Exception(lang('后台登录入口格式错误，请使用英文字母开头的应用名或别名！'));
+        }
+
+        $entry = strtolower($entry);
+        if ($entry === strtolower(AppService::pluginApiPrefix())) {
+            throw new Exception(lang('后台登录入口不能与系统 API 入口冲突！'));
+        }
+
+        foreach (array_keys(AppService::local(true)) as $code) {
+            if (strtolower(strval($code)) === $entry) {
+                throw new Exception(lang('后台登录入口不能与本地应用名称冲突！'));
+            }
+        }
+
+        foreach (AppService::allPlugins(false, true) as $code => $plugin) {
+            if ($code === 'system') {
+                continue;
+            }
+            if (strtolower(strval($code)) === $entry) {
+                throw new Exception(lang('后台登录入口不能与其它插件入口或别名冲突！'));
+            }
+            if (strtolower(strval($plugin['alias'] ?? '')) === $entry) {
+                throw new Exception(lang('后台登录入口不能与其它插件入口或别名冲突！'));
+            }
+            foreach ((array)($plugin['prefixes'] ?? []) as $prefix) {
+                if (strtolower(strval($prefix)) === $entry) {
+                    throw new Exception(lang('后台登录入口不能与其它插件入口或别名冲突！'));
+                }
+            }
+        }
+
+        return $entry;
+    }
+
+    private static function normalizeLoginEntry(string $entry): string
+    {
+        $entry = trim(strtolower($entry), " \t\n\r\0\x0B\\/");
+        if (str_contains($entry, '/')) {
+            $entry = strstr($entry, '/', true) ?: $entry;
+        }
+        if (str_contains($entry, '.')) {
+            $entry = strstr($entry, '.', true) ?: $entry;
+        }
+        return $entry;
+    }
+
+    private static function defaultSystemLoginEntry(bool $force = false): string
+    {
+        $entry = self::normalizeLoginEntry(strval(AppService::pluginPrefix('system', $force) ?: 'system'));
+        return $entry !== '' ? $entry : 'system';
+    }
+
+    private static function storedSystemLoginEntry(): string
+    {
+        $site = (array)sysget('system.site', []);
+        return self::normalizeLoginEntry(strval($site['login_entry'] ?? ''));
     }
 
     private static function normalizeSiteHost(string $host): string

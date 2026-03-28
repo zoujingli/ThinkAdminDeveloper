@@ -43,17 +43,24 @@ class ThemeBuilder
                 $form->title($configScene ? '选择后台默认配色' : '后台配色方案')
                     ->action(sysuri())
                     ->attr('id', 'theme')
-                    ->class('theme-picker-form');
+                    ->class('theme-picker-form theme-picker-form--compact');
+
+                $form->html(self::compactThemeStyle());
 
                 FormModules::themePalette($form, $themes, $theme, [
+                    'class' => 'layui-form-item mb0 theme-picker-field',
                     'title' => '后台配色方案',
                     'subtitle' => 'Theme Style',
+                    'label_class' => 'help-label theme-picker-heading',
+                    'description_class' => 'help-block theme-picker-description',
+                    'palette_class' => 'theme-palette theme-palette--compact',
                     'description' => $configScene
                         ? '统一为“标准 / 品牌侧栏 / 双栏导航”三种后台布局语义，选择卡片后会实时预览，确认后再回填系统参数页。'
                         : '统一为“标准 / 品牌侧栏 / 双栏导航”三种后台布局语义，新增皮肤可直接预览后保存生效。',
                     'help' => $configScene
                         ? '选中卡片后会先切换后台预览；点击“确认选择”才会回填到系统参数表单，点击“取消选择”会恢复原主题。'
                         : '保存后立即写入当前账号主题；系统默认主题可在系统参数配置中设置，后续新用户登录也会继承。',
+                    'help_class' => 'help-block theme-picker-help',
                 ]);
 
                 $form->actions(function ($actions) use ($configScene) {
@@ -76,6 +83,168 @@ class ThemeBuilder
                 }
             })
             ->build();
+    }
+
+    private static function compactThemeStyle(): string
+    {
+        return <<<'STYLE'
+<style>
+.theme-picker-form--compact{
+    max-width:740px;
+    margin:0 auto;
+}
+.theme-picker-form--compact .layui-form-item{
+    margin-bottom:8px;
+}
+.theme-picker-form--compact .help-label{
+    margin-bottom:2px;
+    line-height:1.45;
+}
+.theme-picker-form--compact .help-label b{
+    font-size:13px;
+    margin-right:4px!important;
+}
+.theme-picker-form--compact .help-label span{
+    font-size:11px;
+}
+.theme-picker-form--compact .theme-picker-description,
+.theme-picker-form--compact .theme-picker-help{
+    margin-top:2px;
+    font-size:11px;
+    line-height:1.55;
+}
+.theme-picker-form--compact .theme-palette--compact{
+    gap:8px;
+    margin-top:8px;
+}
+.theme-picker-form--compact .theme-palette-input,
+.theme-picker-form--compact .layui-form-radio,
+.theme-picker-form--compact .layui-form-checkbox{
+    display:none !important;
+}
+.theme-picker-form--compact .theme-palette--compact .theme-palette-card{
+    width:calc((100% - 40px) / 6);
+    height:128px;
+    flex:0 0 calc((100% - 40px) / 6);
+    border-radius:5px;
+    box-shadow:none;
+}
+.theme-picker-form--compact .theme-palette--compact .theme-palette-card:hover{
+    box-shadow:none;
+}
+.theme-picker-form--compact .theme-palette--compact .theme-palette-card.active{
+    box-shadow:none;
+}
+.theme-picker-form--compact .theme-palette--compact .theme-palette-check{
+    top:auto;
+    right:6px;
+    bottom:6px;
+    width:auto;
+    height:auto;
+    color:var(--ta-accent, #009688);
+    background:transparent;
+    box-shadow:none;
+    border-radius:0;
+    font-size:14px;
+}
+.theme-picker-form--compact .theme-palette--compact .theme-palette-preview{
+    height:100%;
+}
+.theme-picker-form--compact .theme-palette--compact .theme-palette-preview-header{
+    height:18px;
+}
+.theme-picker-form--compact .theme-palette--compact .theme-palette-preview-side,
+.theme-picker-form--compact .theme-palette--compact .theme-palette-preview-side-alt{
+    top:18px;
+}
+.theme-picker-form--compact .theme-palette--compact .theme-palette-preview-hero{
+    top:28px;
+    height:18px;
+}
+.theme-picker-form--compact .theme-palette--compact .theme-palette-preview-panel,
+.theme-picker-form--compact .theme-palette--compact .theme-palette-preview-panel-right{
+    top:54px;
+    height:18px;
+}
+.theme-picker-form--compact .theme-palette--compact .theme-palette-preview-tone{
+    top:26px;
+}
+.theme-picker-form--compact .theme-palette--compact .theme-palette-preview-copy-1{
+    top:36px;
+}
+.theme-picker-form--compact .theme-palette--compact .theme-palette-preview-copy-2{
+    top:43px;
+}
+.theme-picker-form--compact .theme-palette--compact .theme-palette-preview-copy-3,
+.theme-picker-form--compact .theme-palette--compact .theme-palette-preview-copy-4{
+    top:60px;
+}
+.theme-picker-form--compact .theme-palette--compact .theme-palette-preview.split .theme-palette-preview-header{
+    left:0;
+    background:var(--theme-header, var(--theme-side, #20222a));
+}
+.theme-picker-form--compact .theme-palette--compact .theme-palette-meta{
+    left:0;
+    right:0;
+    bottom:0;
+    padding:28px 8px 8px;
+    position:absolute;
+    z-index:2;
+    gap:4px;
+    justify-content:flex-end;
+    pointer-events:none;
+    background:linear-gradient(180deg, rgba(15, 23, 42, 0) 0%, rgba(15, 23, 42, 0.72) 58%, rgba(15, 23, 42, 0.86) 100%);
+}
+.theme-picker-form--compact .theme-palette--compact .theme-palette-title{
+    padding-right:22px;
+    font-size:11px;
+    color:#fff;
+    text-shadow:0 1px 2px rgba(15, 23, 42, 0.35);
+}
+.theme-picker-form--compact .theme-palette--compact .theme-palette-layout{
+    max-width:calc(100% - 24px);
+    padding:1px 5px;
+    color:rgba(255, 255, 255, 0.88);
+    border-color:rgba(255, 255, 255, 0.12);
+    background:rgba(15, 23, 42, 0.18);
+    backdrop-filter:blur(1px);
+}
+.theme-picker-form--compact .layui-btn{
+    height:32px;
+    padding:0 14px;
+    font-size:12px;
+    line-height:32px;
+    border-radius:5px;
+}
+.theme-picker-form--compact .layui-btn + .layui-btn{
+    margin-left:6px;
+}
+@media (max-width:900px){
+    .theme-picker-form--compact .theme-palette--compact .theme-palette-card{
+        width:calc((100% - 24px) / 4);
+        flex-basis:calc((100% - 24px) / 4);
+    }
+}
+@media (max-width:640px){
+    .theme-picker-form--compact .theme-palette--compact .theme-palette-card{
+        width:calc((100% - 16px) / 3);
+        flex-basis:calc((100% - 16px) / 3);
+    }
+}
+@media (max-width:480px){
+    .theme-picker-form--compact{
+        max-width:none;
+    }
+    .theme-picker-form--compact .theme-palette--compact .theme-palette-card{
+        width:calc((100% - 8px) / 2);
+        flex-basis:calc((100% - 8px) / 2);
+    }
+    .theme-picker-form--compact .layui-btn{
+        padding:0 12px;
+    }
+}
+</style>
+STYLE;
     }
 
     private static function userThemeScript(): string

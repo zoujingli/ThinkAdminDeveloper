@@ -135,7 +135,8 @@ class ConfigBuilder
         return FormBuilder::pageForm('form')
             ->define(function ($form) use ($site, $security, $runtime, $pluginCenter, $themes, $siteThemeKey, $siteThemeLabel, $themePickerUrl) {
                 $form->title('系统参数设置')
-                    ->headerButton('返回配置首页', 'button', '', ['data-target-backup' => null], 'layui-btn-primary layui-btn-sm')
+                    ->headerButton('保存修改', 'button', '', ['data-target-submit' => null], 'layui-btn-sm')
+                    ->headerButton('取消修改', 'button', '确定要取消修改吗？', ['data-target-backup' => null], 'layui-btn-primary layui-btn-sm')
                     ->class('system-config-form')
                     ->data('auto', 'true')
                     ->action(sysuri());
@@ -155,13 +156,13 @@ class ConfigBuilder
                     });
 
                     $entry = $grid->div()->class('layui-col-xs12 layui-col-md4');
-                    FormModules::readonlyField($entry, [
-                        'title' => '后台登录入口',
-                        'subtitle' => 'Login Entry',
-                        'value' => substr(sysuri('system/index/index', [], false), strlen(sysuri('@'))),
-                        'copy' => sysuri('system/index/index', [], false),
-                        'help' => '如需修改入口路径，请调整 System 插件注册前缀。',
-                    ]);
+                    $entry->fields(function ($fields) {
+                        $fields->text('site[login_entry]', '后台登录入口', 'Login Entry', true, '后台登录入口是由英文字母开头，且不能有相同名称的模块，设置之后原地址不能继续访问，请谨慎配置 ~', '[A-Za-z][A-Za-z0-9_-]*', [
+                            'placeholder' => '例如 system 或 admin',
+                            'maxlength' => 32,
+                            'vali-name' => '后台登录入口',
+                        ]);
+                    });
 
                     $theme = $grid->div()->class('layui-col-xs12 layui-col-md4');
                     FormModules::pickerField($theme, [
@@ -287,7 +288,7 @@ class ConfigBuilder
                 });
 
                 $form->actions(function ($actions) {
-                    $actions->submit('保存配置')->cancel('取消修改', '确定要取消修改吗？');
+                    $actions->submit('保存修改')->cancel('取消修改', '确定要取消修改吗？');
                 });
 
                 $form->script(sprintf("const siteThemeCatalog=%s;", json_encode($themes, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES) ?: '{}'));
@@ -329,7 +330,7 @@ $('body').off('click', '[data-open-site-theme]').on('click', '[data-open-site-th
     top.window[pickerName] = function (theme, label) {
         updateSiteThemeField(theme, label);
     };
-    $.form.modal(siteThemePickerUrl + "?scene=config&picker=" + encodeURIComponent(pickerName) + "&value=" + encodeURIComponent(value), {}, %s, undefined, undefined, undefined, '800px');
+    $.form.modal(siteThemePickerUrl + "?scene=config&picker=" + encodeURIComponent(pickerName) + "&value=" + encodeURIComponent(value), {}, %s, undefined, undefined, undefined, '760px');
 });
 SCRIPT, json_encode(strval(lang('选择后台默认配色')), JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES) ?: '"选择后台默认配色"'));
             })

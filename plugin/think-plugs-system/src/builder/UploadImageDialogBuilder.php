@@ -85,6 +85,17 @@ class UploadImageDialogBuilder
                 this.loadPage();
             },
             methods: {
+                centerLayer: function () {
+                    var layerIndex = parseInt(this.didx || 0);
+                    if (!layerIndex) return;
+                    this.\$nextTick(function () {
+                        var \$layer = $('#layui-layer' + layerIndex);
+                        if (!\$layer.length) return;
+                        var left = Math.max(16, Math.round(($(window).width() - \$layer.outerWidth()) / 2));
+                        var top = Math.max(16, Math.round(($(window).height() - \$layer.outerHeight()) / 2));
+                        \$layer.css({left: left + 'px', top: top + 'px', marginLeft: 0, marginTop: 0});
+                    });
+                },
                 search: function () {
                     this.page = 1;
                     this.loadPage();
@@ -147,6 +158,7 @@ class UploadImageDialogBuilder
                             if (!first) app.loadPage(app.page = obj.curr);
                         },
                     });
+                    this.centerLayer();
                 },
                 loadPage: function () {
                     this.params = {page: this.page, limit: this.limit, output: 'layui.table', name: this.keys || ''};

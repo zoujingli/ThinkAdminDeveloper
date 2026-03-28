@@ -23,6 +23,7 @@ namespace plugin\system;
 use plugin\system\middleware\JwtTokenAuth;
 use plugin\system\middleware\LoadModuleLangPack;
 use plugin\system\middleware\RbacAccess;
+use plugin\system\service\ConfigService;
 use plugin\system\service\SystemContext as PluginSystemContext;
 use think\admin\contract\SystemContextInterface;
 use think\admin\Plugin;
@@ -47,6 +48,8 @@ class Service extends Plugin
      */
     public function boot(): void
     {
+        ConfigService::bootSystemLoginEntryBinding();
+
         if ($this->app->runningInConsole()) {
             return;
         }

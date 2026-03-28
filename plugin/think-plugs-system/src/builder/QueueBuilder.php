@@ -182,8 +182,8 @@ SCRIPT,
         $enabled = $super ? 'true' : 'false';
         return sprintf(<<<'SCRIPT'
 $(function () {
-    const queueStatusUrl = '{$queueStatusUrl}';
-    const queueStatusEnabled = {$enabled};
+    const queueStatusUrl = %s;
+    const queueStatusEnabled = %s;
     const queueI18n = %s;
     const \$queueMessage = \$('[data-queue-message]');
     let queueStatusTimer = 0;
@@ -252,7 +252,7 @@ $(function () {
     });
     loadQueueServiceStatus(2, 400);
 });
-SCRIPT, self::json([
+SCRIPT, self::json($queueStatusUrl), $enabled, self::json([
             'clickRefreshServiceStatus' => BuilderLang::text('点击刷新服务状态'),
             'loadServiceStatusFailed' => BuilderLang::text('服务状态获取失败，请点击重试'),
             'statusLoadFailed' => BuilderLang::text('状态获取失败'),

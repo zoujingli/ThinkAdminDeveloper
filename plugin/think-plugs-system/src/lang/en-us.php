@@ -608,6 +608,7 @@ return $loader('en-us', '英文字典', '英文菜单', array_merge($extra, [
     '后台程序名称' => 'Backend Program Name',
     '后台程序版本' => 'Backend Program Version',
     '公安安备号' => 'Public Security Registration Number',
+    '保存修改' => 'Save Changes',
     '保存配置' => 'Save Configuration',
     '取消修改' => 'Cancel Modification',
     '登录标题' => 'Login Title',
@@ -643,6 +644,10 @@ return $loader('en-us', '英文字典', '英文菜单', array_merge($extra, [
     // 系统配置表单提示
     '请输入登录页面的表单标题' => 'Please enter login form title',
     '后台登录入口是由英文字母开头，且不能有相同名称的模块，设置之后原地址不能继续访问，请谨慎配置 ~' => 'Backend login entry must start with English letters and cannot have modules with the same name. After setting, the original address cannot be accessed. Please configure carefully.',
+    '后台登录入口格式错误，请使用英文字母开头的应用名或别名！' => 'Backend login entry format is invalid. Please use an app name or alias that starts with a letter.',
+    '后台登录入口不能与本地应用名称冲突！' => 'Backend login entry cannot conflict with a local application name.',
+    '后台登录入口不能与系统 API 入口冲突！' => 'Backend login entry cannot conflict with the system API entry.',
+    '后台登录入口不能与其它插件入口或别名冲突！' => 'Backend login entry cannot conflict with other plugin entries or aliases.',
     '请输入32位JWT接口密钥' => 'Please enter 32-bit JWT API key',
     '请输入 32 位 JWT 接口密钥，在使用 JWT 接口时需要使用此密钥进行加密及签名！' => 'Please enter a 32-bit JWT API key. This key is required for encryption and signing when using JWT interfaces!',
     '请上传浏览器图标' => 'Please upload browser icon',

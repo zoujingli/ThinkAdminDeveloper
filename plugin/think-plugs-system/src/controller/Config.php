@@ -24,6 +24,7 @@ use plugin\system\builder\ConfigBuilder;
 use plugin\system\service\ConfigService;
 use plugin\system\storage\StorageConfig;
 use think\admin\Controller;
+use think\admin\Exception;
 
 /**
  * 系统参数配置.
@@ -87,8 +88,12 @@ class Config extends Controller
                 ConfigService::buildSystemFormData(static::themeCatalog)
             );
         } else {
-            ConfigService::saveSystemConfig($this->request->post(), static::themeCatalog);
-            $this->success(lang('系统参数保存成功。'), system_uri('system/config/index'));
+            try {
+                ConfigService::saveSystemConfig($this->request->post(), static::themeCatalog);
+                $this->success(lang('系统参数保存成功。'), system_uri('system/config/index'));
+            } catch (Exception $exception) {
+                $this->error($exception->getMessage());
+            }
         }
     }
 
