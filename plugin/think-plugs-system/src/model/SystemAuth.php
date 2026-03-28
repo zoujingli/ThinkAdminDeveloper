@@ -82,8 +82,19 @@ class SystemAuth extends Model
         }
 
         $binds = [];
+        $nodes = [];
         $query = SystemNode::mk()->whereIn('auth', array_column($items, 'id'))->field('auth,node')->select()->toArray();
         foreach ($query as $item) {
+            $auth = intval($item['auth'] ?? 0);
+            $node = strval($item['node'] ?? '');
+            if ($auth > 0 && $node !== '') {
+                if (!isset($nodes[$auth])) {
+                    $nodes[$auth] = [];
+                }
+                if (!in_array($node, $nodes[$auth], true)) {
+                    $nodes[$auth][] = $node;
+                }
+            }
             if (!($code = self::resolveNodePlugin(strval($item['node'] ?? '')))) {
                 continue;
             }
@@ -103,11 +114,11 @@ class SystemAuth extends Model
                 $names[] = $titles[$code] ?? $code;
             }
             if (count($codes) > 1) {
-                [$group, $title] = ['mixed', '跨插件'];
+                [$group, $title] = ['mixed', strval(lang('跨插件'))];
             } elseif (count($codes) === 1) {
                 [$group, $title] = [$codes[0], $names[0] ?? $codes[0]];
             } else {
-                [$group, $title] = ['common', '未绑定'];
+                [$group, $title] = ['common', strval(lang('未绑定'))];
             }
             $item['plugin_codes'] = $codes;
             $item['plugin_names'] = $names;
@@ -115,6 +126,7 @@ class SystemAuth extends Model
             $item['plugin_text'] = join(' / ', $names);
             $item['plugin_group'] = $group;
             $item['plugin_title'] = $title;
+            $item['node_count'] = count($nodes[$item['id']] ?? []);
         }
         unset($item);
 

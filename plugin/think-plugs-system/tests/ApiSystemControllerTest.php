@@ -22,6 +22,8 @@ namespace think\admin\tests;
 
 use plugin\system\controller\api\System as SystemController;
 use plugin\system\model\SystemOplog;
+use plugin\system\service\ConfigService;
+use plugin\system\service\LangService;
 use plugin\system\service\SystemContext as PluginSystemContext;
 use think\admin\contract\SystemContextInterface;
 use think\admin\runtime\RequestContext;
@@ -59,6 +61,7 @@ class ApiSystemControllerTest extends SqliteIntegrationTestCase
         $this->assertSame(1, intval($result['code'] ?? 0));
         $this->assertSame('已切换后台编辑器！', $result['info'] ?? '');
         $this->assertStringContainsString('javascript:location.reload()', strval($result['data'] ?? ''));
+        $this->assertSame('tinymce', ConfigService::getEditorDriver());
         $this->assertTrue($oplog->isExists());
         $this->assertSame('系统运维管理', $oplog->getData('action'));
         $this->assertStringContainsString('切换编辑器为', $oplog->getData('content'));
@@ -172,6 +175,16 @@ class ApiSystemControllerTest extends SqliteIntegrationTestCase
         $this->assertSame(0, SystemOplog::mk()->count());
     }
 
+    public function testPushRejectsNonSuperAdminInEnglishWhenLangSetIsEnUs(): void
+    {
+        $this->switchSystemLang('en-us');
+
+        $result = $this->callActionController('push', [], false);
+
+        $this->assertSame(0, intval($result['code'] ?? 1));
+        $this->assertSame('Please use a super-admin account to perform this action.', $result['info'] ?? '');
+    }
+
     protected function defineSchema(): void
     {
         $this->createSystemDataTable();
@@ -262,5 +275,11 @@ class ApiSystemControllerTest extends SqliteIntegrationTestCase
         $property = new \ReflectionProperty(Request::class, 'request');
         $property->setAccessible(true);
         $property->setValue($request, $data);
+    }
+
+    private function switchSystemLang(string $langSet): void
+    {
+        $this->app->lang->switchLangSet($langSet);
+        LangService::load($this->app, $langSet);
     }
 }

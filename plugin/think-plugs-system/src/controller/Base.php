@@ -79,8 +79,8 @@ class Base extends Controller
     public function state()
     {
         SystemBase::mSave($this->_vali([
-            'status.in:0,1' => '状态值范围异常！',
-            'status.require' => '状态值不能为空！',
+            'status.in:0,1' => lang('状态值范围异常！'),
+            'status.require' => lang('状态值不能为空！'),
         ]));
     }
 
@@ -117,7 +117,7 @@ class Base extends Controller
             }
             $data = BaseService::prepareFormData($builder->validate(), $context);
             BaseService::saveFormData($data);
-            $this->success('数据保存成功！');
+            $this->success(lang('数据保存成功！'));
         } catch (Exception $exception) {
             $this->error($exception->getMessage());
         }

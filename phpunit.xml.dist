@@ -25,7 +25,7 @@
             <file>plugin/think-plugs-system/tests/ApiQueueControllerTest.php</file>
             <file>plugin/think-plugs-system/tests/AuthControllerTest.php</file>
             <file>plugin/think-plugs-system/tests/BaseControllerTest.php</file>
-            <file>plugin/think-plugs-system/tests/ConfigControllerTest.php</file>
+            <file>plugin/think-plugs-system/tests/ConfigPageRenderTest.php</file>
             <file>plugin/think-plugs-system/tests/IndexControllerTest.php</file>
             <file>plugin/think-plugs-system/tests/LoginControllerTest.php</file>
             <file>plugin/think-plugs-system/tests/MenuControllerTest.php</file>

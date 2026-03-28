@@ -23,13 +23,16 @@ namespace plugin\system\service;
 use plugin\system\model\SystemMenu;
 use think\admin\Exception;
 use think\admin\extend\ArrayTree;
+use think\admin\extend\FileTools;
 use think\admin\helper\QueryHelper;
+use think\admin\Library;
 use think\admin\Service;
 use think\admin\service\AppService;
 use think\admin\service\NodeService;
 use think\db\exception\DataNotFoundException;
 use think\db\exception\DbException;
 use think\db\exception\ModelNotFoundException;
+use think\helper\Str;
 
 /**
  * 系统菜单管理服务
@@ -49,7 +52,7 @@ class MenuService extends Service
         $type = self::normalizeIndexType(strval(request()->get('type', 'index')));
         $pid = trim(strval(request()->get('pid', '')));
         return [
-            'title' => '系统菜单管理',
+            'title' => strval(lang('系统菜单管理')),
             'type' => $type,
             'pid' => $pid,
             'requestBaseUrl' => request()->baseUrl(),
@@ -78,6 +81,7 @@ class MenuService extends Service
             'id' => $id,
             'isEdit' => $action === 'edit' || $id > 0,
             'actionUrl' => url($action, array_filter(['id' => $id ?: null]))->build(),
+            'iconPickerUrl' => apiuri('system/plugs/icon'),
             'menus' => self::resolveParentMenus($id),
             'nodes' => self::getList($debug),
             'auths' => self::getAuths($debug),
@@ -163,10 +167,17 @@ class MenuService extends Service
 
         $menu = SystemMenu::mk()->findOrEmpty($id);
         if ($menu->isEmpty()) {
-            throw new Exception('菜单数据不存在！');
+            throw new Exception(lang('菜单数据不存在！'));
         }
 
-        return array_merge($data, $menu->toArray());
+        $loaded = array_merge($data, $menu->toArray());
+        [$loaded['url'], $loaded['params']] = self::normalizeMenuTarget(
+            strval($loaded['url'] ?? '#'),
+            strval($loaded['params'] ?? '')
+        );
+        $loaded['node'] = self::normalizePermissionNode(strval($loaded['node'] ?? ''));
+
+        return $loaded;
     }
 
     /**
@@ -180,27 +191,42 @@ class MenuService extends Service
     {
         $id = intval($context['id'] ?? 0);
         if ($id > 0 && SystemMenu::mk()->findOrEmpty($id)->isEmpty()) {
-            throw new Exception('菜单数据不存在！');
+            throw new Exception(lang('菜单数据不存在！'));
         }
 
         $target = trim(strval($data['target'] ?? request()->post('target', '_self')));
         if (!in_array($target, ['_self', '_blank'], true)) {
-            throw new Exception('打开方式异常！');
+            throw new Exception(lang('打开方式异常！'));
         }
 
         $status = intval($data['status'] ?? request()->post('status', 1));
         if (!in_array($status, [0, 1], true)) {
-            throw new Exception('状态值范围异常！');
+            throw new Exception(lang('状态值范围异常！'));
+        }
+
+        $title = trim(strval($data['title'] ?? ''));
+        if ($title === '') {
+            throw new Exception(lang('菜单名称不能为空！'));
+        }
+
+        $pid = self::normalizeParentId(intval($data['pid'] ?? request()->post('pid', 0)), $id);
+        [$url, $params] = self::normalizeMenuTarget(
+            strval($data['url'] ?? '#'),
+            strval($data['params'] ?? '')
+        );
+        $node = self::normalizePermissionNode(strval($data['node'] ?? ''));
+        if ($node !== '') {
+            self::assertPermissionNodeAvailable($node);
         }
 
         return [
             'id' => $id,
-            'pid' => intval($data['pid'] ?? request()->post('pid', 0)),
-            'title' => trim(strval($data['title'] ?? '')),
+            'pid' => $pid,
+            'title' => $title,
             'icon' => trim(strval($data['icon'] ?? '')),
-            'node' => trim(strval($data['node'] ?? '')),
-            'url' => trim(strval($data['url'] ?? '#')),
-            'params' => trim(strval($data['params'] ?? '')),
+            'node' => $node,
+            'url' => $url,
+            'params' => $params,
             'target' => $target,
             'sort' => intval($data['sort'] ?? request()->post('sort', 0)),
             'status' => $status,
@@ -217,7 +243,7 @@ class MenuService extends Service
         $id = intval($data['id'] ?? 0);
         $menu = $id > 0 ? SystemMenu::mk()->findOrEmpty($id) : SystemMenu::mk();
         if ($id > 0 && $menu->isEmpty()) {
-            throw new Exception('菜单数据不存在！');
+            throw new Exception(lang('菜单数据不存在！'));
         }
 
         $exists = $menu->isExists();
@@ -232,7 +258,7 @@ class MenuService extends Service
             'sort' => intval($data['sort'] ?? 0),
             'status' => intval($data['status'] ?? 1),
         ]) === false) {
-            throw new Exception('数据保存失败，请稍候再试！');
+            throw new Exception(lang('数据保存失败，请稍候再试！'));
         }
 
         $action = $exists ? 'onAdminUpdate' : 'onAdminInsert';
@@ -501,6 +527,354 @@ class MenuService extends Service
     private static function normalizeIndexType(string $type): string
     {
         return strtolower(trim($type)) === 'recycle' ? 'recycle' : 'index';
+    }
+
+    /**
+     * 标准化父级菜单并校验最大层级。
+     * @throws Exception
+     */
+    private static function normalizeParentId(int $pid, int $currentId = 0): int
+    {
+        if ($pid < 0) {
+            throw new Exception(lang('上级菜单参数异常！'));
+        }
+        if ($pid < 1) {
+            return 0;
+        }
+
+        $menus = [];
+        foreach (SystemMenu::mk()->select()->toArray() as $menu) {
+            $menus[intval($menu['id'] ?? 0)] = $menu;
+        }
+        if (!isset($menus[$pid])) {
+            throw new Exception(lang('上级菜单不存在！'));
+        }
+        if ($currentId > 0 && $pid === $currentId) {
+            throw new Exception(lang('上级菜单不能指向自身！'));
+        }
+        if (strval($menus[$pid]['url'] ?? '#') !== '#') {
+            throw new Exception(lang('当前父级菜单不能继续挂载子节点！'));
+        }
+
+        $depth = 1;
+        $cursor = $pid;
+        $visited = [];
+        while ($cursor > 0) {
+            if (isset($visited[$cursor])) {
+                throw new Exception(lang('菜单层级数据异常！'));
+            }
+            $visited[$cursor] = true;
+            if ($currentId > 0 && $cursor === $currentId) {
+                throw new Exception(lang('不能将菜单移动到自己的子节点下！'));
+            }
+            $parentId = intval($menus[$cursor]['pid'] ?? 0);
+            if ($parentId > 0) {
+                $depth++;
+                if ($depth >= 3) {
+                    throw new Exception(lang('当前菜单最多支持三级结构！'));
+                }
+                if (!isset($menus[$parentId])) {
+                    throw new Exception(lang('菜单层级数据异常！'));
+                }
+            }
+            $cursor = $parentId;
+        }
+
+        return $pid;
+    }
+
+    /**
+     * 标准化菜单跳转目标与参数。
+     * @return array{0:string,1:string}
+     * @throws Exception
+     */
+    private static function normalizeMenuTarget(string $url, string $params = ''): array
+    {
+        $url = trim(str_replace('\\', '/', $url));
+        $params = self::normalizeQueryString($params);
+        if ($url === '' || $url === '#') {
+            return ['#', ''];
+        }
+
+        if (preg_match('#^(?:https?://|//)#i', $url)) {
+            $parts = parse_url($url);
+            if (!is_array($parts) || empty($parts['scheme']) && !str_starts_with($url, '//')) {
+                throw new Exception(lang('菜单链接格式异常！'));
+            }
+            $normalized = self::buildExternalUrl($parts);
+            $params = self::mergeQueryString(strval($parts['query'] ?? ''), $params);
+            return [$normalized, $params];
+        }
+        if (preg_match('#^(?:@|\[)#', $url)) {
+            return [$url, $params];
+        }
+
+        $parts = parse_url($url);
+        if (!is_array($parts)) {
+            throw new Exception(lang('菜单链接格式异常！'));
+        }
+
+        $path = trim(strval($parts['path'] ?? ''), '/');
+        if ($path === '') {
+            throw new Exception(lang('菜单链接不能为空！'));
+        }
+
+        $segments = array_values(array_filter(explode('/', $path), 'strlen'));
+        if (count($segments) < 1) {
+            throw new Exception(lang('菜单链接格式异常！'));
+        }
+        $last = count($segments) - 1;
+        $segments[$last] = preg_replace('/\.[a-zA-Z0-9]+$/', '', strval($segments[$last])) ?: strval($segments[$last]);
+        if (count($segments) === 1) {
+            $segments[] = 'index';
+            $segments[] = 'index';
+        } elseif (count($segments) === 2) {
+            $segments[] = 'index';
+        }
+        $segments[0] = strtolower($segments[0]);
+        if (isset($segments[1])) {
+            $segments[1] = Str::snake($segments[1]);
+        }
+        if (isset($segments[2])) {
+            $segments[2] = strtolower($segments[2]);
+        }
+
+        $params = self::mergeQueryString(strval($parts['query'] ?? ''), $params);
+        $node = join('/', array_slice($segments, 0, 3));
+        if (self::resolveNodeMeta($node) === null) {
+            throw new Exception(lang('菜单链接对应的系统节点不存在！'));
+        }
+
+        return [join('/', $segments), $params];
+    }
+
+    /**
+     * 标准化权限节点。
+     */
+    private static function normalizePermissionNode(string $node): string
+    {
+        $node = trim(str_replace('\\', '/', $node));
+        if ($node === '') {
+            return '';
+        }
+
+        $parts = parse_url($node);
+        $path = trim(strval(is_array($parts) ? ($parts['path'] ?? $node) : $node), '/');
+        $segments = array_values(array_filter(explode('/', $path), 'strlen'));
+        if (count($segments) > 0) {
+            $last = count($segments) - 1;
+            $segments[$last] = preg_replace('/\.[a-zA-Z0-9]+$/', '', strval($segments[$last])) ?: strval($segments[$last]);
+        }
+        if (isset($segments[0])) {
+            $segments[0] = strtolower($segments[0]);
+        }
+        if (isset($segments[1])) {
+            $segments[1] = Str::snake($segments[1]);
+        }
+        if (isset($segments[2])) {
+            $segments[2] = strtolower($segments[2]);
+        }
+
+        return join('/', $segments);
+    }
+
+    /**
+     * 校验权限节点是否启用了注释授权。
+     * @throws Exception
+     */
+    private static function assertPermissionNodeAvailable(string $node): void
+    {
+        $meta = self::resolveNodeMeta($node);
+        if ($meta === null) {
+            throw new Exception(lang('权限节点不存在！'));
+        }
+        if (empty($meta['isauth'])) {
+            throw new Exception(lang('权限节点未启用注释授权！'));
+        }
+    }
+
+    /**
+     * @return array<string, mixed>|null
+     */
+    private static function resolveNodeMeta(string $node): ?array
+    {
+        $methods = NodeService::getMethods(false);
+        if (count($methods) < 1) {
+            self::bootNodeCatalog();
+            $methods = NodeService::getMethods(false);
+        }
+        if (!isset($methods[$node])) {
+            $methods = NodeService::getMethods(true);
+        }
+        if (isset($methods[$node]) && is_array($methods[$node])) {
+            return $methods[$node];
+        }
+        return self::discoverNodeMetaFromSource($node);
+    }
+
+    private static function bootNodeCatalog(): void
+    {
+        try {
+            Library::$sapp->config->set(['with_route' => true], 'app');
+            Library::$sapp->config->set(['default_app' => 'index'], 'route');
+            if (method_exists(Library::$sapp->request, 'setRoot') && trim(strval(Library::$sapp->request->pathinfo())) === '') {
+                Library::$sapp->request->setRoot('');
+                Library::$sapp->request->setPathinfo('system/index/index');
+            }
+            Library::$sapp->initialize();
+        } catch (\Throwable) {
+        }
+    }
+
+    /**
+     * 在未完整初始化应用时，按源码回退解析注释节点。
+     * @return array<string, mixed>|null
+     */
+    private static function discoverNodeMetaFromSource(string $node): ?array
+    {
+        static $catalog = null;
+        if ($catalog === null) {
+            $catalog = [];
+            self::loadSourceNodeCatalog($catalog);
+        }
+        return isset($catalog[$node]) && is_array($catalog[$node]) ? $catalog[$node] : null;
+    }
+
+    /**
+     * @param array<string, array<string, mixed>> $catalog
+     */
+    private static function loadSourceNodeCatalog(array &$catalog): void
+    {
+        foreach (self::fallbackControllerRoots() as $root) {
+            foreach (FileTools::scan($root['path'], null, 'php') as $file) {
+                $relative = trim(str_replace('\\', '/', $file), '/');
+                if ($relative === '' || !str_ends_with($relative, '.php')) {
+                    continue;
+                }
+                $className = substr($relative, 0, -4);
+                $class = $root['namespace'] . '\\' . str_replace('/', '\\', $className);
+                if (!class_exists($class)) {
+                    continue;
+                }
+                self::parseSourceController($catalog, $root['module'], $className, $class);
+            }
+        }
+    }
+
+    /**
+     * @return array<int, array{module:string,namespace:string,path:string}>
+     */
+    private static function fallbackControllerRoots(): array
+    {
+        $roots = [];
+        $appController = syspath('app/controller');
+        if (is_dir($appController)) {
+            $roots[] = [
+                'module' => 'index',
+                'namespace' => 'app\\controller',
+                'path' => rtrim($appController, '\\/'),
+            ];
+        }
+
+        foreach (glob(syspath('plugin/*'), GLOB_ONLYDIR) ?: [] as $pluginPath) {
+            $module = self::guessPluginModule(basename($pluginPath));
+            $controllerPath = rtrim($pluginPath, '\\/') . '/src/controller';
+            if ($module === '' || !is_dir($controllerPath)) {
+                continue;
+            }
+            $roots[] = [
+                'module' => $module,
+                'namespace' => 'plugin\\' . str_replace('-', '\\', $module) . '\\controller',
+                'path' => $controllerPath,
+            ];
+        }
+
+        return $roots;
+    }
+
+    private static function guessPluginModule(string $name): string
+    {
+        $name = trim($name);
+        foreach (['think-plugs-', 'think-'] as $prefix) {
+            if (str_starts_with($name, $prefix)) {
+                return substr($name, strlen($prefix));
+            }
+        }
+        return $name;
+    }
+
+    /**
+     * @param array<string, array<string, mixed>> $catalog
+     */
+    private static function parseSourceController(array &$catalog, string $module, string $className, string $class): void
+    {
+        $ignoreMethods = get_class_methods('\think\admin\Controller');
+        $reflection = new \ReflectionClass($class);
+        $prefix = strtolower($module . '/' . NodeService::nameTolower($className));
+        $catalog[$prefix] = self::parseSourceComment($reflection->getDocComment() ?: '', basename(str_replace('\\', '/', $className)));
+
+        foreach ($reflection->getMethods(\ReflectionMethod::IS_PUBLIC) as $method) {
+            if (in_array($method->getName(), $ignoreMethods, true)) {
+                continue;
+            }
+            $catalog[strtolower($prefix . '/' . $method->getName())] = self::parseSourceComment(
+                $method->getDocComment() ?: '',
+                $method->getName()
+            );
+        }
+    }
+
+    /**
+     * @return array<string, mixed>
+     */
+    private static function parseSourceComment(string $comment, string $default): array
+    {
+        $text = strtr($comment, "\n", ' ');
+        $title = preg_replace('/^\/\*\s*\*\s*\*\s*(.*?)\s*\*.*?$/', '$1', $text);
+        if (in_array(substr(strval($title), 0, 5), ['@auth', '@menu', '@logi'], true)) {
+            $title = $default;
+        }
+        return [
+            'title' => $title ?: $default,
+            'isauth' => intval(preg_match('/@auth\s*true/i', $text)),
+            'ismenu' => intval(preg_match('/@menu\s*true/i', $text)),
+            'islogin' => intval(preg_match('/@login\s*true/i', $text)),
+        ];
+    }
+
+    private static function normalizeQueryString(string $query): string
+    {
+        return trim(trim($query), " \t\n\r\0\x0B?&");
+    }
+
+    private static function mergeQueryString(string $query, string $params): string
+    {
+        $data = [];
+        parse_str(self::normalizeQueryString($query), $data);
+        parse_str(self::normalizeQueryString($params), $extra);
+        return http_build_query(array_merge($data, $extra));
+    }
+
+    /**
+     * @param array<string, mixed> $parts
+     */
+    private static function buildExternalUrl(array $parts): string
+    {
+        $url = '';
+        if (!empty($parts['scheme'])) {
+            $url .= strval($parts['scheme']) . '://';
+        } elseif (!empty($parts['host'])) {
+            $url .= '//';
+        }
+        $url .= strval($parts['host'] ?? '');
+        if (!empty($parts['port'])) {
+            $url .= ':' . strval($parts['port']);
+        }
+        $url .= strval($parts['path'] ?? '');
+        if (!empty($parts['fragment'])) {
+            $url .= '#' . strval($parts['fragment']);
+        }
+        return $url;
     }
 
     /**

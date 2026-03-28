@@ -23,6 +23,7 @@ namespace plugin\system\builder;
 use think\admin\builder\form\FormBuilder;
 use think\admin\builder\form\FormBlocks;
 use think\admin\builder\form\FormNode;
+use think\admin\builder\form\module\FormModules;
 use think\admin\builder\page\PageBuilder;
 
 /**
@@ -72,7 +73,7 @@ class AuthBuilder
         $pluginGroup = trim(strval($context['pluginGroup'] ?? ''));
         $pluginGroupOptions = is_array($context['pluginGroupOptions'] ?? null) ? $context['pluginGroupOptions'] : [];
 
-        return PageBuilder::make()
+        return PageBuilder::tablePage()
             ->define(function ($page) use ($context, $type, $requestBaseUrl, $pluginGroup, $pluginGroupOptions) {
                 SystemListPage::apply($page, strval($context['title'] ?? '系统权限管理'), $requestBaseUrl)
                     ->buttons(function ($buttons) use ($type, $pluginGroup) {
@@ -88,7 +89,8 @@ class AuthBuilder
                 $page->tabsList(SystemListTabs::indexRecycle($type, url('index')->build(), '系统权限'), 'RoleTable', $requestBaseUrl, function ($search) use ($type, $pluginGroupOptions) {
                     $search->hidden('type', $type)
                         ->input('title', '权限名称', '请输入权限名称')
-                        ->input('desc', '权限描述', '请输入权限描述')
+                        ->input('code', '角色编码', '请输入角色编码')
+                        ->input('remark', '角色说明', '请输入角色说明')
                         ->select('plugin_group', '所属插件', ['' => '全部插件'] + $pluginGroupOptions);
                     $search->dateRange('create_time', '创建时间', '请选择创建时间');
                 }, function ($table) use ($requestBaseUrl, $type) {
@@ -99,8 +101,10 @@ class AuthBuilder
                         ])->checkbox()
                             ->sortInput($requestBaseUrl)
                             ->column(SystemTablePreset::textColumn('title', '权限名称', 140, 'left'))
+                            ->column(SystemTablePreset::textColumn('code', '角色编码', 140, 'left'))
                             ->column(SystemTablePreset::pluginColumn('plugin_title', '所属插件', 140))
-                            ->column(SystemTablePreset::textColumn('desc', '权限描述', 110))
+                            ->column(SystemTablePreset::textColumn('remark', '角色说明', 140, 'left'))
+                            ->column(['field' => 'node_count', 'title' => '节点数', 'width' => 90, 'align' => 'center'])
                             ->statusSwitch(url('state')->build(), SystemTablePreset::statusOptions())
                             ->column(SystemTablePreset::timeColumn())
                             ->rows(function ($rows) use ($type) {
@@ -121,7 +125,7 @@ class AuthBuilder
      */
     public static function buildForm(array $context): FormBuilder
     {
-        return FormBuilder::make('form', 'page')
+        return FormBuilder::pageForm('form')
             ->define(function ($form) use ($context) {
                 $form->title(strval($context['title'] ?? '系统权限编辑'))
                     ->headerButton('返回列表', 'button', '', ['data-target-backup' => null], 'layui-btn-primary layui-btn-sm')
@@ -130,33 +134,62 @@ class AuthBuilder
                     ->data('role-id', intval($context['id'] ?? 0))
                     ->data('role-plugin', strval($context['plugin'] ?? ''))
                     ->data('role-action-url', strval($context['actionUrl'] ?? ''))
-                    ->fields(function ($fields) {
-                        $fields->text('title', '权限名称', 'Auth Name', true, '访问权限名称需要保持不重复，在给用户授权时需要根据名称选择！', null, [
+                    ->class('system-auth-form');
+
+                FormModules::section($form, [
+                    'title' => '角色信息',
+                    'description' => '角色编码用于系统内部识别，建议使用小写字母、数字、中划线、下划线或冒号。',
+                ], function (FormNode $section) {
+                    $section->fields(function ($fields) {
+                        $fields->text('title', '角色名称', 'Role Name', true, '角色名称用于后台授权选择与权限分组展示。', null, [
                             'maxlength' => 100,
-                            'placeholder' => '请输入权限名称',
-                            'required-error' => '权限名称不能为空！',
-                        ])->textarea('desc', '权限描述', 'Auth Remark', false, '请输入权限描述', [
-                            'maxlength' => 200,
-                            'placeholder' => '请输入权限描述',
-                        ]);
+                            'placeholder' => '请输入角色名称',
+                            'required-error' => '角色名称不能为空！',
+                        ])->text('code', '角色编码', 'Role Code', true, '角色编码用于系统内部识别，创建后应保持稳定。', '^[a-z][a-z0-9:_-]{2,49}$', [
+                            'maxlength' => 50,
+                            'placeholder' => '请输入角色编码，例如 system-editor',
+                            'required-error' => '角色编码不能为空！',
+                            'pattern-error' => '角色编码格式错误！',
+                        ])->textarea('remark', '角色说明', 'Role Remark', false, '用于补充说明该角色的职责范围与使用场景。', [
+                            'maxlength' => 500,
+                            'placeholder' => '请输入角色说明',
+                        ])->text('sort', '排序权重', 'Sort Order', false, '数值越大越靠前，默认按 0 处理。', '^[0-9]{1,10}$', [
+                            'type' => 'number',
+                            'min' => 0,
+                            'step' => 1,
+                            'placeholder' => '请输入排序权重',
+                            'pattern-error' => '排序权重格式错误！',
+                        ])->defaultValue(0)->radio('status', '启用状态', 'Status', '', true, [
+                            'required-error' => '请选择启用状态！',
+                        ])->options([
+                            '1' => '已启用',
+                            '0' => '已禁用',
+                        ])->defaultValue('1');
                     });
+                });
 
-                FormBlocks::selectFilter(
-                    $form,
-                    'plugin_filter',
-                    'AuthPluginFilter',
-                    [],
-                    '插件筛选',
-                    'Plugin Filter',
-                    '仅切换当前显示的权限树分组，不会丢失其它插件已勾选的授权节点。'
-                );
+                FormModules::section($form, [
+                    'title' => '注释节点授权',
+                    'description' => '按插件和关键字筛选当前注释节点，勾选后的节点将写入角色授权关系。',
+                ], function (FormNode $section) {
+                    FormBlocks::selectFilter(
+                        $section,
+                        'plugin_filter',
+                        'AuthPluginFilter',
+                        [],
+                        '插件筛选',
+                        'Plugin Filter',
+                        '仅切换当前显示的权限树分组，不会丢失其它插件已勾选的授权节点。'
+                    );
+                    self::buildTreeSection($section);
+                });
 
-                self::buildTreeSection($form);
                 $form->actions(function ($actions) {
                     $actions->submit()->cancel();
                 })->rules([
-                        'title.max:100' => '权限名称不能超过100字符！',
-                        'desc.max:200' => '权限描述不能超过200字符！',
+                        'title.max:100' => '角色名称不能超过100字符！',
+                        'code.max:50' => '角色编码不能超过50字符！',
+                        'remark.max:500' => '角色说明不能超过500字符！',
                     ])
                     ->script(self::renderFormScript());
             })
@@ -176,7 +209,7 @@ class AuthBuilder
 
     private static function renderFormScript(): string
     {
-        return <<<'SCRIPT'
+        return strtr(<<<'SCRIPT'
 $.module.use([], function () {
     new function () {
         let that = this;
@@ -236,7 +269,7 @@ $.module.use([], function () {
             return children;
         };
         this.renderOptions = function () {
-            let html = ['<option value="">全部插件</option>'];
+            let html = ['<option value="">__ALL_PLUGINS__</option>'];
             for (let i in this.data) {
                 if (!this.data[i].plugin) continue;
                 html.push('<option value="' + this.data[i].plugin + '">' + this.data[i].title + ' [ ' + this.data[i].plugin + ' ]</option>');
@@ -389,8 +422,8 @@ $.module.use([], function () {
                 '</span>' +
                 '<button type="button" class="auth-group-title" data-expand-node="' + key + '">' + title + '<span class="auth-node-count">' + counts.selected + '/' + counts.total + '</span></button>' +
                 '<div class="auth-group-actions">' +
-                '<button type="button" class="auth-group-action" data-batch-node="' + key + '" data-batch-type="select">全选</button>' +
-                '<button type="button" class="auth-group-action" data-batch-node="' + key + '" data-batch-type="clear">取消</button>' +
+                '<button type="button" class="auth-group-action" data-batch-node="' + key + '" data-batch-type="select">__SELECT_ALL__</button>' +
+                '<button type="button" class="auth-group-action" data-batch-node="' + key + '" data-batch-type="clear">__CANCEL__</button>' +
                 '</div>' +
                 '</div>';
             if (children.length > 0) {
@@ -424,8 +457,8 @@ $.module.use([], function () {
                     '<button type="button" class="auth-plugin-title" data-expand-node="' + this.escape(item.node) + '">' + this.escape(item.title) + '<span class="auth-node-count">' + counts.selected + '/' + counts.total + '</span></button>' +
                     '<div class="auth-plugin-actions">' +
                     '<span class="auth-plugin-code">' + this.escape(item.plugin) + '</span>' +
-                    '<button type="button" class="auth-group-action" data-batch-node="' + this.escape(item.node) + '" data-batch-type="select">全选</button>' +
-                    '<button type="button" class="auth-group-action" data-batch-node="' + this.escape(item.node) + '" data-batch-type="clear">取消</button>' +
+                    '<button type="button" class="auth-group-action" data-batch-node="' + this.escape(item.node) + '" data-batch-type="select">__SELECT_ALL__</button>' +
+                    '<button type="button" class="auth-group-action" data-batch-node="' + this.escape(item.node) + '" data-batch-type="clear">__CANCEL__</button>' +
                     '</div>' +
                     '</header>' +
                     '<div class="auth-plugin-body">' + $.map(item.children || [], function (child) { return that.renderNode(child, [item]); }).join('') + '</div>' +
@@ -458,7 +491,7 @@ $.module.use([], function () {
         };
         this.renderDiffTags = function (titles, values) {
             if (values.length < 1) {
-                return '<div class="color-desc">无</div>';
+                return '<div class="color-desc">__NONE__</div>';
             }
             let html = [];
             for (let i in values) {
@@ -486,7 +519,7 @@ $.module.use([], function () {
         };
         this.showTree = function () {
             let html = this.renderTree(this.data);
-            $('#AuthTreePanel').html(html || '<div class="auth-tree-empty">当前筛选下暂无权限节点</div>');
+            $('#AuthTreePanel').html(html || '<div class="auth-tree-empty">__EMPTY_NODES__</div>');
             this.applyCheckStates();
             $('#AuthTreeKeyword').val(this.keyword);
             $('#AuthTreeSelectedOnly')
@@ -591,17 +624,17 @@ $.module.use([], function () {
             form.action = 'save';
             let content = '' +
                 '<div class="auth-submit-diff">' +
-                '<div class="auth-submit-diff-head">本次权限变更</div>' +
+                '<div class="auth-submit-diff-head">__CURRENT_DIFF__</div>' +
                 '<div class="auth-submit-diff-section">' +
-                '<div class="auth-submit-diff-title">新增权限 (' + diff.added.length + ')</div>' +
+                '<div class="auth-submit-diff-title">__ADDED_PERMS__ (' + diff.added.length + ')</div>' +
                 '<div class="auth-submit-diff-tags">' + that.renderDiffTags(diff.titles, diff.added) + '</div>' +
                 '</div>' +
                 '<div class="auth-submit-diff-section">' +
-                '<div class="auth-submit-diff-title">移除权限 (' + diff.removed.length + ')</div>' +
+                '<div class="auth-submit-diff-title">__REMOVED_PERMS__ (' + diff.removed.length + ')</div>' +
                 '<div class="auth-submit-diff-tags">' + that.renderDiffTags(diff.titles, diff.removed) + '</div>' +
                 '</div>' +
                 '</div>';
-            layer.confirm(content, {title: '确认保存权限变更', area: ['720px', 'auto']}, function (index) {
+            layer.confirm(content, {title: '__CONFIRM_SAVE_DIFF__', area: ['720px', 'auto']}, function (index) {
                 layer.close(index);
                 $.form.load(that.actionUrl, form, 'post');
             });
@@ -613,14 +646,24 @@ $.module.use([], function () {
         });
     };
 });
-SCRIPT;
+SCRIPT, [
+            '__ALL_PLUGINS__' => addslashes(strval(lang('全部插件'))),
+            '__SELECT_ALL__' => addslashes(strval(lang('全选'))),
+            '__CANCEL__' => addslashes(strval(lang('取消'))),
+            '__NONE__' => addslashes(strval(lang('无'))),
+            '__EMPTY_NODES__' => addslashes(strval(lang('当前筛选下暂无权限节点'))),
+            '__CURRENT_DIFF__' => addslashes(strval(lang('本次权限变更'))),
+            '__ADDED_PERMS__' => addslashes(strval(lang('新增权限'))),
+            '__REMOVED_PERMS__' => addslashes(strval(lang('移除权限'))),
+            '__CONFIRM_SAVE_DIFF__' => addslashes(strval(lang('确认保存权限变更'))),
+        ]);
     }
     private static function buildTreeSection(FormNode $form): void
     {
         $tree = $form->div()->class('layui-form-item');
 
         $label = $tree->node('span')->class('help-label label-required-prev');
-        $label->node('b')->html('功能节点');
+        $label->node('b')->html(strval(lang('功能节点')));
         $label->node('span')->class('ml5')->html('Auth Nodes');
 
         $shell = $tree->div()->class('system-auth-tree');
@@ -631,22 +674,22 @@ SCRIPT;
             'type' => 'text',
             'class' => 'layui-input',
             'id' => 'AuthTreeKeyword',
-            'placeholder' => '搜索权限节点名称，按 / 快速聚焦',
+            'placeholder' => strval(lang('搜索权限节点名称，按 / 快速聚焦')),
         ]);
         $search->node('button')->attrs([
             'type' => 'button',
             'class' => 'auth-tree-search-clear',
             'id' => 'AuthTreeKeywordClear',
-        ])->html('清空');
+        ])->html(strval(lang('清空')));
 
         $mode = $toolbar->div()->class('auth-tree-toolbar-group auth-tree-toolbar-group-mode');
-        self::buildTreeButton($mode, '只看已选', ['id' => 'AuthTreeSelectedOnly', 'data-selected-only' => 'false'], 'layui-btn layui-btn-xs layui-btn-primary auth-tree-mode');
-        self::buildTreeButton($mode, '展开全部分组', ['data-tree-action' => 'expand-visible'], 'layui-btn layui-btn-xs layui-btn-primary auth-tree-ghost');
-        self::buildTreeButton($mode, '收起未选分组', ['data-tree-action' => 'collapse-visible'], 'layui-btn layui-btn-xs layui-btn-primary auth-tree-ghost');
+        self::buildTreeButton($mode, strval(lang('只看已选')), ['id' => 'AuthTreeSelectedOnly', 'data-selected-only' => 'false'], 'layui-btn layui-btn-xs layui-btn-primary auth-tree-mode');
+        self::buildTreeButton($mode, strval(lang('展开全部分组')), ['data-tree-action' => 'expand-visible'], 'layui-btn layui-btn-xs layui-btn-primary auth-tree-ghost');
+        self::buildTreeButton($mode, strval(lang('收起未选分组')), ['data-tree-action' => 'collapse-visible'], 'layui-btn layui-btn-xs layui-btn-primary auth-tree-ghost');
 
         $batch = $toolbar->div()->class('auth-tree-toolbar-group auth-tree-toolbar-group-batch');
-        self::buildTreeButton($batch, '全选当前视图', ['data-tree-action' => 'select-visible'], 'layui-btn layui-btn-xs layui-btn-normal');
-        self::buildTreeButton($batch, '取消当前视图', ['data-tree-action' => 'clear-visible'], 'layui-btn layui-btn-xs layui-btn-primary auth-tree-danger');
+        self::buildTreeButton($batch, strval(lang('全选当前视图')), ['data-tree-action' => 'select-visible'], 'layui-btn layui-btn-xs layui-btn-normal');
+        self::buildTreeButton($batch, strval(lang('取消当前视图')), ['data-tree-action' => 'clear-visible'], 'layui-btn layui-btn-xs layui-btn-primary auth-tree-danger');
 
         $shell->div()->attrs(['id' => 'AuthTreePanel', 'class' => 'auth-tree-panel']);
     }

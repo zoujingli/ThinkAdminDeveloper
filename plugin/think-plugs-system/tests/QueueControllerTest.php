@@ -21,6 +21,7 @@ declare(strict_types=1);
 namespace think\admin\tests;
 
 use plugin\system\controller\Queue as QueueController;
+use plugin\system\service\LangService;
 use plugin\worker\model\SystemQueue;
 use plugin\worker\service\ProcessService;
 use plugin\worker\service\QueueService;
@@ -48,6 +49,22 @@ class QueueControllerTest extends SqliteIntegrationTestCase
         $this->assertStringContainsString('class="mt10"', $html);
         $this->assertStringContainsString('data-queue-message', $html);
         $this->assertStringContainsString('批量删除', $html);
+    }
+
+    public function testIndexRendersEnglishTextsWhenLangSetIsEnUs(): void
+    {
+        $this->switchSystemLang('en-us');
+
+        $html = $this->callActionHtml('index');
+
+        $this->assertStringContainsString('Task Management', $html);
+        $this->assertStringContainsString('Tasks', $html);
+        $this->assertStringContainsString('Total', $html);
+        $this->assertStringContainsString('Pending', $html);
+        $this->assertStringContainsString('Checking', $html);
+        $this->assertStringContainsString('Reset', $html);
+        $this->assertStringContainsString('Log', $html);
+        $this->assertStringNotContainsString('检查中', $html);
     }
 
     public function testIndexFiltersQueueRowsAndBuildsStatusSummary(): void
@@ -225,7 +242,7 @@ class QueueControllerTest extends SqliteIntegrationTestCase
 
         $this->bindAdminUser();
         $this->setRequestPayload($request, $query);
-        $this->app->instance('request', $request);
+        $this->activateApplicationContext($request);
 
         try {
             $controller = new QueueController($this->app);
@@ -247,7 +264,7 @@ class QueueControllerTest extends SqliteIntegrationTestCase
 
         $this->bindAdminUser();
         $this->setRequestPayload($request, $post);
-        $this->app->instance('request', $request);
+        $this->activateApplicationContext($request);
 
         try {
             $controller = new QueueController($this->app);
@@ -292,5 +309,11 @@ class QueueControllerTest extends SqliteIntegrationTestCase
         $property = new \ReflectionProperty(Request::class, 'request');
         $property->setAccessible(true);
         $property->setValue($request, $data);
+    }
+
+    private function switchSystemLang(string $langSet): void
+    {
+        $this->app->lang->switchLangSet($langSet);
+        LangService::load($this->app, $langSet);
     }
 }

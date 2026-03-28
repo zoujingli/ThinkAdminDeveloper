@@ -22,6 +22,7 @@ namespace think\admin\tests;
 
 use plugin\system\controller\Menu as MenuController;
 use plugin\system\model\SystemMenu;
+use plugin\system\service\LangService;
 use think\admin\runtime\RequestContext;
 use think\admin\tests\Support\SqliteIntegrationTestCase;
 use think\exception\HttpResponseException;
@@ -99,7 +100,7 @@ class MenuControllerTest extends SqliteIntegrationTestCase
         $this->assertCount(3, $result['data']['list'] ?? []);
         $this->assertSame('系统配置', $result['data']['list'][0]['title'] ?? '');
         $this->assertSame('数据字典', $result['data']['list'][1]['title'] ?? '');
-        $this->assertStringContainsString('system/base/index', $result['data']['list'][1]['url'] ?? '');
+        $this->assertStringContainsString('system/base', $result['data']['list'][1]['url'] ?? '');
         $this->assertStringContainsString('tab=dict', $result['data']['list'][1]['url'] ?? '');
         $this->assertSame('https://example.com/docs', $result['data']['list'][2]['url'] ?? '');
     }
@@ -160,7 +161,21 @@ class MenuControllerTest extends SqliteIntegrationTestCase
         $this->assertStringContainsString('name="title"', $html);
         $this->assertStringContainsString('data-menu-nodes=', $html);
         $this->assertStringContainsString('data-menu-auths=', $html);
+        $this->assertStringContainsString('data-open-menu-icon', $html);
+        $this->assertStringContainsString('标准化链接预览', $html);
         $this->assertStringContainsString('name="target"', $html);
+    }
+
+    public function testAddGetRendersEnglishIconPickerTextsWhenLangSetIsEnUs(): void
+    {
+        $this->switchSystemLang('en-us');
+
+        $html = $this->callActionHtml('add', ['pid' => 0]);
+
+        $this->assertStringContainsString('Icon Picker', $html);
+        $this->assertStringContainsString('Icon not set', $html);
+        $this->assertStringContainsString('Choose Menu Icon', $html);
+        $this->assertStringNotContainsString('未设置图标', $html);
     }
 
     public function testAddAndEditPersistMenuFields(): void
@@ -175,8 +190,8 @@ class MenuControllerTest extends SqliteIntegrationTestCase
             'title' => '新增菜单',
             'icon' => 'layui-icon layui-icon-star',
             'node' => 'system/base/index',
-            'url' => 'system/base/index',
-            'params' => 'tab=menu',
+            'url' => '/system/base.html?tab=menu',
+            'params' => 'from=builder',
             'target' => '_blank',
             'sort' => 30,
             'status' => 1,
@@ -188,6 +203,8 @@ class MenuControllerTest extends SqliteIntegrationTestCase
         $this->assertSame('数据保存成功！', $add['info'] ?? '');
         $this->assertTrue($created->isExists());
         $this->assertSame('_blank', $created->getData('target'));
+        $this->assertSame('system/base/index', $created->getData('url'));
+        $this->assertSame('tab=menu&from=builder', $created->getData('params'));
 
         $edit = $this->callFormController('edit', [
             'id' => intval($created->getAttr('id')),
@@ -210,6 +227,39 @@ class MenuControllerTest extends SqliteIntegrationTestCase
         $this->assertSame('system/file/index', $updated->getData('url'));
         $this->assertSame('type=image', $updated->getData('params'));
         $this->assertSame(0, intval($updated->getData('status')));
+    }
+
+    public function testAddRejectsLeafParentAndInvalidPermissionNode(): void
+    {
+        $leaf = $this->createSystemMenuFixture([
+            'title' => '叶子菜单',
+            'url' => 'system/base/index',
+        ]);
+        $branch = $this->createSystemMenuFixture([
+            'title' => '分组菜单',
+            'url' => '#',
+        ]);
+
+        $invalidParent = $this->callFormController('add', [
+            'pid' => intval($leaf->getAttr('id')),
+            'title' => '不能挂载',
+            'url' => 'system/base/index',
+            'target' => '_self',
+            'status' => 1,
+        ]);
+        $invalidNode = $this->callFormController('add', [
+            'pid' => intval($branch->getAttr('id')),
+            'title' => '节点异常',
+            'url' => 'system/base/index',
+            'node' => 'system/not-found/index',
+            'target' => '_self',
+            'status' => 1,
+        ]);
+
+        $this->assertNotSame(1, intval($invalidParent['code'] ?? 0));
+        $this->assertSame('当前父级菜单不能继续挂载子节点！', $invalidParent['info'] ?? '');
+        $this->assertNotSame(1, intval($invalidNode['code'] ?? 0));
+        $this->assertSame('权限节点不存在！', $invalidNode['info'] ?? '');
     }
 
     public function testStateAndRemoveUpdateMenuLifecycle(): void
@@ -253,7 +303,7 @@ class MenuControllerTest extends SqliteIntegrationTestCase
 
         $this->bindAdminUser();
         $this->setRequestPayload($request, $query);
-        $this->app->instance('request', $request);
+        $this->activateApplicationContext($request);
 
         try {
             $controller = new MenuController($this->app);
@@ -279,7 +329,7 @@ class MenuControllerTest extends SqliteIntegrationTestCase
 
         $this->bindAdminUser();
         $this->setRequestPayload($request, $query);
-        $this->app->instance('request', $request);
+        $this->activateApplicationContext($request);
 
         try {
             $controller = new MenuController($this->app);
@@ -301,7 +351,7 @@ class MenuControllerTest extends SqliteIntegrationTestCase
 
         $this->bindAdminUser();
         $this->setRequestPayload($request, $post);
-        $this->app->instance('request', $request);
+        $this->activateApplicationContext($request);
 
         try {
             $controller = new MenuController($this->app);
@@ -325,5 +375,11 @@ class MenuControllerTest extends SqliteIntegrationTestCase
         $property = new \ReflectionProperty(Request::class, 'request');
         $property->setAccessible(true);
         $property->setValue($request, $data);
+    }
+
+    private function switchSystemLang(string $langSet): void
+    {
+        $this->app->lang->switchLangSet($langSet);
+        LangService::load($this->app, $langSet);
     }
 }

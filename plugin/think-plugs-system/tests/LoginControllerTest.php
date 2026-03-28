@@ -23,6 +23,7 @@ namespace think\admin\tests;
 use plugin\system\controller\Login as LoginController;
 use plugin\system\model\SystemOplog;
 use plugin\system\service\AuthService;
+use plugin\system\service\LangService;
 use plugin\system\service\SystemContext as PluginSystemContext;
 use think\admin\contract\SystemContextInterface;
 use think\admin\runtime\RequestContext;
@@ -66,6 +67,27 @@ class LoginControllerTest extends SqliteIntegrationTestCase
         $this->assertStringStartsWith('data:image/png;base64,', strval($slider['data']['water'] ?? ''));
         $this->assertSame(600, intval($slider['data']['width'] ?? 0));
         $this->assertSame(100, intval($slider['data']['piece_width'] ?? 0));
+    }
+
+    public function testFailedLoginUsesEnglishMessagesWhenLangSetIsEnUs(): void
+    {
+        $this->switchSystemLang('en-us');
+        $ticket = $this->loginPageTicket();
+
+        $result = $this->callActionController('index', [
+            'username' => 'missing-user',
+            'password' => $this->encodeLoginPassword('wrong-password', $ticket),
+            'password_mode' => $ticket['password_mode'],
+            'token' => $ticket['token'],
+        ]);
+        $slider = $this->callActionController('slider', [
+            'token' => $ticket['token'],
+        ]);
+
+        $this->assertSame(0, intval($result['code'] ?? 1));
+        $this->assertSame('Incorrect login account or password. Please try again!', $result['info'] ?? '');
+        $this->assertSame(1, intval($slider['code'] ?? 0));
+        $this->assertSame('Puzzle generated successfully', $slider['info'] ?? '');
     }
 
     public function testFreshEncryptedLoginSucceedsWithoutSlider(): void
@@ -278,6 +300,24 @@ class LoginControllerTest extends SqliteIntegrationTestCase
         $this->assertSame('0', strval($response->getHeader('Expires')));
     }
 
+    public function testGetIndexRendersEnglishTextsWhenLangSetIsEnUs(): void
+    {
+        $this->switchSystemLang('en-us');
+
+        $response = $this->callPageResponse('index', [], 'GET', true);
+        $content = $response->getContent();
+
+        $this->assertStringContainsString('<title>System Login', $content);
+        $this->assertStringContainsString('Login Account', $content);
+        $this->assertStringContainsString('Login Password', $content);
+        $this->assertStringContainsString('After a login error is detected, complete the slider verification first', $content);
+        $this->assertStringContainsString('Hold the slider and drag to complete verification', $content);
+        $this->assertStringContainsString('No verification is required on the first login', $content);
+        $this->assertStringContainsString('Refresh Puzzle', $content);
+        $this->assertStringContainsString('window.taLoginI18n', $content);
+        $this->assertStringNotContainsString('请按住滑块，拖动完成验证', $content);
+    }
+
     protected function defineSchema(): void
     {
         $this->createSystemDataTable();
@@ -405,5 +445,11 @@ class LoginControllerTest extends SqliteIntegrationTestCase
     private function verifyFailKey(string $token): string
     {
         return 'think.admin.login.verify.fail.' . hash('sha256', $token);
+    }
+
+    private function switchSystemLang(string $langSet): void
+    {
+        $this->app->lang->switchLangSet($langSet);
+        LangService::load($this->app, $langSet);
     }
 }

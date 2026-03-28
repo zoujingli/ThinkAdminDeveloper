@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace plugin\system\builder;
 
+use think\admin\builder\BuilderLang;
 use think\admin\builder\base\render\BuilderAttributes;
 use think\admin\service\AppService;
 
@@ -29,7 +30,7 @@ class IconPickerBuilder
             '<html lang="zh-CN">',
             '<head>',
             '    <meta charset="utf-8">',
-            '    <title>' . self::escape($title) . '</title>',
+            '    <title>' . self::escape(BuilderLang::text($title)) . '</title>',
             '    <meta name="renderer" content="webkit">',
             '    <meta name="format-detection" content="telephone=no">',
             '    <meta name="mobile-web-app-capable" content="yes">',
@@ -49,9 +50,9 @@ class IconPickerBuilder
         $head[] = '<body class="ta-icon-picker-body layui-layout-body layui-layout-theme-default">';
         $head[] = '    <div class="ta-icon-picker" data-icon-picker data-field="' . self::escape($field) . '">';
         $head[] = '        <div class="ta-icon-picker__header">';
-        $head[] = '            <div class="ta-icon-picker__title">选择图标</div>';
+        $head[] = '            <div class="ta-icon-picker__title">' . self::escape(BuilderLang::text('选择图标')) . '</div>';
         $head[] = '            <label class="ta-icon-picker__search">';
-        $head[] = '                <input type="text" class="layui-input" placeholder="请输入图标名称" data-icon-filter>';
+        $head[] = '                <input type="text" class="layui-input" placeholder="' . self::escape(BuilderLang::text('请输入图标名称')) . '" data-icon-filter>';
         $head[] = '            </label>';
         $head[] = '        </div>';
         $head[] = '        <ul class="ta-icon-picker__list">';

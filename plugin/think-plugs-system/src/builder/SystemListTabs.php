@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace plugin\system\builder;
 
+use think\admin\builder\BuilderLang;
+
 /**
  * 系统列表页 Tabs 渲染辅助。
  * @class SystemListTabs
@@ -22,7 +24,7 @@ class SystemListTabs
                 '<li data-open="%s"%s>%s</li>',
                 htmlspecialchars(strval($item['url'] ?? ''), ENT_QUOTES, 'UTF-8'),
                 $class,
-                htmlspecialchars(strval($item['label'] ?? ''), ENT_QUOTES, 'UTF-8')
+                htmlspecialchars(BuilderLang::text(strval($item['label'] ?? '')), ENT_QUOTES, 'UTF-8')
             );
         }
         return $html . '</ul>';

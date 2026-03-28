@@ -29,4 +29,36 @@ use think\admin\Model;
 class SystemOplog extends Model
 {
     protected $updateTime = false;
+
+    /**
+     * 同步新旧日志字段.
+     * @param array<string, mixed> $data
+     * @return array<string, mixed>
+     */
+    public static function syncPayload(array $data): array
+    {
+        $hasCurrent = array_key_exists('request_ip', $data);
+        $hasLegacy = array_key_exists('geoip', $data);
+        if (!$hasCurrent && !$hasLegacy) {
+            return $data;
+        }
+
+        $current = trim(strval($data['request_ip'] ?? ''));
+        $legacy = trim(strval($data['geoip'] ?? ''));
+        $value = $current !== '' ? $current : $legacy;
+        $data['request_ip'] = $value;
+        $data['geoip'] = $value;
+
+        return $data;
+    }
+
+    /**
+     * 标准化日志数据行.
+     * @param array<string, mixed> $data
+     * @return array<string, mixed>
+     */
+    public static function normalizeRow(array $data): array
+    {
+        return self::syncPayload($data);
+    }
 }

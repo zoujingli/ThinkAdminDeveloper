@@ -22,6 +22,7 @@ namespace plugin\system\controller\api;
 
 use plugin\system\model\SystemData;
 use plugin\system\service\AuthService;
+use plugin\system\service\ConfigService;
 use think\admin\Controller;
 use think\admin\service\RuntimeService;
 use think\exception\HttpResponseException;
@@ -41,7 +42,7 @@ class System extends Controller
         if (AuthService::isSuper()) {
             try {
                 RuntimeService::push() && sysoplog('系统运维管理', '刷新发布运行缓存');
-                $this->success('网站缓存加速成功！', 'javascript:location.reload()');
+                $this->success(lang('网站缓存加速成功！'), 'javascript:location.reload()');
             } catch (HttpResponseException $exception) {
                 throw $exception;
             } catch (\Exception $exception) {
@@ -49,7 +50,7 @@ class System extends Controller
                 $this->error($exception->getMessage());
             }
         } else {
-            $this->error('请使用超管账号操作！');
+            $this->error(lang('请使用超管账号操作！'));
         }
     }
 
@@ -62,7 +63,7 @@ class System extends Controller
         if (AuthService::isSuper()) {
             try {
                 RuntimeService::clear() && sysoplog('系统运维管理', '清理网站日志缓存');
-                $this->success('清空日志缓存成功！', 'javascript:location.reload()');
+                $this->success(lang('清空日志缓存成功！'), 'javascript:location.reload()');
             } catch (HttpResponseException $exception) {
                 throw $exception;
             } catch (\Exception $exception) {
@@ -70,7 +71,7 @@ class System extends Controller
                 $this->error($exception->getMessage());
             }
         } else {
-            $this->error('请使用超管账号操作！');
+            $this->error(lang('请使用超管账号操作！'));
         }
     }
 
@@ -84,14 +85,14 @@ class System extends Controller
             if (input('state')) {
                 RuntimeService::set('product');
                 sysoplog('系统运维管理', '开发模式切换为生产模式');
-                $this->success('已切换为生产模式！', 'javascript:location.reload()');
+                $this->success(lang('已切换为生产模式！'), 'javascript:location.reload()');
             } else {
                 RuntimeService::set('debug');
                 sysoplog('系统运维管理', '生产模式切换为开发模式');
-                $this->success('已切换为开发模式！', 'javascript:location.reload()');
+                $this->success(lang('已切换为开发模式！'), 'javascript:location.reload()');
             }
         } else {
-            $this->error('请使用超管账号操作！');
+            $this->error(lang('请使用超管账号操作！'));
         }
     }
 
@@ -102,12 +103,11 @@ class System extends Controller
     public function editor()
     {
         if (AuthService::isSuper()) {
-            $editor = input('editor', 'auto');
-            sysdata('system.runtime.editor_driver', $editor);
+            $editor = ConfigService::setEditorDriver(strval(input('editor', 'auto')));
             sysoplog('系统运维管理', "切换编辑器为{$editor}");
-            $this->success('已切换后台编辑器！', 'javascript:location.reload()');
+            $this->success(lang('已切换后台编辑器！'), 'javascript:location.reload()');
         } else {
-            $this->error('请使用超管账号操作！');
+            $this->error(lang('请使用超管账号操作！'));
         }
     }
 
@@ -130,7 +130,7 @@ class System extends Controller
                 $this->app->cache->delete('SystemData');
                 sysvar('think.admin.data', []);
                 sysoplog('系统运维管理', '清理系统配置参数');
-                $this->success('清理系统配置成功！', 'javascript:location.reload()');
+                $this->success(lang('清理系统配置成功！'), 'javascript:location.reload()');
             } catch (HttpResponseException $exception) {
                 throw $exception;
             } catch (\Exception $exception) {
@@ -138,7 +138,7 @@ class System extends Controller
                 $this->error($exception->getMessage());
             }
         } else {
-            $this->error('请使用超管账号操作！');
+            $this->error(lang('请使用超管账号操作！'));
         }
     }
 }

@@ -61,8 +61,8 @@ class Auth extends Controller
     public function state()
     {
         SystemAuth::mSave($this->_vali([
-            'status.in:0,1' => '状态值范围异常！',
-            'status.require' => '状态值不能为空！',
+            'status.in:0,1' => lang('状态值范围异常！'),
+            'status.require' => lang('状态值不能为空！'),
         ]));
     }
 
@@ -111,11 +111,11 @@ class Auth extends Controller
                 $this->respondWithFormBuilder($builder, $context, AuthService::loadFormData($context));
             }
             if ($this->request->post('action') === 'json') {
-                $this->success('获取权限节点成功！', AuthService::loadFormTree($context));
+                $this->success(lang('获取权限节点成功！'), AuthService::loadFormTree($context));
             }
             $data = AuthService::prepareFormData($builder->validate(), $context);
             AuthService::saveFormData($data);
-            $this->success('权限修改成功！', 'javascript:history.back()');
+            $this->success(lang('权限修改成功！'), 'javascript:history.back()');
         } catch (Exception $exception) {
             $this->error($exception->getMessage());
         }

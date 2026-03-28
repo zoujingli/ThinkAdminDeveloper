@@ -1,8 +1,8 @@
 <!DOCTYPE html>
-<html lang="zh">
+<html lang="{:app()->lang->getLangSet() ?: 'zh-cn'}">
 
 <head>
-    <title>{block name="title"}{:isset($title) && is_scalar($title) ? $title : ''}{if !empty($title)} · {/if}{:is_scalar(sysdata('system.site.website_name')) ? sysdata('system.site.website_name') : ''}{/block}</title>
+    <title>{block name="title"}{:isset($pageTitle) && is_scalar($pageTitle) ? $pageTitle : ''}{if !empty($pageTitle)} · {/if}{:isset($websiteName) && is_scalar($websiteName) ? $websiteName : ''}{/block}</title>
     <meta charset="utf-8">
     <meta name="renderer" content="webkit">
     <meta name="format-detection" content="telephone=no">

@@ -35,18 +35,24 @@ use plugin\system\model\SystemMenu;
 use plugin\system\model\SystemNode;
 use plugin\system\model\SystemOplog;
 use plugin\system\model\SystemUser;
+use plugin\system\service\AuthService;
 use plugin\system\service\UserService;
 use plugin\wemall\model\PluginWemallOrder;
 use plugin\wemall\model\PluginWemallOrderItem;
 use plugin\wemall\model\PluginWemallUserRelation;
 use plugin\worker\model\SystemQueue;
+use plugin\worker\service\QueueService as WorkerQueueService;
 use think\admin\contract\SystemContextInterface;
+use think\admin\Library;
 use think\admin\runtime\NullSystemContext;
 use think\admin\runtime\RequestContext;
+use think\admin\service\AppService;
 use think\admin\service\RuntimeService;
 use think\App;
 use think\Container;
 use think\db\ConnectionInterface;
+use think\Model as ThinkModel;
+use think\Request;
 
 abstract class SqliteIntegrationTestCase extends TestCase
 {
@@ -65,6 +71,7 @@ abstract class SqliteIntegrationTestCase extends TestCase
     protected function setUp(): void
     {
         parent::setUp();
+        $this->resetProcessState();
 
         $this->sandboxPath = sys_get_temp_dir() . '/thinkadmin-sqlite-' . md5(static::class . microtime(true) . uniqid('', true));
         $this->databaseFile = $this->sandboxPath . '/database.sqlite';
@@ -82,16 +89,14 @@ abstract class SqliteIntegrationTestCase extends TestCase
 
     protected function tearDown(): void
     {
+        $this->resetProcessState();
         $this->restoreAccountTypes();
         RequestContext::clear();
         function_exists('sysvar') && sysvar('', '');
         Container::getInstance()->instance(SystemContextInterface::class, new NullSystemContext());
 
         if (isset($this->app)) {
-            try {
-                $this->app->db->connect()->close();
-            } catch (\Throwable) {
-            }
+            $this->closeDatabaseConnections();
         }
 
         $this->removeDirectory($this->sandboxPath);
@@ -104,7 +109,7 @@ abstract class SqliteIntegrationTestCase extends TestCase
 
     protected function connection(): ConnectionInterface
     {
-        return $this->app->db->connect($this->connectionName, true);
+        return $this->app->db->connect($this->connectionName);
     }
 
     protected function executeStatements(array $statements): void
@@ -139,6 +144,16 @@ abstract class SqliteIntegrationTestCase extends TestCase
         }
 
         $this->app->config->set(array_merge($config, $overrides), 'view');
+    }
+
+    protected function activateApplicationContext(?Request $request = null): void
+    {
+        Container::setInstance($this->app);
+        Library::$sapp = $this->app;
+        if ($request instanceof Request) {
+            $this->app->instance('request', $request);
+            Container::getInstance()->instance('request', $request);
+        }
     }
 
     protected function createAccountTables(): void
@@ -309,14 +324,21 @@ CREATE TABLE system_file (
     hash TEXT DEFAULT '',
     tags TEXT DEFAULT '',
     name TEXT DEFAULT '',
+    extension TEXT DEFAULT '',
     xext TEXT DEFAULT '',
+    file_url TEXT DEFAULT '',
     xurl TEXT DEFAULT '',
+    storage_key TEXT DEFAULT '',
     xkey TEXT DEFAULT '',
     mime TEXT DEFAULT '',
     size INTEGER DEFAULT 0,
+    system_user_id INTEGER DEFAULT 0,
     uuid INTEGER DEFAULT 0,
+    biz_user_id INTEGER DEFAULT 0,
     unid INTEGER DEFAULT 0,
+    is_fast_upload INTEGER DEFAULT 0,
     isfast INTEGER DEFAULT 0,
+    is_safe INTEGER DEFAULT 0,
     issafe INTEGER DEFAULT 0,
     status INTEGER DEFAULT 1,
     create_time TEXT DEFAULT NULL,
@@ -336,11 +358,14 @@ CREATE TABLE system_base (
     code TEXT DEFAULT '',
     name TEXT DEFAULT '',
     content TEXT DEFAULT '',
+    text_value TEXT DEFAULT '',
+    meta_json TEXT DEFAULT '',
     sort INTEGER DEFAULT 0,
     status INTEGER DEFAULT 1,
     delete_time TEXT DEFAULT NULL,
     deleted_by INTEGER DEFAULT 0,
-    create_time TEXT DEFAULT NULL
+    create_time TEXT DEFAULT NULL,
+    update_time TEXT DEFAULT NULL
 )
 SQL,
         ]);
@@ -352,19 +377,19 @@ SQL,
             <<<'SQL'
 CREATE TABLE system_user (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
-    usertype TEXT DEFAULT '',
+    base_code TEXT DEFAULT '',
     username TEXT DEFAULT '',
     password TEXT DEFAULT '',
     nickname TEXT DEFAULT '',
     headimg TEXT DEFAULT '',
-    authorize TEXT DEFAULT '',
+    auth_ids TEXT DEFAULT '',
     contact_qq TEXT DEFAULT '',
     contact_mail TEXT DEFAULT '',
     contact_phone TEXT DEFAULT '',
     login_ip TEXT DEFAULT '',
     login_at TEXT DEFAULT '',
     login_num INTEGER DEFAULT 0,
-    describe TEXT DEFAULT '',
+    remark TEXT DEFAULT '',
     sort INTEGER DEFAULT 0,
     status INTEGER DEFAULT 1,
     delete_time TEXT DEFAULT NULL,
@@ -382,8 +407,8 @@ SQL,
 CREATE TABLE system_auth (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     title TEXT DEFAULT '',
-    utype TEXT DEFAULT '',
-    desc TEXT DEFAULT '',
+    code TEXT DEFAULT '',
+    remark TEXT DEFAULT '',
     sort INTEGER DEFAULT 0,
     status INTEGER DEFAULT 1,
     create_time TEXT DEFAULT NULL
@@ -462,6 +487,7 @@ SQL,
 CREATE TABLE system_oplog (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     node TEXT DEFAULT '',
+    request_ip TEXT DEFAULT '',
     geoip TEXT DEFAULT '',
     action TEXT DEFAULT '',
     content TEXT DEFAULT '',
@@ -969,24 +995,31 @@ SQL,
     protected function createSystemFileFixture(array $overrides = []): SystemFile
     {
         $file = SystemFile::mk();
-        $file->save(array_merge([
+        $file->save(SystemFile::syncPayload(array_merge([
             'type' => 'local',
             'hash' => md5(uniqid('file', true)),
             'tags' => '',
             'name' => 'test-file.png',
+            'extension' => 'png',
             'xext' => 'png',
+            'file_url' => 'https://example.com/upload/test-file.png',
             'xurl' => 'https://example.com/upload/test-file.png',
+            'storage_key' => 'upload/test-file.png',
             'xkey' => 'upload/test-file.png',
             'mime' => 'image/png',
             'size' => 1024,
+            'system_user_id' => 0,
             'uuid' => 0,
+            'biz_user_id' => 0,
             'unid' => 0,
+            'is_fast_upload' => 0,
             'isfast' => 0,
+            'is_safe' => 0,
             'issafe' => 0,
             'status' => 2,
             'create_time' => date('Y-m-d H:i:s'),
             'update_time' => date('Y-m-d H:i:s'),
-        ], $overrides));
+        ], $overrides)));
 
         return $file->refresh();
     }
@@ -999,11 +1032,14 @@ SQL,
             'code' => 'base-' . random_int(1000, 9999),
             'name' => '测试字典',
             'content' => '',
+            'text_value' => '',
+            'meta_json' => '',
             'sort' => 0,
             'status' => 1,
             'delete_time' => null,
             'deleted_by' => 0,
             'create_time' => date('Y-m-d H:i:s'),
+            'update_time' => date('Y-m-d H:i:s'),
         ], $overrides));
 
         return $base->refresh();
@@ -1012,19 +1048,19 @@ SQL,
     protected function createSystemUserFixture(array $overrides = []): SystemUser
     {
         $data = array_merge([
-            'usertype' => '',
+            'base_code' => '',
             'username' => 'admin-' . random_int(1000, 9999),
             'password' => $this->hashSystemPassword('123456'),
             'nickname' => '测试管理员',
             'headimg' => '',
-            'authorize' => '',
+            'auth_ids' => '',
             'contact_qq' => '',
             'contact_mail' => '',
             'contact_phone' => '',
             'login_ip' => '127.0.0.1',
             'login_at' => '',
             'login_num' => 0,
-            'describe' => '',
+            'remark' => '',
             'sort' => 0,
             'status' => 1,
             'delete_time' => null,
@@ -1055,8 +1091,8 @@ SQL,
         $auth = SystemAuth::mk();
         $auth->save(array_merge([
             'title' => '测试权限',
-            'utype' => '',
-            'desc' => '测试说明',
+            'code' => 'auth-' . random_int(1000, 9999),
+            'remark' => '测试说明',
             'sort' => 0,
             'status' => 1,
             'create_time' => date('Y-m-d H:i:s'),
@@ -1116,6 +1152,7 @@ SQL,
             'create_time' => date('Y-m-d H:i:s'),
             'update_time' => date('Y-m-d H:i:s'),
         ], $overrides));
+        $this->flushSystemDataCache();
 
         return $data->refresh();
     }
@@ -1123,14 +1160,15 @@ SQL,
     protected function createSystemOplogFixture(array $overrides = []): SystemOplog
     {
         $oplog = SystemOplog::mk();
-        $oplog->save(array_merge([
+        $oplog->save(SystemOplog::syncPayload(array_merge([
             'node' => 'system/test/index',
+            'request_ip' => '',
             'geoip' => '127.0.0.1',
             'action' => '测试行为',
             'content' => '测试内容',
             'username' => 'tester',
             'create_time' => date('Y-m-d H:i:s'),
-        ], $overrides));
+        ], $overrides)));
 
         return $oplog->refresh();
     }
@@ -1155,6 +1193,7 @@ SQL,
         ], $overrides);
         $queue = SystemQueue::mk()->where(['code' => $data['code']])->findOrEmpty();
         $queue->save($data);
+        $this->resetWorkerQueueServiceState();
 
         return $queue->refresh();
     }
@@ -1227,6 +1266,7 @@ SQL,
         function_exists('test_reset_model_makers') && test_reset_model_makers();
         $this->app = new App(TEST_PROJECT_ROOT);
         RuntimeService::init($this->app);
+        $this->activateApplicationContext();
 
         $this->app->config->set([
             'default' => 'file',
@@ -1274,12 +1314,52 @@ SQL,
             ],
         ], 'database');
         $this->app->db->setConfig($this->app->config);
-        $this->app->db->connect($this->connectionName, true);
+        $this->app->db->connect($this->connectionName)->execute('PRAGMA busy_timeout = 5000');
+        ThinkModel::maker(function (ThinkModel $model): void {
+            $db = $this->app->db;
+            $model->setOption('db', $db);
+            if (is_null($model->getAutoWriteTimestamp())) {
+                $model->isAutoWriteTimestamp($db->getConfig('auto_timestamp', true));
+            }
+            if (is_null($model->getDateFormat())) {
+                $model->setDateFormat($db->getConfig('datetime_format', 'Y-m-d H:i:s'));
+            }
+        });
 
         $this->context = new TestSystemContext();
         Container::getInstance()->instance(SystemContextInterface::class, $this->context);
         RequestContext::clear();
         function_exists('sysvar') && sysvar('', '');
+    }
+
+    private function resetProcessState(): void
+    {
+        RequestContext::clear();
+        function_exists('sysvar') && sysvar('', '');
+        AppService::clear();
+        AuthService::removeCheckCallable(null);
+        $this->resetWorkerQueueServiceState();
+    }
+
+    private function flushSystemDataCache(): void
+    {
+        function_exists('sysvar') && sysvar('think.admin.data', []);
+        if (isset($this->app)) {
+            try {
+                $this->app->cache->delete('SystemData');
+            } catch (\Throwable) {
+            }
+        }
+    }
+
+    private function resetWorkerQueueServiceState(): void
+    {
+        try {
+            $property = new \ReflectionProperty(WorkerQueueService::class, 'tableFields');
+            $property->setAccessible(true);
+            $property->setValue(null, null);
+        } catch (\Throwable) {
+        }
     }
 
     private function rememberAccountTypes(): void
@@ -1335,5 +1415,33 @@ SQL,
         }
 
         @rmdir($path);
+    }
+
+    private function closeDatabaseConnections(): void
+    {
+        try {
+            $manager = $this->app->db;
+            $reflection = new \ReflectionObject($manager);
+            if (!$reflection->hasProperty('instance')) {
+                return;
+            }
+
+            $property = $reflection->getProperty('instance');
+            $property->setAccessible(true);
+            foreach ((array)$property->getValue($manager) as $connection) {
+                if ($connection instanceof ConnectionInterface) {
+                    try {
+                        $connection->close();
+                    } catch (\Throwable) {
+                    }
+                }
+            }
+            $property->setValue($manager, []);
+        } catch (\Throwable) {
+            try {
+                $this->app->db->connect($this->connectionName)->close();
+            } catch (\Throwable) {
+            }
+        }
     }
 }

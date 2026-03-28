@@ -78,24 +78,26 @@ SCRIPT),
      */
     public static function pluginColumn(string $field = 'plugin_title', string $title = '所属插件', int $minWidth = 120): array
     {
+        $mixed = json_encode(strval(lang('跨插件')), JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES) ?: '"跨插件"';
+        $common = json_encode(strval(lang('未绑定')), JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES) ?: '"未绑定"';
         return [
             'field' => $field,
             'title' => $title,
             'align' => 'center',
             'minWidth' => $minWidth,
-            'templet' => PageBuilder::js(<<<'SCRIPT'
+            'templet' => PageBuilder::js(sprintf(<<<'SCRIPT'
 function (d) {
     if (d.plugin_group === 'mixed') {
-        d.badge = '<span class="layui-badge layui-bg-orange">' + (d.plugin_title || '跨插件') + '</span>';
+        d.badge = '<span class="layui-badge layui-bg-orange">' + (d.plugin_title || %s) + '</span>';
     } else if (d.plugin_group === 'common') {
-        d.badge = '<span class="layui-badge layui-bg-gray">' + (d.plugin_title || '未绑定') + '</span>';
+        d.badge = '<span class="layui-badge layui-bg-gray">' + (d.plugin_title || %s) + '</span>';
     } else {
         d.badge = '<span class="layui-badge layui-bg-blue">' + (d.plugin_title || '-') + '</span>';
     }
     d.extra = d.plugin_text && Number(d.plugin_count || 0) > 1 ? '<div class="color-desc nowrap">' + d.plugin_text + '</div>' : '';
     return d.badge + d.extra;
 }
-SCRIPT),
+SCRIPT, $mixed, $common)),
         ];
     }
 
@@ -117,25 +119,33 @@ SCRIPT),
      */
     public static function filePreviewColumn(string $field = 'xurl', string $title = '查看文件', int $minWidth = 90): array
     {
+        $playVideo = json_encode(strval(lang('播放视频')), JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES) ?: '"播放视频"';
+        $playAudio = json_encode(strval(lang('播放音频')), JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES) ?: '"播放音频"';
+        $viewDownload = json_encode(strval(lang('查看下载')), JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES) ?: '"查看下载"';
         return [
             'field' => $field,
             'title' => $title,
             'minWidth' => $minWidth,
             'align' => 'center',
-            'templet' => PageBuilder::js(<<<'SCRIPT'
+            'templet' => PageBuilder::js(sprintf(<<<'SCRIPT'
 function (d) {
+    var field = %s;
+    var fileUrl = String(d[field] || d.file_url || d.xurl || '');
+    if (fileUrl === '') {
+        return '<div>-</div>';
+    }
     if (typeof d.mime === 'string' && /^image\//.test(d.mime)) {
-        return laytpl('<div><a target="_blank" data-tips-hover data-tips-image="{{d.xurl}}"><i class="layui-icon layui-icon-picture"></i></a></div>').render(d);
+        return '<div><a target="_blank" data-tips-hover data-tips-image="' + fileUrl + '"><i class="layui-icon layui-icon-picture"></i></a></div>';
     }
     if (typeof d.mime === 'string' && /^video\//.test(d.mime)) {
-        return laytpl('<div><a target="_blank" data-video-player="{{d.xurl}}" data-tips-text="播放视频"><i class="layui-icon layui-icon-video"></i></a></div>').render(d);
+        return '<div><a target="_blank" data-video-player="' + fileUrl + '" data-tips-text="' + %s + '"><i class="layui-icon layui-icon-video"></i></a></div>';
     }
     if (typeof d.mime === 'string' && /^audio\//.test(d.mime)) {
-        return laytpl('<div><a target="_blank" data-video-player="{{d.xurl}}" data-tips-text="播放音频"><i class="layui-icon layui-icon-headset"></i></a></div>').render(d);
+        return '<div><a target="_blank" data-video-player="' + fileUrl + '" data-tips-text="' + %s + '"><i class="layui-icon layui-icon-headset"></i></a></div>';
     }
-    return laytpl('<div><a target="_blank" href="{{d.xurl}}" data-tips-text="查看下载"><i class="layui-icon layui-icon-file"></i></a></div>').render(d);
+    return '<div><a target="_blank" href="' + fileUrl + '" data-tips-text="' + %s + '"><i class="layui-icon layui-icon-file"></i></a></div>';
 }
-SCRIPT),
+SCRIPT, json_encode($field, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES) ?: '"xurl"', $playVideo, $playAudio, $viewDownload)),
         ];
     }
 

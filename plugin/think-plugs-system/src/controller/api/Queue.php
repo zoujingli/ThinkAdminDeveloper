@@ -43,9 +43,9 @@ class Queue extends Controller
                 $message = $this->app->console->call('xadmin:worker', ['stop', 'queue'])->fetch();
                 if (stripos($message, 'stop signal sent') !== false) {
                     sysoplog('系统运维管理', '尝试停止任务监听服务');
-                    $this->success('停止任务监听服务成功！');
+                    $this->success(lang('停止任务监听服务成功！'));
                 } elseif (stripos($message, 'is not running') !== false) {
-                    $this->success('没有找到需要停止的服务！');
+                    $this->success(lang('没有找到需要停止的服务！'));
                 } else {
                     $this->error(nl2br($message));
                 }
@@ -56,7 +56,7 @@ class Queue extends Controller
                 $this->error($exception->getMessage());
             }
         } else {
-            $this->error('请使用超管账号操作！');
+            $this->error(lang('请使用超管账号操作！'));
         }
     }
 
@@ -71,9 +71,9 @@ class Queue extends Controller
                 $message = $this->app->console->call('xadmin:worker', ['start', 'queue', '--daemon'])->fetch();
                 if (stripos($message, 'started successfully for pid') !== false) {
                     sysoplog('系统运维管理', '尝试启动任务监听服务');
-                    $this->success('任务监听服务启动成功！');
+                    $this->success(lang('任务监听服务启动成功！'));
                 } elseif (stripos($message, 'already running for pid') !== false) {
-                    $this->success('任务监听服务已经启动！');
+                    $this->success(lang('任务监听服务已经启动！'));
                 } else {
                     $this->error(nl2br($message));
                 }
@@ -84,7 +84,7 @@ class Queue extends Controller
                 $this->error($exception->getMessage());
             }
         } else {
-            $this->error('请使用超管账号操作！');
+            $this->error(lang('请使用超管账号操作！'));
         }
     }
 
@@ -117,14 +117,14 @@ class Queue extends Controller
      */
     public function progress()
     {
-        $input = $this->_vali(['code.require' => '任务编号不能为空！']);
+        $input = $this->_vali(['code.require' => lang('任务编号不能为空！')]);
         $this->app->db->setLog(new NullLogger()); /* 关闭数据库请求日志 */
         $queue = SystemQueue::mk()->where($input)->field(['code', 'status', 'exec_desc', 'message'])->findOrEmpty();
 
         $data = [
             'code' => $input['code'],
             'status' => 0,
-            'message' => '>>> 等待任务状态更新 <<<',
+            'message' => lang('>>> 等待任务状态更新 <<<'),
             'progress' => '0.00',
             'history' => [],
         ];
@@ -162,7 +162,7 @@ class Queue extends Controller
             ];
         }
 
-        $this->success('获取任务进度成功！', $data);
+        $this->success(lang('获取任务进度成功！'), $data);
     }
 
     protected function defaultProgressMessage(int $status, string $execDesc = ''): string
@@ -172,11 +172,11 @@ class Queue extends Controller
         }
 
         return match ($status) {
-            1 => '>>> 任务等待执行 <<<',
-            2 => '>>> 任务处理中 <<<',
-            3 => '>>> 任务处理完成 <<<',
-            4 => '>>> 任务处理失败 <<<',
-            default => '>>> 等待任务状态更新 <<<',
+            1 => strval(lang('>>> 任务等待执行 <<<')),
+            2 => strval(lang('>>> 任务处理中 <<<')),
+            3 => strval(lang('>>> 任务处理完成 <<<')),
+            4 => strval(lang('>>> 任务处理失败 <<<')),
+            default => strval(lang('>>> 等待任务状态更新 <<<')),
         };
     }
 }

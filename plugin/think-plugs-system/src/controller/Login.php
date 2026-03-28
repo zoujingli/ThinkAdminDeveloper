@@ -22,13 +22,12 @@ namespace plugin\system\controller;
 
 use plugin\system\model\SystemUser;
 use plugin\system\service\AuthService;
-use plugin\system\service\SystemService;
+use plugin\system\service\LoginService;
 use plugin\system\service\UserService;
 use think\admin\Controller;
 use think\admin\extend\CodeToolkit;
 use think\admin\service\AppService;
 use think\admin\service\ImageSliderVerify;
-use think\admin\service\RuntimeService;
 use think\exception\HttpResponseException;
 
 /**
@@ -48,35 +47,20 @@ class Login extends Controller
             if (AuthService::isLogin()) {
                 $this->redirect(sysuri('system/index/index'));
             } else {
-                // 加载登录模板
-                $this->title = '系统登录';
-                // 登录页标识与密码加密公钥
-                $this->loginToken = CodeToolkit::uuid();
-                $this->loginPasswordKey = $this->rememberPasswordCipher($this->loginToken);
-                // 当前运行模式
-                $this->runtimeMode = RuntimeService::check();
-                $this->tokenValueJson = json_encode('', JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
-                // 后台背景处理
-                $images = array_values(array_filter(array_map('strval', (array)sysget('system.site.login_background_images', []))));
-                if (empty($images)) {
-                    $images = [
-                        SystemService::uri('/static/theme/img/login/bg1.jpg'),
-                        SystemService::uri('/static/theme/img/login/bg2.jpg'),
-                    ];
+                $token = CodeToolkit::uuid();
+                $context = LoginService::buildPageContext($token, $this->rememberPasswordCipher($token));
+                foreach ($context as $name => $value) {
+                    $this->{$name} = $value;
                 }
-                $this->loginStyle = sprintf('style="background-image:url(%s)" data-bg-transition="%s"', $images[0], join(',', $images));
-                // 更新后台主域名，用于部分无法获取域名的场景调用
-                if ($this->request->domain() !== strval(sysdata('system.site.host') ?: '')) {
-                    sysdata('system.site.host', $this->request->domain());
-                }
+                LoginService::syncSiteHost($this->request->domain());
                 $this->renderLoginPage();
             }
         } else {
             $data = $this->_vali([
-                'username.require' => '登录账号不能为空!',
-                'username.min:4' => '账号不能少于4位字符!',
-                'password.require' => '登录密码不能为空!',
-                'token.require' => '登录页面标识不能为空!',
+                'username.require' => lang('登录账号不能为空!'),
+                'username.min:4' => lang('账号不能少于4位字符!'),
+                'password.require' => lang('登录密码不能为空!'),
+                'token.require' => lang('登录页面标识不能为空!'),
                 'password_mode.default' => 'plain',
                 'verify.default' => '',
                 'uniqid.default' => '',
@@ -84,29 +68,29 @@ class Login extends Controller
             $token = strval($data['token']);
             $password = $this->resolveLoginPassword(strval($data['password']), $token, strval($data['password_mode']));
             if (strlen($password) < 4) {
-                $this->error('密码不能少于4位字符!');
+                $this->error(lang('密码不能少于4位字符!'));
             }
             if ($this->hasVerifyError($token)) {
                 if ($data['uniqid'] === '' || $data['verify'] === '') {
-                    $this->error('请先完成滑块验证!', ['need_verify' => true, 'refresh_verify' => true]);
+                    $this->error(lang('请先完成滑块验证!'), ['need_verify' => true, 'refresh_verify' => true]);
                 }
                 if (ImageSliderVerify::verify(strval($data['uniqid']), strval($data['verify']), true) !== 1) {
-                    $this->error('滑块验证失败，请重新拖动!', ['need_verify' => true, 'refresh_verify' => true]);
+                    $this->error(lang('滑块验证失败，请重新拖动!'), ['need_verify' => true, 'refresh_verify' => true]);
                 }
             }
             /* ! 用户信息验证 */
             $user = SystemUser::mk()->where(['username' => $data['username']])->findOrEmpty();
             if ($user->isEmpty()) {
                 $this->markVerifyError($token);
-                $this->error('登录账号或密码错误，请重新输入!', ['need_verify' => true, 'refresh_verify' => true]);
+                $this->error(lang('登录账号或密码错误，请重新输入!'), ['need_verify' => true, 'refresh_verify' => true]);
             }
             if (empty($user['status'])) {
                 $this->markVerifyError($token);
-                $this->error('账号已经被禁用，请联系管理员!', ['need_verify' => true, 'refresh_verify' => true]);
+                $this->error(lang('账号已经被禁用，请联系管理员!'), ['need_verify' => true, 'refresh_verify' => true]);
             }
             if (!UserService::verifyPassword($password, strval($user['password']))) {
                 $this->markVerifyError($token);
-                $this->error('登录账号或密码错误，请重新输入!', ['need_verify' => true, 'refresh_verify' => true]);
+                $this->error(lang('登录账号或密码错误，请重新输入!'), ['need_verify' => true, 'refresh_verify' => true]);
             }
             // 登录态签发 JWT 需要保留密码摘要参与载荷校验。
             AuthService::login($user->toArray());
@@ -130,7 +114,7 @@ class Login extends Controller
                 'login_at' => date('Y-m-d H:i:s'), 'login_ip' => $this->app->request->ip(),
             ]);
             sysoplog('系统用户登录', '登录系统后台成功');
-            $this->success('登录成功', sysuri('system/index/index'));
+            $this->success(lang('登录成功'), sysuri('system/index/index'));
         }
     }
 
@@ -140,11 +124,11 @@ class Login extends Controller
     public function slider()
     {
         $input = $this->_vali([
-            'token.require' => '登录页面标识不能为空!',
+            'token.require' => lang('登录页面标识不能为空!'),
         ]);
         $images = $this->sliderImages();
         $slider = ImageSliderVerify::render($images[array_rand($images)], self::LOGIN_VERIFY_TTL);
-        $this->success('生成拼图成功', [
+        $this->success(lang('生成拼图成功'), [
             'bgimg' => $slider['bgimg'],
             'water' => $slider['water'],
             'uniqid' => $slider['code'],
@@ -169,11 +153,11 @@ class Login extends Controller
     public function check()
     {
         $data = $this->_vali([
-            'uniqid.require' => '拼图验证标识不能为空!',
-            'verify.require' => '拼图位置不能为空!',
+            'uniqid.require' => lang('拼图验证标识不能为空!'),
+            'verify.require' => lang('拼图位置不能为空!'),
         ]);
         $state = ImageSliderVerify::verify(strval($data['uniqid']), strval($data['verify']));
-        $this->success('验证结果', ['state' => $state]);
+        $this->success(lang('验证结果'), ['state' => $state]);
     }
 
     /**
@@ -228,11 +212,11 @@ class Login extends Controller
         }
         $privateKey = trim(strval($this->app->cache->get($this->passwordCipherKey($token), '')));
         if ($privateKey === '') {
-            $this->error('登录页面已过期，请刷新后重试!', ['reload' => true]);
+            $this->error(lang('登录页面已过期，请刷新后重试!'), ['reload' => true]);
         }
         $binary = base64_decode($password, true);
         if ($binary === false || !openssl_private_decrypt($binary, $plain, $privateKey, OPENSSL_PKCS1_OAEP_PADDING)) {
-            $this->error('登录密码解密失败，请刷新页面后重试!', ['reload' => true]);
+            $this->error(lang('登录密码解密失败，请刷新页面后重试!'), ['reload' => true]);
         }
         return strval($plain);
     }
@@ -303,20 +287,6 @@ class Login extends Controller
     {
         $vars = get_object_vars($this);
         $vars['staticRoot'] = strval($vars['staticRoot'] ?? AppService::uri('static'));
-        throw new HttpResponseException(view('', $vars)->header($this->noStoreHeaders()));
-    }
-
-    /**
-     * 登录页缓存控制头。
-     *
-     * @return array<string, string>
-     */
-    private function noStoreHeaders(): array
-    {
-        return [
-            'Cache-Control' => 'no-store, no-cache, must-revalidate, max-age=0',
-            'Pragma' => 'no-cache',
-            'Expires' => '0',
-        ];
+        throw new HttpResponseException(view('', $vars)->header(LoginService::noStoreHeaders()));
     }
 }

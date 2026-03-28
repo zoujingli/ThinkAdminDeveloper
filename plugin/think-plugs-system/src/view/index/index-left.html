@@ -1,8 +1,8 @@
 <div class="layui-side">
     <a class="layui-side-target" data-target-menu-type></a>
-    <a class="layui-logo layui-elip" href="{:sysuri('@')}" title="{:is_scalar(sysdata('system.site.application_name')) ? sysdata('system.site.application_name') : ''}">
-        <span class="headimg headimg-no headimg-xs" data-lazy-src="{:is_scalar(sysdata('system.site.browser_icon')) ? sysdata('system.site.browser_icon') : ''}"></span>
-        <span class="headtxt">{:is_scalar(sysdata('system.site.application_name')) ? sysdata('system.site.application_name') : ''} {if is_scalar(sysdata('system.site.application_version')) && sysdata('system.site.application_version')}<sup>{:sysdata('system.site.application_version')}</sup>{/if}</span>
+    <a class="layui-logo layui-elip" href="{$homeUrl|default=''}" title="{$applicationName|default=''}">
+        <span class="headimg headimg-no headimg-xs" data-lazy-src="{$browserIcon|default=''}"></span>
+        <span class="headtxt">{$applicationName|default=''} {if !empty($applicationVersion)}<sup>{$applicationVersion|default=''}</sup>{/if}</span>
     </a>
     <div class="layui-side-scroll">
         <div class="layui-side-icon">

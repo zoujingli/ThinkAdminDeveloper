@@ -21,6 +21,8 @@ declare(strict_types=1);
 namespace think\admin\tests;
 
 use plugin\system\controller\Config as ConfigController;
+use plugin\system\service\LangService;
+use plugin\system\storage\StorageConfig;
 use plugin\system\service\SystemContext as PluginSystemContext;
 use think\admin\contract\SystemContextInterface;
 use think\admin\runtime\RequestContext;
@@ -43,6 +45,8 @@ class ConfigPageRenderTest extends SqliteIntegrationTestCase
 
         $this->assertStringContainsString('统一管理运行模式、存储中心与系统基础参数', $html);
         $this->assertStringContainsString('站点名称', $html);
+        $this->assertStringContainsString('插件中心', $html);
+        $this->assertStringContainsString('菜单入口策略', $html);
         $this->assertStringContainsString('page-builder-schema', $html);
         $this->assertStringContainsString('系统参数配置', $html);
         $this->assertStringNotContainsString('插件应用', $html);
@@ -52,10 +56,10 @@ class ConfigPageRenderTest extends SqliteIntegrationTestCase
     public function testSystemRendersGroupedConfigurationSections(): void
     {
         $this->bindAdminUser();
+        sysdata('system.security', ['jwt_secret' => '1234567890abcdef1234567890abcdef']);
 
         $html = $this->callPageHtml('system');
 
-        $this->assertStringContainsString('统一管理登录入口、品牌信息与安全配置', $html);
         $this->assertStringContainsString('系统参数设置', $html);
         $this->assertStringContainsString('返回配置首页', $html);
         $this->assertStringContainsString('class="system-config-form layui-form"', $html);
@@ -64,6 +68,13 @@ class ConfigPageRenderTest extends SqliteIntegrationTestCase
         $this->assertStringContainsString('data-open-site-theme', $html);
         $this->assertStringContainsString('form-builder-schema', $html);
         $this->assertStringContainsString('运行参数', $html);
+        $this->assertStringContainsString('id="RefreshJwtKey"', $html);
+        $this->assertStringContainsString('type="password"', $html);
+        $this->assertStringContainsString('data-field="site[browser_icon]"', $html);
+        $this->assertStringContainsString('name="site[host]"', $html);
+        $this->assertStringContainsString('站点基础域名', $html);
+        $this->assertStringNotContainsString('1234567890abcdef1234567890abcdef', $html);
+        $this->assertStringNotContainsString('统一管理登录入口、品牌信息与安全配置', $html);
     }
 
     public function testStorageRendersBuilderDashboard(): void
@@ -81,16 +92,53 @@ class ConfigPageRenderTest extends SqliteIntegrationTestCase
     public function testStorageDriverFormRendersWithBuilder(): void
     {
         $this->bindAdminUser();
+        StorageConfig::save([
+            'default_driver' => 'local',
+            'naming_rule' => 'xmd5',
+            'link_mode' => 'none',
+            'allowed_extensions' => ['png', 'jpg'],
+            'drivers' => [
+                'local' => ['protocol' => 'follow', 'domain' => ''],
+                'alist' => ['protocol' => 'http', 'domain' => 'storage.example.com', 'path' => '/uploads', 'username' => 'root', 'password' => 'alist-secret'],
+                'qiniu' => ['protocol' => 'https', 'region' => 'z0', 'bucket' => 'demo', 'domain' => 'cdn.example.com', 'access_key' => 'ak-demo', 'secret_key' => 'sk-demo'],
+                'upyun' => ['protocol' => 'https', 'bucket' => 'demo', 'domain' => 'up.example.com', 'username' => 'operator', 'password' => 'up-secret'],
+                'txcos' => ['protocol' => 'https', 'region' => 'ap-shanghai', 'bucket' => 'demo', 'domain' => 'cos.example.com', 'access_key' => 'sid-demo', 'secret_key' => 'skey-demo'],
+                'alioss' => ['protocol' => 'https', 'region' => 'oss-cn-hangzhou', 'bucket' => 'demo', 'domain' => 'oss.example.com', 'access_key' => 'oss-ak', 'secret_key' => 'oss-sk'],
+            ],
+        ]);
 
         $html = $this->callPageHtml('storage', ['type' => 'local']);
 
-        $this->assertStringContainsString('统一维护上传策略与驱动参数', $html);
         $this->assertStringContainsString('本地服务器存储 存储配置', $html);
         $this->assertStringContainsString('返回存储中心', $html);
         $this->assertStringContainsString('全局上传策略', $html);
         $this->assertStringContainsString('本地服务器存储 驱动参数', $html);
         $this->assertStringContainsString('form-builder-schema', $html);
+        $this->assertStringContainsString('data-builder-preset="dialog-form"', $html);
         $this->assertStringContainsString('name="storage[default_driver]" value="local"', $html);
+        $this->assertStringNotContainsString('alist-secret', $html);
+        $this->assertStringNotContainsString('ak-demo', $html);
+        $this->assertStringNotContainsString('sk-demo', $html);
+        $this->assertStringNotContainsString('data-builder-preset="page-form"', $html);
+        $this->assertStringNotContainsString('统一维护上传策略与驱动参数', $html);
+    }
+
+    public function testSystemRendersEnglishTextsWhenLangSetIsEnUs(): void
+    {
+        $this->bindAdminUser();
+        sysdata('system.security', ['jwt_secret' => '1234567890abcdef1234567890abcdef']);
+        $this->switchSystemLang('en-us');
+
+        $html = $this->callPageHtml('system');
+
+        $this->assertStringContainsString('System Parameter Settings', $html);
+        $this->assertStringContainsString('Back to Config Home', $html);
+        $this->assertStringContainsString('Site Branding', $html);
+        $this->assertStringContainsString('Runtime Settings', $html);
+        $this->assertStringContainsString('Site Base URL', $html);
+        $this->assertStringContainsString('Site Name', $html);
+        $this->assertStringContainsString('Choose Backend Default Theme', $html);
+        $this->assertStringNotContainsString('站点品牌信息', $html);
     }
 
     protected function defineSchema(): void
@@ -131,8 +179,14 @@ class ConfigPageRenderTest extends SqliteIntegrationTestCase
     {
         RequestContext::instance()->setAuth([
             'id' => 9101,
-            'username' => 'tester',
+            'username' => 'admin',
             'password' => $this->hashSystemPassword('changed-password'),
         ], '', true);
+    }
+
+    private function switchSystemLang(string $langSet): void
+    {
+        $this->app->lang->switchLangSet($langSet);
+        LangService::load($this->app, $langSet);
     }
 }

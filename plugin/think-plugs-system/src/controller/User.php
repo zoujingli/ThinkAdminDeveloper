@@ -81,7 +81,7 @@ class User extends Controller
             $data = $builder->validate();
             $data['id'] = intval($this->request->post('id', 0));
             if ($data['id'] < 1) {
-                $this->error('用户ID不能为空！');
+                $this->error(lang('用户ID不能为空！'));
             }
 
             $user = SystemUser::mk()->findOrEmpty($data['id']);
@@ -90,10 +90,10 @@ class User extends Controller
                     'uuid' => $data['id'], 'pass' => $data['password'],
                 ]);
                 sysoplog('系统用户管理', "修改用户[{$data['id']}]密码成功");
-                $this->success('密码修改成功，请使用新密码登录！', '');
+                $this->success(lang('密码修改成功，请使用新密码登录！'), '');
             }
 
-            $this->error('密码修改失败，请稍候再试！');
+            $this->error(lang('密码修改失败，请稍候再试！'));
         }
     }
 
@@ -104,8 +104,8 @@ class User extends Controller
     {
         $this->_checkInput();
         SystemUser::mSave($this->_vali([
-            'status.in:0,1' => '状态值范围异常！',
-            'status.require' => '状态值不能为空！',
+            'status.in:0,1' => lang('状态值范围异常！'),
+            'status.require' => lang('状态值不能为空！'),
         ]));
     }
 
@@ -121,7 +121,7 @@ class User extends Controller
     private function _checkInput()
     {
         if (in_array('10000', str2arr(strval(input('id', ''))), true)) {
-            $this->error('系统超级账号禁止删除！');
+            $this->error(lang('系统超级账号禁止删除！'));
         }
     }
 
@@ -137,7 +137,7 @@ class User extends Controller
 
             $data = UserService::prepareFormData($builder->validate(), $context);
             UserService::saveFormData($data);
-            $this->success('数据保存成功！');
+            $this->success(lang('数据保存成功！'));
         } catch (HttpResponseException $exception) {
             throw $exception;
         } catch (Exception|\Throwable $exception) {

@@ -22,6 +22,7 @@ namespace plugin\system\controller\api;
 
 use plugin\system\builder\IconPickerBuilder;
 use plugin\system\service\AuthService;
+use plugin\system\service\ConfigService;
 use think\admin\Controller;
 use think\admin\Exception;
 use think\admin\service\AppService;
@@ -71,7 +72,7 @@ class Plugs extends Controller
             }
         }
         throw new HttpResponseException(Response::create(IconPickerBuilder::render([
-            'title' => '图标选择器',
+            'title' => strval(lang('图标选择器')),
             'field' => $this->app->request->get('field', 'icon'),
             'layuiIcons' => $this->layuiIcons,
             'thinkIcons' => $this->thinkIcons,
@@ -98,7 +99,7 @@ class Plugs extends Controller
             sprintf("window.taTokenHeader = '%s';", AuthService::getTokenHeader()),
             sprintf("window.taTokenScheme = '%s';", AuthService::getTokenScheme()),
             sprintf('window.taTokenExpire = %d;', AuthService::getTokenExpire()),
-            sprintf("window.taEditor = '%s';", strval(sysdata('system.runtime.editor_driver') ?: 'ckeditor5')),
+            sprintf("window.taEditor = '%s';", ConfigService::getEditorDriver()),
         ]))->contentType('application/javascript');
     }
 
@@ -112,7 +113,7 @@ class Plugs extends Controller
             sysoplog('系统运维管理', '创建数据库优化任务');
             $this->_queue('优化数据库所有数据表', 'xadmin:database optimize');
         } else {
-            $this->error('请使用超管账号操作！');
+            $this->error(lang('请使用超管账号操作！'));
         }
     }
 

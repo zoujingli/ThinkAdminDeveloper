@@ -42,7 +42,7 @@ class BaseService extends Service
         $baseType = self::resolveIndexType($types, strval(request()->get('base_type', '')));
         $pluginGroups = SystemBase::groups($baseType);
         return [
-            'title' => '数据字典管理',
+            'title' => strval(lang('数据字典管理')),
             'types' => $types,
             'type' => $mode,
             'baseType' => $baseType,
@@ -111,14 +111,15 @@ class BaseService extends Service
         if ($id > 0) {
             $item = SystemBase::mk()->findOrEmpty($id);
             if ($item->isEmpty()) {
-                throw new Exception('数据记录不存在！');
+                throw new Exception(lang('数据记录不存在！'));
             }
             $data = $item->toArray();
         }
-        $meta = SystemBase::parseContent(strval($data['content'] ?? ''));
+        $meta = SystemBase::resolveContentMeta($data);
         $codes = (array)($meta['plugin'] ?: $meta['plugins']);
         $data['plugin_code'] = count($codes) === 1 ? strval(current($codes)) : '';
-        $data['content_text'] = strval($meta['text'] ?? ($data['content'] ?? ''));
+        $data['content_text'] = strval($data['text_value'] ?? ($meta['text'] ?? ($data['content'] ?? '')));
+        $data['meta_json'] = self::formatMetaJson(SystemBase::extractExtraMeta($data));
         $data['type_select'] = strval($data['type'] ?? ($type !== '' ? $type : ($types[0] ?? '')));
         $data['type'] = strval($data['type'] ?? $type);
         return $data;
@@ -133,10 +134,12 @@ class BaseService extends Service
     public static function prepareFormData(array $data, array $context): array
     {
         $data['id'] = intval($context['id'] ?? 0);
-        $data['content'] = SystemBase::packContent(
-            strval($data['content_text'] ?? request()->post('content_text', '')),
-            $data['plugin_code'] ?? request()->post('plugin_code', '')
-        );
+        $text = strval($data['content_text'] ?? request()->post('content_text', ''));
+        $pluginCode = $data['plugin_code'] ?? request()->post('plugin_code', '');
+        $meta = self::parseMetaInput(strval($data['meta_json'] ?? request()->post('meta_json', '')));
+        $data['text_value'] = trim($text);
+        $data['meta_json'] = SystemBase::packMetaJson($data['text_value'], $pluginCode, $meta);
+        $data['content'] = SystemBase::packContent($data['text_value'], $pluginCode);
         unset($data['content_text'], $data['plugin_code'], $data['type_select']);
         return $data;
     }
@@ -152,13 +155,15 @@ class BaseService extends Service
         $id = intval($data['id'] ?? 0);
         $item = $id > 0 ? SystemBase::mk()->findOrEmpty($id) : SystemBase::mk();
         if ($id > 0 && $item->isEmpty()) {
-            throw new Exception('数据记录不存在！');
+            throw new Exception(lang('数据记录不存在！'));
         }
         $item->save([
             'type' => strval($data['type'] ?? ''),
             'code' => strval($data['code'] ?? ''),
             'name' => strval($data['name'] ?? ''),
             'content' => strval($data['content'] ?? ''),
+            'text_value' => strval($data['text_value'] ?? ''),
+            'meta_json' => strval($data['meta_json'] ?? ''),
             'sort' => intval(request()->post('sort', $item->getAttr('sort') ?? 0)),
             'status' => intval(request()->post('status', $item->getAttr('status') ?? 1)),
         ]);
@@ -196,7 +201,7 @@ class BaseService extends Service
             ->where('id', '<>', intval($data['id'] ?? 0))
             ->count();
         if ($exists > 0) {
-            throw new Exception('数据编码已经存在！');
+            throw new Exception(lang('数据编码已经存在！'));
         }
     }
 
@@ -230,5 +235,38 @@ class BaseService extends Service
             }
         }
         return $options;
+    }
+
+    /**
+     * 格式化扩展元数据.
+     * @param array<string, mixed> $meta
+     */
+    private static function formatMetaJson(array $meta): string
+    {
+        if (empty($meta)) {
+            return '';
+        }
+        return json_encode($meta, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES | JSON_PRETTY_PRINT);
+    }
+
+    /**
+     * 解析扩展元数据输入.
+     * @return array<string, mixed>
+     * @throws Exception
+     */
+    private static function parseMetaInput(string $meta): array
+    {
+        $meta = trim($meta);
+        if ($meta === '') {
+            return [];
+        }
+
+        $data = json_decode($meta, true);
+        if (!is_array($data) || array_is_list($data)) {
+            throw new Exception(lang('扩展元数据必须是 JSON 对象！'));
+        }
+
+        unset($data['text'], $data['plugin'], $data['plugins'], $data['raw']);
+        return $data;
     }
 }

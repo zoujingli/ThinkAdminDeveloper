@@ -181,14 +181,14 @@ class SystemService extends Service
 
     public static function getOplog(string $action, string $content): array
     {
-        return [
+        return SystemOplog::syncPayload([
             'node' => NodeService::getCurrent(),
             'action' => lang($action),
             'content' => lang($content),
-            'geoip' => Library::$sapp->request->ip() ?: '127.0.0.1',
+            'request_ip' => Library::$sapp->request->ip() ?: '127.0.0.1',
             'username' => strval(SystemContext::instance()->getUser('username', '-')) ?: '-',
             'create_time' => date('Y-m-d H:i:s'),
-        ];
+        ]);
     }
 
     public static function setFavicon(?string $icon = null): bool

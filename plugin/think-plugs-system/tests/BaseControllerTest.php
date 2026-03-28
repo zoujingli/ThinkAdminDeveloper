@@ -56,6 +56,7 @@ class BaseControllerTest extends SqliteIntegrationTestCase
         $this->assertStringContainsString('name="base_type"', $indexHtml);
         $this->assertStringContainsString('class="mt10"', $indexHtml);
         $this->assertStringContainsString('name="type_select"', $formHtml);
+        $this->assertStringContainsString('name="meta_json"', $formHtml);
         $this->assertStringContainsString('form-builder-schema', $formHtml);
     }
 
@@ -121,6 +122,7 @@ class BaseControllerTest extends SqliteIntegrationTestCase
             'name' => '创建字典',
             'content_text' => '创建内容',
             'plugin_code' => 'index',
+            'meta_json' => '{"scene":"create"}',
             'sort' => 20,
             'status' => 1,
         ]);
@@ -130,9 +132,14 @@ class BaseControllerTest extends SqliteIntegrationTestCase
         $this->assertSame(1, intval($add['code'] ?? 0));
         $this->assertSame('数据保存成功！', $add['info'] ?? '');
         $this->assertTrue($created->isExists());
+        $this->assertSame('创建内容', $created->getAttr('text_value'));
         $createdMeta = SystemBase::parseContent(strval($created->getAttr('content')));
+        $createdStructuredMeta = SystemBase::parseMetaJson(strval($created->getAttr('meta_json')));
         $this->assertSame('创建内容', $createdMeta['text'] ?? '');
         $this->assertContains('index', (array)($createdMeta['plugin'] ?? []));
+        $this->assertSame('create', $createdStructuredMeta['scene'] ?? '');
+        $this->assertSame('创建内容', $createdStructuredMeta['text'] ?? '');
+        $this->assertSame('index', $createdStructuredMeta['plugin'] ?? '');
 
         $edit = $this->callFormController('edit', [
             'id' => intval($created->getAttr('id')),
@@ -141,6 +148,7 @@ class BaseControllerTest extends SqliteIntegrationTestCase
             'name' => '更新字典',
             'content_text' => '更新内容',
             'plugin_code' => '',
+            'meta_json' => '{"scene":"update","flag":true}',
             'sort' => 30,
             'status' => 0,
         ]);
@@ -150,10 +158,49 @@ class BaseControllerTest extends SqliteIntegrationTestCase
         $this->assertSame(1, intval($edit['code'] ?? 0));
         $this->assertSame('数据保存成功！', $edit['info'] ?? '');
         $this->assertSame('更新字典', $updated->getAttr('name'));
+        $this->assertSame('更新内容', $updated->getAttr('text_value'));
         $updatedMeta = SystemBase::parseContent(strval($updated->getAttr('content')));
+        $updatedStructuredMeta = SystemBase::parseMetaJson(strval($updated->getAttr('meta_json')));
         $this->assertSame('更新内容', $updatedMeta['text'] ?? ($updated->getAttr('content') ?? ''));
+        $this->assertSame('update', $updatedStructuredMeta['scene'] ?? '');
+        $this->assertTrue(boolval($updatedStructuredMeta['flag'] ?? false));
+        $this->assertSame('更新内容', $updatedStructuredMeta['text'] ?? '');
+        $this->assertArrayNotHasKey('plugin', $updatedStructuredMeta);
         $this->assertSame(30, intval($updated->getAttr('sort')));
         $this->assertSame(0, intval($updated->getAttr('status')));
+    }
+
+    public function testIndexSupportsStructuredFieldsWithoutLegacyContent(): void
+    {
+        $this->createSystemBaseFixture([
+            'type' => 'identity',
+            'code' => 'base-structured',
+            'name' => '结构化字典',
+            'content' => '',
+            'text_value' => '结构化内容',
+            'meta_json' => '{"text":"结构化内容","plugin":"index","scene":"builder"}',
+            'create_time' => '2026-03-10 08:00:00',
+        ]);
+
+        $result = $this->callIndexController([
+            'output' => 'json',
+            'type' => 'index',
+            'base_type' => 'identity',
+            'plugin_group' => 'index',
+            'code' => 'base-structured',
+            '_field_' => 'id',
+            '_order_' => 'asc',
+            'page' => 1,
+            'limit' => 20,
+        ]);
+
+        $this->assertSame(1, intval($result['code'] ?? 0));
+        $this->assertSame(1, intval($result['data']['page']['total'] ?? 0));
+        $this->assertCount(1, $result['data']['list'] ?? []);
+        $this->assertSame('base-structured', $result['data']['list'][0]['code'] ?? '');
+        $this->assertSame('结构化内容', $result['data']['list'][0]['content_text'] ?? '');
+        $this->assertSame('index', $result['data']['list'][0]['plugin_group'] ?? '');
+        $this->assertSame('Index', $result['data']['list'][0]['plugin_title'] ?? '');
     }
 
     public function testAddRejectsDuplicateCodeWithinSameType(): void

@@ -61,7 +61,7 @@ class BaseBuilder
         $pluginGroupOptions = is_array($context['pluginGroupOptions'] ?? null) ? $context['pluginGroupOptions'] : [];
         $typeOptions = self::buildTypeFilterOptions(is_array($context['types'] ?? null) ? $context['types'] : []);
 
-        return PageBuilder::make()
+        return PageBuilder::tablePage()
             ->define(function ($page) use ($context, $mode, $baseType, $requestBaseUrl, $pluginGroupOptions, $typeOptions) {
                 SystemListPage::apply($page, strval($context['title'] ?? '数据字典管理'), $requestBaseUrl)
                     ->buttons(function ($buttons) use ($mode) {
@@ -116,15 +116,10 @@ class BaseBuilder
         $isEdit = !empty($context['isEdit']);
         $types = is_array($context['types'] ?? null) ? $context['types'] : [];
 
-        return FormBuilder::make()
+        return FormBuilder::dialogForm()
             ->define(function ($form) use ($context, $isEdit, $types) {
                 $form->action(strval($context['actionUrl'] ?? ''))
                     ->class('system-base-form');
-
-                FormModules::intro($form, [
-                    'title' => $isEdit ? '编辑数据字典' : '新增数据字典',
-                    'description' => '统一维护字典类型、数据编码、名称与插件归属，保存后会同步进入系统字典能力。',
-                ]);
 
                 FormModules::section($form, [
                     'title' => '基础信息',
@@ -152,6 +147,18 @@ class BaseBuilder
                             ->text('name', '数据名称', 'Data Name', true, '请输入当前数据名称，请尽量保持名称的唯一性，数据名称尽量不要出现重复 ~', null, ['maxlength' => 500])
                             ->select('plugin_code', '所属插件', 'Plugin Scope', false, '可选。选择后会写入插件归属元数据，适合身份权限或插件专用字典项。', is_array($context['pluginOptions'] ?? null) ? $context['pluginOptions'] : [])
                             ->textarea('content_text', '数据内容', 'Data Content', false, '', ['placeholder' => '请输入数据内容']);
+                    });
+                });
+                FormModules::section($form, [
+                    'title' => '扩展配置',
+                    'description' => '按 JSON 对象填写扩展业务元数据，文本内容与插件归属会自动同步，无需重复填写。',
+                ], function ($section) {
+                    $section->fields(function ($fields) {
+                        $fields->textarea('meta_json', '扩展元数据', 'Meta JSON', false, '可选。仅填写附加键值，例如 {"scene":"login","scope":"admin"}。', [
+                            'placeholder' => "{\n  \"scene\": \"login\"\n}",
+                            'rows' => 6,
+                            'spellcheck' => 'false',
+                        ]);
                     });
                 });
                 if (!$isEdit) {

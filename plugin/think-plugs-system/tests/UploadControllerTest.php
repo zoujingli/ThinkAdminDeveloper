@@ -92,7 +92,7 @@ class UploadControllerTest extends SqliteIntegrationTestCase
         $file = $file->refresh();
 
         $this->assertSame(1, intval($result['code'] ?? 0));
-        $this->assertStringContainsString('Upload state updated', $result['info'] ?? '');
+        $this->assertStringContainsString('文件记录状态更新成功！', $result['info'] ?? '');
         $this->assertSame(2, intval($file->getAttr('status')));
     }
 
@@ -112,7 +112,7 @@ class UploadControllerTest extends SqliteIntegrationTestCase
         $file = $file->refresh();
 
         $this->assertSame(0, intval($result['code'] ?? 1));
-        $this->assertStringContainsString('File record does not exist', $result['info'] ?? '');
+        $this->assertStringContainsString('文件记录不存在！', $result['info'] ?? '');
         $this->assertSame(1, intval($file->getAttr('status')));
     }
 

@@ -22,6 +22,7 @@ namespace think\admin\tests;
 
 use plugin\system\controller\Oplog as OplogController;
 use plugin\system\model\SystemOplog;
+use plugin\system\service\LangService;
 use think\admin\tests\Support\SqliteIntegrationTestCase;
 use think\exception\HttpResponseException;
 use think\Request;
@@ -43,6 +44,22 @@ class OplogControllerTest extends SqliteIntegrationTestCase
         $this->assertStringContainsString('系统日志', $html);
         $this->assertStringContainsString('批量删除', $html);
         $this->assertStringContainsString('data-form-export=', $html);
+        $this->assertStringContainsString('name="request_ip"', $html);
+    }
+
+    public function testIndexRendersEnglishTextsWhenLangSetIsEnUs(): void
+    {
+        $this->switchSystemLang('en-us');
+
+        $html = $this->callActionHtml('index');
+
+        $this->assertStringContainsString('Log Management', $html);
+        $this->assertStringContainsString('Logs', $html);
+        $this->assertStringContainsString('Batch Delete', $html);
+        $this->assertStringContainsString('Clear Data', $html);
+        $this->assertStringContainsString('Export', $html);
+        $this->assertStringContainsString('Operation Log', $html);
+        $this->assertStringNotContainsString('导 出', $html);
     }
 
     public function testIndexFiltersLogsByUsernameActionKeywordAndDateRange(): void
@@ -85,6 +102,7 @@ class OplogControllerTest extends SqliteIntegrationTestCase
             'username' => 'alice',
             'action' => '导出日志',
             'content' => '命中日志',
+            'request_ip' => '8.8.8.8',
             'create_time' => '2026-03-10 - 2026-03-10',
             '_field_' => 'id',
             '_order_' => 'asc',
@@ -99,8 +117,37 @@ class OplogControllerTest extends SqliteIntegrationTestCase
         $this->assertSame('alice', $result['data']['list'][0]['username'] ?? '');
         $this->assertSame('导出日志', $result['data']['list'][0]['action'] ?? '');
         $this->assertSame('命中日志内容', $result['data']['list'][0]['content'] ?? '');
-        $this->assertArrayHasKey('geoisp', $result['data']['list'][0] ?? []);
-        $this->assertIsString($result['data']['list'][0]['geoisp'] ?? '');
+        $this->assertSame('8.8.8.8', $result['data']['list'][0]['request_ip'] ?? '');
+        $this->assertArrayHasKey('request_region', $result['data']['list'][0] ?? []);
+        $this->assertIsString($result['data']['list'][0]['request_region'] ?? '');
+    }
+
+    public function testIndexSupportsBusinessNamedRequestIpField(): void
+    {
+        $this->createSystemOplogFixture([
+            'username' => 'carol',
+            'action' => '查看日志',
+            'content' => '请求地址来自新字段',
+            'node' => 'system/oplog/index',
+            'request_ip' => '9.9.9.9',
+            'geoip' => '',
+            'create_time' => '2026-03-11 08:00:00',
+        ]);
+
+        $result = $this->callIndexController([
+            'output' => 'json',
+            'username' => 'carol',
+            'request_ip' => '9.9.9.9',
+            '_field_' => 'id',
+            '_order_' => 'asc',
+            'page' => 1,
+            'limit' => 20,
+        ]);
+
+        $this->assertSame(1, intval($result['code'] ?? 0));
+        $this->assertSame(1, intval($result['data']['page']['total'] ?? 0));
+        $this->assertSame('9.9.9.9', $result['data']['list'][0]['request_ip'] ?? '');
+        $this->assertIsString($result['data']['list'][0]['request_region'] ?? '');
     }
 
     public function testIndexPaginatesLogsAndFallsBackToDefaultLimit(): void
@@ -235,5 +282,11 @@ class OplogControllerTest extends SqliteIntegrationTestCase
         $property = new \ReflectionProperty(Request::class, 'request');
         $property->setAccessible(true);
         $property->setValue($request, $data);
+    }
+
+    private function switchSystemLang(string $langSet): void
+    {
+        $this->app->lang->switchLangSet($langSet);
+        LangService::load($this->app, $langSet);
     }
 }

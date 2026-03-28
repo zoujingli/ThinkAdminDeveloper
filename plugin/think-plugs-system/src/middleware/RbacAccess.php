@@ -21,6 +21,7 @@ declare(strict_types=1);
 namespace plugin\system\middleware;
 
 use plugin\system\service\AuthService;
+use plugin\system\service\LangService;
 use think\App;
 use think\exception\HttpResponseException;
 use think\Request;
@@ -50,14 +51,7 @@ class RbacAccess
      */
     public function handle(Request $request, \Closure $next): Response
     {
-        $langSet = $this->app->lang->getLangSet();
-        if (is_file($file = dirname(__DIR__, 2) . "/lang/{$langSet}.php")) {
-            $this->app->lang->load($file, $langSet);
-        }
-
-        if (is_file($file = syspath("lang/{$langSet}.php"))) {
-            $this->app->lang->load($file, $langSet);
-        }
+        LangService::loadCurrent($this->app);
 
         $ignore = $this->app->config->get('app.rbac_ignore', []);
         if (in_array($this->app->http->getName(), $ignore) || AuthService::check()) {

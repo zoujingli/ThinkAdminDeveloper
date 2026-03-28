@@ -23,6 +23,7 @@ namespace think\admin\tests;
 use plugin\system\controller\api\Plugs as PlugsController;
 use plugin\system\model\SystemOplog;
 use plugin\system\service\AuthService;
+use plugin\system\service\LangService;
 use plugin\system\service\SystemContext as PluginSystemContext;
 use plugin\worker\model\SystemQueue;
 use plugin\worker\service\QueueService;
@@ -54,6 +55,18 @@ class PlugsControllerTest extends SqliteIntegrationTestCase
         $this->assertStringNotContainsString('{foreach', $html);
     }
 
+    public function testIconRendersEnglishTextsWhenLangSetIsEnUs(): void
+    {
+        $this->switchSystemLang('en-us');
+
+        $html = $this->callHtmlController('icon', ['field' => 'menu_icon']);
+
+        $this->assertStringContainsString('<title>Icon Picker</title>', $html);
+        $this->assertStringContainsString('Select Icon', $html);
+        $this->assertStringContainsString('Please enter icon name', $html);
+        $this->assertStringNotContainsString('图标选择器', $html);
+    }
+
     public function testScriptBuildsJavascriptConfigWithAbsoluteUrlsWhenUploadTokenIsValid(): void
     {
         $uptoken = AuthService::withUploadToken(321, 'jpg,png');
@@ -75,6 +88,18 @@ class PlugsControllerTest extends SqliteIntegrationTestCase
         $this->assertStringContainsString("window.taTokenScheme = 'Bearer';", $content);
         $this->assertStringContainsString('window.taTokenExpire = 604800;', $content);
         $this->assertStringContainsString("window.taEditor = 'ckeditor5';", $content);
+    }
+
+    public function testScriptUsesConfiguredEditorDriverFromSystemConfig(): void
+    {
+        $this->createSystemDataFixture([
+            'name' => 'system.runtime',
+            'value' => ['editor_driver' => 'tinymce'],
+        ]);
+
+        $content = strval($this->callScriptController()->getContent());
+
+        $this->assertStringContainsString("window.taEditor = 'tinymce';", $content);
     }
 
     public function testOptimizeRegistersQueueAndBlocksDuplicatesForSuperAdmin(): void
@@ -112,6 +137,7 @@ class PlugsControllerTest extends SqliteIntegrationTestCase
 
     protected function defineSchema(): void
     {
+        $this->createSystemDataTable();
         $this->createSystemOplogTable();
         $this->createSystemQueueTable();
     }
@@ -194,6 +220,12 @@ class PlugsControllerTest extends SqliteIntegrationTestCase
             'username' => $super ? 'admin' : 'tester',
             'password' => $this->hashSystemPassword('changed-password'),
         ], '', true);
+    }
+
+    private function switchSystemLang(string $langSet): void
+    {
+        $this->app->lang->switchLangSet($langSet);
+        LangService::load($this->app, $langSet);
     }
 
     private function setRequestPayload(Request $request, array $data): void

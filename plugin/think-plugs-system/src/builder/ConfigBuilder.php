@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace plugin\system\builder;
 
+use think\admin\builder\BuilderLang;
 use think\admin\builder\form\FormBuilder;
 use think\admin\builder\form\module\FormModules;
 use think\admin\builder\page\PageBuilder;
@@ -31,14 +32,15 @@ class ConfigBuilder
         $storageName = strval($context['storageName'] ?? $storageDriver);
         $systemInfo = is_array($context['systemInfo'] ?? null) ? $context['systemInfo'] : [];
         $showSystemButton = !empty($context['canEditSystem']);
+        $pluginCenter = is_array($context['pluginCenter'] ?? null) ? $context['pluginCenter'] : [];
 
-        return PageBuilder::make()
-            ->define(function ($page) use ($site, $runtime, $storage, $isSuper, $isDebug, $storageEditable, $storageDriver, $storageName, $systemInfo, $showSystemButton) {
+        return PageBuilder::domPage()
+            ->define(function ($page) use ($site, $runtime, $storage, $isSuper, $isDebug, $storageEditable, $storageDriver, $storageName, $systemInfo, $showSystemButton, $pluginCenter) {
                 $page->title('系统参数配置')->contentClass('');
 
                 self::buildHeaderButtons($page, $isSuper, $showSystemButton);
 
-                PageModules::card($page, ['title' => '系统概览', 'remark' => '统一管理运行模式、存储中心与系统基础参数', 'class' => 'layui-card mb15'], function (PageNode $body) use ($isDebug, $storageName, $runtime) {
+                PageModules::card($page, ['title' => '系统概览', 'remark' => '统一管理运行模式、存储中心与系统基础参数', 'class' => 'layui-card mb15'], function (PageNode $body) use ($isDebug, $storageName, $runtime, $site, $pluginCenter) {
                     PageModules::paragraphs($body, [
                         '当前后台使用 System 统一维护运行模式、富编辑器、文件存储与系统基础参数。',
                     ], ['class' => 'ta-desc mt0']);
@@ -46,7 +48,9 @@ class ConfigBuilder
                         ['label' => '运行模式', 'value' => $isDebug ? '开发模式' : '生产模式'],
                         ['label' => '默认存储驱动', 'value' => $storageName],
                         ['label' => '默认编辑器', 'value' => strval($runtime['editor_driver'] ?? 'ckeditor5')],
-                        ['label' => '站点名称', 'value' => strval($site['name'] ?? '-')],
+                        ['label' => '站点名称', 'value' => strval($site['website_name'] ?? '-')],
+                        ['label' => '插件中心', 'value' => !empty($pluginCenter['enabled']) ? '已启用' : '已禁用'],
+                        ['label' => '菜单入口策略', 'value' => !empty($pluginCenter['show_menu']) ? '显示插件中心菜单' : '隐藏插件中心菜单'],
                     ]);
                 });
 
@@ -78,7 +82,7 @@ class ConfigBuilder
         $canEdit = !empty($context['canEdit']);
         $allowedExtensionsText = strval($storage['allowed_extensions_text'] ?? '-');
 
-        return PageBuilder::make()
+        return PageBuilder::domPage()
             ->define(function ($page) use ($storage, $files, $driver, $driverName, $canEdit, $allowedExtensionsText) {
                 $page->title('存储配置中心')->contentClass('')
                     ->buttons(function ($buttons) {
@@ -105,7 +109,7 @@ class ConfigBuilder
                         self::buildStorageDriverCard($col, strval($code), strval($name), $driver, $canEdit);
                     }
                     PageModules::paragraphs($body, [
-                        '允许类型：' . $allowedExtensionsText,
+                        BuilderLang::format('允许类型：%s', [$allowedExtensionsText]),
                         '上传后的文件记录统一在 System 的文件管理中维护，可直接查看、重命名、删除或清理重复文件。',
                         '本地存储适合快速部署，自建网关适合统一收口，对象存储更适合公共资源、CDN 和大文件场景。',
                     ]);
@@ -128,18 +132,13 @@ class ConfigBuilder
         $siteThemeLabel = strval($context['siteThemeLabel'] ?? $siteThemeKey);
         $themePickerUrl = strval($context['themePickerUrl'] ?? '/system/index/theme');
 
-        return FormBuilder::make('form', 'page')
+        return FormBuilder::pageForm('form')
             ->define(function ($form) use ($site, $security, $runtime, $pluginCenter, $themes, $siteThemeKey, $siteThemeLabel, $themePickerUrl) {
                 $form->title('系统参数设置')
                     ->headerButton('返回配置首页', 'button', '', ['data-target-backup' => null], 'layui-btn-primary layui-btn-sm')
                     ->class('system-config-form')
                     ->data('auto', 'true')
                     ->action(sysuri());
-
-                FormModules::intro($form, [
-                    'title' => '统一管理登录入口、品牌信息与安全配置',
-                    'description' => '当前页面用于维护后台默认主题、登录页资源、插件中心开关以及站点品牌字段。',
-                ]);
 
                 FormModules::section($form, [
                     'title' => '入口与主题',
@@ -175,20 +174,33 @@ class ConfigBuilder
                         'input_attrs' => ['data-site-theme-text' => null],
                         'help' => '保存后会作为后台默认主题，用户个人主题仍可单独切换。',
                     ]);
+
+                    $host = $section->div()->class('mt15');
+                    $host->fields(function ($fields) {
+                        $fields->text('site[host]', '站点基础域名', 'Site Host', false, '可选。用于商城 H5、分享链接和外部回调等需要完整域名的业务场景。', 'url', [
+                            'vali-name' => '站点域名',
+                            'placeholder' => '例如 https://admin.example.com',
+                        ]);
+                    });
+                    FormModules::note($host, '建议填写不带结尾斜杠的完整域名，保存时会自动去掉末尾的 /。');
                 });
 
                 FormModules::section($form, [
                     'title' => '插件中心',
                     'description' => '插件中心已经合并进 System，这里只保留启停和菜单展示策略两个全局开关。',
-                ], function ($section) use ($pluginCenter) {
-                    $section->fields(function ($fields) use ($pluginCenter) {
-                        $fields->select('plugin_center[enabled]', '插件中心状态', 'Center Status', true, '禁用后将隐藏插件中心相关入口。', [
+                ], function ($section) {
+                    $section->fields(function ($fields) {
+                        $fields->radio('plugin_center[enabled]', '插件中心状态', 'Center Status', '', true, [
+                            'required-error' => '请选择插件中心状态！',
+                        ])->options([
                             '1' => '启用',
                             '0' => '禁用',
-                        ])->select('plugin_center[show_menu]', '菜单显示策略', 'Menu Display', true, '适合把插件能力作为内部功能收口时使用。', [
+                        ])->defaultValue('1')->radio('plugin_center[show_menu]', '菜单显示策略', 'Menu Display', '', true, [
+                            'required-error' => '请选择菜单显示策略！',
+                        ])->options([
                             '1' => '显示菜单节点',
                             '0' => '隐藏菜单节点',
-                        ]);
+                        ])->defaultValue('1');
                     });
                 });
 
@@ -202,12 +214,12 @@ class ConfigBuilder
                             'ckeditor5' => 'CKEditor 5',
                             'wangEditor' => 'wangEditor',
                             'auto' => '自动选择',
-                        ])->text('runtime[queue_retain_days]', '队列保留天数', 'Queue Days', true, '队列日志的默认保留天数，最小值为 1。', null, [
+                        ])->defaultValue('ckeditor5')->text('runtime[queue_retain_days]', '队列保留天数', 'Queue Days', true, '队列日志的默认保留天数，最小值为 1。', null, [
                             'type' => 'number',
                             'min' => 1,
                             'vali-name' => '保留天数',
                             'placeholder' => '请输入队列日志保留天数',
-                        ]);
+                        ])->defaultValue(7);
                     });
                 });
 
@@ -219,12 +231,13 @@ class ConfigBuilder
 
                     $col1 = $grid->div()->class('layui-col-xs12 layui-col-md6');
                     $col1->fields(function ($fields) {
-                        $field = $fields->text('security[jwt_secret]', 'JWT 接口密钥', 'Jwt Key', true, '请输入 32 位 JWT 接口密钥。', '.{32}', [
+                        $field = $fields->password('security[jwt_secret]', 'JWT 接口密钥', 'Jwt Key', false, '保留默认星号表示不修改当前密钥，点击右侧按钮可生成新的 32 位随机密钥。', '.{32}', [
                             'maxlength' => 32,
                             'vali-name' => '接口密钥',
-                            'placeholder' => '请输入32位JWT接口密钥',
+                            'autocomplete' => 'new-password',
+                            'placeholder' => '保留默认星号则不修改，点击右侧按钮可生成新密钥',
                         ]);
-                        $field->input()->class('relative')->html('<a class="input-right-icon layui-icon layui-icon-refresh" id="RefreshJwtKey"></a>');
+                        $field->inputRightIcon('layui-icon-refresh', ['id' => 'RefreshJwtKey']);
                     });
 
                     $col2 = $grid->div()->class('layui-col-xs12 layui-col-md6');
@@ -235,7 +248,11 @@ class ConfigBuilder
                             'data-tips-image' => null,
                             'data-tips-hover' => null,
                         ]);
-                        $field->input()->html('<a class="input-right-icon layui-icon layui-icon-upload-drag" data-file="btn" data-type="png,jpg,jpeg" data-field="site[browser_icon]"></a>');
+                        $field->inputRightIcon('layui-icon-upload-drag', [
+                            'data-file' => 'btn',
+                            'data-type' => 'png,jpg,jpeg',
+                            'data-field' => 'site[browser_icon]',
+                        ]);
                     });
 
                     $col3 = $grid->div()->class('layui-col-xs12');
@@ -275,7 +292,7 @@ class ConfigBuilder
 
                 $form->script(sprintf("const siteThemeCatalog=%s;", json_encode($themes, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES) ?: '{}'));
                 $form->script(sprintf("const siteThemePickerUrl=%s;", json_encode($themePickerUrl, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES) ?: '"/system/index/theme"'));
-                $form->script(<<<'SCRIPT'
+                $form->script(sprintf(<<<'SCRIPT'
 const generateJwtKey = function () {
     if (window.crypto && typeof window.crypto.getRandomValues === 'function') {
         const bytes = new Uint8Array(16);
@@ -312,9 +329,9 @@ $('body').off('click', '[data-open-site-theme]').on('click', '[data-open-site-th
     top.window[pickerName] = function (theme, label) {
         updateSiteThemeField(theme, label);
     };
-    $.form.modal(siteThemePickerUrl + "?scene=config&picker=" + encodeURIComponent(pickerName) + "&value=" + encodeURIComponent(value), {}, '选择后台默认配色', undefined, undefined, undefined, '800px');
+    $.form.modal(siteThemePickerUrl + "?scene=config&picker=" + encodeURIComponent(pickerName) + "&value=" + encodeURIComponent(value), {}, %s, undefined, undefined, undefined, '800px');
 });
-SCRIPT);
+SCRIPT, json_encode(strval(lang('选择后台默认配色')), JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES) ?: '"选择后台默认配色"'));
             })
             ->build();
     }
@@ -328,18 +345,13 @@ SCRIPT);
         $driverName = strval($context['driverName'] ?? strtoupper($type));
         $points = is_array($context['points'] ?? null) ? $context['points'] : [];
 
-        return FormBuilder::make('form', 'page')
+        return FormBuilder::dialogForm('form')
             ->define(function ($form) use ($type, $driverName, $points) {
-                $form->title($driverName . ' 存储配置')
+                $form->title(BuilderLang::format('%s 存储配置', [BuilderLang::text($driverName)]))
                     ->headerButton('返回存储中心', 'button', '', ['data-target-backup' => null], 'layui-btn-primary layui-btn-sm')
                     ->class('storage-form')
                     ->data('auto', 'true')
                     ->action(sysuri());
-
-                FormModules::intro($form, [
-                    'title' => '统一维护上传策略与驱动参数',
-                    'description' => self::storageFormSummary($type),
-                ]);
 
                 FormModules::section($form, [
                     'title' => '全局上传策略',
@@ -362,7 +374,7 @@ SCRIPT);
                 });
 
                 FormModules::section($form, [
-                    'title' => "{$driverName} 驱动参数",
+                    'title' => BuilderLang::format('%s 驱动参数', [BuilderLang::text($driverName)]),
                     'description' => self::storageDriverDescription($type),
                 ], function ($section) use ($type, $points) {
                     $section->fields(function ($fields) use ($type, $points) {
@@ -437,7 +449,7 @@ SCRIPT);
             ]);
             PageModules::paragraphs($body, [
                 '开发模式：适合本地开发和联调，发生异常时会输出完整错误和调用上下文。',
-                sprintf('生产模式：适合正式环境，异常时统一输出友好提示“%s”。', config('app.error_message')),
+                BuilderLang::format('生产模式：适合正式环境，异常时统一输出友好提示“%s”。', [strval(config('app.error_message'))]),
             ]);
         });
     }
@@ -460,7 +472,7 @@ SCRIPT);
                 ]);
             } else {
                 PageModules::buttonGroup($body, [
-                    ['label' => "当前驱动：{$storageName}", 'class' => 'layui-btn layui-btn-sm layui-btn-active'],
+                    ['label' => BuilderLang::format('当前驱动：%s', [BuilderLang::text($storageName)]), 'class' => 'layui-btn layui-btn-sm layui-btn-active'],
                 ]);
             }
 
@@ -609,7 +621,7 @@ SCRIPT);
                 'url' => $canEdit ? (sysuri('system/config/storage') . '?type=' . $code) : '',
                 'data_key' => $canEdit ? 'data-modal' : '',
                 'class' => $active ? 'layui-btn layui-btn-sm layui-btn-active mt15' : 'layui-btn layui-btn-sm layui-btn-primary mt15',
-                'attrs' => $canEdit ? ['data-title' => "配置{$name}", 'data-width' => '980px'] : [],
+                'attrs' => $canEdit ? ['data-title' => BuilderLang::format('配置%s', [BuilderLang::text($name)]), 'data-width' => '980px'] : [],
             ]], ['class' => '']);
         });
     }
@@ -698,7 +710,8 @@ SCRIPT);
                     'subtitle' => 'Password',
                     'required' => true,
                     'remark' => '用于换取上传令牌，填写错误时无法下发上传授权。',
-                    'attrs' => ['maxlength' => 100, 'vali-name' => '用户密码', 'placeholder' => '请输入 Alist 上传密码'],
+                    'type' => 'password',
+                    'attrs' => ['maxlength' => 100, 'vali-name' => '用户密码', 'autocomplete' => 'new-password', 'placeholder' => '保留默认星号则不修改 Alist 上传密码'],
                 ],
             ],
             'upyun' => [
@@ -732,7 +745,8 @@ SCRIPT);
                     'subtitle' => 'Password',
                     'required' => true,
                     'remark' => '用于生成上传授权，请妥善保管。',
-                    'attrs' => ['maxlength' => 100, 'vali-name' => '操作员密码', 'placeholder' => '请输入又拍云操作员密码'],
+                    'type' => 'password',
+                    'attrs' => ['maxlength' => 100, 'vali-name' => '操作员密码', 'autocomplete' => 'new-password', 'placeholder' => '保留默认星号则不修改又拍云操作员密码'],
                 ],
             ],
             'alioss' => self::storageObjectFields($prefix, '阿里云', 'AccessKeyId', 'AccessKeySecret'),
@@ -770,7 +784,8 @@ SCRIPT);
                 'subtitle' => $accessLabel,
                 'required' => true,
                 'remark' => "请使用具备目标存储读写权限的 {$accessLabel}。",
-                'attrs' => ['vali-name' => '访问密钥', 'placeholder' => "请输入{$vendor} {$accessLabel}"],
+                'type' => 'password',
+                'attrs' => ['vali-name' => '访问密钥', 'autocomplete' => 'new-password', 'placeholder' => "保留默认星号则不修改 {$vendor} {$accessLabel}"],
             ],
             [
                 'name' => "{$prefix}[secret_key]",
@@ -778,7 +793,8 @@ SCRIPT);
                 'subtitle' => $secretLabel,
                 'required' => true,
                 'remark' => '请妥善保管，避免泄露到前端或公共仓库。',
-                'attrs' => ['maxlength' => 100, 'vali-name' => '安全密钥', 'placeholder' => "请输入{$vendor} {$secretLabel}"],
+                'type' => 'password',
+                'attrs' => ['maxlength' => 100, 'vali-name' => '安全密钥', 'autocomplete' => 'new-password', 'placeholder' => "保留默认星号则不修改 {$vendor} {$secretLabel}"],
             ],
         ];
     }

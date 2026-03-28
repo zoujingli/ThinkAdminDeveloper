@@ -21,11 +21,11 @@ declare(strict_types=1);
 namespace plugin\system;
 
 use plugin\system\middleware\JwtTokenAuth;
+use plugin\system\middleware\LoadModuleLangPack;
 use plugin\system\middleware\RbacAccess;
 use plugin\system\service\SystemContext as PluginSystemContext;
 use think\admin\contract\SystemContextInterface;
 use think\admin\Plugin;
-use think\admin\runtime\RequestTokenService;
 use think\middleware\LoadLangPack;
 
 /**
@@ -52,12 +52,8 @@ class Service extends Plugin
         }
 
         $this->app->middleware->add(JwtTokenAuth::class);
-        $isapi = RequestTokenService::authorizationToken($this->app->request) !== '';
-        $agent = preg_replace('|\s+|', '', $this->app->request->header('user-agent', ''));
-        $isrpc = is_numeric(stripos($agent, 'think-admin-jsonrpc')) || is_numeric(stripos($agent, 'PHPYarRPC'));
-        if (empty($isapi) && empty($isrpc)) {
-            $this->app->middleware->add(LoadLangPack::class);
-        }
+        $this->app->middleware->add(LoadLangPack::class);
+        $this->app->middleware->add(LoadModuleLangPack::class);
         $this->app->middleware->add(RbacAccess::class, 'route');
     }
 }

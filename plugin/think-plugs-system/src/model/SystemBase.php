@@ -38,15 +38,16 @@ use think\model\concern\SoftDelete;
  * @property string $content 数据内容
  * @property string $create_time 创建时间
  * @property null|string $delete_time 删除时间
+ * @property string $meta_json 扩展元数据
  * @property string $name 数据名称
+ * @property string $text_value 文本值
  * @property string $type 数据类型
+ * @property string $update_time 更新时间
  * @class SystemBase
  */
 class SystemBase extends Model
 {
     use SoftDelete;
-
-    protected $updateTime = false;
 
     /**
      * 日志名称.
@@ -70,7 +71,12 @@ class SystemBase extends Model
     public static function items(string $type, array &$data = [], string $field = 'base_code', string $bind = 'base_info'): array
     {
         $map = ['type' => $type, 'status' => 1];
-        $bases = static::mk()->where($map)->order('sort desc,id asc')->column('code,name,content', 'code');
+        $bases = [];
+        $titles = static::pluginTitleMap();
+        foreach (static::mk()->where($map)->order('sort desc,id asc')->field('code,name,content,text_value,meta_json')->select()->toArray() as $item) {
+            $code = strval($item['code'] ?? '');
+            $bases[$code] = static::enrichItem($item, $titles);
+        }
         if (count($data) > 0) {
             foreach ($data as &$vo) {
                 $vo[$bind] = $bases[$vo[$field]] ?? [];
@@ -100,37 +106,10 @@ class SystemBase extends Model
             return [];
         }
 
-        $titles = [];
-        foreach (AppService::all(true) as $code => $plugin) {
-            $titles[$code] = strval($plugin['name'] ?? $code);
-        }
-        foreach (AppService::all() as $code => $app) {
-            $titles[$code] = strval($app['name'] ?? $code);
-        }
+        $titles = static::pluginTitleMap();
 
         foreach ($items as &$item) {
-            $meta = static::parseContent(strval($item['content'] ?? ''));
-            $codes = self::normalizePluginCodes($meta['plugin'] ?? ($meta['plugins'] ?? []));
-            $names = [];
-            foreach ($codes as $code) {
-                $names[] = $titles[$code] ?? $code;
-            }
-            if (count($codes) > 1) {
-                [$group, $title] = ['mixed', '跨插件'];
-            } elseif (count($codes) === 1) {
-                [$group, $title] = [$codes[0], $names[0] ?? $codes[0]];
-            } else {
-                [$group, $title] = ['common', '未绑定'];
-            }
-
-            $item['content_meta'] = $meta;
-            $item['content_text'] = strval($meta['text'] ?? '');
-            $item['plugin_codes'] = $codes;
-            $item['plugin_names'] = $names;
-            $item['plugin_count'] = count($codes);
-            $item['plugin_text'] = join(' / ', $names);
-            $item['plugin_group'] = $group;
-            $item['plugin_title'] = $title;
+            $item = static::enrichItem($item, $titles);
         }
         unset($item);
 
@@ -181,7 +160,7 @@ class SystemBase extends Model
      */
     public static function idsByPluginGroup(string $group, ?string $type = null): array
     {
-        $query = static::mk()->field('id,type,content')->order('sort desc,id asc');
+        $query = static::mk()->field('id,type,content,text_value,meta_json')->order('sort desc,id asc');
         if ($type !== null && $type !== '') {
             $query->where(['type' => $type]);
         }
@@ -215,6 +194,21 @@ class SystemBase extends Model
     }
 
     /**
+     * 解析扩展元数据.
+     * @return array<string, mixed>
+     */
+    public static function parseMetaJson(?string $content): array
+    {
+        $text = trim(strval($content));
+        if ($text === '' || !in_array(substr($text, 0, 1), ['{', '['], true)) {
+            return [];
+        }
+
+        $data = json_decode($text, true);
+        return is_array($data) && !array_is_list($data) ? $data : [];
+    }
+
+    /**
      * 解析内容元数据.
      * @return array<string, mixed>
      */
@@ -237,6 +231,40 @@ class SystemBase extends Model
     }
 
     /**
+     * 解析兼容内容元数据.
+     * @param array<string, mixed> $item
+     * @return array<string, mixed>
+     */
+    public static function resolveContentMeta(array $item): array
+    {
+        $legacy = static::parseContent(strval($item['content'] ?? ''));
+        $meta = static::parseMetaJson(strval($item['meta_json'] ?? ''));
+        $payload = array_merge($legacy, $meta);
+        $text = trim(strval($item['text_value'] ?? ''));
+        if ($text === '') {
+            $text = strval($payload['text'] ?? ($legacy['text'] ?? ''));
+        }
+        $codes = self::normalizePluginCodes($payload['plugin'] ?? ($payload['plugins'] ?? []));
+        $payload['raw'] = strval($item['content'] ?? ($payload['raw'] ?? ''));
+        $payload['text'] = $text;
+        $payload['plugin'] = count($codes) === 1 ? $codes[0] : $codes;
+        $payload['plugins'] = $codes;
+        return $payload;
+    }
+
+    /**
+     * 提取扩展元数据.
+     * @param array<string, mixed> $item
+     * @return array<string, mixed>
+     */
+    public static function extractExtraMeta(array $item): array
+    {
+        $meta = static::resolveContentMeta($item);
+        unset($meta['text'], $meta['plugin'], $meta['plugins'], $meta['raw']);
+        return $meta;
+    }
+
+    /**
      * 打包内容元数据.
      */
     public static function packContent(string $text = '', mixed $plugins = []): string
@@ -254,6 +282,34 @@ class SystemBase extends Model
             'text' => $text,
             'plugin' => count($codes) === 1 ? $codes[0] : $codes,
         ], JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
+    }
+
+    /**
+     * 打包扩展元数据.
+     * @param array<string, mixed> $meta
+     */
+    public static function packMetaJson(string $text = '', mixed $plugins = [], array $meta = []): string
+    {
+        $payload = $meta;
+        $text = trim($text);
+        $codes = self::normalizePluginCodes($plugins);
+        if ($text !== '') {
+            $payload['text'] = $text;
+        } else {
+            unset($payload['text']);
+        }
+        if (count($codes) === 1) {
+            $payload['plugin'] = $codes[0];
+        } elseif (count($codes) > 1) {
+            $payload['plugin'] = $codes;
+        } else {
+            unset($payload['plugin'], $payload['plugins']);
+        }
+        unset($payload['raw']);
+        if (empty($payload)) {
+            return '';
+        }
+        return json_encode($payload, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
     }
 
     /**
@@ -296,5 +352,61 @@ class SystemBase extends Model
         }
         sort($items);
         return $items;
+    }
+
+    /**
+     * 构建插件标题映射.
+     * @return array<string, string>
+     */
+    private static function pluginTitleMap(): array
+    {
+        $titles = [];
+        foreach (AppService::all(true) as $code => $plugin) {
+            $titles[$code] = strval($plugin['name'] ?? $code);
+        }
+        foreach (AppService::all() as $code => $app) {
+            $titles[$code] = strval($app['name'] ?? $code);
+        }
+        return $titles;
+    }
+
+    /**
+     * 标准化字典数据项.
+     * @param array<string, mixed> $item
+     * @param array<string, string>|null $titles
+     * @return array<string, mixed>
+     */
+    private static function enrichItem(array $item, ?array $titles = null): array
+    {
+        $meta = static::resolveContentMeta($item);
+        $codes = self::normalizePluginCodes($meta['plugin'] ?? ($meta['plugins'] ?? []));
+        if ($titles === null) {
+            $titles = static::pluginTitleMap();
+        }
+
+        $names = [];
+        foreach ($codes as $code) {
+            $names[] = $titles[$code] ?? $code;
+        }
+        if (count($codes) > 1) {
+            [$group, $title] = ['mixed', strval(lang('跨插件'))];
+        } elseif (count($codes) === 1) {
+            [$group, $title] = [$codes[0], $names[0] ?? $codes[0]];
+        } else {
+            [$group, $title] = ['common', strval(lang('未绑定'))];
+        }
+
+        $text = strval($meta['text'] ?? '');
+        $item['content'] = trim(strval($item['content'] ?? '')) !== '' ? strval($item['content']) : static::packContent($text, $codes);
+        $item['text_value'] = strval($item['text_value'] ?? $text);
+        $item['content_meta'] = $meta;
+        $item['content_text'] = $text;
+        $item['plugin_codes'] = $codes;
+        $item['plugin_names'] = $names;
+        $item['plugin_count'] = count($codes);
+        $item['plugin_text'] = join(' / ', $names);
+        $item['plugin_group'] = $group;
+        $item['plugin_title'] = $title;
+        return $item;
     }
 }

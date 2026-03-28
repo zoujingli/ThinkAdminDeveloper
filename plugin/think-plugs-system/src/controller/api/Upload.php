@@ -69,7 +69,7 @@ class Upload extends Controller
             throw new HttpResponseException(Response::create(UploadImageDialogBuilder::render($this->buildImageDialogContext()), 'html'));
         }
         SystemFile::mQuery()->layTable(function () {
-            $this->title = 'File Picker';
+            $this->title = strval(lang('文件选择器'));
         }, function (QueryHelper $query) use ($unid, $uuid) {
             if ($unid && $uuid) {
                 $query->where(function ($query) use ($uuid, $unid) {
@@ -90,26 +90,33 @@ class Upload extends Controller
             [$uuid, $unid] = $this->initUnid();
             [$name, $safe] = [input('name'), $this->getSafe()];
             $data = ['uptype' => $this->getType(), 'safe' => intval($safe), 'key' => input('key')];
-            $file = SystemFile::mk()->data($this->_vali([
+            $payload = SystemFile::syncPayload($this->_vali([
                 'xkey.value' => $data['key'],
                 'type.value' => $this->getType(),
-                'uuid.value' => $uuid,
-                'unid.value' => $unid,
-                'name.require' => 'File name is required.',
-                'hash.require' => 'File hash is required.',
-                'xext.require' => 'File extension is required.',
-                'size.require' => 'File size is required.',
+                'system_user_id.value' => $uuid,
+                'biz_user_id.value' => $unid,
+                'name.require' => lang('文件名称不能为空！'),
+                'hash.require' => lang('文件哈希不能为空！'),
+                'extension.value' => input('extension', input('xext', '')),
+                'extension.require' => lang('文件后缀不能为空！'),
+                'size.require' => lang('文件大小不能为空！'),
                 'mime.default' => '',
                 'status.value' => 1,
             ]));
+            $file = SystemFile::mk()->data($payload);
             $mime = $file->getAttr('mime');
             if (empty($mime)) {
-                $file->setAttr('mime', Storage::mime($file->getAttr('xext')));
+                $file->setAttr('mime', Storage::mime(strval($file->getAttr('extension') ?: $file->getAttr('xext'))));
             }
             $info = Storage::instance($data['uptype'])->info($data['key'], $safe, $name);
             if (isset($info['url'], $info['key'])) {
-                $file->save(['xurl' => $info['url'], 'isfast' => 1, 'issafe' => $data['safe']]);
-                $this->success('File already exists.', array_merge($data, [
+                $file->save(SystemFile::syncPayload([
+                    'file_url' => $info['url'],
+                    'storage_key' => $info['key'],
+                    'is_fast_upload' => 1,
+                    'is_safe' => $data['safe'],
+                ]));
+                $this->success(lang('文件已存在。'), array_merge($data, [
                     'id' => $file->id ?? 0,
                     'url' => $info['url'],
                     'key' => $info['key'],
@@ -117,8 +124,13 @@ class Upload extends Controller
             }
 
             $data = array_merge($data, Storage::authorize($data['uptype'], $data['key'], $safe, $name, input('hash', '')));
-            $file->save(['xurl' => $data['url'], 'isfast' => 0, 'issafe' => $data['safe']]);
-            $this->success('Upload authorization created.', array_merge($data, ['id' => $file->id ?? 0]), 404);
+            $file->save(SystemFile::syncPayload([
+                'file_url' => strval($data['url'] ?? ''),
+                'storage_key' => strval($data['key'] ?? ''),
+                'is_fast_upload' => 0,
+                'is_safe' => $data['safe'],
+            ]));
+            $this->success(lang('上传授权创建成功。'), array_merge($data, ['id' => $file->id ?? 0]), 404);
         } catch (HttpResponseException $exception) {
             throw $exception;
         } catch (\Exception $exception) {
@@ -130,19 +142,19 @@ class Upload extends Controller
     {
         [$uuid, $unid] = $this->initUnid();
         $data = $this->_vali([
-            'id.require' => 'File id is required.',
-            'hash.require' => 'File hash is required.',
+            'id.require' => lang('文件ID不能为空！'),
+            'hash.require' => lang('文件哈希不能为空！'),
             'uuid.value' => $uuid,
             'unid.value' => $unid,
         ]);
         $file = SystemFile::mk()->where($data)->findOrEmpty();
         if ($file->isEmpty()) {
-            $this->error('File record does not exist.');
+            $this->error(lang('文件记录不存在！'));
         }
         if ($file->save(['status' => 2])) {
-            $this->success('Upload state updated.');
+            $this->success(lang('文件记录状态更新成功！'));
         } else {
-            $this->error('Failed to update upload state.');
+            $this->error(lang('文件记录状态更新失败！'));
         }
     }
 
@@ -156,19 +168,19 @@ class Upload extends Controller
         $extension = strtolower($file->getOriginalExtension());
         $saveFileName = input('key') ?: Storage::name($file->getPathname(), $extension, '', 'md5_file');
         if (strpos($saveFileName, '..') !== false) {
-            $this->error('Path traversal is not allowed.');
+            $this->error(lang('路径中不能包含 ..'));
         }
         if (strtolower(pathinfo(parse_url($saveFileName, PHP_URL_PATH), PATHINFO_EXTENSION)) !== $extension) {
-            $this->error('Invalid file extension.');
+            $this->error(lang('文件扩展名不匹配。'));
         }
         if (!in_array($extension, str2arr((string)StorageConfig::global('allowed_extensions', '')))) {
-            $this->error('File type is not allowed.');
+            $this->error(lang('该文件类型不允许上传。'));
         }
         if (empty($uuid) && $unid > 0 && !in_array($extension, $unexts)) {
-            $this->error('Upload extension is not allowed.');
+            $this->error(lang('当前上传场景不允许该扩展名。'));
         }
         if (in_array($extension, ['sh', 'asp', 'bat', 'cmd', 'exe', 'php'])) {
-            $this->error('Executable files are blocked.');
+            $this->error(lang('禁止上传可执行文件。'));
         }
 
         try {
@@ -185,11 +197,11 @@ class Upload extends Controller
                 $info = $local->info($saveFileName, $safeMode, $file->getOriginalName());
                 if (in_array($extension, ['jpg', 'gif', 'png', 'bmp', 'jpeg', 'wbmp'])) {
                     if ($this->imgNotSafe($distName) && $local->del($saveFileName)) {
-                        $this->error('Image failed security validation.');
+                        $this->error(lang('图片安全校验未通过。'));
                     }
                     [$width, $height] = getimagesize($distName);
                     if (($width < 1 || $height < 1) && $local->del($saveFileName)) {
-                        $this->error('Failed to read image size.');
+                        $this->error(lang('无法读取图片尺寸。'));
                     }
                 }
             } else {
@@ -198,9 +210,9 @@ class Upload extends Controller
             }
 
             if (isset($info['url'])) {
-                $this->success('File uploaded successfully.', ['url' => $safeMode ? $saveFileName : $info['url']]);
+                $this->success(lang('文件上传成功！'), ['url' => $safeMode ? $saveFileName : $info['url']]);
             }
-            $this->error('Upload failed, please try again later.');
+            $this->error(lang('上传失败，请稍后再试。'));
         } catch (HttpResponseException $exception) {
             throw $exception;
         } catch (\Exception $exception) {
@@ -233,7 +245,7 @@ class Upload extends Controller
             if ($file instanceof UploadedFile) {
                 return $file;
             }
-            $this->error('Failed to read uploaded file.');
+            $this->error(lang('读取上传文件失败。'));
         } catch (HttpResponseException $exception) {
             throw $exception;
         } catch (\Exception $exception) {
@@ -248,7 +260,7 @@ class Upload extends Controller
         $uuid = $context->getUserId();
         [$unid, $exts] = $context->withUploadUnid();
         if ($check && empty($uuid) && empty($unid)) {
-            $this->error('Login is required before upload.');
+            $this->error(lang('上传前请先登录。'));
         }
         return [$uuid, $unid, $exts];
     }

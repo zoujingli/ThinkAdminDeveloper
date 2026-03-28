@@ -23,6 +23,7 @@ namespace think\admin\tests;
 use plugin\system\controller\Auth as AuthController;
 use plugin\system\model\SystemAuth;
 use plugin\system\model\SystemNode;
+use plugin\system\service\LangService;
 use think\admin\runtime\RequestContext;
 use think\admin\tests\Support\SqliteIntegrationTestCase;
 use think\exception\HttpResponseException;
@@ -38,22 +39,22 @@ class AuthControllerTest extends SqliteIntegrationTestCase
     {
         $this->createSystemAuthFixture([
             'title' => '命中权限',
-            'utype' => 'staff',
-            'desc' => '命中说明',
+            'code' => 'match-role',
+            'remark' => '命中说明',
             'status' => 1,
             'create_time' => '2026-03-10 08:00:00',
         ]);
         $this->createSystemAuthFixture([
             'title' => '跨日权限',
-            'utype' => 'staff',
-            'desc' => '跨日说明',
+            'code' => 'cross-day-role',
+            'remark' => '跨日说明',
             'status' => 1,
             'create_time' => '2026-03-09 08:00:00',
         ]);
         $this->createSystemAuthFixture([
             'title' => '禁用权限',
-            'utype' => 'staff',
-            'desc' => '禁用说明',
+            'code' => 'disabled-role',
+            'remark' => '禁用说明',
             'status' => 0,
             'create_time' => '2026-03-10 09:00:00',
         ]);
@@ -106,6 +107,9 @@ class AuthControllerTest extends SqliteIntegrationTestCase
         $this->assertStringContainsString('layui-card-line', $html);
         $this->assertStringContainsString('class="layui-card-table"', $html);
         $this->assertStringContainsString('class="think-box-shadow"', $html);
+        $this->assertStringContainsString('name="code"', $html);
+        $this->assertStringContainsString('name="remark"', $html);
+        $this->assertStringContainsString('name="status"', $html);
         $this->assertStringContainsString('id="AuthTreeKeyword"', $html);
         $this->assertStringContainsString('id="AuthTreeKeywordClear"', $html);
         $this->assertStringContainsString('搜索权限节点名称，按 / 快速聚焦', $html);
@@ -138,6 +142,18 @@ class AuthControllerTest extends SqliteIntegrationTestCase
         $this->assertStringNotContainsString('{$vo.id', $html);
     }
 
+    public function testAddGetRendersEnglishPermissionTreeControlsWhenLangSetIsEnUs(): void
+    {
+        $this->switchSystemLang('en-us');
+
+        $html = $this->callActionHtml('add', ['plugin' => 'tester']);
+
+        $this->assertStringContainsString('All Plugins', $html);
+        $this->assertStringContainsString('Selected Only', $html);
+        $this->assertStringContainsString('Permission Changes', $html);
+        $this->assertStringNotContainsString('全部插件', $html);
+    }
+
     public function testAddJsonReturnsTreePayload(): void
     {
         $result = $this->callFormController('add', ['action' => 'json']);
@@ -152,8 +168,8 @@ class AuthControllerTest extends SqliteIntegrationTestCase
         $add = $this->callFormController('add', [
             'action' => 'save',
             'title' => '新增权限',
-            'utype' => 'staff',
-            'desc' => '新增说明',
+            'code' => 'system-create-role',
+            'remark' => '新增说明',
             'sort' => 12,
             'status' => 1,
             'nodes' => ['index/test/create', 'index/test/update'],
@@ -170,8 +186,8 @@ class AuthControllerTest extends SqliteIntegrationTestCase
             'action' => 'save',
             'id' => intval($created->getAttr('id')),
             'title' => '更新权限',
-            'utype' => 'manager',
-            'desc' => '更新说明',
+            'code' => 'system-manager-role',
+            'remark' => '更新说明',
             'sort' => 20,
             'status' => 0,
             'nodes' => ['index/test/final'],
@@ -183,8 +199,8 @@ class AuthControllerTest extends SqliteIntegrationTestCase
         $this->assertSame(1, intval($edit['code'] ?? 0));
         $this->assertSame('权限修改成功！', $edit['info'] ?? '');
         $this->assertSame('更新权限', $updated->getData('title'));
-        $this->assertSame('manager', $updated->getData('utype'));
-        $this->assertSame('更新说明', $updated->getData('desc'));
+        $this->assertSame('system-manager-role', $updated->getData('code'));
+        $this->assertSame('更新说明', $updated->getData('remark'));
         $this->assertSame(20, intval($updated->getData('sort')));
         $this->assertSame(0, intval($updated->getData('status')));
         $this->assertSame(['index/test/final'], array_values($nodes));
@@ -195,8 +211,8 @@ class AuthControllerTest extends SqliteIntegrationTestCase
         $result = $this->callFormController('add', [
             'action' => 'save',
             'title' => '缺少节点权限',
-            'utype' => 'staff',
-            'desc' => '空节点',
+            'code' => 'missing-node-role',
+            'remark' => '空节点',
             'sort' => 0,
             'status' => 1,
             'nodes' => [],
@@ -245,6 +261,12 @@ class AuthControllerTest extends SqliteIntegrationTestCase
     {
         $this->createSystemAuthTable();
         $this->createSystemAuthNodeTable();
+    }
+
+    private function switchSystemLang(string $langSet): void
+    {
+        $this->app->lang->switchLangSet($langSet);
+        LangService::load($this->app, $langSet);
     }
 
     private function callIndexController(array $query): array

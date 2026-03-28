@@ -20,6 +20,7 @@ declare(strict_types=1);
 
 namespace plugin\system\model;
 
+use plugin\system\service\ConfigService;
 use think\admin\Model;
 use think\model\concern\SoftDelete;
 use think\model\relation\HasOne;
@@ -59,7 +60,7 @@ class SystemUser extends Model
      */
     public function userinfo(): HasOne
     {
-        $relation = $this->hasOne(SystemBase::class, 'code', 'usertype');
+        $relation = $this->hasOne(SystemBase::class, 'code', 'base_code');
         $relation->where([
             'type' => '身份权限', 'status' => 1,
         ]);
@@ -73,7 +74,7 @@ class SystemUser extends Model
     {
         if (empty($value)) {
             try {
-                $host = strval(sysdata('system.site.host') ?: 'https://v6.thinkadmin.top');
+                $host = ConfigService::getSiteHost('https://v6.thinkadmin.top');
                 return "{$host}/static/theme/img/headimg.png";
             } catch (\Exception $exception) {
                 return 'https://v6.thinkadmin.top/static/theme/img/headimg.png';

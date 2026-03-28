@@ -9,34 +9,34 @@
 {block name="body"}
 <div class="login-container" {:isset($loginStyle) && is_scalar($loginStyle) ? $loginStyle : ''}>
     <div class="header notselect layui-hide-xs">
-        <a href="{:url('@')}" class="title">{:is_scalar(sysdata('system.site.application_name')) ? sysdata('system.site.application_name') : ''}<span>{:is_scalar(sysdata('system.site.application_version')) ? sysdata('system.site.application_version') : ''}</span></a>
+        <a href="{$homeUrl|default=''}" class="title">{$applicationName|default=''}<span>{$applicationVersion|default=''}</span></a>
         {notempty name='runtimeMode'}
         <a class="pull-right layui-anim layui-anim-fadein" target="_blank" href='https://gitee.com/zoujingli/ThinkAdmin'>
             <img src='https://gitee.com/zoujingli/ThinkAdmin/widgets/widget_1.svg' alt='Fork me on Gitee'>
         </a>
         {/notempty}
     </div>
-    <form data-login-form data-login-token="{$loginToken}" data-login-password-key="{$loginPasswordKey}" data-login-slider="{:url('system/login/slider',[],false)}" data-login-check="{:url('system/login/check',[],false)}" onsubmit="return false" method="post" class="layui-anim layui-anim-upbit" autocomplete="off">
-        <h2 class="notselect">{:is_scalar(sysdata('system.site.login_title')) && sysdata('system.site.login_title') ? sysdata('system.site.login_title') : '系统管理'}</h2>
+    <form data-login-form data-login-token="{$loginToken}" data-login-password-key="{$loginPasswordKey}" data-login-slider="{$loginSliderUrl|default=''}" data-login-check="{$loginCheckUrl|default=''}" onsubmit="return false" method="post" class="layui-anim layui-anim-upbit" autocomplete="off">
+        <h2 class="notselect">{:isset($loginTitle) && is_scalar($loginTitle) && $loginTitle !== '' ? $loginTitle : lang('系统管理')}</h2>
         <input type="hidden" name="token" value="{$loginToken}">
         <input type="hidden" name="password_mode" value="plain">
         <ul>
             <li class="username">
                 <label class="label-required-null">
                     <i class="layui-icon layui-icon-username"></i>
-                    <input class="layui-input" required pattern="^\S{4,}$" vali-name="登录账号" name="username" autofocus autocomplete="off" placeholder="登录账号">
+                    <input class="layui-input" required pattern="^\S{4,}$" vali-name="{:lang('登录账号')}" name="username" autofocus autocomplete="off" placeholder="{:lang('登录账号')}">
                 </label>
             </li>
             <li class="password">
                 <label class="label-required-null">
                     <i class="layui-icon layui-icon-password"></i>
-                    <input class="layui-input" required pattern="^\S{4,}$" vali-name="登录密码" name="password" maxlength="32" type="password" autocomplete="off" placeholder="登录密码" lay-affix="eye">
+                    <input class="layui-input" required pattern="^\S{4,}$" vali-name="{:lang('登录密码')}" name="password" maxlength="32" type="password" autocomplete="off" placeholder="{:lang('登录密码')}" lay-affix="eye">
                 </label>
             </li>
             <li class="verify layui-hide">
                 <input type="hidden" name="uniqid" value="">
                 <input type="hidden" name="verify" value="">
-                <div class="slider-title">检测到登录错误后，需要先完成滑块验证</div>
+                <div class="slider-title">{:lang('检测到登录错误后，需要先完成滑块验证')}</div>
                 <div class="slider-panel" data-login-slider-panel>
                     <div class="slider-stage">
                         <img class="slider-bg" data-slider-bg alt="login-bg">
@@ -44,29 +44,40 @@
                     </div>
                     <div class="slider-bar">
                         <div class="slider-bar-track" data-slider-track></div>
-                        <div class="slider-bar-text" data-slider-message>请按住滑块，拖动完成验证</div>
+                        <div class="slider-bar-text" data-slider-message>{:lang('请按住滑块，拖动完成验证')}</div>
                         <span class="slider-handle" data-slider-handle><i class="layui-icon layui-icon-slider"></i></span>
                     </div>
                     <div class="slider-actions">
-                        <span data-slider-status>首次登录无需验证</span>
-                        <a href="javascript:void(0)" data-slider-refresh>刷新拼图</a>
+                        <span data-slider-status>{:lang('首次登录无需验证')}</span>
+                        <a href="javascript:void(0)" data-slider-refresh>{:lang('刷新拼图')}</a>
                     </div>
                 </div>
             </li>
             <li class="text-center pt20">
-                <button type="submit" class="layui-btn layui-disabled full-width" data-form-loaded="立即登入">正在载入</button>
+                <button type="submit" class="layui-btn layui-disabled full-width" data-form-loaded="{:lang('立即登录')}">{:lang('正在载入')}</button>
             </li>
         </ul>
     </form>
     <div class="footer notselect">
-        <p class="layui-hide-xs">推荐使用 <a target="_blank" href="https://www.google.cn/chrome">Google Chrome</a> 或 <a target="_blank" href="https://www.microsoft.com/zh-cn/edge#platform">Microsoft Edge</a> 浏览器访问</p>
-        {:is_scalar(sysdata('system.site.copyright')) ? sysdata('system.site.copyright') : ''}
-        {if is_scalar(sysdata('system.site.public_security_filing')) && sysdata('system.site.public_security_filing')}<span class="pa5">|</span><a target="_blank" href="https://www.beian.gov.cn/portal/registerSystemInfo">{:sysdata('system.site.public_security_filing')}</a>{/if}
-        {if is_scalar(sysdata('system.site.miit_filing')) && sysdata('system.site.miit_filing')}<span class="pa5">|</span><a target="_blank" href="https://beian.miit.gov.cn/">{:sysdata('system.site.miit_filing')}</a>{/if}
+        <p class="layui-hide-xs">{:sprintf(lang('推荐使用 %s 或 %s 浏览器访问'), '<a target="_blank" href="https://www.google.cn/chrome">Google Chrome</a>', '<a target="_blank" href="https://www.microsoft.com/zh-cn/edge#platform">Microsoft Edge</a>')}</p>
+        {$copyrightText|default=''}
+        {if !empty($publicSecurityFiling)}<span class="pa5">|</span><a target="_blank" href="https://www.beian.gov.cn/portal/registerSystemInfo">{$publicSecurityFiling|default=''}</a>{/if}
+        {if !empty($miitFiling)}<span class="pa5">|</span><a target="_blank" href="https://beian.miit.gov.cn/">{$miitFiling|default=''}</a>{/if}
     </div>
 </div>
 {/block}
 
 {block name='script'}
+<script>
+    window.taLoginI18n = {
+        dragToVerify: "{:lang('请按住滑块，拖动完成验证')}",
+        sliderApiMissing: "{:lang('请设置滑块验证接口')}",
+        verifying: "{:lang('正在校验...')}",
+        verifyPassedContinue: "{:lang('验证通过，请继续登录')}",
+        sliderVerified: "{:lang('滑块验证通过')}",
+        wrongPositionRetry: "{:lang('位置不正确，请重试')}",
+        needVerifyFirst: "{:lang('请先完成滑块验证')}"
+    };
+</script>
 <script src="{$staticRoot|default=''}/login.js?at={:is_file(syspath('public/static/login.js')) ? filemtime(syspath('public/static/login.js')) : date('YmdHis')}"></script>
 {/block}

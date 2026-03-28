@@ -22,6 +22,7 @@ namespace plugin\system\controller;
 
 use plugin\system\builder\OplogBuilder;
 use plugin\system\model\SystemOplog;
+use plugin\system\service\OplogService;
 use think\admin\Controller;
 use think\admin\helper\QueryHelper;
 use think\db\exception\DataNotFoundException;
@@ -45,19 +46,11 @@ class Oplog extends Controller
      */
     public function index()
     {
-        $context = [
-            'requestBaseUrl' => $this->request->baseUrl(),
-            'title' => '系统日志管理',
-            'users' => [],
-            'actions' => [],
-        ];
-        $columns = SystemOplog::mk()->column('action,username', 'id');
-        $context['users'] = array_values(array_filter(array_unique(array_column($columns, 'username')), 'strlen'));
-        $context['actions'] = array_values(array_filter(array_unique(array_column($columns, 'action')), 'strlen'));
+        $context = OplogService::buildIndexContext();
         SystemOplog::mQuery()->layTable(function () use ($context) {
             $this->respondWithPageBuilder(OplogBuilder::buildIndexPage($context), $context);
         }, static function (QueryHelper $query) {
-            $query->dateBetween('create_time')->equal('username,action')->like('content,geoip,node');
+            OplogService::applyIndexQuery($query);
         });
     }
 
@@ -70,7 +63,7 @@ class Oplog extends Controller
         try {
             SystemOplog::mQuery()->empty();
             sysoplog('系统运维管理', '成功清理所有日志');
-            $this->success('日志清理成功！');
+            $this->success(lang('日志清理成功！'));
         } catch (HttpResponseException $exception) {
             throw $exception;
         } catch (\Exception $exception) {
@@ -94,13 +87,6 @@ class Oplog extends Controller
      */
     protected function _index_page_filter(array &$data): void
     {
-        $region = new \Ip2Region();
-        foreach ($data as &$vo) {
-            try {
-                $vo['geoisp'] = $region->simple($vo['geoip']);
-            } catch (\Exception $exception) {
-                $vo['geoip'] = $exception->getMessage();
-            }
-        }
+        OplogService::enrichRows($data);
     }
 }

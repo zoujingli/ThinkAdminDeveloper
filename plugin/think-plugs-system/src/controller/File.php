@@ -21,12 +21,11 @@ declare(strict_types=1);
 namespace plugin\system\controller;
 
 use plugin\system\builder\FileBuilder;
+use plugin\system\service\FileService;
 use plugin\system\model\SystemFile;
 use think\admin\Controller;
-use think\admin\builder\form\FormBuilder;
+use think\admin\Exception;
 use think\admin\helper\QueryHelper;
-use think\admin\runtime\SystemContext;
-use think\admin\Storage;
 use think\db\exception\DataNotFoundException;
 use think\db\exception\DbException;
 use think\db\exception\ModelNotFoundException;
@@ -36,8 +35,6 @@ use think\db\exception\ModelNotFoundException;
  */
 class File extends Controller
 {
-    protected array $types = [];
-
     /**
      * 系统文件管理.
      * @auth true
@@ -48,23 +45,17 @@ class File extends Controller
      */
     public function index()
     {
-        $this->authorizeView();
-        $context = [
-            'title' => '系统文件管理',
-            'requestBaseUrl' => request()->baseUrl(),
-            'xexts' => SystemFile::mk()->distinct()->column('xext'),
-            'types' => $this->types,
-        ];
-        SystemFile::mQuery()->layTable(function () use ($context) {
-            $this->respondWithPageBuilder(FileBuilder::buildIndexPage($context), $context);
-        }, function (QueryHelper $query) {
-            $query->like('name,hash,xext')->equal('type')->dateBetween('create_time');
-            $query->where([
-                'issafe' => 0,
-                'status' => 2,
-                'uuid' => SystemContext::instance()->getUserId(),
-            ]);
-        });
+        try {
+            FileService::authorizeView();
+            $context = FileService::buildIndexContext();
+            SystemFile::mQuery()->layTable(function () use ($context) {
+                $this->respondWithPageBuilder(FileBuilder::buildIndexPage($context), $context);
+            }, static function (QueryHelper $query) use ($context) {
+                FileService::applyIndexQuery($query, $context);
+            });
+        } catch (Exception $exception) {
+            $this->error($exception->getMessage());
+        }
     }
 
     /**
@@ -73,23 +64,18 @@ class File extends Controller
      */
     public function edit()
     {
-        $this->authorizeManage();
-        $where = $this->buildManageWhere();
-        $id = intval($this->request->param('id', 0));
-        if ($id < 1 || SystemFile::mk()->where(['id' => $id])->where($where)->findOrEmpty()->isEmpty()) {
-            $this->error('File record does not exist.');
-        }
+        try {
+            FileService::authorizeManage();
+            $context = FileService::buildEditContext();
+            $builder = FileBuilder::buildEditForm($context);
+            if ($this->request->isGet()) {
+                $this->respondWithFormBuilder($builder, $context, FileService::loadEditFormData($context));
+            }
 
-        $builder = $this->buildEditForm();
-        $file = $this->loadEditableFile($id, $where);
-        if ($this->request->isGet()) {
-            $builder->fetch(['vo' => $file]);
-        } else {
-            $data = $builder->validate();
-            SystemFile::mSave([
-                'id' => intval($this->request->post('id', 0)),
-                'name' => strval($data['name'] ?? ''),
-            ], '', $where);
+            FileService::saveEditFormData($builder->validate(), $context);
+            $this->success(lang('数据保存成功！'));
+        } catch (Exception $exception) {
+            $this->error($exception->getMessage());
         }
     }
 
@@ -99,8 +85,12 @@ class File extends Controller
      */
     public function remove()
     {
-        $this->authorizeManage();
-        SystemFile::mDelete('', $this->buildManageWhere());
+        try {
+            FileService::authorizeManage();
+            SystemFile::mDelete('', FileService::buildManageWhere());
+        } catch (Exception $exception) {
+            $this->error($exception->getMessage());
+        }
     }
 
     /**
@@ -110,21 +100,13 @@ class File extends Controller
      */
     public function distinct()
     {
-        $this->authorizeManage();
-        $map = ['issafe' => 0, 'uuid' => SystemContext::instance()->getUserId()];
-        $keepSubQuery = SystemFile::mk()->fieldRaw('MAX(id) AS id')->where($map)->group('type, xkey')->buildSql();
-        SystemFile::mk()->where($map)->whereNotExists(function ($query) use ($keepSubQuery) {
-            $query->table("({$keepSubQuery})")->alias('f2')->whereRaw('f2.id = system_file.id');
-        })->delete();
-        $this->success('Duplicate files cleared.');
-    }
-
-    /**
-     * 控制器初始化.
-     */
-    protected function initialize()
-    {
-        $this->types = Storage::types();
+        try {
+            FileService::authorizeManage();
+            FileService::clearDistinctFiles();
+            $this->success(lang('文件去重清理成功！'));
+        } catch (Exception $exception) {
+            $this->error($exception->getMessage());
+        }
     }
 
     /**
@@ -132,96 +114,10 @@ class File extends Controller
      */
     protected function _page_filter(array &$data)
     {
+        $types = FileService::getTypes();
         foreach ($data as &$vo) {
-            $vo['ctype'] = $this->types[$vo['type']] ?? $vo['type'];
+            $vo = SystemFile::normalizeRow($vo);
+            $vo['ctype'] = $types[$vo['type']] ?? $vo['type'];
         }
-    }
-
-    /**
-     * 权限异常处理.
-     */
-    private function authorizeView(): void
-    {
-        if ($this->canView()) {
-            return;
-        }
-        $this->error('Permission denied.');
-    }
-
-    private function authorizeManage(): void
-    {
-        if ($this->canManage()) {
-            return;
-        }
-        $this->error('Permission denied.');
-    }
-
-    private function canView(): bool
-    {
-        $context = SystemContext::instance();
-        return $context->isSuper() || $context->check('system/file/index') || $this->canManage();
-    }
-
-    /**
-     * 是否拥有权限.
-     */
-    private function canManage(): bool
-    {
-        $context = SystemContext::instance();
-        return $context->isSuper()
-            || $context->check('system/file/edit')
-            || $context->check('system/file/remove')
-            || $context->check('system/file/distinct');
-    }
-
-    /**
-     * 生成管理员条件.
-     */
-    private function buildManageWhere(): array
-    {
-        return SystemContext::instance()->isSuper() ? [] : ['uuid' => SystemContext::instance()->getUserId()];
-    }
-
-    /**
-     * 生成编辑表单.
-     */
-    private function buildEditForm(): FormBuilder
-    {
-        return FormBuilder::make()
-            ->define(function ($form) {
-                $form->fields(function ($fields) {
-                    $fields->text('name', 'File Name', 'Name', true, '', null, [
-                        'maxlength' => 100,
-                        'required-error' => 'File name is required.',
-                    ])->text('size_display', 'File Size', 'Size', false, '', null, [
-                        'readonly' => null,
-                        'class' => 'layui-bg-gray',
-                    ])->text('type_display', 'Storage Driver', 'Type', false, '', null, [
-                        'readonly' => null,
-                        'class' => 'layui-bg-gray',
-                    ])->text('hash', 'File Hash', 'Hash', false, '', null, [
-                        'readonly' => null,
-                        'class' => 'layui-bg-gray',
-                    ])->text('xurl', 'File URL', 'Link', false, '', null, [
-                        'readonly' => null,
-                        'class' => 'layui-bg-gray',
-                    ]);
-                })->actions(function ($actions) {
-                    $actions->submit()->cancel();
-                });
-            })
-            ->build();
-    }
-
-    /**
-     * 加载可编辑文件.
-     */
-    private function loadEditableFile(int $id, array $where): array
-    {
-        $file = SystemFile::mk()->where(['id' => $id])->where($where)->findOrEmpty();
-        $data = $file->toArray();
-        $data['size_display'] = format_bytes(intval($data['size'] ?? 0));
-        $data['type_display'] = $this->types[$data['type'] ?? ''] ?? strval($data['type'] ?? '');
-        return $data;
     }
 }

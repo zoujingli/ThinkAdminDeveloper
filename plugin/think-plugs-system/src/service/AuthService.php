@@ -94,7 +94,7 @@ class AuthService extends Service
         $pluginGroup = trim(strval(request()->get('plugin_group', '')));
         $type = self::normalizeIndexType(strval(request()->get('type', 'index')));
         return [
-            'title' => '系统权限管理',
+            'title' => strval(lang('系统权限管理')),
             'type' => $type,
             'requestBaseUrl' => request()->baseUrl(),
             'pluginGroup' => $pluginGroup,
@@ -129,7 +129,7 @@ class AuthService extends Service
      */
     public static function applyIndexQuery(QueryHelper $query, array $context = []): void
     {
-        $query->like('title,desc')->dateBetween('create_time');
+        $query->like('title,code,remark')->dateBetween('create_time');
         $type = self::normalizeIndexType(strval($context['type'] ?? request()->get('type', 'index')));
         $query->where(['status' => $type === 'recycle' ? 0 : 1]);
         $group = trim(strval($context['pluginGroup'] ?? request()->get('plugin_group', '')));
@@ -176,10 +176,18 @@ class AuthService extends Service
 
         $item = SystemAuth::mk()->findOrEmpty($id);
         if ($item->isEmpty()) {
-            throw new Exception('权限记录不存在！');
+            throw new Exception(lang('权限记录不存在！'));
         }
 
-        return $item->toArray();
+        $data = $item->toArray();
+        if (!isset($data['code']) && isset($data['utype'])) {
+            $data['code'] = strval($data['utype']);
+        }
+        if (!isset($data['remark']) && isset($data['desc'])) {
+            $data['remark'] = strval($data['desc']);
+        }
+
+        return $data;
     }
 
     /**
@@ -224,14 +232,14 @@ class AuthService extends Service
     {
         $status = intval(request()->post('status', 1));
         if (!in_array($status, [0, 1], true)) {
-            throw new Exception('状态值范围异常！');
+            throw new Exception(lang('状态值范围异常！'));
         }
 
         return [
             'id' => intval($context['id'] ?? 0),
             'title' => trim(strval($data['title'] ?? '')),
-            'desc' => trim(strval($data['desc'] ?? '')),
-            'utype' => trim(strval(request()->post('utype', ''))),
+            'code' => self::normalizeRoleCode(strval($data['code'] ?? '')),
+            'remark' => trim(strval($data['remark'] ?? '')),
             'sort' => intval(request()->post('sort', 0)),
             'status' => $status,
             'nodes' => self::normalizeNodes(request()->param('nodes', $data['nodes'] ?? [])),
@@ -247,24 +255,26 @@ class AuthService extends Service
     {
         $nodes = is_array($data['nodes'] ?? null) ? $data['nodes'] : [];
         if (count($nodes) < 1) {
-            throw new Exception('未配置功能节点！');
+            throw new Exception(lang('未配置功能节点！'));
         }
 
         $id = intval($data['id'] ?? 0);
         $item = $id > 0 ? SystemAuth::mk()->findOrEmpty($id) : SystemAuth::mk();
         if ($id > 0 && $item->isEmpty()) {
-            throw new Exception('权限记录不存在！');
+            throw new Exception(lang('权限记录不存在！'));
         }
+
+        self::assertRoleCodeUnique(strval($data['code'] ?? ''), $id);
 
         Library::$sapp->db->transaction(function () use ($item, $data, $nodes): void {
             if ($item->save([
                 'title' => strval($data['title'] ?? ''),
-                'utype' => strval($data['utype'] ?? ''),
-                'desc' => strval($data['desc'] ?? ''),
+                'code' => strval($data['code'] ?? ''),
+                'remark' => strval($data['remark'] ?? ''),
                 'sort' => intval($data['sort'] ?? 0),
                 'status' => intval($data['status'] ?? 1),
             ]) === false) {
-                throw new Exception('权限保存失败，请稍候再试！');
+                throw new Exception(lang('权限保存失败，请稍候再试！'));
             }
 
             $auth = intval($item->getAttr('id'));
@@ -281,6 +291,32 @@ class AuthService extends Service
 
             sysoplog('系统权限管理', "配置系统权限[{$auth}]授权成功");
         });
+    }
+
+    private static function normalizeRoleCode(string $code): string
+    {
+        $code = strtolower(trim($code));
+        $code = preg_replace('/[^a-z0-9:_-]+/', '-', $code) ?: '';
+        $code = trim($code, '-_:');
+        if ($code === '') {
+            throw new Exception(lang('角色编码不能为空！'));
+        }
+        if (!preg_match('/^[a-z][a-z0-9:_-]{2,49}$/', $code)) {
+            throw new Exception(lang('角色编码格式错误，请使用 3-50 位小写字母、数字、中划线、下划线或冒号组合！'));
+        }
+
+        return $code;
+    }
+
+    private static function assertRoleCodeUnique(string $code, int $id = 0): void
+    {
+        $query = SystemAuth::mk()->where(['code' => $code]);
+        if ($id > 0) {
+            $query->where('id', '<>', $id);
+        }
+        if ($query->count() > 0) {
+            throw new Exception(lang('角色编码已经存在，请使用其它编码！'));
+        }
     }
 
     /**
@@ -409,23 +445,23 @@ class AuthService extends Service
 
         $data = JwtToken::verify($token);
         if (($data['typ'] ?? '') !== self::TOKEN_TYPE || empty($data['uid'])) {
-            throw new Exception('登录状态已失效，请重新登录！');
+            throw new Exception(lang('登录状态已失效，请重新登录！'));
         }
         self::verifySession($data);
 
         $user = SystemUser::mk()->where(['id' => intval($data['uid'])])->findOrEmpty()->toArray();
 
         if (empty($user)) {
-            throw new Exception('用户不存在或已被删除，请重新登录！');
+            throw new Exception(lang('用户不存在或已被删除，请重新登录！'));
         }
         if (empty($user['status'])) {
-            throw new Exception('账号已经被禁用，请联系管理员！');
+            throw new Exception(lang('账号已经被禁用，请联系管理员！'));
         }
         if (($invalidAt = self::getTokenInvalidAt(intval($user['id']))) > 0 && intval($data['iat'] ?? 0) <= $invalidAt) {
-            throw new Exception('登录状态已失效，请重新登录！');
+            throw new Exception(lang('登录状态已失效，请重新登录！'));
         }
         if (self::passwordDigest(strval($user['password'])) !== strval($data['pwd'] ?? '')) {
-            throw new Exception('登录状态已失效，请重新登录！');
+            throw new Exception(lang('登录状态已失效，请重新登录！'));
         }
 
         $context->setToken($token);
@@ -587,7 +623,7 @@ class AuthService extends Service
      */
     public static function getUserTheme(): string
     {
-        $default = strval(sysdata('system.site.theme') ?: 'default');
+        $default = ConfigService::getSiteTheme();
         return static::getUserData('site_theme', $default);
     }
 
@@ -828,7 +864,8 @@ class AuthService extends Service
         $user = self::normalizeUser($user);
         if (!isset($user['nodes']) || $force) {
             $user['nodes'] = [];
-            if (!empty($user['id']) && $user['username'] !== static::getSuperName() && count($aids = str2arr(strval($user['authorize'] ?? ''))) > 0) {
+            $authIds = strval($user['auth_ids'] ?? ($user['authorize'] ?? ''));
+            if (!empty($user['id']) && $user['username'] !== static::getSuperName() && count($aids = str2arr($authIds)) > 0) {
                 $aids = SystemAuth::mk()->where(['status' => 1])->whereIn('id', $aids)->column('id');
                 if (!empty($aids)) {
                     $user['nodes'] = SystemNode::mk()->distinct()->whereIn('auth', $aids)->column('node');
@@ -871,7 +908,7 @@ class AuthService extends Service
 
         $scope = "sid:{$sessionId}";
         if (!CacheSession::exists($scope)) {
-            throw new Exception('登录状态已失效，请重新登录！');
+            throw new Exception(lang('登录状态已失效，请重新登录！'));
         }
         CacheSession::touch(static::getTokenExpire(), $scope);
     }

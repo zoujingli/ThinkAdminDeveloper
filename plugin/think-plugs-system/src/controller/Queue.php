@@ -21,12 +21,11 @@ declare(strict_types=1);
 namespace plugin\system\controller;
 
 use plugin\system\builder\QueueBuilder;
-use plugin\system\service\AuthService;
+use plugin\system\service\QueueService as QueuePageService;
 use plugin\worker\model\SystemQueue;
-use plugin\worker\service\ProcessService;
 use think\admin\Controller;
 use think\admin\helper\QueryHelper;
-use think\admin\service\QueueService;
+use think\admin\service\QueueService as QueueRuntimeService;
 use think\db\exception\DataNotFoundException;
 use think\db\exception\DbException;
 use think\db\exception\ModelNotFoundException;
@@ -48,24 +47,11 @@ class Queue extends Controller
      */
     public function index()
     {
-        $context = [
-            'title' => '系统任务管理',
-            'requestBaseUrl' => $this->request->baseUrl(),
-            'iswin' => ProcessService::isWin(),
-            'super' => AuthService::isSuper(),
-            'command' => '',
-        ];
-        if ($context['super']) {
-            $context['command'] = ProcessService::think(ProcessService::workerCommand('start', 'queue', true));
-            if (!$context['iswin'] && !empty($_SERVER['USER'])) {
-                $context['command'] = "sudo -u {$_SERVER['USER']} {$context['command']}";
-            }
-        }
+        $context = QueuePageService::buildIndexContext();
         SystemQueue::mQuery()->layTable(function () use ($context) {
             $this->respondWithPageBuilder(QueueBuilder::buildIndexPage($context), $context);
         }, static function (QueryHelper $query) {
-            $query->equal('status')->like('code|title#title,command');
-            $query->timeBetween('enter_time,exec_time')->dateBetween('create_time');
+            QueuePageService::applyIndexQuery($query);
         });
     }
 
@@ -76,10 +62,10 @@ class Queue extends Controller
     public function redo()
     {
         try {
-            $data = $this->_vali(['code.require' => '任务编号不能为空！']);
-            $queue = QueueService::instance()->initialize($data['code'])->reset();
-            $queue->progress(1, '>>> 任务重置成功 <<<', '0.00');
-            $this->success('任务重置成功！', $queue->getCode());
+            $data = $this->_vali(['code.require' => lang('任务编号不能为空！')]);
+            $queue = QueueRuntimeService::instance()->initialize($data['code'])->reset();
+            $queue->progress(1, strval(lang('>>> 任务重置成功 <<<')), '0.00');
+            $this->success(lang('任务重置成功！'), $queue->getCode());
         } catch (HttpResponseException $exception) {
             throw $exception;
         } catch (\Exception $exception) {
@@ -114,20 +100,6 @@ class Queue extends Controller
      */
     protected function _index_page_filter(array $data, array &$result)
     {
-        $result['extra'] = ['dos' => 0, 'pre' => 0, 'oks' => 0, 'ers' => 0];
-        SystemQueue::mk()->field('status,count(1) count')->group('status')->select()->map(function ($item) use (&$result) {
-            if (intval($item['status']) === 1) {
-                $result['extra']['pre'] = $item['count'];
-            }
-            if (intval($item['status']) === 2) {
-                $result['extra']['dos'] = $item['count'];
-            }
-            if (intval($item['status']) === 3) {
-                $result['extra']['oks'] = $item['count'];
-            }
-            if (intval($item['status']) === 4) {
-                $result['extra']['ers'] = $item['count'];
-            }
-        });
+        QueuePageService::enrichPageResult($result);
     }
 }

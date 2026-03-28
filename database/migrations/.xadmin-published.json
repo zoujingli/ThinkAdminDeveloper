@@ -1,34 +1,34 @@
 {
     "20241010000005_install_account20241010.php": {
         "source": "vendor/zoujingli/think-plugs-account/stc/database/20241010000005_install_account20241010.php",
-        "mtime": 1774105652
+        "mtime": 1774079121
     },
     "20241010000006_install_payment20241010.php": {
         "source": "vendor/zoujingli/think-plugs-payment/stc/database/20241010000006_install_payment20241010.php",
-        "mtime": 1774105655
+        "mtime": 1774079121
     },
     "20241010000001_install_system20241010.php": {
         "source": "vendor/zoujingli/think-plugs-system/stc/database/20241010000001_install_system20241010.php",
-        "mtime": 1774160506
+        "mtime": 1774666552
     },
     "20241010000003_install_wechat20241010.php": {
         "source": "vendor/zoujingli/think-plugs-wechat-client/stc/database/20241010000003_install_wechat20241010.php",
-        "mtime": 1774105659
+        "mtime": 1774079121
     },
     "20241010000009_install_wechat_service20241010.php": {
         "source": "vendor/zoujingli/think-plugs-wechat-service/stc/database/20241010000009_install_wechat_service20241010.php",
-        "mtime": 1774105661
+        "mtime": 1774079121
     },
     "20241010000007_install_wemall20241010.php": {
         "source": "vendor/zoujingli/think-plugs-wemall/stc/database/20241010000007_install_wemall20241010.php",
-        "mtime": 1774105663
+        "mtime": 1774079121
     },
     "20241010000008_install_worker20241010.php": {
         "source": "vendor/zoujingli/think-plugs-worker/stc/database/20241010000008_install_worker20241010.php",
-        "mtime": 1773935624
+        "mtime": 1774236276
     },
     "20241010000010_install_wuma20241010.php": {
         "source": "vendor/zoujingli/think-plugs-wuma/stc/database/20241010000010_install_wuma20241010.php",
-        "mtime": 1774105664
+        "mtime": 1774079121
     }
 }

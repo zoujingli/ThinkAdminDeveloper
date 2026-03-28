@@ -18,10 +18,12 @@ declare(strict_types=1);
  * +----------------------------------------------------------------------
  */
 use plugin\system\service\PluginService;
+use plugin\system\service\ConfigService;
 use think\admin\Library;
 use think\admin\route\Url;
 use think\admin\runtime\RequestContext;
 use think\admin\runtime\SystemContext;
+use think\admin\service\AppService;
 
 if (!function_exists('auth')) {
     /**
@@ -153,5 +155,70 @@ if (!function_exists('admin_menu_filter')) {
             return strval($menu['node'] ?? '') !== 'system/plugin/index'
                 && strval($menu['url'] ?? '') !== 'system/plugin/index';
         }));
+    }
+}
+
+if (!function_exists('system_view_context')) {
+    /**
+     * 系统模板通用上下文。
+     * 为传统 fetch 视图与壳模板提供统一品牌、登录与入口变量。
+     *
+     * @return array<string, mixed>
+     */
+    function system_view_context(array $overrides = []): array
+    {
+        $system = SystemContext::instance();
+        try {
+            $site = ConfigService::getSiteConfig();
+        } catch (\Throwable) {
+            $site = [];
+        }
+
+        try {
+            $userId = $system->getUserId();
+            $username = trim(strval($system->getUser('username', '')));
+            $nickname = trim(strval($system->getUser('nickname', '')));
+            $headimg = strval($system->getUser('headimg', ''));
+            $isLogin = $system->isLogin();
+            $isSuper = $system->isSuper();
+            $theme = strval($system->getUser('site_theme', strval($site['theme'] ?? 'default')));
+            $token = $system->buildToken();
+        } catch (\Throwable) {
+            $userId = 0;
+            $username = '';
+            $nickname = '';
+            $headimg = '';
+            $isLogin = false;
+            $isSuper = false;
+            $theme = strval($site['theme'] ?? 'default');
+            $token = '';
+        }
+
+        $displayName = $nickname !== '' ? $nickname : $username;
+
+        $context = [
+            'pageTitle' => '',
+            'staticRoot' => AppService::uri('static'),
+            'websiteName' => strval($site['website_name'] ?? 'ThinkAdmin'),
+            'applicationName' => strval($site['application_name'] ?? 'ThinkAdmin'),
+            'applicationVersion' => strval($site['application_version'] ?? ''),
+            'browserIcon' => strval($site['browser_icon'] ?? ''),
+            'homeUrl' => function_exists('sysuri') ? sysuri('@') : '',
+            'loginUrl' => function_exists('sysuri') ? sysuri('system/login/index') : '',
+            'hasUser' => $isLogin && $username !== '',
+            'currentUserId' => $userId,
+            'currentUserName' => $username,
+            'currentUserDisplayName' => $displayName,
+            'currentUserHeadimg' => $headimg,
+            'profileUrl' => $userId > 0 && function_exists('sysuri') ? sysuri('system/index/info', ['id' => $userId]) : '',
+            'passwordUrl' => $userId > 0 && function_exists('sysuri') ? sysuri('system/index/pass', ['id' => $userId]) : '',
+            'themeUrl' => function_exists('sysuri') ? sysuri('system/index/theme') : '',
+            'logoutUrl' => function_exists('sysuri') ? sysuri('system/login/out') : '',
+            'super' => $isSuper,
+            'theme' => $theme !== '' ? $theme : 'default',
+            'tokenValueJson' => json_encode($token, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES),
+        ];
+
+        return array_merge($context, $overrides);
     }
 }

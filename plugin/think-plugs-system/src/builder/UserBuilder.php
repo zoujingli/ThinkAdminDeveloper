@@ -20,6 +20,7 @@ declare(strict_types=1);
 
 namespace plugin\system\builder;
 
+use think\admin\builder\BuilderLang;
 use think\admin\builder\form\FormBuilder;
 use think\admin\builder\form\FormBlocks;
 use think\admin\builder\form\FormNode;
@@ -101,7 +102,7 @@ class UserBuilder
         $requestBaseUrl = strval($context['requestBaseUrl'] ?? '');
         $bases = is_array($context['bases'] ?? null) ? $context['bases'] : [];
 
-        return PageBuilder::make()
+        return PageBuilder::tablePage()
             ->define(function ($page) use ($context, $type, $requestBaseUrl, $bases) {
                 SystemListPage::apply($page, strval($context['title'] ?? '系统用户管理'), $requestBaseUrl)
                     ->buttons(function ($buttons) use ($type) {
@@ -118,7 +119,7 @@ class UserBuilder
                     $search->hidden('type', $type)
                         ->input('username', '账号名称', '请输入账号或名称');
                     if (count($bases) > 0) {
-                        $search->select('usertype', '角色身份', self::buildBaseOptions($bases), ['lay-search' => null]);
+                        $search->select('base_code', '角色身份', self::buildBaseOptions($bases), ['lay-search' => null]);
                     }
                     $search->dateRange('login_at', '最后登录', '请选择登录时间')
                         ->dateRange('create_time', '创建时间', '请选择创建时间');
@@ -135,7 +136,7 @@ class UserBuilder
                         ->column(SystemTablePreset::textColumn('nickname', '用户名称'));
                     if (count($bases) > 0) {
                         $table->column([
-                            'field' => 'usertype',
+                            'field' => 'base_code',
                             'title' => '角色身份',
                             'minWidth' => 100,
                             'align' => 'center',
@@ -175,20 +176,17 @@ SCRIPT),
     {
         $withOldPassword = !empty($context['withOldPassword']);
         $passwordPattern = '^(?![\\d]+$)(?![a-zA-Z]+$)(?![^\\da-zA-Z]+$).{6,32}$';
-        return FormBuilder::make()
+        return FormBuilder::dialogForm()
             ->define(function ($form) use ($withOldPassword, $passwordPattern) {
                 $form->class('system-user-pass-form');
 
-                FormModules::intro($form, [
-                    'title' => '设置登录密码',
-                    'description' => '统一管理当前账号的登录密码，保存后新密码立即生效。',
-                ]);
-
                 FormModules::section($form, [
-                    'title' => '密码信息',
-                    'description' => '建议使用字母、数字和符号的组合，避免与其它系统密码重复。',
-                ], function ($section) use ($withOldPassword, $passwordPattern) {
-                    $section->fields(function ($fields) use ($withOldPassword, $passwordPattern) {
+                    'title' => '账号确认',
+                    'description' => $withOldPassword
+                        ? '先确认当前登录账号并完成旧密码验证，再继续设置新密码。'
+                        : '当前操作用于后台重置用户密码，请先确认账号无误后再设置新密码。',
+                ], function ($section) use ($withOldPassword) {
+                    $section->fields(function ($fields) use ($withOldPassword) {
                         $fields->text('username', '登录用户账号', 'Username', false, '登录用户账号创建后，不允许再次修改。', null, [
                             'readonly' => null,
                             'class' => 'think-bg-gray',
@@ -199,6 +197,14 @@ SCRIPT),
                                 'required-error' => '旧的密码不能为空！',
                             ]);
                         }
+                    });
+                });
+
+                FormModules::section($form, [
+                    'title' => '新密码设置',
+                    'description' => '建议使用字母、数字和符号的组合，并避免与其它系统密码重复。',
+                ], function ($section) use ($passwordPattern) {
+                    $section->fields(function ($fields) use ($passwordPattern) {
                         $fields->password('password', '新的登录密码', 'New Password', true, '密码必须包含大小写字母、数字、符号的任意两者组合。', $passwordPattern, [
                             'maxlength' => 32,
                             'required-error' => '登录密码不能为空！',
@@ -226,6 +232,7 @@ SCRIPT),
     public static function buildForm(array $context = []): FormBuilder
     {
         $isEdit = !empty($context['isEdit']);
+        $manageAccount = !isset($context['manageAccount']) || !empty($context['manageAccount']);
         $usernameAttrs = [
             'maxlength' => 64,
             'placeholder' => '请输入登录账号',
@@ -238,20 +245,17 @@ SCRIPT),
             $usernamePattern = null;
         }
 
-        return FormBuilder::make()
-            ->define(function ($form) use ($context, $usernamePattern, $usernameAttrs) {
+        return FormBuilder::dialogForm()
+            ->define(function ($form) use ($context, $usernamePattern, $usernameAttrs, $manageAccount, $isEdit) {
                 $form->action(strval($context['actionUrl'] ?? ''))
                     ->attrs(['id' => 'UserForm', 'data-table-id' => 'UserTable'])
-                    ->class('system-user-form');
+                    ->class($manageAccount ? 'system-user-form' : 'system-user-form system-user-info-form');
 
-                FormModules::intro($form, [
-                    'title' => !empty($context['isEdit']) ? '编辑系统用户' : '新增系统用户',
-                    'description' => '统一维护账号、身份权限和联系资料，保存后会同步到系统用户与访问授权。',
-                ]);
-
-                self::buildAccountSection($form, $usernamePattern, $usernameAttrs);
+                self::buildAccountSection($form, $usernamePattern, $usernameAttrs, $manageAccount, $isEdit);
+                self::buildPasswordSection($form, $manageAccount, $isEdit);
                 self::buildPermissionSection($form, $context);
-                self::buildProfileSection($form);
+                self::buildContactSection($form);
+                self::buildManageSection($form, $manageAccount);
 
                 $form->actions(function ($actions) {
                         $actions->submit()->cancel();
@@ -291,30 +295,62 @@ SCRIPT),
         return $options;
     }
 
-    private static function buildAccountSection(FormNode $form, ?string $usernamePattern, array $usernameAttrs): void
+    private static function buildAccountSection(FormNode $form, ?string $usernamePattern, array $usernameAttrs, bool $manageAccount, bool $isEdit): void
     {
-        FormBlocks::fieldset($form, '用户账号', function (FormNode $fieldset) use ($usernamePattern, $usernameAttrs) {
-            FormBlocks::row($fieldset, function (FormNode $row) use ($usernamePattern, $usernameAttrs) {
-                FormBlocks::col($row, 'layui-col-xs2 text-center pt15', function (FormNode $col) {
-                    $col->fields(function ($fields) {
-                        $field = $fields->image('headimg', '用户头像', 'Head Image');
-                        $field->label()->html('');
-                    });
-                });
-                FormBlocks::col($row, 'layui-col-xs5', function (FormNode $col) use ($usernamePattern, $usernameAttrs) {
-                    $col->fields(function ($fields) use ($usernamePattern, $usernameAttrs) {
-                        $fields->text('username', '登录账号', 'User Name', true, '登录账号不能少于4位字符，创建后不能再次修改.', $usernamePattern, $usernameAttrs);
-                    });
-                });
-                FormBlocks::col($row, 'layui-col-xs5', function (FormNode $col) {
-                    $col->fields(function ($fields) {
-                        $fields->text('nickname', '用户名称', 'Nick Name', true, '用于区分用户数据的用户名称，请尽量不要重复.', null, [
-                            'maxlength' => 64,
-                            'placeholder' => '请输入用户名称',
-                            'required-error' => '用户名称不能为空！',
-                        ]);
-                    });
-                });
+        FormModules::section($form, [
+            'title' => '账号信息',
+            'description' => $manageAccount
+                ? ($isEdit ? '维护头像、账号标识与展示名称。登录账号创建后保持只读。' : '先创建头像、登录账号和用户名称，账号创建后即作为后台登录标识。')
+                : '当前页面只维护你自己的头像、展示名称与联系资料，登录账号保持只读。',
+        ], function (FormNode $section) use ($usernamePattern, $usernameAttrs) {
+            $section->fields(function ($fields) use ($usernamePattern, $usernameAttrs) {
+                $fields->field([
+                    'type' => 'image',
+                    'name' => 'headimg',
+                    'title' => '用户头像',
+                    'subtitle' => 'Head Image',
+                    'remark' => '请输入头像地址，或点击右侧上传图标直接上传。',
+                    'attrs' => [
+                        'placeholder' => '请输入用户头像地址',
+                    ],
+                ])->types('gif,png,jpg,jpeg');
+                $fields->text('username', '登录账号', 'User Name', true, '登录账号不能少于 4 位字符，创建后不能再次修改。', $usernamePattern, $usernameAttrs);
+                $fields->text('nickname', '用户名称', 'Nick Name', true, '用于后台展示和日志区分，建议保持唯一且便于识别。', null, [
+                    'maxlength' => 64,
+                    'placeholder' => '请输入用户名称',
+                    'required-error' => '用户名称不能为空！',
+                ]);
+            });
+        });
+    }
+
+    private static function buildPasswordSection(FormNode $form, bool $manageAccount, bool $isEdit): void
+    {
+        if (!$manageAccount) {
+            return;
+        }
+
+        FormModules::section($form, [
+            'title' => '登录密码',
+            'description' => $isEdit
+                ? '默认显示 6 个星号，保留星号表示不修改当前密码；输入新密码后需再次确认。'
+                : '可直接设置初始登录密码；如果留空，则默认使用登录账号作为初始密码。',
+        ], function (FormNode $section) use ($isEdit) {
+            $section->fields(function ($fields) use ($isEdit) {
+                $mask = $isEdit ? password_mask() : '';
+                $help = $isEdit
+                    ? '保留默认星号则不修改密码，输入新密码后需再次确认。'
+                    : '可选。留空时默认使用登录账号作为初始密码。';
+
+                $fields->password('password', '登录密码', 'Password', false, $help, null, [
+                    'maxlength' => 32,
+                    'autocomplete' => 'new-password',
+                    'placeholder' => $isEdit ? '保留默认星号则不修改密码' : '请输入登录密码，留空则默认使用登录账号',
+                ])->defaultValue($mask)->password('repassword', '重复密码', 'Repeat Password', false, $help, null, [
+                    'maxlength' => 32,
+                    'autocomplete' => 'new-password',
+                    'placeholder' => $isEdit ? '保留默认星号则不修改密码' : '请再次输入登录密码',
+                ])->defaultValue($mask);
             });
         });
     }
@@ -330,7 +366,10 @@ SCRIPT),
             return;
         }
 
-        FormBlocks::fieldset($form, '用户权限', function (FormNode $fieldset) use ($baseGroups, $authGroups, $context) {
+        FormModules::section($form, [
+            'title' => '身份与权限',
+            'description' => '先选择角色身份，再补充访问权限。分组筛选只影响显示，不会影响已经勾选的内容。',
+        ], function (FormNode $fieldset) use ($baseGroups, $authGroups, $context) {
             if (count($baseGroups) > 0) {
                 FormBlocks::selectFilter(
                     $fieldset,
@@ -339,9 +378,9 @@ SCRIPT),
                     $baseGroups,
                     '角色身份',
                     'Role Identity',
-                    '只切换显示的身份分组，不会影响已选中的角色身份。'
+                    '切换显示的身份分组，不会影响当前已选中的角色身份。'
                 );
-                FormBlocks::groupedTemplateChoices($fieldset, $baseGroups, 'radio', 'usertype', 'user-base-group', 'base-group', 'usertype');
+                FormBlocks::groupedTemplateChoices($fieldset, $baseGroups, 'radio', 'base_code', 'user-base-group', 'base-group', 'base_code');
             }
 
             if (count($authGroups) > 0) {
@@ -352,55 +391,70 @@ SCRIPT),
                     $authGroups,
                     '访问权限',
                     'Role Permission',
-                    '只切换显示的权限分组，不会影响已选中的其它插件权限。'
+                    '切换显示的权限分组，不会影响当前已选中的其它插件权限。'
                 );
                 if (strval($context['super'] ?? '') !== '') {
                     $fieldset->div(function (FormNode $notice) {
                         $notice->node('span', function (FormNode $span) {
-                            $span->class('color-desc pl5')->html('超级用户拥有所有访问权限，不需要配置权限。');
+                            $span->class('color-desc pl5')->textNode(BuilderLang::text('超级用户拥有所有访问权限，不需要配置权限。'));
                         });
                     })->class('layui-form-item layui-hide user-super-notice');
                 }
                 $authWrap = $fieldset->div()->class('user-auth-wrap');
-                FormBlocks::groupedTemplateChoices($authWrap, $authGroups, 'checkbox', 'authorize', 'user-auth-group', 'auth-group', 'authorize');
+                FormBlocks::groupedTemplateChoices($authWrap, $authGroups, 'checkbox', 'auth_ids', 'user-auth-group', 'auth-group', 'auth_ids');
             }
         });
     }
 
-    private static function buildProfileSection(FormNode $form): void
+    private static function buildContactSection(FormNode $form): void
     {
-        FormBlocks::fieldset($form, '用户资料', function (FormNode $fieldset) {
-            FormBlocks::row($fieldset, function (FormNode $row) {
-                FormBlocks::col($row, 'layui-col-xs4', function (FormNode $col) {
-                    $col->fields(function ($fields) {
-                        $fields->text('contact_mail', '联系邮箱', 'Contact Email', false, '可选，请填写用户常用的电子邮箱', 'email', [
-                            'placeholder' => '请输入联系电子邮箱',
-                            'pattern-error' => '联系邮箱格式错误！',
-                        ]);
-                    });
-                });
-                FormBlocks::col($row, 'layui-col-xs4', function (FormNode $col) {
-                    $col->fields(function ($fields) {
-                        $fields->text('contact_phone', '联系手机', 'Contact Mobile', false, '可选，请填写用户常用的联系手机号', 'phone', [
-                            'maxlength' => 11,
-                            'placeholder' => '请输入用户联系手机',
-                            'type' => 'tel',
-                            'pattern-error' => '联系手机格式错误！',
-                        ]);
-                    });
-                });
-                FormBlocks::col($row, 'layui-col-xs4', function (FormNode $col) {
-                    $col->fields(function ($fields) {
-                        $fields->text('contact_qq', '联系QQ', 'Contact QQ', false, '可选，请填写用户常用的联系QQ号', 'qq', [
-                            'maxlength' => 11,
-                            'placeholder' => '请输入常用的联系QQ',
-                            'pattern-error' => '联系QQ格式错误！',
-                        ]);
-                    });
-                });
+        FormModules::section($form, [
+            'title' => '联系资料',
+            'description' => '联系资料用于运维沟通和身份识别，备注可补充职责、值班说明或交接信息。',
+        ], function (FormNode $fieldset) {
+            $fieldset->fields(function ($fields) {
+                $fields->text('contact_mail', '联系邮箱', 'Contact Email', false, '可选，请填写用户常用的电子邮箱。', 'email', [
+                    'placeholder' => '请输入联系电子邮箱',
+                    'pattern-error' => '联系邮箱格式错误！',
+                ])->text('contact_phone', '联系手机', 'Contact Mobile', false, '可选，请填写用户常用的联系手机号。', 'phone', [
+                    'maxlength' => 11,
+                    'placeholder' => '请输入用户联系手机',
+                    'type' => 'tel',
+                    'pattern-error' => '联系手机格式错误！',
+                ])->text('contact_qq', '联系QQ', 'Contact QQ', false, '可选，请填写用户常用的联系 QQ 号。', 'qq', [
+                    'maxlength' => 11,
+                    'placeholder' => '请输入常用的联系QQ',
+                    'pattern-error' => '联系QQ格式错误！',
+                ])->textarea('remark', '用户描述', 'User Remark', false, '可选，用于补充岗位职责、值班说明或交接备注。', [
+                    'placeholder' => '请输入用户描述',
+                ]);
             });
-            $fieldset->div()->class('mt10')->fields(function ($fields) {
-                $fields->textarea('describe', '用户描述', 'User Remark', false, '请输入用户描述');
+        });
+    }
+
+    private static function buildManageSection(FormNode $form, bool $withManageFields = true): void
+    {
+        if (!$withManageFields) {
+            return;
+        }
+
+        FormModules::section($form, [
+            'title' => '管理设置',
+            'description' => '管理页专用参数。排序越大越靠前，禁用后该账号将无法继续登录后台。',
+        ], function (FormNode $section) {
+            $section->fields(function ($fields) {
+                $fields->text('sort', '排序权重', 'Sort Order', false, '数值越大越靠前，默认按 0 处理。', '^[0-9]{1,10}$', [
+                    'type' => 'number',
+                    'min' => 0,
+                    'step' => 1,
+                    'placeholder' => '请输入排序权重',
+                    'pattern-error' => '排序权重格式错误！',
+                ])->defaultValue(0)->radio('status', '账号状态', 'Account Status', '', true, [
+                    'required-error' => '请选择账号状态！',
+                ])->options([
+                    '1' => '已启用',
+                    '0' => '已禁用',
+                ])->defaultValue('1');
             });
         });
     }

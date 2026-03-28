@@ -38,7 +38,7 @@ class ThemeBuilder
         $theme = strval($context['theme'] ?? 'default');
         $picker = strval($context['picker'] ?? '');
 
-        return FormBuilder::make('form', 'modal')
+        return FormBuilder::dialogForm('form')
             ->define(function ($form) use ($themes, $theme, $picker, $configScene) {
                 $form->title($configScene ? '选择后台默认配色' : '后台配色方案')
                     ->action(sysuri())

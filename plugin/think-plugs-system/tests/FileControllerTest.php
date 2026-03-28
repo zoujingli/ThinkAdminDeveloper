@@ -114,6 +114,7 @@ class FileControllerTest extends SqliteIntegrationTestCase
         $this->assertCount(1, $result['data']['list'] ?? []);
         $this->assertSame('report-hit.png', $result['data']['list'][0]['name'] ?? '');
         $this->assertSame('local', $result['data']['list'][0]['type'] ?? '');
+        $this->assertSame('png', $result['data']['list'][0]['extension'] ?? '');
         $this->assertSame('本地服务器存储', $result['data']['list'][0]['ctype'] ?? '');
     }
 
@@ -140,7 +141,7 @@ class FileControllerTest extends SqliteIntegrationTestCase
         $result = $this->callIndexController([
             'output' => 'json',
             'type' => 'local',
-            'xext' => 'png',
+            'extension' => 'png',
             '_field_' => 'id',
             '_order_' => 'asc',
             'page' => 2,
@@ -156,6 +157,44 @@ class FileControllerTest extends SqliteIntegrationTestCase
         $this->assertCount(1, $result['data']['list'] ?? []);
         $this->assertSame('page-file-21.png', $result['data']['list'][0]['name'] ?? '');
         $this->assertSame('本地服务器存储', $result['data']['list'][0]['ctype'] ?? '');
+    }
+
+    public function testIndexSupportsBusinessNamedFileFields(): void
+    {
+        $this->createSystemFileFixture([
+            'system_user_id' => 9001,
+            'type' => 'local',
+            'name' => 'business-fields.png',
+            'hash' => 'hash-business-fields',
+            'extension' => 'png',
+            'xext' => '',
+            'file_url' => 'https://example.com/upload/business-fields.png',
+            'xurl' => '',
+            'storage_key' => 'upload/business-fields.png',
+            'xkey' => '',
+            'is_fast_upload' => 1,
+            'isfast' => 0,
+            'is_safe' => 0,
+            'issafe' => 0,
+        ]);
+
+        $result = $this->callIndexController([
+            'output' => 'json',
+            'type' => 'local',
+            'extension' => 'png',
+            'name' => 'business-fields',
+            '_field_' => 'id',
+            '_order_' => 'asc',
+            'page' => 1,
+            'limit' => 20,
+        ]);
+
+        $this->assertSame(1, intval($result['code'] ?? 0));
+        $this->assertSame(1, intval($result['data']['page']['total'] ?? 0));
+        $this->assertSame('png', $result['data']['list'][0]['extension'] ?? '');
+        $this->assertSame('https://example.com/upload/business-fields.png', $result['data']['list'][0]['file_url'] ?? '');
+        $this->assertSame('upload/business-fields.png', $result['data']['list'][0]['storage_key'] ?? '');
+        $this->assertSame(1, intval($result['data']['list'][0]['is_fast_upload'] ?? 0));
     }
 
     public function testRemoveOnlyDeletesCurrentAdminFiles(): void
@@ -232,7 +271,7 @@ class FileControllerTest extends SqliteIntegrationTestCase
         $result = $this->callActionController('distinct');
 
         $this->assertSame(1, intval($result['code'] ?? 0));
-        $this->assertSame('Duplicate files cleared.', $result['info'] ?? '');
+        $this->assertSame('文件去重清理成功！', $result['info'] ?? '');
         $this->assertFalse(SystemFile::mk()->where(['id' => $duplicateA->getAttr('id')])->findOrEmpty()->isExists());
         $this->assertTrue(SystemFile::mk()->where(['id' => $duplicateB->getAttr('id')])->findOrEmpty()->isExists());
         $this->assertTrue(SystemFile::mk()->where(['id' => $safeDuplicate->getAttr('id')])->findOrEmpty()->isExists());
@@ -277,6 +316,8 @@ class FileControllerTest extends SqliteIntegrationTestCase
         $this->assertStringContainsString('form-builder-schema', $html);
         $this->assertStringContainsString('name="name"', $html);
         $this->assertStringContainsString('name="size_display"', $html);
+        $this->assertStringContainsString('name="storage_key"', $html);
+        $this->assertStringContainsString('name="file_url"', $html);
     }
 
     public function testEditRejectsFilesOwnedByOtherAdmin(): void
@@ -296,9 +337,9 @@ class FileControllerTest extends SqliteIntegrationTestCase
         $record = SystemFile::mk()->where(['id' => $other->getAttr('id')])->findOrEmpty();
 
         $this->assertSame(0, intval($view['code'] ?? 1));
-        $this->assertSame('File record does not exist.', $view['info'] ?? '');
+        $this->assertSame('文件记录不存在！', $view['info'] ?? '');
         $this->assertSame(0, intval($save['code'] ?? 1));
-        $this->assertSame('File record does not exist.', $save['info'] ?? '');
+        $this->assertSame('文件记录不存在！', $save['info'] ?? '');
         $this->assertSame('other-edit.png', $record->getAttr('name'));
     }
 

@@ -23,6 +23,7 @@ namespace think\admin\tests;
 use plugin\system\controller\User as UserController;
 use plugin\system\model\SystemUser;
 use plugin\system\service\AuthService;
+use plugin\system\service\LangService;
 use think\admin\runtime\RequestContext;
 use think\admin\tests\Support\SqliteIntegrationTestCase;
 use think\exception\HttpResponseException;
@@ -44,7 +45,7 @@ class UserControllerTest extends SqliteIntegrationTestCase
             'status' => 1,
         ]);
         $this->createSystemUserFixture([
-            'usertype' => 'staff',
+            'base_code' => 'staff',
             'username' => 'manager-hit',
             'nickname' => '命中用户',
             'contact_phone' => '13800138000',
@@ -53,7 +54,7 @@ class UserControllerTest extends SqliteIntegrationTestCase
             'status' => 1,
         ]);
         $this->createSystemUserFixture([
-            'usertype' => 'staff',
+            'base_code' => 'staff',
             'username' => 'manager-old',
             'nickname' => '跨日用户',
             'contact_phone' => '13800138001',
@@ -62,7 +63,7 @@ class UserControllerTest extends SqliteIntegrationTestCase
             'status' => 1,
         ]);
         $this->createSystemUserFixture([
-            'usertype' => 'staff',
+            'base_code' => 'staff',
             'username' => 'manager-history',
             'nickname' => '禁用用户',
             'contact_phone' => '13800138002',
@@ -74,7 +75,7 @@ class UserControllerTest extends SqliteIntegrationTestCase
         $result = $this->callIndexController([
             'output' => 'json',
             'type' => 'index',
-            'usertype' => 'staff',
+            'base_code' => 'staff',
             'username' => 'manager-hit',
             'create_time' => '2026-03-10 - 2026-03-10',
             '_field_' => 'id',
@@ -149,14 +150,61 @@ class UserControllerTest extends SqliteIntegrationTestCase
             'content' => '员工说明',
             'status' => 1,
         ]);
+        $this->createSystemAuthFixture([
+            'title' => '系统用户管理',
+            'code' => 'system-user-manage',
+            'remark' => '用户权限',
+            'status' => 1,
+        ]);
 
         $html = $this->callActionHtml('add');
 
         $this->assertStringContainsString('form-builder-schema', $html);
+        $this->assertStringContainsString('账号信息', $html);
+        $this->assertStringContainsString('身份与权限', $html);
+        $this->assertStringContainsString('联系资料', $html);
+        $this->assertStringContainsString('管理设置', $html);
+        $this->assertMatchesRegularExpression('/<input[^>]*name="headimg"[^>]*type="text"/', $html);
+        $this->assertStringContainsString('data-field="headimg"', $html);
+        $this->assertStringContainsString('data-file="image"', $html);
         $this->assertStringContainsString('name="username"', $html);
         $this->assertStringContainsString('name="nickname"', $html);
+        $this->assertStringContainsString('登录密码', $html);
+        $this->assertStringContainsString('name="password"', $html);
+        $this->assertStringContainsString('name="repassword"', $html);
         $this->assertStringContainsString('UserBasePluginFilter', $html);
+        $this->assertStringContainsString('name="base_code"', $html);
+        $this->assertStringContainsString('name="auth_ids[]"', $html);
         $this->assertStringContainsString('data-table-id="UserTable"', $html);
+    }
+
+    public function testAddGetRendersEnglishBuilderFormMarkupWhenLangSetIsEnUs(): void
+    {
+        $this->createSystemBaseFixture([
+            'type' => '身份权限',
+            'code' => 'staff',
+            'name' => '员工身份',
+            'content' => '员工说明',
+            'status' => 1,
+        ]);
+        $this->createSystemAuthFixture([
+            'title' => '系统用户管理',
+            'code' => 'system-user-manage',
+            'remark' => '用户权限',
+            'status' => 1,
+        ]);
+        $this->switchSystemLang('en-us');
+
+        $html = $this->callActionHtml('add');
+
+        $this->assertStringContainsString('Account Profile', $html);
+        $this->assertStringContainsString('Identity &amp; Permissions', $html);
+        $this->assertStringContainsString('Contact Details', $html);
+        $this->assertStringContainsString('Management Settings', $html);
+        $this->assertStringContainsString('Login Account', $html);
+        $this->assertStringContainsString('Please enter login account', $html);
+        $this->assertStringContainsString('Account Status', $html);
+        $this->assertStringNotContainsString('账号信息', $html);
     }
 
     public function testEditGetRendersSuperUserPermissionToggleWithoutTemplateConditionals(): void
@@ -176,7 +224,7 @@ class UserControllerTest extends SqliteIntegrationTestCase
         $user = $this->createSystemUserFixture([
             'username' => AuthService::getSuperName(),
             'nickname' => '系统超管',
-            'authorize' => ',1,',
+            'auth_ids' => ',1,',
             'status' => 1,
         ]);
 
@@ -185,8 +233,37 @@ class UserControllerTest extends SqliteIntegrationTestCase
         $this->assertStringContainsString('user-super-notice', $html);
         $this->assertStringContainsString('user-auth-wrap', $html);
         $this->assertStringContainsString('syncSuperUser', $html);
+        $this->assertStringContainsString('value="******"', $html);
         $this->assertStringNotContainsString('{if isset($vo.username)', $html);
         $this->assertStringNotContainsString('{/if}', $html);
+    }
+
+    public function testEditGetRendersEnglishSuperUserNoticeWhenLangSetIsEnUs(): void
+    {
+        $this->createSystemBaseFixture([
+            'type' => '身份权限',
+            'code' => 'staff',
+            'name' => '员工身份',
+            'content' => '员工说明',
+            'status' => 1,
+        ]);
+        $this->createSystemAuthFixture([
+            'title' => '用户管理',
+            'node' => 'system/user/index',
+            'status' => 1,
+        ]);
+        $user = $this->createSystemUserFixture([
+            'username' => AuthService::getSuperName(),
+            'nickname' => '系统超管',
+            'auth_ids' => ',1,',
+            'status' => 1,
+        ]);
+        $this->switchSystemLang('en-us');
+
+        $html = $this->callActionHtml('edit', ['id' => intval($user->getAttr('id'))]);
+
+        $this->assertStringContainsString('Super users have all access permissions and do not need to configure permissions.', $html);
+        $this->assertStringNotContainsString('超级用户拥有所有访问权限，不需要配置权限。', $html);
     }
 
     public function testAddGetReturnsBuilderJsonWhenAcceptRequestsApi(): void
@@ -211,7 +288,12 @@ class UserControllerTest extends SqliteIntegrationTestCase
         $this->assertSame('api', $result['data']['mode'] ?? '');
         $this->assertSame('Authorization', $result['data']['token']['header'] ?? '');
         $this->assertSame('form', $result['data']['builder']['type'] ?? '');
-        $this->assertSame('username', $result['data']['builder']['schema']['fields'][1]['name'] ?? '');
+        $fieldNames = array_column($result['data']['builder']['schema']['fields'] ?? [], 'name');
+        $this->assertContains('username', $fieldNames);
+        $this->assertContains('password', $fieldNames);
+        $this->assertContains('repassword', $fieldNames);
+        $this->assertContains('remark', $fieldNames);
+        $this->assertContains('status', $fieldNames);
     }
 
     public function testIndexGetReturnsBuilderJsonWhenPresentationModeIsApi(): void
@@ -226,20 +308,30 @@ class UserControllerTest extends SqliteIntegrationTestCase
         $this->assertSame('page', $result['data']['scene'] ?? '');
         $this->assertSame('api', $result['data']['mode'] ?? '');
         $this->assertSame('page', $result['data']['builder']['type'] ?? '');
-        $this->assertSame('UserTable', $result['data']['builder']['schema']['table']['id'] ?? '');
+        $this->assertSame('UserTable', $this->findFirstTableId($result['data']['builder']['schema']['content'] ?? []));
         $this->assertSame('系统用户管理', $result['data']['context']['title'] ?? '');
     }
 
     public function testAddAndEditPersistUserProfileAndAuthorization(): void
     {
+        $this->createSystemBaseFixture([
+            'type' => '身份权限',
+            'code' => 'staff',
+            'name' => '员工身份',
+            'content' => '员工说明',
+            'status' => 1,
+        ]);
+
         $add = $this->callFormController('add', [
-            'usertype' => 'staff',
+            'base_code' => 'staff',
             'username' => 'operator-new',
             'nickname' => '新增运维',
-            'authorize' => ['2', '3'],
+            'password' => 'Operator@123',
+            'repassword' => 'Operator@123',
+            'auth_ids' => ['2', '3'],
             'contact_phone' => '13800138111',
             'contact_mail' => 'operator@example.com',
-            'describe' => '新增说明',
+            'remark' => '新增说明',
             'sort' => 12,
             'status' => 1,
         ]);
@@ -249,18 +341,20 @@ class UserControllerTest extends SqliteIntegrationTestCase
         $this->assertSame(1, intval($add['code'] ?? 0));
         $this->assertSame('数据保存成功！', $add['info'] ?? '');
         $this->assertTrue($created->isExists());
-        $this->assertTrue($this->verifySystemPassword('operator-new', strval($created->getData('password'))));
-        $this->assertSame(',2,3,', $created->getData('authorize'));
+        $this->assertTrue($this->verifySystemPassword('Operator@123', strval($created->getData('password'))));
+        $this->assertSame(',2,3,', $created->getData('auth_ids'));
 
         $edit = $this->callFormController('edit', [
             'id' => intval($created->getAttr('id')),
             'username' => 'operator-changed',
-            'usertype' => 'staff',
+            'base_code' => 'staff',
             'nickname' => '更新运维',
-            'authorize' => ['3'],
+            'password' => password_mask(),
+            'repassword' => password_mask(),
+            'auth_ids' => ['3'],
             'contact_phone' => '13800138222',
             'contact_mail' => 'updated@example.com',
-            'describe' => '更新说明',
+            'remark' => '更新说明',
             'sort' => 20,
             'status' => 0,
         ]);
@@ -271,8 +365,44 @@ class UserControllerTest extends SqliteIntegrationTestCase
         $this->assertSame('数据保存成功！', $edit['info'] ?? '');
         $this->assertSame('operator-new', $updated->getData('username'));
         $this->assertSame('更新运维', $updated->getData('nickname'));
-        $this->assertSame(',3,', $updated->getData('authorize'));
+        $this->assertSame(',3,', $updated->getData('auth_ids'));
         $this->assertSame(0, intval($updated->getData('status')));
+        $this->assertTrue($this->verifySystemPassword('Operator@123', strval($updated->getData('password'))));
+    }
+
+    public function testEditCanChangePasswordThroughMainForm(): void
+    {
+        $this->createSystemBaseFixture([
+            'type' => '身份权限',
+            'code' => 'staff',
+            'name' => '员工身份',
+            'content' => '员工说明',
+            'status' => 1,
+        ]);
+        $user = $this->createSystemUserFixture([
+            'username' => 'operator-pass',
+            'password' => $this->hashSystemPassword('Old@1234'),
+            'auth_ids' => ',2,3,',
+            'base_code' => 'staff',
+            'status' => 1,
+        ]);
+
+        $edit = $this->callFormController('edit', [
+            'id' => intval($user->getAttr('id')),
+            'username' => 'operator-pass',
+            'base_code' => 'staff',
+            'nickname' => '密码更新',
+            'password' => 'New@1234',
+            'repassword' => 'New@1234',
+            'auth_ids' => ['2', '3'],
+            'status' => 1,
+        ]);
+
+        $updated = SystemUser::mk()->findOrEmpty(intval($user->getAttr('id')));
+
+        $this->assertSame(1, intval($edit['code'] ?? 0));
+        $this->assertSame('数据保存成功！', $edit['info'] ?? '');
+        $this->assertTrue($this->verifySystemPassword('New@1234', strval($updated->getData('password'))));
     }
 
     public function testPassUpdatesUserPasswordHash(): void
@@ -307,8 +437,12 @@ class UserControllerTest extends SqliteIntegrationTestCase
         ]);
 
         $this->assertStringContainsString('form-builder-schema', $html);
+        $this->assertStringContainsString('账号确认', $html);
+        $this->assertStringContainsString('新密码设置', $html);
         $this->assertStringContainsString('name="password"', $html);
         $this->assertStringContainsString('name="repassword"', $html);
+        $this->assertStringNotContainsString(strval($user->getData('password')), $html);
+        $this->assertStringNotContainsString('value="$2y$', $html);
     }
 
     public function testStateAndRemoveUpdateUserLifecycle(): void
@@ -354,6 +488,24 @@ class UserControllerTest extends SqliteIntegrationTestCase
         $this->assertSame(0, intval($result['code'] ?? 1));
         $this->assertSame('系统超级账号禁止删除！', $result['info'] ?? '');
         $this->assertTrue($record->isExists());
+    }
+
+    /**
+     * @param array<int, array<string, mixed>> $nodes
+     */
+    private function findFirstTableId(array $nodes): string
+    {
+        foreach ($nodes as $node) {
+            if (($node['type'] ?? '') === 'table' && !empty($node['id'])) {
+                return strval($node['id']);
+            }
+            $children = is_array($node['children'] ?? null) ? $node['children'] : [];
+            if (($id = $this->findFirstTableId($children)) !== '') {
+                return $id;
+            }
+        }
+
+        return '';
     }
 
     protected function defineSchema(): void
@@ -479,5 +631,11 @@ class UserControllerTest extends SqliteIntegrationTestCase
         $property = new \ReflectionProperty(Request::class, 'request');
         $property->setAccessible(true);
         $property->setValue($request, $data);
+    }
+
+    private function switchSystemLang(string $langSet): void
+    {
+        $this->app->lang->switchLangSet($langSet);
+        LangService::load($this->app, $langSet);
     }
 }

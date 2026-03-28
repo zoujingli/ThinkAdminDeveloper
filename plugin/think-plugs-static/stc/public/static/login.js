@@ -15,6 +15,11 @@
 $(function () {
 
     window.$body = $('body');
+    let loginI18n = window.taLoginI18n || {};
+
+    function t(key, fallback) {
+        return typeof loginI18n[key] === 'string' && loginI18n[key].length > 0 ? loginI18n[key] : fallback;
+    }
 
     /*! 登录界面背景切换 */
     $('[data-bg-transition]').each(function (i, el) {
@@ -142,11 +147,11 @@ $(function () {
             $uniqid.val('');
             $verify.val('');
             setPosition(0);
-            setStatus('请按住滑块，拖动完成验证');
+            setStatus(t('dragToVerify', '请按住滑块，拖动完成验证'));
         }
 
         function loadChallenge() {
-            if (request.length < 5) return $.msg.tips('请设置滑块验证接口');
+            if (request.length < 5) return $.msg.tips(t('sliderApiMissing', '请设置滑块验证接口'));
             resetChallenge();
             $.form.load(request, {token: form.dataset.loginToken || ''}, 'post', function (ret) {
                 if (parseInt(ret.code) !== 1) {
@@ -160,7 +165,7 @@ $(function () {
                 $bg.attr('src', ret.data.bgimg || '');
                 $piece.attr('src', ret.data.water || '');
                 (window.requestAnimationFrame || window.setTimeout)(recalculate, 0);
-                setStatus('请按住滑块，拖动完成验证');
+                setStatus(t('dragToVerify', '请按住滑块，拖动完成验证'));
                 return false;
             }, false);
         }
@@ -173,7 +178,7 @@ $(function () {
         function verifyCurrentPosition() {
             if (state.working || !$uniqid.val() || check.length < 5) return;
             state.working = true;
-            setStatus('正在校验...');
+            setStatus(t('verifying', '正在校验...'));
             $.form.load(check, {
                 uniqid: $uniqid.val(),
                 verify: Math.round(state.currentLeft * state.sourceWidth / Math.max(state.bgWidth, 1))
@@ -185,19 +190,19 @@ $(function () {
                     state.verified = true;
                     $verify.val(String(value));
                     $panel.removeClass('is-error').addClass('is-success');
-                    $message.text('验证通过，请继续登录');
-                    $status.text('滑块验证通过');
+                    $message.text(t('verifyPassedContinue', '验证通过，请继续登录'));
+                    $status.text(t('sliderVerified', '滑块验证通过'));
                 } else if (result === 0) {
                     state.verified = false;
                     $verify.val('');
                     $panel.removeClass('is-success').addClass('is-error');
-                    $message.text('位置不正确，请重试');
-                    $status.text('位置不正确，请重试');
+                    $message.text(t('wrongPositionRetry', '位置不正确，请重试'));
+                    $status.text(t('wrongPositionRetry', '位置不正确，请重试'));
                     window.setTimeout(function () {
                         if (!state.verified) {
                             $panel.removeClass('is-error');
                             setPosition(0);
-                            setStatus('请按住滑块，拖动完成验证');
+                            setStatus(t('dragToVerify', '请按住滑块，拖动完成验证'));
                         }
                     }, 500);
                 } else {
@@ -250,7 +255,7 @@ $(function () {
             },
             ensureVerified: function () {
                 if (!$row.hasClass('layui-hide') && !state.verified) {
-                    $.msg.tips('请先完成滑块验证');
+                    $.msg.tips(t('needVerifyFirst', '请先完成滑块验证'));
                     return false;
                 }
                 $mode.val('plain');

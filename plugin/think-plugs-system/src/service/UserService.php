@@ -33,6 +33,8 @@ use think\admin\Service;
  */
 class UserService extends Service
 {
+    private const PASSWORD_REGEX = '/^(?![\d]+$)(?![a-zA-Z]+$)(?![^\da-zA-Z]+$).{6,32}$/';
+
     /**
      * 构建用户列表上下文.
      * @return array<string, mixed>
@@ -41,7 +43,7 @@ class UserService extends Service
     {
         $type = self::normalizeIndexType(strval(request()->get('type', 'index')));
         return [
-            'title' => '系统用户管理',
+            'title' => strval(lang('系统用户管理')),
             'type' => $type,
             'bases' => SystemBase::items('身份权限'),
             'requestBaseUrl' => request()->baseUrl(),
@@ -62,6 +64,7 @@ class UserService extends Service
             'action' => $action,
             'id' => $id,
             'isEdit' => $action === 'edit' || $id > 0,
+            'manageAccount' => true,
             'actionUrl' => url($action, array_filter(['id' => $id ?: null]))->build(),
             'bases' => $bases,
             'baseGroups' => self::buildPluginGroups($bases),
@@ -81,6 +84,7 @@ class UserService extends Service
             'action' => 'info',
             'id' => $id,
             'isEdit' => true,
+            'manageAccount' => false,
             'actionUrl' => url('info', array_filter(['id' => $id ?: null]))->build(),
             'bases' => [],
             'baseGroups' => [],
@@ -109,7 +113,7 @@ class UserService extends Service
         $query->with(['userinfo' => static function ($query) {
             $query->field('code,name,content');
         }]);
-        $query->equal('status,usertype')->dateBetween('login_at,create_time');
+        $query->equal('status,base_code')->dateBetween('login_at,create_time');
         $query->like('username|nickname#username,contact_phone#phone,contact_mail#mail');
     }
 
@@ -123,16 +127,25 @@ class UserService extends Service
     {
         $id = intval($context['id'] ?? 0);
         if ($id < 1) {
-            return ['authorize' => []];
+            return ['auth_ids' => [], 'password' => '', 'repassword' => ''];
         }
 
         $user = SystemUser::mk()->findOrEmpty($id);
         if ($user->isEmpty()) {
-            throw new Exception('用户数据不存在！');
+            throw new Exception(lang('用户数据不存在！'));
         }
 
         $data = $user->toArray();
-        $data['authorize'] = self::normalizeAuthorize($data['authorize'] ?? []);
+        if (!isset($data['base_code']) && isset($data['usertype'])) {
+            $data['base_code'] = strval($data['usertype']);
+        }
+        if (!isset($data['auth_ids']) && isset($data['authorize'])) {
+            $data['auth_ids'] = strval($data['authorize']);
+        }
+        if (!isset($data['remark']) && isset($data['describe'])) {
+            $data['remark'] = strval($data['describe']);
+        }
+        $data['auth_ids'] = self::normalizeAuthIds($data['auth_ids'] ?? []);
         return $data;
     }
 
@@ -148,7 +161,7 @@ class UserService extends Service
         $id = intval($context['id'] ?? 0);
         $item = $id > 0 ? SystemUser::mk()->findOrEmpty($id) : SystemUser::mk();
         if ($id > 0 && $item->isEmpty()) {
-            throw new Exception('用户数据不存在！');
+            throw new Exception(lang('用户数据不存在！'));
         }
 
         $username = trim(strval($data['username'] ?? ''));
@@ -156,33 +169,39 @@ class UserService extends Service
             $username = strval($item->getAttr('username'));
         }
         if ($username === '') {
-            throw new Exception('登录账号不能为空！');
+            throw new Exception(lang('登录账号不能为空！'));
         }
 
-        $authorize = self::normalizeAuthorize(request()->post('authorize', []));
-        if ($username !== AuthService::getSuperName() && count($authorize) < 1) {
-            throw new Exception('未配置权限！');
+        $authIds = self::normalizeAuthIds(request()->post('auth_ids', []));
+        if ($username !== AuthService::getSuperName() && count($authIds) < 1) {
+            throw new Exception(lang('未配置权限角色！'));
         }
 
         $status = intval(request()->post('status', $id > 0 ? $item->getAttr('status') : 1));
         if (!in_array($status, [0, 1], true)) {
-            throw new Exception('状态值范围异常！');
+            throw new Exception(lang('状态值范围异常！'));
         }
 
-        return [
+        [$password, $passwordChanged] = self::normalizeManagePassword($data, $id);
+
+        $payload = [
             'id' => $id,
             'username' => $username,
             'nickname' => trim(strval($data['nickname'] ?? '')),
             'headimg' => trim(strval($data['headimg'] ?? '')),
-            'usertype' => trim(strval(request()->post('usertype', ''))),
-            'authorize' => arr2str($authorize),
+            'base_code' => self::normalizeBaseCode(strval(request()->post('base_code', ''))),
+            'auth_ids' => arr2str($authIds),
             'contact_qq' => trim(strval($data['contact_qq'] ?? '')),
             'contact_mail' => trim(strval($data['contact_mail'] ?? '')),
             'contact_phone' => trim(strval($data['contact_phone'] ?? '')),
-            'describe' => trim(strval($data['describe'] ?? '')),
+            'remark' => trim(strval($data['remark'] ?? '')),
             'sort' => intval(request()->post('sort', $id > 0 ? $item->getAttr('sort') : 0)),
             'status' => $status,
         ];
+        if ($passwordChanged) {
+            $payload['password'] = $password;
+        }
+        return $payload;
     }
 
     /**
@@ -197,7 +216,7 @@ class UserService extends Service
         $id = intval($context['id'] ?? 0);
         $item = $id > 0 ? SystemUser::mk()->findOrEmpty($id) : SystemUser::mk();
         if ($id < 1 || $item->isEmpty()) {
-            throw new Exception('用户数据不存在！');
+            throw new Exception(lang('用户数据不存在！'));
         }
 
         return [
@@ -205,12 +224,12 @@ class UserService extends Service
             'username' => strval($item->getAttr('username')),
             'nickname' => trim(strval($data['nickname'] ?? '')),
             'headimg' => trim(strval($data['headimg'] ?? '')),
-            'usertype' => strval($item->getAttr('usertype')),
-            'authorize' => strval($item->getAttr('authorize')),
+            'base_code' => strval($item->getAttr('base_code')),
+            'auth_ids' => strval($item->getAttr('auth_ids')),
             'contact_qq' => trim(strval($data['contact_qq'] ?? '')),
             'contact_mail' => trim(strval($data['contact_mail'] ?? '')),
             'contact_phone' => trim(strval($data['contact_phone'] ?? '')),
-            'describe' => trim(strval($data['describe'] ?? '')),
+            'remark' => trim(strval($data['remark'] ?? '')),
             'sort' => intval($item->getAttr('sort')),
             'status' => intval($item->getAttr('status')),
         ];
@@ -226,31 +245,35 @@ class UserService extends Service
         $id = intval($data['id'] ?? 0);
         $item = $id > 0 ? SystemUser::mk()->findOrEmpty($id) : SystemUser::mk();
         if ($id > 0 && $item->isEmpty()) {
-            throw new Exception('用户数据不存在！');
+            throw new Exception(lang('用户数据不存在！'));
         }
         if ($id < 1 && SystemUser::mk()->where(['username' => strval($data['username'] ?? '')])->count() > 0) {
-            throw new Exception('账号已经存在，请使用其它账号！');
+            throw new Exception(lang('账号已经存在，请使用其它账号！'));
         }
 
         $payload = [
-            'usertype' => strval($data['usertype'] ?? ''),
+            'base_code' => strval($data['base_code'] ?? ''),
             'nickname' => strval($data['nickname'] ?? ''),
             'headimg' => strval($data['headimg'] ?? ''),
-            'authorize' => strval($data['authorize'] ?? ''),
+            'auth_ids' => strval($data['auth_ids'] ?? ''),
             'contact_qq' => strval($data['contact_qq'] ?? ''),
             'contact_mail' => strval($data['contact_mail'] ?? ''),
             'contact_phone' => strval($data['contact_phone'] ?? ''),
-            'describe' => strval($data['describe'] ?? ''),
+            'remark' => strval($data['remark'] ?? ''),
             'sort' => intval($data['sort'] ?? 0),
             'status' => intval($data['status'] ?? 1),
         ];
         if ($id < 1) {
             $payload['username'] = strval($data['username'] ?? '');
-            $payload['password'] = self::hashPassword(strval($data['username'] ?? ''));
+            $payload['password'] = isset($data['password'])
+                ? self::hashPassword(strval($data['password']))
+                : self::hashPassword(strval($data['username'] ?? ''));
+        } elseif (isset($data['password'])) {
+            $payload['password'] = self::hashPassword(strval($data['password']));
         }
 
         if ($item->save($payload) === false) {
-            throw new Exception('数据保存失败，请稍候再试！');
+            throw new Exception(lang('数据保存失败，请稍候再试！'));
         }
     }
 
@@ -274,11 +297,21 @@ class UserService extends Service
     public static function loadPassUser(int $id): array
     {
         if ($id < 1) {
-            return [];
+            return ['oldpassword' => '', 'password' => '', 'repassword' => ''];
         }
 
         $user = SystemUser::mk()->findOrEmpty($id);
-        return $user->isEmpty() ? [] : $user->toArray();
+        if ($user->isEmpty()) {
+            return ['oldpassword' => '', 'password' => '', 'repassword' => ''];
+        }
+
+        return [
+            'id' => intval($user->getAttr('id')),
+            'username' => strval($user->getAttr('username')),
+            'oldpassword' => '',
+            'password' => '',
+            'repassword' => '',
+        ];
     }
 
     /**
@@ -321,7 +354,7 @@ class UserService extends Service
      * @param mixed $authorize
      * @return array<int, string>
      */
-    private static function normalizeAuthorize(mixed $authorize): array
+    private static function normalizeAuthIds(mixed $authorize): array
     {
         $result = [];
         foreach (is_array($authorize) ? $authorize : str2arr(strval($authorize)) as $item) {
@@ -331,5 +364,50 @@ class UserService extends Service
             }
         }
         return $result;
+    }
+
+    private static function normalizeBaseCode(string $baseCode): string
+    {
+        $baseCode = trim($baseCode);
+        if ($baseCode === '') {
+            return '';
+        }
+        if (SystemBase::mk()->where(['type' => '身份权限', 'status' => 1, 'code' => $baseCode])->count() < 1) {
+            throw new Exception(lang('角色身份不存在或已被禁用！'));
+        }
+
+        return $baseCode;
+    }
+
+    /**
+     * @param array<string, mixed> $data
+     * @return array{0:string,1:bool}
+     * @throws Exception
+     */
+    private static function normalizeManagePassword(array $data, int $id): array
+    {
+        $password = trim(strval($data['password'] ?? ''));
+        $repassword = trim(strval($data['repassword'] ?? ''));
+
+        if (password_is_unchanged($password) && password_is_unchanged($repassword)) {
+            return ['', false];
+        }
+        if ($password === '' && $repassword === '') {
+            return ['', false];
+        }
+        if (password_is_mask($password) || password_is_mask($repassword)) {
+            throw new Exception(lang('请同时输入新的登录密码和重复密码，或保留默认星号不修改！'));
+        }
+        if ($password === '' || $repassword === '') {
+            throw new Exception(lang('请输入新的登录密码并再次确认！'));
+        }
+        if ($password !== $repassword) {
+            throw new Exception(lang('两次输入的密码不一致！'));
+        }
+        if (preg_match(self::PASSWORD_REGEX, $password) !== 1) {
+            throw new Exception(lang('登录密码格式错误！'));
+        }
+
+        return [$password, true];
     }
 }
