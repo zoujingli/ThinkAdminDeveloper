@@ -29,8 +29,7 @@
       "publish": {
         "init": {
           "stc/.env.example": ".env.example",
-          "stc/class/Index.php": "app/index/controller/Index.php",
-          "stc/route/.gitkeep": "route/.gitkeep",
+          "stc/default/Index.php": "app/index/controller/Index.php",
           "stc/public/router.php": "public/router.php",
           "stc/public/robots.txt": "public/robots.txt",
           "stc/public/.htaccess": "public/.htaccess",

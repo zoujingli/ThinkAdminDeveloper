@@ -1235,6 +1235,14 @@ $(function () {
     });
 
     /*! 注册 data-file 事件行为 */
+    $.base.onEvent('mousedown', '.input-right-icon', function (event) {
+        event.preventDefault();
+        event.stopPropagation();
+    });
+    $.base.onEvent('touchstart', '.input-right-icon', function (event) {
+        event.preventDefault();
+        event.stopPropagation();
+    });
     $.base.onEvent('click', '[data-file]', function () {
         this.id = this.dataset.id = this.id || (function (date) {
             return (date + Math.random()).replace('0.', '');
