@@ -49,7 +49,7 @@ class Config extends Controller
     {
         $this->type = $this->get['type'] ?? 'index';
         PluginPaymentConfig::mQuery()->layTable(function () {
-            $this->title = '支付配置管理';
+            $this->title = lang('支付配置管理');
             $this->types = Payment::types(1);
         }, function (QueryHelper $query) {
             $query->withoutField('content');
@@ -64,7 +64,7 @@ class Config extends Controller
      */
     public function add()
     {
-        $this->title = '添加支付配置';
+        $this->title = lang('添加支付配置');
         PluginPaymentConfig::mForm('form');
     }
 
@@ -74,7 +74,7 @@ class Config extends Controller
      */
     public function edit()
     {
-        $this->title = '编辑支付配置';
+        $this->title = lang('编辑支付配置');
         PluginPaymentConfig::mForm('form');
     }
 
@@ -85,8 +85,8 @@ class Config extends Controller
     public function state()
     {
         PluginPaymentConfig::mSave($this->_vali([
-            'status.in:0,1' => '状态值范围异常！',
-            'status.require' => '状态值不能为空！',
+            'status.in:0,1' => lang('状态值范围异常！'),
+            'status.require' => lang('状态值不能为空！'),
         ]));
     }
 
@@ -113,16 +113,16 @@ class Config extends Controller
         } else {
             $post = $this->request->post(['types', 'integral']);
             if (($post['integral'] ?? 0) < 1) {
-                $this->error('兑换积分不能少于1积分！');
+                $this->error(lang('兑换积分不能少于1积分！'));
             }
             sysdata('plugin.payment.config', $post);
             foreach ($this->types as $k => $v) {
                 Payment::set($k, intval(in_array($k, $post['types'])));
             }
             if (Payment::save()) {
-                $this->success('配置保存成功！');
+                $this->success(lang('配置保存成功！'));
             } else {
-                $this->error('配置保存失败！');
+                $this->error(lang('配置保存失败！'));
             }
         }
     }
@@ -133,13 +133,17 @@ class Config extends Controller
     protected function _page_filter(array &$data)
     {
         [$ptypes, $atypes] = [Payment::types(), Account::types(1)];
+        $separator = str_starts_with($this->app->lang->getLangSet(), 'zh') ? '、' : ' / ';
         foreach ($data as &$vo) {
-            [$vo['ntype'], $vo['atype']] = [$ptypes[$vo['type']]['name'] ?? $vo['type'], []];
+            [$vo['ntype'], $vo['atype']] = [lang($ptypes[$vo['type']]['name'] ?? $vo['type']), []];
             if (isset($ptypes[$vo['type']])) {
                 foreach ($ptypes[$vo['type']]['account'] as $account) {
                     if (isset($atypes[$account])) {
-                        $vo['atype'][$account] = $atypes[$account]['name'];
+                        $vo['atype'][$account] = lang($atypes[$account]['name']);
                     }
+                }
+                if (!empty($vo['atype'])) {
+                    $vo['atype_text'] = implode($separator, $vo['atype']);
                 }
             }
         }
@@ -156,6 +160,7 @@ class Config extends Controller
         if ($this->request->isGet()) {
             $data['content'] = $data['content'] ?? [];
             [$this->payments, $types] = [[], Account::types(1)];
+            $separator = str_starts_with($this->app->lang->getLangSet(), 'zh') ? '、' : ' / ';
             foreach (Payment::types(1) as $k => $v) {
                 // 屏蔽内置支付方式
                 if (in_array($k, [Payment::BALANCE, Payment::INTEGRAL, Payment::COUPON])) {
@@ -164,20 +169,20 @@ class Config extends Controller
                 $allow = [];
                 foreach ($v['account'] as $api) {
                     if (isset($types[$api])) {
-                        $allow[$api] = $types[$api]['name'];
+                        $allow[$api] = lang($types[$api]['name']);
                     }
                 }
                 if (empty($allow)) {
                     continue;
                 }
-                $this->payments[$k] = array_merge($v, ['allow' => join('、', $allow)]);
+                $this->payments[$k] = array_merge($v, ['allow' => implode($separator, $allow)]);
             }
         } else {
             if (empty($data['type'])) {
-                $this->error('请选择支付方式！');
+                $this->error(lang('请选择支付方式！'));
             }
             if (empty($data['cover'])) {
-                $this->error('请上传支付图标！');
+                $this->error(lang('请上传支付图标！'));
             }
             // 保存配置参数
             $data['content'] = $this->request->post();
@@ -196,7 +201,7 @@ class Config extends Controller
     protected function _form_result(bool $state)
     {
         if ($state) {
-            $this->success('参数保存成功！', 'javascript:history.back()');
+            $this->success(lang('参数保存成功！'), 'javascript:history.back()');
         }
     }
 }

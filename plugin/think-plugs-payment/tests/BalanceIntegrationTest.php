@@ -21,6 +21,7 @@ declare(strict_types=1);
 namespace think\admin\tests;
 
 use plugin\payment\service\Balance;
+use think\admin\Exception;
 use think\admin\tests\Support\SqliteIntegrationTestCase;
 
 /**
@@ -29,6 +30,21 @@ use think\admin\tests\Support\SqliteIntegrationTestCase;
  */
 class BalanceIntegrationTest extends SqliteIntegrationTestCase
 {
+    public function testInsufficientDeductionReturnsEnglishMessageWhenLangSetIsEnUs(): void
+    {
+        $user = $this->createAccountUser([
+            'phone' => $this->randomPhone('1331013'),
+            'username' => 'balance-' . random_int(100, 999),
+            'nickname' => '余额用户',
+        ]);
+        Balance::create(intval($user->getAttr('id')), 'charge-enough', '余额发放', '10.00', '英文提示测试');
+        $this->switchPaymentLang('en-us');
+
+        $this->expectException(Exception::class);
+        $this->expectExceptionMessage('Insufficient balance for deduction');
+        Balance::create(intval($user->getAttr('id')), 'charge-minus', '余额扣减', '-20.00', '超额扣减');
+    }
+
     public function testCreateRecordsBalanceAndRecountsUserExtra(): void
     {
         $user = $this->createAccountUser();
@@ -67,5 +83,14 @@ class BalanceIntegrationTest extends SqliteIntegrationTestCase
     {
         $this->createAccountTables();
         $this->createPaymentBalanceTable();
+    }
+
+    private function switchPaymentLang(string $langSet): void
+    {
+        $this->app->lang->switchLangSet($langSet);
+        $file = TEST_PROJECT_ROOT . "/plugin/think-plugs-payment/src/lang/{$langSet}.php";
+        if (is_file($file)) {
+            $this->app->lang->load($file, $langSet);
+        }
     }
 }

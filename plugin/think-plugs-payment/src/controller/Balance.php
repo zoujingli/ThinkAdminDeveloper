@@ -62,7 +62,7 @@ class Balance extends Controller
     {
         $this->type = $this->get['type'] ?? 'index';
         PluginPaymentBalance::mQuery()->layTable(function () {
-            $this->title = '余额明细管理';
+            $this->title = lang('余额明细管理');
             $map = ['cancel' => 0];
             $this->balanceTotal = PluginPaymentBalance::mk()->where($map)->whereRaw('amount>0')->sum('amount');
             $this->balanceCount = PluginPaymentBalance::mk()->where($map)->whereRaw('amount<0')->sum('amount');
@@ -87,11 +87,11 @@ class Balance extends Controller
     {
         try {
             $data = $this->_vali([
-                'code.require' => '单号不能为空！',
-                'unlock.require' => '状态不能为空！',
+                'code.require' => lang('单号不能为空！'),
+                'unlock.require' => lang('状态不能为空！'),
             ]);
             BalanceService::unlock($data['code'], intval($data['unlock']));
-            $this->success('交易操作成功！');
+            $this->success(lang('交易操作成功！'));
         } catch (HttpResponseException $exception) {
             throw $exception;
         } catch (\Exception $exception) {
@@ -107,11 +107,11 @@ class Balance extends Controller
     {
         try {
             $data = $this->_vali([
-                'code.require' => '单号不能为空！',
-                'cancel.require' => '状态不能为空！',
+                'code.require' => lang('单号不能为空！'),
+                'cancel.require' => lang('状态不能为空！'),
             ]);
             BalanceService::cancel($data['code'], intval($data['cancel']));
-            $this->success('交易操作成功！');
+            $this->success(lang('交易操作成功！'));
         } catch (HttpResponseException $exception) {
             throw $exception;
         } catch (\Exception $exception) {
@@ -127,10 +127,10 @@ class Balance extends Controller
     {
         try {
             $data = $this->_vali([
-                'code.require' => '单号不能为空！',
+                'code.require' => lang('单号不能为空！'),
             ]);
             BalanceService::remove($data['code']);
-            $this->success('交易操作成功！');
+            $this->success(lang('交易操作成功！'));
         } catch (HttpResponseException $exception) {
             throw $exception;
         } catch (\Exception $exception) {

@@ -58,7 +58,7 @@ abstract class Balance
     {
         $user = PluginAccountUser::mk()->findOrEmpty($unid);
         if ($user->isEmpty()) {
-            throw new Exception('账号不存在！');
+            throw new Exception(lang('账号不存在！'));
         }
 
         // 扣减余额检查
@@ -68,7 +68,7 @@ abstract class Balance
         $isDecrease = bccomp($amountValue, '0', 2) < 0;
         $decrease = ltrim($amountValue, '-');
         if ($isDecrease && bccomp($decrease, strval($usable), 2) === 1) {
-            throw new Exception('扣减余额不足！');
+            throw new Exception(lang('扣减余额不足！'));
         }
 
         // 余额标准字段
@@ -93,7 +93,7 @@ abstract class Balance
             self::recount($unid);
             return $model->refresh();
         }
-        throw new Exception('余额变更失败！');
+        throw new Exception(lang('余额变更失败！'));
     }
 
     /**
@@ -149,7 +149,7 @@ abstract class Balance
         if ($isUpdate) {
             $user = PluginAccountUser::mk()->findOrEmpty($unid);
             if ($user->isEmpty()) {
-                throw new Exception('账号不存在！');
+                throw new Exception(lang('账号不存在！'));
             }
         }
 
@@ -179,7 +179,7 @@ abstract class Balance
         $map = ['code' => $code];
         $model = PluginPaymentBalance::mk()->where($map)->findOrEmpty();
         if ($model->isEmpty()) {
-            throw new Exception('无效的操作编号！');
+            throw new Exception(lang('无效的操作编号！'));
         }
         return $model;
     }

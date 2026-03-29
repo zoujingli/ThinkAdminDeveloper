@@ -53,7 +53,7 @@ class Record extends Controller
         $this->mode = $this->get['open_type'] ?? 'index';
         PluginPaymentRecord::mQuery()->layTable(function () {
             if ($this->mode === 'index') {
-                $this->title = '支付行为管理';
+                $this->title = lang('支付行为管理');
             }
         }, static function (QueryHelper $query) {
             $userQuery = PluginAccountUser::mQuery();
@@ -82,17 +82,17 @@ class Record extends Controller
         $data = $this->buildAuditForm()->validate();
         $data['id'] = intval($this->request->param('id', 0));
         if (intval($data['status']) === 1) {
-            $this->error('请选择通过或驳回！');
+            $this->error(lang('请选择通过或驳回！'));
         }
         $action = PluginPaymentRecord::mk()->findOrEmpty($data['id']);
         if ($action->isEmpty()) {
-            $this->error('支付记录不存在！');
+            $this->error(lang('支付记录不存在！'));
         }
         if ($action->getAttr('channel_type') !== Payment::VOUCHER) {
-            $this->error('无需审核操作！');
+            $this->error(lang('无需审核操作！'));
         }
         if ($action->getAttr('payment_status') === 1) {
-            $this->success('该凭证已审核！');
+            $this->success(lang('该凭证已审核！'));
         }
         $data['audit_user'] = AuthService::getUserId();
         $data['audit_time'] = date('Y-m-d H:i:s');
@@ -102,22 +102,22 @@ class Record extends Controller
         if (empty($data['status'])) {
             $data['audit_status'] = 0;
             $data['payment_status'] = 0;
-            $data['payment_remark'] = $data['remark'] ?: '后台支付凭证被驳回';
+            $data['payment_remark'] = $data['remark'] ?: lang('后台支付凭证被驳回');
         } else {
             $data['audit_status'] = 2;
             $data['payment_status'] = 1;
-            $data['payment_remark'] = $data['remark'] ?: '后台支付凭证已通过';
+            $data['payment_remark'] = $data['remark'] ?: lang('后台支付凭证已通过');
         }
         if ($action->save($data)) {
             if (empty($data['status'])) {
                 $this->app->event->trigger('PluginPaymentRefuse', $action->refresh());
-                $this->success('凭证审核驳回！');
+                $this->success(lang('凭证审核驳回！'));
             } else {
                 $this->app->event->trigger('PluginPaymentSuccess', $action->refresh());
-                $this->success('凭证审核通过！');
+                $this->success(lang('凭证审核通过！'));
             }
         } else {
-            $this->error('凭证审核失败！');
+            $this->error(lang('凭证审核失败！'));
         }
     }
 
@@ -128,7 +128,7 @@ class Record extends Controller
     public function cancel()
     {
         try {
-            $data = $this->_vali(['code.require' => '支付单号不能为空！']);
+            $data = $this->_vali(['code.require' => lang('支付单号不能为空！')]);
             $items = PluginPaymentRecord::mk()->where(function (Query $query) {
                 $query->whereOr([['payment_status', '=', 1], ['audit_status', '>', 0]]);
             })->where($data)->column('code,channel_code,payment_amount,payment_coupon');
@@ -136,7 +136,7 @@ class Record extends Controller
                 $amount = bcsub(strval($item['payment_amount']), strval($item['payment_coupon']), 2);
                 Payment::mk($item['channel_code'])->refund($item['code'], $amount);
             }
-            $this->success('退款申请成功！');
+            $this->success(lang('退款申请成功！'));
         } catch (HttpResponseException $exception) {
             throw $exception;
         } catch (\Exception $exception) {
@@ -150,16 +150,16 @@ class Record extends Controller
      */
     public function notify()
     {
-        $data = $this->_vali(['code.require' => '支付单号不能为空！']);
+        $data = $this->_vali(['code.require' => lang('支付单号不能为空！')]);
         $record = PluginPaymentRecord::mk()->where(['code' => $data['code']])->findOrEmpty();
         if ($record->isEmpty()) {
-            $this->error('支付单号异常！');
+            $this->error(lang('支付单号异常！'));
         }
         if (empty($record->getAttr('payment_status'))) {
-            $this->error('未完成支付！');
+            $this->error(lang('未完成支付！'));
         }
         $this->app->event->trigger('PluginPaymentSuccess', $record);
-        $this->success('重新触发支付行为！');
+        $this->success(lang('重新触发支付行为！'));
     }
 
     private function buildAuditForm(): FormBuilder
@@ -173,30 +173,30 @@ HTML;
             ->define(function ($form) use ($id, $voucherRemark) {
                 $form->action(url('audit', array_filter(['id' => $id ?: null]))->build())
                     ->fields(function ($fields) use ($voucherRemark) {
-                        $fields->text('order_no_display', '业务单号', 'Order No.', false, '', null, [
+                        $fields->text('order_no_display', lang('业务单号'), 'Order No.', false, '', null, [
                             'readonly' => null,
                             'class' => 'layui-bg-gray',
-                        ])->text('code_display', '交易单号', 'Payment No.', false, '', null, [
+                        ])->text('code_display', lang('交易单号'), 'Payment No.', false, '', null, [
                             'readonly' => null,
                             'class' => 'layui-bg-gray',
-                        ])->text('payment_amount_display', '交易金额', 'Payment Amount', false, '', null, [
+                        ])->text('payment_amount_display', lang('交易金额'), 'Payment Amount', false, '', null, [
                             'readonly' => null,
                             'class' => 'layui-bg-gray',
-                        ])->text('payment_images_display', '支付单据凭证', 'Payment Voucher', false, $voucherRemark, null, [
+                        ])->text('payment_images_display', lang('支付单据凭证'), 'Payment Voucher', false, $voucherRemark, null, [
                             'readonly' => null,
                             'class' => 'layui-bg-gray',
                         ])->field([
                             'type' => 'radio',
                             'name' => 'status',
-                            'title' => '审核操作类型',
+                            'title' => lang('审核操作类型'),
                             'subtitle' => 'Audit Status',
                             'required' => true,
-                            'options' => [0 => '驳回凭证', 1 => '等待审核', 2 => '审核通过'],
-                        ])->textarea('remark', '订单审核描述', 'Audit Remark', false, '', [
-                            'placeholder' => '请输入订单审核描述',
+                            'options' => [0 => lang('驳回凭证'), 1 => lang('等待审核'), 2 => lang('审核通过')],
+                        ])->textarea('remark', lang('订单审核描述'), 'Audit Remark', false, '', [
+                            'placeholder' => lang('请输入订单审核描述'),
                         ]);
                     })->actions(function ($actions) {
-                        $actions->submit()->cancel('取消操作', '确定要取消吗？');
+                        $actions->submit()->cancel(lang('取消操作'), lang('确定要取消吗？'));
                     });
             })
             ->build();
@@ -205,18 +205,18 @@ HTML;
     private function loadAuditRecord(int $id): array
     {
         if ($id < 1) {
-            $this->error('支付号不能为空！');
+            $this->error(lang('支付号不能为空！'));
         }
         $record = PluginPaymentRecord::mk()->findOrEmpty($id);
         if ($record->isEmpty()) {
-            $this->error('支付记录不存在！');
+            $this->error(lang('支付记录不存在！'));
         }
         $data = $record->toArray();
         $data['order_no_display'] = strval($data['order_no'] ?? '');
         $data['code_display'] = strval($data['code'] ?? '');
-        $data['payment_amount_display'] = strval(($data['payment_amount'] ?? '0') + 0) . ' 元';
+        $data['payment_amount_display'] = strval(($data['payment_amount'] ?? '0') + 0) . ' ' . lang('元');
         $data['payment_images_display'] = strval($data['payment_images'] ?? '');
-        $data['remark'] = strval($data['remark'] ?? ($data['audit_remark'] ?? '支付凭证已查验'));
+        $data['remark'] = strval($data['remark'] ?? ($data['audit_remark'] ?? lang('支付凭证已查验')));
         $data['status'] = intval($data['audit_status'] ?? 1);
         return $data;
     }

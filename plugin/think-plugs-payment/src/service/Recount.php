@@ -52,7 +52,7 @@ class Recount extends Queue
      */
     public function execute(array $data = [])
     {
-        $this->balance()->setQueueSuccess('刷新用户余额及积分完成！');
+        $this->balance()->setQueueSuccess(lang('刷新用户余额及积分完成！'));
     }
 
     /**
@@ -64,14 +64,14 @@ class Recount extends Queue
     private function balance(): Recount
     {
         [$total, $count] = [PluginAccountUser::mk()->count(), 0];
-        foreach (PluginAccountUser::mk()->field('id')->cursor() as $user) {
+        foreach (PluginAccountUser::mk()->field('id,username,nickname,email')->cursor() as $user) {
             try {
-                $nick = $user['username'] ?: ($user['nickname'] ?: $user['email']);
-                $this->setQueueMessage($total, ++$count, "开始刷新用户 [{$user['id']} {$nick}] 余额及积分");
+                $nick = strval($user['username'] ?: ($user['nickname'] ?: $user['email']));
+                $this->setQueueMessage($total, ++$count, lang('开始刷新用户 [%s %s] 余额及积分', [strval($user['id']), $nick]));
                 BalanceAlias::recount(intval($user['id'])) && IntegralAlias::recount(intval($user['id']));
-                $this->setQueueMessage($total, $count, "刷新用户 [{$user['id']} {$nick}] 余额及积分", 1);
+                $this->setQueueMessage($total, $count, lang('刷新用户 [%s %s] 余额及积分', [strval($user['id']), $nick]), 1);
             } catch (\Exception $exception) {
-                $this->setQueueMessage($total, $count, "刷新用户 [{$user['id']} {$nick}] 余额及积分失败, {$exception->getMessage()}", 1);
+                $this->setQueueMessage($total, $count, lang('刷新用户 [%s %s] 余额及积分失败, %s', [strval($user['id']), $nick, $exception->getMessage()]), 1);
             }
         }
         return $this;

@@ -117,7 +117,7 @@ class WechatPaymentV3 extends WechatPayment
             // 创建支付记录
             $this->createAction($orderNo, $orderTitle, $orderAmount, $payCode, $payAmount);
             // 返回支付参数
-            return $this->res->set(true, '创建支付成功！', $data, $param);
+            return $this->res->set(true, lang('创建支付成功！'), $data, $param);
         } catch (Exception $exception) {
             throw $exception;
         } catch (\Exception $exception) {
@@ -196,7 +196,7 @@ class WechatPaymentV3 extends WechatPayment
         try {
             // 记录退款
             if (bccomp(strval($amount), '0.00', 2) <= 0) {
-                return [1, '无需退款！'];
+                return [1, lang('无需退款！')];
             }
             $record = static::syncRefund($pcode, $rcode, $amount, $reason);
             // 发起退款申请
@@ -215,7 +215,7 @@ class WechatPaymentV3 extends WechatPayment
             }
             $result = $this->payment->createRefund($options);
             if (in_array($result['code'] ?? $result['status'], ['SUCCESS', 'PROCESSING'])) {
-                return [1, '已提交退款！'];
+                return [1, lang('已提交退款！')];
             }
             throw new Exception($result['message'] ?? $result['status'], 0);
         } catch (\Exception $exception) {

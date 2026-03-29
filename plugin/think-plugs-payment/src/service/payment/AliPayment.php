@@ -100,7 +100,7 @@ class AliPayment implements PaymentInterface
             $this->config['notify_url'] = $this->withNotifyUrl($payCode);
             if (in_array($this->cfgType, [Payment::ALIPAY_WAP, Payment::ALIPAY_WEB])) {
                 if (empty($payReturn)) {
-                    throw new Exception('支付回跳地址不能为空！');
+                    throw new Exception(lang('支付回跳地址不能为空！'));
                 }
                 $this->config['return_url'] = $payReturn;
             }
@@ -111,7 +111,7 @@ class AliPayment implements PaymentInterface
             } elseif ($this->cfgType === Payment::ALIPAY_WEB) {
                 $payment = Web::instance($this->config);
             } else {
-                throw new Exception("支付类型[{$this->cfgType}]暂时不支持！");
+                throw new Exception(lang('支付类型[%s]暂时不支持！', [$this->cfgType]));
             }
             $param = ['out_trade_no' => $payCode, 'total_amount' => $payAmount, 'subject' => $orderTitle];
             if ($payRemark !== '') {
@@ -120,7 +120,7 @@ class AliPayment implements PaymentInterface
             // 创建支付记录
             $data = $this->createAction($orderNo, $orderTitle, $orderAmount, $payCode, $payAmount);
             // 返回支付参数
-            return $this->res->set(true, '创建支付成功！', $data, [$payment->apply($param)]);
+            return $this->res->set(true, lang('创建支付成功！'), $data, [$payment->apply($param)]);
         } catch (Exception $exception) {
             throw $exception;
         } catch (\Exception $exception) {
@@ -154,7 +154,7 @@ class AliPayment implements PaymentInterface
         try {
             // 记录退款数据
             if (bccomp(strval($amount), '0.00', 2) <= 0) {
-                return [1, '无需退款！'];
+                return [1, lang('无需退款！')];
             }
             static::syncRefund($pcode, $rcode, $amount, $reason);
             // 发起退款申请
@@ -163,7 +163,7 @@ class AliPayment implements PaymentInterface
                 'out_request_no' => $rcode,
                 'refund_amount' => $amount,
             ]);
-            return [1, '发起退款成功！'];
+            return [1, lang('发起退款成功！')];
         } catch (\Exception $exception) {
             throw new Exception($exception->getMessage(), $exception->getCode());
         }

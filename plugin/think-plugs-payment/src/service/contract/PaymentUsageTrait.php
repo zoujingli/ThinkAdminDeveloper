@@ -145,12 +145,12 @@ trait PaymentUsageTrait
     {
         // 检查退款单号
         if ($rCode && PluginPaymentRefund::mk()->where(['code' => $rCode])->findOrEmpty()->isExists()) {
-            throw new Exception('退款单已存在！', 2);
+            throw new Exception(lang('退款单已存在！'), 2);
         }
         // 查询支付记录
         $record = self::withPaymentByRefundTotal($pCode);
         if ($record->getAttr('payment_status') < 1) {
-            throw new Exception('支付未完成！');
+            throw new Exception(lang('支付未完成！'));
         }
         // 是否需要写入退款
         if (!is_numeric($amount)) {
@@ -175,7 +175,7 @@ trait PaymentUsageTrait
         $refundAmountFloat = strval($amount);
         $currentRefundAmount = strval($record->getAttr('refund_amount'));
         if (bccomp(bcadd($currentRefundAmount, $refundAmountFloat, 2), strval($record->getAttr('payment_amount')), 2) > 0) {
-            throw new Exception('退款金额溢出！');
+            throw new Exception(lang('退款金额溢出！'));
         }
         PluginPaymentRefund::mk()->save(array_merge([
             'unid' => $record->getAttr('unid'), 'record_code' => $pCode,
@@ -204,14 +204,14 @@ trait PaymentUsageTrait
         $map = ['order_no' => $orderNo, 'audit_status' => 1];
         $model = PluginPaymentRecord::mk()->where($map)->findOrEmpty();
         if ($model->isExists()) {
-            throw new Exception('凭证待审核！', 0);
+            throw new Exception(lang('凭证待审核！'), 0);
         }
         // 检查支付金额是否超出
         $payAmountFloat = strval($payAmount);
         $orderAmountFloat = strval($orderAmount);
         $paidAmount = strval(Payment::paidAmount($orderNo, true));
         if (bccomp(bcadd($payAmountFloat, $paidAmount, 2), $orderAmountFloat, 2) > 0) {
-            throw new Exception('支付金额溢出！');
+            throw new Exception(lang('支付金额溢出！'));
         }
         return $payAmountFloat;
     }
@@ -235,15 +235,15 @@ trait PaymentUsageTrait
         $total = strval(Payment::paidAmount($orderNo, true));
         $orderAmountFloat = strval($orderAmount);
         if (bccomp($total, $orderAmountFloat, 2) >= 0 && bccomp($orderAmountFloat, '0.00', 2) > 0) {
-            throw new Exception('已经完成支付！', 1);
+            throw new Exception(lang('已经完成支付！'), 1);
         }
         $payAmountFloat = strval($payAmount);
         if (bccomp(bcadd($total, $payAmountFloat, 2), $orderAmountFloat, 2) > 0) {
-            throw new Exception('支付大于金额！', 0);
+            throw new Exception(lang('支付大于金额！'), 0);
         }
         $map['code'] = $payCode;
         if (($model = PluginPaymentRecord::mk()->where($map)->findOrEmpty())->isExists()) {
-            throw new Exception('已经完成支付2', 1);
+            throw new Exception(lang('已经完成支付！'), 1);
         }
         // 写入订单支付行为
         $model->save([
@@ -282,7 +282,7 @@ trait PaymentUsageTrait
      * @param null|array $pNotify 支付通知数据
      * @return array|false
      */
-    protected function updateAction(string $pCode, string $pTrade, string $pAmount, ?string $pRemark = '在线支付', ?string $pCoupon = null, ?array $pNotify = null)
+    protected function updateAction(string $pCode, string $pTrade, string $pAmount, ?string $pRemark = null, ?string $pCoupon = null, ?array $pNotify = null)
     {
         // 更新支付记录
         $map = ['code' => $pCode, 'channel_code' => $this->cfgCode, 'channel_type' => $this->cfgType];
@@ -300,6 +300,9 @@ trait PaymentUsageTrait
         ];
         if (is_array($pNotify)) {
             $data['payment_notify'] = $pNotify;
+        }
+        if (is_null($pRemark)) {
+            $pRemark = lang('在线支付');
         }
         if (is_string($pRemark)) {
             $data['payment_remark'] = $pRemark;
@@ -326,7 +329,7 @@ trait PaymentUsageTrait
             $record = PluginPaymentRecord::mk()->where(['code' => $record])->findOrEmpty();
         }
         if (!$record instanceof PluginPaymentRecord || $record->isEmpty()) {
-            throw new Exception('无效的支付单！');
+            throw new Exception(lang('无效的支付单！'));
         }
         $total = Payment::totalRefundAmount($record->getAttr('code'));
         return $record->appendData([
@@ -362,7 +365,7 @@ trait PaymentUsageTrait
         if (isset($auth[$field])) {
             return $auth[$field];
         }
-        throw new Exception("获取 {$field} 字段值失败！");
+        throw new Exception(lang('获取 %s 字段值失败！', [$field]));
     }
 
     /**

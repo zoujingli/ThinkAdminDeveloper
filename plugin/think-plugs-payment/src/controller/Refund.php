@@ -61,7 +61,7 @@ class Refund extends Controller
         $this->mode = $this->get['open_type'] ?? 'index';
         PluginPaymentRefund::mQuery()->layTable(function () {
             if ($this->mode === 'index') {
-                $this->title = '支付行为管理';
+                $this->title = lang('支付退款管理');
             }
         }, static function (QueryHelper $query) {
             $query->with(['user', 'record']);

@@ -21,15 +21,15 @@
 
     <div class="layui-card-body pl40">
         <div class="layui-form-item">
-            <span class="help-label label-required-prev"><b>积分抵扣配置</b>Integral Payment</span>
+            <span class="help-label label-required-prev"><b>{:lang('积分抵扣配置')}</b></span>
             <div class="flex layui-input integral-input-config layui-bg-gray">
-                <span class="layui-form-label">使用</span>
+                <span class="layui-form-label">{:lang('使用')}</span>
                 <label><input class="layui-input" name="integral" value="{$config.integral|default=1}" type="number" data-blur-number="0" data-value-min="1" step="1" min="1" max="10000"></label>
-                <span class="layui-form-label">积分可抵扣 <b>1</b> 元。</span>
+                <span class="layui-form-label">{:lang('积分可抵扣')} <b>1</b> {:lang('元')}。</span>
             </div>
         </div>
         <div class="layui-form-item">
-            <span class="help-label label-required-prev"><b>支付方式开关</b>Payment Channel</span>
+            <span class="help-label label-required-prev"><b>{:lang('支付方式开关')}</b></span>
             <div class="layui-textarea help-checks layui-bg-gray">
                 {foreach $types as $k => $v}
                 <label class="think-checkbox" data-width style="width:120px" title="{$v.name|lang}">
@@ -47,7 +47,7 @@
     <div class="hr-line-dashed"></div>
 
     <div class="layui-form-item text-center">
-        <button class="layui-btn" type='submit'>保存数据</button>
-        <button class="layui-btn layui-btn-danger" type='button' data-confirm="确定要取消编辑吗？" data-close>取消编辑</button>
+        <button class="layui-btn" type='submit'>{:lang('保存数据')}</button>
+        <button class="layui-btn layui-btn-danger" type='button' data-confirm="{:lang('确定要取消编辑吗？')}" data-close>{:lang('取消编辑')}</button>
     </div>
 </form>

@@ -53,7 +53,7 @@
                             d.typeLabel = '{:lang("锁定")}';
                             d.typeDatetime = d.unlock_time || '-';
                         }
-                        return laytpl('<div>当前状态：{{-d.typeInfo}}<br>{{d.typeLabel}}{:lang("时间")}：{{d.typeDatetime}}</div>').render(d);
+                        return laytpl('<div>{:lang("当前状态")}：{{-d.typeInfo}}<br>{{d.typeLabel}}{:lang("时间")}：{{d.typeDatetime}}</div>').render(d);
                     }
                 },
                 {field: 'name', title: '{:lang("操作描述")}', minWidth: 100, templet: '<div>{:lang("操作名称")}：{{d.name||"-"}}<br>{:lang("操作描述")}：{{d.remark||"-"}}</div>'},
@@ -81,7 +81,7 @@
     <!--{if auth("cancel")}-->
     <input type="checkbox" value="{{d.code}}" lay-skin="switch" lay-text="{:lang('已激活')}|{:lang('已取消')}" lay-filter="StatusSwitch" {{d.cancel>0?'':'checked'}}>
     <!--{else}-->
-    {{-d.status ? '<b class="color-green">{:lang("已激活")}</b>' : '<b class="color-red">{:lang("已取消")}</b>'}}
+    {{-d.cancel>0 ? '<b class="color-red">{:lang("已取消")}</b>' : '<b class="color-green">{:lang("已激活")}</b>'}}
     <!--{/if}-->
 </script>
 

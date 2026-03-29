@@ -81,9 +81,33 @@ class IntegralIntegrationTest extends SqliteIntegrationTestCase
         Integral::create(intval($user->getAttr('id')), 'integral-minus', '积分扣减', '-20.00', '超额扣减');
     }
 
+    public function testInsufficientDeductionReturnsEnglishMessageWhenLangSetIsEnUs(): void
+    {
+        $user = $this->createAccountUser([
+            'phone' => $this->randomPhone('1330014'),
+            'username' => 'integral-en-' . random_int(100, 999),
+            'nickname' => '积分英文用户',
+        ]);
+        Integral::create(intval($user->getAttr('id')), 'integral-enough', '积分发放', '12.00', '英文提示测试');
+        $this->switchPaymentLang('en-us');
+
+        $this->expectException(Exception::class);
+        $this->expectExceptionMessage('Insufficient integral for deduction');
+        Integral::create(intval($user->getAttr('id')), 'integral-minus-en', '积分扣减', '-20.00', '超额扣减');
+    }
+
     protected function defineSchema(): void
     {
         $this->createAccountTables();
         $this->createPaymentIntegralTable();
+    }
+
+    private function switchPaymentLang(string $langSet): void
+    {
+        $this->app->lang->switchLangSet($langSet);
+        $file = TEST_PROJECT_ROOT . "/plugin/think-plugs-payment/src/lang/{$langSet}.php";
+        if (is_file($file)) {
+            $this->app->lang->load($file, $langSet);
+        }
     }
 }

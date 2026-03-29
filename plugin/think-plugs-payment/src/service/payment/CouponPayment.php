@@ -86,7 +86,7 @@ class CouponPayment implements PaymentInterface
         try {
             // 记录并退回
             static::syncRefund($pcode, $rcode, $amount, $reason);
-            return [1, '发起退款成功！'];
+            return [1, lang('发起退款成功！')];
         } catch (\Exception $exception) {
             throw new Exception($exception->getMessage(), $exception->getCode());
         }
@@ -110,12 +110,12 @@ class CouponPayment implements PaymentInterface
         try {
             // 检查优惠券是否已使用
             if (empty($payCoupon)) {
-                throw new Exception('无效优惠券！');
+                throw new Exception(lang('无效优惠券！'));
             }
             $where = ['payment_trade' => $payCoupon, 'refund_status' => 0];
             $record = PluginPaymentRecord::mk()->where($where)->findOrEmpty();
             if ($record->isExists() && $record->getAttr('order_no') !== $payCoupon) {
-                throw new Exception('优惠券已使用！');
+                throw new Exception(lang('优惠券已使用！'));
             }
             // 检查剩余金额
             $this->checkLeaveAmount($orderNo, $payAmount, $orderAmount);
@@ -123,9 +123,9 @@ class CouponPayment implements PaymentInterface
             [$payCode] = [Payment::withPaymentCode(), $this->withUserUnid($account)];
             $this->createAction($orderNo, $orderTitle, $orderAmount, $payCode, $payAmount, '', $payAmount);
             // 更新支付行为
-            $data = $this->updateAction($payCode, $payCoupon, $payAmount, '使用优惠券抵扣', $payAmount);
+            $data = $this->updateAction($payCode, $payCoupon, $payAmount, lang('使用优惠券抵扣'), $payAmount);
             // 返回支付结果
-            return $this->res->set(true, '优惠券抵扣完成！', $data);
+            return $this->res->set(true, lang('优惠券抵扣完成！'), $data);
         } catch (Exception $exception) {
             throw $exception;
         } catch (\Exception $exception) {

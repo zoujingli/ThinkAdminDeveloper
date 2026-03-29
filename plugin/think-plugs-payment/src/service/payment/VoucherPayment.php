@@ -84,10 +84,10 @@ class VoucherPayment implements PaymentInterface
         try {
             // 记录退款
             if (bccomp(strval($amount), '0.00', 2) <= 0) {
-                return [1, '无需退款！'];
+                return [1, lang('无需退款！')];
             }
             static::syncRefund($pcode, $rcode, $amount, $reason);
-            return [1, '发起退款成功！'];
+            return [1, lang('发起退款成功！')];
         } catch (\Exception $exception) {
             throw new Exception($exception->getMessage(), $exception->getCode());
         }
@@ -110,12 +110,12 @@ class VoucherPayment implements PaymentInterface
     {
         // 订单及凭证检查
         if (empty($payImages)) {
-            throw new Exception('凭证不能为空！');
+            throw new Exception(lang('凭证不能为空！'));
         }
         $this->checkLeaveAmount($orderNo, $payAmount, $orderAmount);
         // 生成新的待审核记录
         [$payCode] = [Payment::withPaymentCode(), $this->withUserUnid($account)];
         $data = $this->createAction($orderNo, $orderTitle, $orderAmount, $payCode, $payAmount, $payImages);
-        return $this->res->set(true, '上传成功！', $data);
+        return $this->res->set(true, lang('上传成功！'), $data);
     }
 }

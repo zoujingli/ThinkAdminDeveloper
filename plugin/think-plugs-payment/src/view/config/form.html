@@ -5,38 +5,38 @@
     <div class="layui-card-body pl40" style="max-width:800px">
 
         <div class="layui-form-item">
-            <span class="help-label label-required-prev"><b>支付方式</b>Payment Type</span>
+            <span class="help-label label-required-prev"><b>{:lang('支付方式')}</b></span>
             {empty name='vo.type'}
             <select name="type" class="layui-select" lay-filter="payment-type" lay-search>
                 {foreach $payments as $k=>$v}{if isset($vo.type) and $vo.type eq $k}
-                <option selected value="{$k}">{$v.name} ( {$v.allow} )</option>
+                <option selected value="{$k}">{$v.name|lang} ( {$v.allow} )</option>
                 {else}
-                <option value="{$k}">{$v.name} ( {$v.allow} )</option>
+                <option value="{$k}">{$v.name|lang} ( {$v.allow} )</option>
                 {/if}{/foreach}
             </select>
             {else}
             <select name="type" class="layui-select" disabled lay-filter="payment-type">
                 {foreach $payments as $k=>$v}{if isset($vo.type) and $vo.type eq $k}
-                <option selected value="{$k}">{$v.name} ( {$v.allow} )</option>
+                <option selected value="{$k}">{$v.name|lang} ( {$v.allow} )</option>
                 {else}
-                <option value="{$k}">{$v.name} ( {$v.allow} )</option>
+                <option value="{$k}">{$v.name|lang} ( {$v.allow} )</option>
                 {/if}{/foreach}
             </select>
             <input name="type" type="hidden" value="{$vo.type}">
             {/empty}
-            <span class="help-block"><b>必选，</b>请选择预置的支付方式，支付方式创建之后不能修改。</span>
+            <span class="help-block"><b>{:lang('必选，')}</b>{:lang('请选择预置的支付方式，支付方式创建之后不能修改。')}</span>
         </div>
 
         <label class="layui-form-item relative block">
-            <span class="help-label"><b>支付名称</b>Payment Name</span>
-            <input class="layui-input" maxlength="50" name="name" vali-name="支付名称" placeholder="请输入支付名称" required value="{$vo.name|default=''}"/>
-            <span class="help-block"><b>必填，</b>请填写支付名称，支付名称尽量不要重复，建议字符长度为 4-8 个汉字。</span>
+            <span class="help-label"><b>{:lang('支付名称')}</b></span>
+            <input class="layui-input" maxlength="50" name="name" vali-name="{:lang('支付名称')}" placeholder="{:lang('请输入支付名称')}" required value="{$vo.name|default=''}"/>
+            <span class="help-block"><b>{:lang('必填，')}</b>{:lang('请填写支付名称，支付名称尽量不要重复，建议字符长度为 4-8 个汉字。')}</span>
         </label>
 
         <div class="layui-form-item label-required-prev">
-            <span class="help-label"><b>支付图标</b>Payment Image</span>
+            <span class="help-label"><b>{:lang('支付图标')}</b></span>
             <div class="relative block label-required-null">
-                <input class="layui-input think-bg-gray" data-tips-hover data-tips-image pattern="url" name="cover" vali-name="支付图标" placeholder="请上传支付图标" required value='{$vo.cover|default=""}'>
+                <input class="layui-input think-bg-gray" data-tips-hover data-tips-image pattern="url" name="cover" vali-name="{:lang('支付图标')}" placeholder="{:lang('请上传支付图标')}" required value='{$vo.cover|default=""}'>
                 <a class="layui-icon layui-icon-upload input-right-icon" data-field="cover" data-file="image" data-type="png,jpg,gif,jpeg"></a>
             </div>
         </div>
@@ -47,8 +47,8 @@
         <div class="layui-hide" data-payment-type="voucher">{include file='config/form_voucher'}</div>
 
         <label class="layui-form-item relative layui-hide">
-            <span class="help-label"><b>支付描述</b>Payment Remark</span>
-            <textarea class="layui-textarea" name="remark" placeholder="请输入支付描述">{$vo.remark|default=''}</textarea>
+            <span class="help-label"><b>{:lang('支付描述')}</b></span>
+            <textarea class="layui-textarea" name="remark" placeholder="{:lang('请输入支付描述')}">{$vo.remark|default=''}</textarea>
         </label>
 
         <div class="hr-line-dashed"></div>
@@ -56,8 +56,8 @@
         {notempty name='vo.code'}<input name='code' type='hidden' value='{$vo.code}'>{/notempty}
 
         <div class="layui-form-item text-center">
-            <button class="layui-btn" type='submit'>保存数据</button>
-            <button class="layui-btn layui-btn-danger" data-confirm="确定要取消编辑吗？" data-close type='button'>取消编辑</button>
+            <button class="layui-btn" type='submit'>{:lang('保存数据')}</button>
+            <button class="layui-btn layui-btn-danger" data-confirm="{:lang('确定要取消编辑吗？')}" data-close type='button'>{:lang('取消编辑')}</button>
         </div>
 
     </div>

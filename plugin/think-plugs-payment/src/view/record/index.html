@@ -14,75 +14,75 @@
             even: true, height: 'full', sort: {field: 'id', type: 'desc'}, cellExpandedMode: 'tips',
             cols: [[
                 /* {if $mode neq 'modal'} */
-                {field: 'headimg', title: '头像', width: 85, align: 'center', templet: '<div>{{-showTableImage(d.user.headimg,true,"md")}}</div>'},
+                {field: 'headimg', title: '{:lang("头像")}', width: 85, align: 'center', templet: '<div>{{-showTableImage(d.user.headimg,true,"md")}}</div>'},
                 {
-                    title: '用户账号', minWidth: 200, templet: function (d) {
+                    title: '{:lang("用户账号")}', minWidth: 200, templet: function (d) {
                         let tpls = [];
-                        tpls.push('用户昵称：<b class="color-text">{{d.user.nickname||"-"}}</b>');
-                        tpls.push('用户账号：<b class="color-text">{{d.user.phone||d.user.email||d.user.username||"-"}}</b>');
-                        tpls.push('用户编号：{{d.user.code||"-"}}');
+                        tpls.push('{:lang("用户昵称")}：<b class="color-text">{{d.user.nickname||"-"}}</b>');
+                        tpls.push('{:lang("用户账号")}：<b class="color-text">{{d.user.phone||d.user.email||d.user.username||"-"}}</b>');
+                        tpls.push('{:lang("用户编号")}：{{d.user.code||"-"}}');
                         return laytpl(tpls.join('<br>')).render(d);
                     }
                 },
                 /* {/if} */
                 {
-                    title: '订单内容', minWidth: 100, templet: function (d) {
+                    title: '{:lang("订单内容")}', minWidth: 100, templet: function (d) {
                         let tpls = [];
-                        tpls.push('订单标题：<b>{{d.order_name||"-"}}</b>');
-                        tpls.push('订单编号：<b class="color-blue">{{d.order_no}}</b>');
+                        tpls.push('{:lang("订单标题")}：<b>{{d.order_name||"-"}}</b>');
+                        tpls.push('{:lang("订单编号")}：<b class="color-blue">{{d.order_no}}</b>');
                         if (d.payment_status) {
-                            tpls.push('订单金额：需支付 <b class="color-blue">{{d.order_amount}}</b> 元 ( 已付 <b class="color-blue">{{d.payment_amount}}</b> 元 )');
+                            tpls.push('{:lang("订单金额")}：{:lang("需支付")} <b class="color-blue">{{d.order_amount}}</b> {:lang("元")} ( {:lang("已付")} <b class="color-blue">{{d.payment_amount}}</b> {:lang("元")} )');
                         } else if (d.payment_amount > 0) {
-                            tpls.push('订单金额：需支付 <b class="color-blue">{{d.order_amount}}</b> 元 ( 待审 <b class="color-blue">{{d.payment_amount}}</b> 元 )');
+                            tpls.push('{:lang("订单金额")}：{:lang("需支付")} <b class="color-blue">{{d.order_amount}}</b> {:lang("元")} ( {:lang("待审")} <b class="color-blue">{{d.payment_amount}}</b> {:lang("元")} )');
                         } else {
-                            tpls.push('订单金额：需支付 <b class="color-blue">{{d.order_amount}}</b> 元');
+                            tpls.push('{:lang("订单金额")}：{:lang("需支付")} <b class="color-blue">{{d.order_amount}}</b> {:lang("元")}');
                         }
                         return laytpl(tpls.join('<br>')).render(d);
                     }
                 },
                 {
-                    field: 'name', title: '支付描述', minWidth: 130, templet: function (d) {
+                    field: 'name', title: '{:lang("支付描述")}', minWidth: 130, templet: function (d) {
                         if (d.payment_status) {
-                            d.typeInfo = '已支付';
+                            d.typeInfo = '{:lang("已支付")}';
                             d.typeColor = 'layui-bg-green';
                         } else if (d.channel_type === 'voucher') {
                             if (d.audit_status === 2) {
-                                d.typeInfo = '已完成';
+                                d.typeInfo = '{:lang("已完成")}';
                                 d.typeColor = 'layui-bg-green';
                             } else if (d.audit_status === 1) {
-                                d.typeInfo = '待审核';
+                                d.typeInfo = '{:lang("待审核")}';
                                 d.typeColor = 'layui-bg-blue';
                             } else if (d.audit_status === 0) {
-                                d.typeInfo = '已拒绝';
+                                d.typeInfo = '{:lang("已拒绝")}';
                                 d.typeColor = 'layui-bg-red';
                             }
                         } else {
-                            d.typeInfo = '待支付';
+                            d.typeInfo = '{:lang("待支付")}';
                             d.typeColor = 'layui-bg-blue';
                         }
                         let tpls = [];
-                        let rstatus = d.refund_status ? '<span class="color-red">已退款</span>' : '';
-                        let rnotify = '<a class="pointer" data-load="{:url(\'notify\')}" data-value="code#{{d.code}}">重发通知</a>';
-                        tpls.push('支付类型：{{d.channel_type_name||"-"}} ' + (rstatus || (d.payment_status ? rnotify : '')));
-                        tpls.push('交易单号：<b class="color-blue">{{d.payment_trade||"-"}}</b>');
-                        tpls.push('操作描述：{{d.payment_remark||"-"}}');
+                        let rstatus = d.refund_status ? '<span class="color-red">{:lang("已退款")}</span>' : '';
+                        let rnotify = '<a class="pointer" data-load="{:url(\'notify\')}" data-value="code#{{d.code}}">{:lang("重发通知")}</a>';
+                        tpls.push('{:lang("支付类型")}：{{d.channel_type_name||"-"}} ' + (rstatus || (d.payment_status ? rnotify : '')));
+                        tpls.push('{:lang("交易单号")}：<b class="color-blue">{{d.payment_trade||"-"}}</b>');
+                        tpls.push('{:lang("操作描述")}：{{d.payment_remark||"-"}}');
                         let badge = '<div class="layui-badge layui-badge-middle {{d.typeColor}} pull-left mr5">{{-d.typeInfo}}</div>';
                         return laytpl('<div class="nowrap">' + badge + tpls.join('<br>') + '</div>').render(d);
                     }
                 },
                 {
-                    field: 'id', title: '操作时间', minWidth: 100, sort: true, templet: function (d) {
+                    field: 'id', title: '{:lang("操作时间")}', minWidth: 100, sort: true, templet: function (d) {
                         if (d.payment_status) {
-                            d.typeLabel = '支付';
+                            d.typeLabel = '{:lang("支付")}';
                             d.typeDatetime = d.payment_time || '-';
                         } else {
-                            d.typeLabel = '生成';
+                            d.typeLabel = '{:lang("生成")}';
                             d.typeDatetime = d.create_time || '-';
                         }
                         let tpls = [];
-                        tpls.push('{{d.typeLabel}}时间：{{d.typeDatetime}}');
-                        tpls.push('更新时间：{{d.update_time||"-"}}');
-                        tpls.push('创建时间：{{d.create_time||"-"}}');
+                        tpls.push('{{d.typeLabel}}{:lang("时间")}：{{d.typeDatetime}}');
+                        tpls.push('{:lang("更新时间")}：{{d.update_time||"-"}}');
+                        tpls.push('{:lang("创建时间")}：{{d.create_time||"-"}}');
                         return laytpl(tpls.join('<br>')).render(d)
                     }
                 },
@@ -90,7 +90,7 @@
                     field: 'id', templet: function (d) {
                         let h = $('#toolbarPayment').html();
                         return laytpl('<div class="flex-center full-height" style="margin-top:-3px">' + h + '</div>').render(d)
-                    }, style: 'display:flex', title: '操作面板', align: 'center', minWidth: 120, fixed: 'right'
+                    }, style: 'display:flex', title: '{:lang("操作面板")}', align: 'center', minWidth: 120, fixed: 'right'
                 }
             ]]
         });
@@ -103,9 +103,9 @@
     {{#if(d.payment_status == 0 && d.refund_status < 2){}}
     <!--<a class="layui-btn layui-btn-sm mt0 layui-disabled">不能取消</a>-->
     {{#}else if(d.refund_status){}}
-    <a class="layui-btn layui-btn-sm mt0 layui-disabled">已经退款</a>
+    <a class="layui-btn layui-btn-sm mt0 layui-disabled">{:lang('已经退款')}</a>
     {{#}else if(d.channel_type === 'voucher'){}}
-    <a class="layui-btn layui-btn-sm mt0 layui-btn-danger" data-confirm="确认要取消审核吗？" data-load="{:url('cancel')}" data-value="code#{{d.code}}">取消审核</a>
+    <a class="layui-btn layui-btn-sm mt0 layui-btn-danger" data-confirm="{:lang('确认要取消审核吗？')}" data-load="{:url('cancel')}" data-value="code#{{d.code}}">{:lang('取消审核')}</a>
     {{#}else{}}
     <!-- <a class="layui-btn layui-btn-sm mt0 layui-btn-danger" data-confirm="确认要取消支付吗？" data-load="{:url('cancel')}" data-value="code#{{d.code}}">取消支付</a> -->
     {{#}}}
@@ -116,7 +116,7 @@
     {{#if(d.channel_type === 'voucher'){}}
 
     {{#if(d.audit_status === 1){}}
-    <a class="layui-btn layui-btn-sm" data-modal="{:url('audit')}" data-value="id#{{d.id}}" data-title="支付凭证审核">凭证审核</a>
+    <a class="layui-btn layui-btn-sm" data-modal="{:url('audit')}" data-value="id#{{d.id}}" data-title="{:lang('支付凭证审核')}">{:lang('凭证审核')}</a>
     {{#}else if(d.audit_status === 0){}}
     <!-- <a class="layui-btn layui-btn-sm layui-disabled">已经拒绝</a>-->
     {{#}else if(d.audit_status === 2){}}

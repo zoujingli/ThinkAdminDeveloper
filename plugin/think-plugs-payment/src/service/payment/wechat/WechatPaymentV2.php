@@ -112,9 +112,9 @@ class WechatPaymentV2 extends WechatPayment
                 // 创建支付记录
                 $data = $this->createAction($orderNo, $orderTitle, $orderAmount, $payCode, $payAmount);
                 // 返回支付参数
-                return $this->res->set(true, '创建支付成功！', $data, $param);
+                return $this->res->set(true, lang('创建支付成功！'), $data, $param);
             }
-            throw new Exception($info['err_code_des'] ?? '获取预支付码失败！');
+            throw new Exception($info['err_code_des'] ?? lang('获取预支付码失败！'));
         } catch (Exception $exception) {
             throw $exception;
         } catch (\Exception $exception) {
@@ -195,7 +195,7 @@ class WechatPaymentV2 extends WechatPayment
         try {
             // 记录退款
             if (bccomp(strval($amount), '0.00', 2) <= 0) {
-                return [1, '无需退款！'];
+                return [1, lang('无需退款！')];
             }
             $record = static::syncRefund($pcode, $rcode, $amount, $reason);
             // 发起退款申请
@@ -211,7 +211,7 @@ class WechatPaymentV2 extends WechatPayment
             }
             $result = Refund::instance($this->config)->create($options);
             if (in_array($result['return_code'] ?? $result['result_code'], ['SUCCESS', 'PROCESSING'])) {
-                return [1, '已提交退款！'];
+                return [1, lang('已提交退款！')];
             }
             throw new Exception($result['err_code_des'] ?? $result['result_code'], 0);
         } catch (\Exception $exception) {

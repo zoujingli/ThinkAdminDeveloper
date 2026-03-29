@@ -51,7 +51,7 @@ class Integral extends Auth
     {
         PluginPaymentIntegral::mQuery(null, function (QueryHelper $query) {
             $query->where(['unid' => $this->unid, 'cancel' => 0])->order('id desc');
-            $this->success('获取积分记录！', $query->page(intval(input('page', 1)), false, false, 20));
+            $this->success(lang('获取积分记录！'), $query->page(intval(input('page', 1)), false, false, 20));
         });
     }
 }

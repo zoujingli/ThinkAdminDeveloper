@@ -107,9 +107,9 @@ class JoinPayment implements PaymentInterface
             // 创建支付记录
             $data = $this->createAction($orderNo, $orderTitle, $orderAmount, $payCode, $payAmount);
             // 返回支付参数
-            return $this->res->set(true, '创建支付成功!', $data, json_decode($result['rc_Result'], true));
+            return $this->res->set(true, lang('创建支付成功！'), $data, json_decode($result['rc_Result'], true));
         }
-        throw new Exception($result['rb_CodeMsg'] ?? '获取预支付码失败！');
+        throw new Exception($result['rb_CodeMsg'] ?? lang('获取预支付码失败！'));
     }
 
     /**

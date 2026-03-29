@@ -157,10 +157,85 @@ class PaymentRecordIntegrationTest extends SqliteIntegrationTestCase
         }
     }
 
+    public function testEmptyPaymentReturnsEnglishMessagesWhenLangSetIsEnUs(): void
+    {
+        $account = $this->createBoundAccountFixture();
+        $this->switchPaymentLang('en-us');
+
+        $response = Payment::mk(Payment::EMPTY)->create(
+            $account,
+            'ORDER-EMPTY-EN-001',
+            'English empty order',
+            '10.00',
+            '10.00',
+            'No gateway required'
+        );
+
+        [$status, $message] = Payment::mk(Payment::EMPTY)->refund($response->record['code'], '4.00', 'English refund');
+
+        $this->assertTrue($response->status);
+        $this->assertSame('No payment is required for this order', $response->message);
+        $this->assertSame([1, 'Refund requested successfully'], [$status, $message]);
+    }
+
+    public function testVoucherCreateReturnsEnglishPendingAuditMessageWhenLangSetIsEnUs(): void
+    {
+        $account = $this->createBoundAccountFixture('web');
+        $this->switchPaymentLang('en-us');
+
+        Payment::mk(Payment::VOUCHER)->create(
+            $account,
+            'ORDER-VOUCHER-EN-001',
+            'Voucher payment order',
+            '15.00',
+            '8.00',
+            'Upload voucher',
+            '',
+            'https://example.com/voucher-en.png'
+        );
+
+        $this->expectException(Exception::class);
+        $this->expectExceptionMessage('Voucher pending review');
+        Payment::mk(Payment::VOUCHER)->create(
+            $account,
+            'ORDER-VOUCHER-EN-001',
+            'Voucher payment order',
+            '15.00',
+            '2.00',
+            'Duplicate voucher',
+            '',
+            'https://example.com/voucher-en-2.png'
+        );
+    }
+
+    public function testRefundRejectsOverflowWithEnglishMessageWhenLangSetIsEnUs(): void
+    {
+        $record = $this->createPaidEmptyOrderFixture('ORDER-REFUND-OVERFLOW-EN');
+        $this->switchPaymentLang('en-us');
+        Payment::mk(Payment::EMPTY)->refund($record->getAttr('code'), '8.00', 'First refund');
+
+        $this->expectException(Exception::class);
+        $this->expectExceptionMessage('Refund amount exceeds the paid amount');
+        Payment::mk(Payment::EMPTY)->refund($record->getAttr('code'), '3.00', 'Overflow refund');
+    }
+
     protected function defineSchema(): void
     {
         $this->createAccountTables();
         $this->createPaymentRecordTable();
         $this->createPaymentRefundTable();
+    }
+
+    private function switchPaymentLang(string $langSet): void
+    {
+        $this->app->lang->switchLangSet($langSet);
+        foreach ([
+            TEST_PROJECT_ROOT . "/plugin/think-plugs-payment/src/lang/{$langSet}.php",
+            TEST_PROJECT_ROOT . "/plugin/think-plugs-account/src/lang/{$langSet}.php",
+        ] as $file) {
+            if (is_file($file)) {
+                $this->app->lang->load($file, $langSet);
+            }
+        }
     }
 }

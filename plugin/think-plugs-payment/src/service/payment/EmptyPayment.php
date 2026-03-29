@@ -77,8 +77,8 @@ class EmptyPayment implements PaymentInterface
         try {
             [$payCode] = [Payment::withPaymentCode(), $this->withUserUnid($account)];
             $this->createAction($orderNo, $orderTitle, $orderAmount, $payCode, $payAmount);
-            $data = $this->updateAction($payCode, CodeToolkit::uniqidNumber(18, 'EMT'), $payAmount, '无需支付');
-            return $this->res->set(true, '订单无需支付！', $data);
+            $data = $this->updateAction($payCode, CodeToolkit::uniqidNumber(18, 'EMT'), $payAmount, lang('无需支付'));
+            return $this->res->set(true, lang('订单无需支付！'), $data);
         } catch (Exception $exception) {
             throw $exception;
         } catch (\Exception $exception) {
@@ -111,10 +111,10 @@ class EmptyPayment implements PaymentInterface
     {
         try {
             if (bccomp(strval($amount), '0.00', 2) <= 0) {
-                return [1, '无需退款！'];
+                return [1, lang('无需退款！')];
             }
             static::syncRefund($pcode, $rcode, $amount, $reason);
-            return [1, '发起退款成功！'];
+            return [1, lang('发起退款成功！')];
         } catch (\Exception $exception) {
             throw new Exception($exception->getMessage(), $exception->getCode());
         }

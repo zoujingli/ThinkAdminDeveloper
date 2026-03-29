@@ -52,24 +52,24 @@ class PaymentResponse extends \stdClass
 
     public $channelType = '';
 
-    public function __construct(bool $status = true, string $message = '创建支付成功', array $record = [], array $params = [])
+    public function __construct(bool $status = true, string $message = '', array $record = [], array $params = [])
     {
         $this->record = $record;
         $this->status = $status;
         $this->params = $params;
-        $this->message = $message;
+        $this->message = $message === '' ? lang('创建支付成功') : $message;
     }
 
     /**
      * 更新返回内容.
      * @return $this
      */
-    public function set(bool $status = true, string $message = '创建支付成功', array $record = [], array $params = []): PaymentResponse
+    public function set(bool $status = true, string $message = '', array $record = [], array $params = []): PaymentResponse
     {
         $this->record = $record;
         $this->status = $status;
         $this->params = $params;
-        $this->message = $message;
+        $this->message = $message === '' ? lang('创建支付成功') : $message;
         return $this;
     }
 
@@ -91,7 +91,7 @@ class PaymentResponse extends \stdClass
     /**
      * 创建支付响应对象
      */
-    public static function mk(bool $status = true, string $message = '创建支付成功', array $record = [], array $params = []): PaymentResponse
+    public static function mk(bool $status = true, string $message = '', array $record = [], array $params = []): PaymentResponse
     {
         return new self($status, $message, $record, $params);
     }

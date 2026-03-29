@@ -36,6 +36,7 @@ namespace plugin\payment\controller\api\auth;
 
 use plugin\account\controller\api\Auth;
 use plugin\payment\model\PluginPaymentAddress;
+use think\admin\helper\QueryHelper;
 use think\db\exception\DataNotFoundException;
 use think\db\exception\DbException;
 use think\db\exception\ModelNotFoundException;
@@ -59,21 +60,21 @@ class Address extends Auth
             'idcode.default' => '', // 身份证号码
             'idimg1.default' => '', // 身份证正面
             'idimg2.default' => '', // 身份证反面
-            'type.in:0,1' => '状态不在范围！',
-            'user_name.require' => '姓名不能为空！',
-            'user_phone.mobile' => '手机格式错误！',
-            'user_phone.require' => '手机不能为空！',
-            'region_prov.require' => '省份不能为空！',
-            'region_city.require' => '城市不能为空！',
-            'region_area.require' => '区域不能为空！',
-            'region_addr.require' => '地址不能为空！',
+            'type.in:0,1' => lang('状态不在范围！'),
+            'user_name.require' => lang('姓名不能为空！'),
+            'user_phone.mobile' => lang('手机格式错误！'),
+            'user_phone.require' => lang('手机不能为空！'),
+            'region_prov.require' => lang('省份不能为空！'),
+            'region_city.require' => lang('城市不能为空！'),
+            'region_area.require' => lang('区域不能为空！'),
+            'region_addr.require' => lang('地址不能为空！'),
         ]);
 
         if (empty($data['id'])) {
             unset($data['id']);
             $map = ['unid' => $this->unid];
             if (PluginPaymentAddress::mk()->where($map)->count() >= 10) {
-                $this->error('最多10个地址！');
+                $this->error(lang('最多10个地址！'));
             }
         }
 
@@ -82,9 +83,9 @@ class Address extends Auth
 
         // 保存收货地址
         if ($model->save($data) && $model->isExists()) {
-            $this->success('保存成功！', $model->refresh()->hidden(['delete_time'])->toArray());
+            $this->success(lang('保存成功！'), $model->refresh()->hidden(['delete_time'])->toArray());
         } else {
-            $this->error('保存失败！');
+            $this->error(lang('保存失败！'));
         }
     }
 
@@ -96,9 +97,11 @@ class Address extends Auth
      */
     public function get()
     {
-        $query = $this->withModel()->mQuery();
-        $query->equal('id')->order('type desc,id desc');
-        $this->success('获取地址数据！', $query->page(false, false));
+        PluginPaymentAddress::mQuery(null, function (QueryHelper $query) {
+            $query->db()->withoutField('delete_time');
+            $query->where(['unid' => $this->unid])->equal('id')->order('type desc,id desc');
+            $this->success(lang('获取地址数据！'), $query->page(false, false));
+        });
     }
 
     /**
@@ -107,17 +110,17 @@ class Address extends Auth
     public function state()
     {
         $data = $this->_vali([
-            'id.require' => '编号不能为空！',
-            'type.in:0,1' => '状态不在范围！',
-            'type.require' => '状态不能为空！',
+            'id.require' => lang('编号不能为空！'),
+            'type.in:0,1' => lang('状态不在范围！'),
+            'type.require' => lang('状态不能为空！'),
         ]);
 
         // 检查是否存在
         $model = $this->withDefault(intval($data['id']), intval($data['type']));
-        $model->isEmpty() && $this->error('地址不存在！');
+        $model->isEmpty() && $this->error(lang('地址不存在！'));
 
         // 返回成功消息
-        $this->success('设置默认成功！', $model->refresh()->toArray());
+        $this->success(lang('设置默认成功！'), $model->refresh()->toArray());
     }
 
     /**
@@ -125,14 +128,14 @@ class Address extends Auth
      */
     public function remove()
     {
-        $map = $this->_vali(['id.require' => '地址ID为空！']);
+        $map = $this->_vali(['id.require' => lang('地址ID为空！')]);
         $model = $this->withModel($map)->findOrEmpty();
         if ($model->isEmpty()) {
-            $this->error('地址不存在！');
+            $this->error(lang('地址不存在！'));
         } elseif ($model->delete() !== false) {
-            $this->success('删除成功！');
+            $this->success(lang('删除成功！'));
         } else {
-            $this->error('删除失败！');
+            $this->error(lang('删除失败！'));
         }
     }
 

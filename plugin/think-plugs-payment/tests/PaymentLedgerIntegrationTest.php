@@ -120,6 +120,60 @@ class PaymentLedgerIntegrationTest extends SqliteIntegrationTestCase
         $this->assertSame('4.00', $this->decimal(Payment::totalRefundAmount($record->getAttr('code'))['integral']));
     }
 
+    public function testBalancePaymentRefundUsesEnglishRemarkWhenLangSetIsEnUs(): void
+    {
+        $account = $this->createBoundAccountFixture();
+        $unid = $account->getUnid();
+
+        Balance::create($unid, 'balance-seed-en', 'Initial balance', '50.00', 'Initial balance seed', true);
+        $this->switchPaymentLang('en-us');
+
+        $response = Payment::mk(Payment::BALANCE)->create(
+            $account,
+            'ORDER-BALANCE-EN-001',
+            'Balance payment order',
+            '20.00',
+            '20.00',
+            'Balance payment create'
+        );
+
+        $refundCode = '';
+        [$status, $message] = Payment::mk(Payment::BALANCE)->refund($response->record['code'], '5.00', 'Balance refund', $refundCode);
+        $refundBalance = PluginPaymentBalance::mk()->where(['code' => $refundCode])->findOrEmpty();
+
+        $this->assertSame('Balance payment completed', $response->message);
+        $this->assertSame([1, 'Refund requested successfully'], [$status, $message]);
+        $this->assertSame('Balance Refund', $refundBalance->getAttr('name'));
+        $this->assertSame('Refund balance from order ORDER-BALANCE-EN-001', $refundBalance->getAttr('remark'));
+    }
+
+    public function testIntegralPaymentRefundUsesEnglishRemarkWhenLangSetIsEnUs(): void
+    {
+        $account = $this->createBoundAccountFixture();
+        $unid = $account->getUnid();
+
+        Integral::create($unid, 'integral-seed-en', 'Initial integral', '30.00', 'Initial integral seed', true);
+        $this->switchPaymentLang('en-us');
+
+        $response = Payment::mk(Payment::INTEGRAL)->create(
+            $account,
+            'ORDER-INTEGRAL-EN-001',
+            'Integral payment order',
+            '12.00',
+            '12.00',
+            'Integral payment create'
+        );
+
+        $refundCode = '';
+        [$status, $message] = Payment::mk(Payment::INTEGRAL)->refund($response->record['code'], '4.00', 'Integral refund', $refundCode);
+        $refundIntegral = PluginPaymentIntegral::mk()->where(['code' => $refundCode])->findOrEmpty();
+
+        $this->assertSame('Integral deduction completed', $response->message);
+        $this->assertSame([1, 'Refund requested successfully'], [$status, $message]);
+        $this->assertSame('Integral Refund', $refundIntegral->getAttr('name'));
+        $this->assertSame('Refund integral from order ORDER-INTEGRAL-EN-001', $refundIntegral->getAttr('remark'));
+    }
+
     protected function defineSchema(): void
     {
         $this->createAccountTables();
@@ -127,5 +181,18 @@ class PaymentLedgerIntegrationTest extends SqliteIntegrationTestCase
         $this->createPaymentRefundTable();
         $this->createPaymentBalanceTable();
         $this->createPaymentIntegralTable();
+    }
+
+    private function switchPaymentLang(string $langSet): void
+    {
+        $this->app->lang->switchLangSet($langSet);
+        foreach ([
+            TEST_PROJECT_ROOT . "/plugin/think-plugs-payment/src/lang/{$langSet}.php",
+            TEST_PROJECT_ROOT . "/plugin/think-plugs-account/src/lang/{$langSet}.php",
+        ] as $file) {
+            if (is_file($file)) {
+                $this->app->lang->load($file, $langSet);
+            }
+        }
     }
 }

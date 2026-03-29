@@ -21,6 +21,7 @@ declare(strict_types=1);
 namespace think\admin\tests;
 
 use plugin\payment\controller\Record as PaymentRecordController;
+use plugin\payment\controller\Refund as PaymentRefundController;
 use plugin\payment\model\PluginPaymentRecord;
 use plugin\payment\model\PluginPaymentRefund;
 use plugin\payment\service\Payment;
@@ -28,6 +29,7 @@ use plugin\wemall\Service as WemallService;
 use think\admin\runtime\RequestContext;
 use think\admin\tests\Support\SqliteIntegrationTestCase;
 use think\exception\HttpResponseException;
+use think\Request;
 
 /**
  * @internal
@@ -41,6 +43,14 @@ class PaymentRecordControllerTest extends SqliteIntegrationTestCase
         $this->configureAccountAccess([
             'headimg' => 'https://example.com/payment-controller.png',
             'userPrefix' => '支付测试',
+        ]);
+    }
+
+    protected function afterSchemaCreated(): void
+    {
+        $this->app->setAppPath(TEST_PROJECT_ROOT . '/plugin/think-plugs-payment/src/');
+        $this->configureView([
+            'view_path' => TEST_PROJECT_ROOT . '/plugin/think-plugs-payment/src/view' . DIRECTORY_SEPARATOR,
         ]);
     }
 
@@ -116,6 +126,51 @@ class PaymentRecordControllerTest extends SqliteIntegrationTestCase
         $this->assertStringContainsString('form-builder-schema', $html);
         $this->assertStringContainsString('name="status"', $html);
         $this->assertStringContainsString('data-tips-image', $html);
+    }
+
+    public function testRecordIndexRendersEnglishTextsWhenLangSetIsEnUs(): void
+    {
+        $this->switchPaymentLang('en-us');
+
+        $html = $this->callActionHtml(PaymentRecordController::class, 'index');
+
+        $this->assertStringContainsString('Payment Activity Management', $html);
+        $this->assertStringContainsString('User Account', $html);
+        $this->assertStringContainsString('Order Content', $html);
+        $this->assertStringContainsString('Payment Description', $html);
+        $this->assertStringContainsString('Search', $html);
+        $this->assertStringContainsString('Export', $html);
+        $this->assertStringContainsString('Payment Behavior Data', $html);
+        $this->assertStringNotContainsString('支付行为管理', $html);
+    }
+
+    public function testAuditGetRendersEnglishBuilderFormWhenLangSetIsEnUs(): void
+    {
+        $record = PluginPaymentRecord::mk();
+        $record->save([
+            'unid' => 1,
+            'usid' => 1,
+            'code' => 'PAYAUDITHTMLEN001',
+            'order_no' => 'PAY-AUDIT-HTML-EN-001',
+            'order_name' => '英文审核表单',
+            'order_amount' => '8.00',
+            'channel_type' => Payment::VOUCHER,
+            'channel_code' => Payment::VOUCHER,
+            'payment_images' => 'https://example.com/payment-audit-en.png',
+            'payment_status' => 0,
+            'payment_amount' => '8.00',
+            'used_payment' => '8.00',
+            'audit_status' => 1,
+        ]);
+
+        $this->switchPaymentLang('en-us');
+        $html = $this->callRecordHtml('audit', ['id' => intval($record->getAttr('id'))], 'GET');
+
+        $this->assertStringContainsString('Business Order No.', $html);
+        $this->assertStringContainsString('Audit Action Type', $html);
+        $this->assertStringContainsString('Order Audit Remark', $html);
+        $this->assertStringContainsString('Payment Voucher', $html);
+        $this->assertStringNotContainsString('审核操作类型', $html);
     }
 
     public function testAuditControllerRefusesVoucherAndReturnsWemallOrderToPayable(): void
@@ -282,6 +337,56 @@ class PaymentRecordControllerTest extends SqliteIntegrationTestCase
         $this->assertSame(1, intval($order->getAttr('payment_status')));
     }
 
+    public function testRefundIndexRendersEnglishTextsWhenLangSetIsEnUs(): void
+    {
+        $user = $this->createAccountUser([
+            'username' => 'refund-english-user',
+            'nickname' => '退款英文用户',
+        ]);
+
+        $record = PluginPaymentRecord::mk();
+        $record->save([
+            'unid' => intval($user->getAttr('id')),
+            'usid' => 1,
+            'code' => 'PAYREFUNDHTML001',
+            'order_no' => 'PAY-REFUND-HTML-001',
+            'order_name' => '退款页面订单',
+            'order_amount' => '12.00',
+            'channel_type' => Payment::VOUCHER,
+            'channel_code' => Payment::VOUCHER,
+            'payment_trade' => 'TRADE-REFUND-001',
+            'payment_status' => 1,
+            'payment_amount' => '12.00',
+            'used_payment' => '12.00',
+            'audit_status' => 2,
+            'payment_time' => date('Y-m-d H:i:s'),
+            'payment_remark' => '退款前已支付',
+        ]);
+
+        $refund = PluginPaymentRefund::mk();
+        $refund->save([
+            'unid' => intval($user->getAttr('id')),
+            'record_code' => 'PAYREFUNDHTML001',
+            'code' => 'RFD-HTML-001',
+            'refund_account' => Payment::EMPTY,
+            'refund_amount' => '12.00',
+            'used_payment' => '12.00',
+            'refund_remark' => '全额退款',
+            'create_time' => date('Y-m-d H:i:s'),
+            'update_time' => date('Y-m-d H:i:s'),
+        ]);
+
+        $this->switchPaymentLang('en-us');
+        $html = $this->callActionHtml(PaymentRefundController::class, 'index');
+
+        $this->assertStringContainsString('Payment Refund Management', $html);
+        $this->assertStringContainsString('Refund Content', $html);
+        $this->assertStringContainsString('Payment Description', $html);
+        $this->assertStringContainsString('Search', $html);
+        $this->assertStringContainsString('Refund Data', $html);
+        $this->assertStringNotContainsString('支付退款管理', $html);
+    }
+
     protected function defineSchema(): void
     {
         $this->createAccountTables();
@@ -302,6 +407,7 @@ class PaymentRecordControllerTest extends SqliteIntegrationTestCase
 
     private function callRecordHtml(string $action, array $data, string $method = 'GET'): string
     {
+        RequestContext::clear();
         RequestContext::instance()->setAuth([
             'id' => 9001,
             'username' => 'admin',
@@ -315,7 +421,7 @@ class PaymentRecordControllerTest extends SqliteIntegrationTestCase
             ->setController('record')
             ->setAction($action);
 
-        $this->app->instance('request', $request);
+        $this->activateApplicationContext($request);
 
         try {
             $controller = new PaymentRecordController($this->app);
@@ -328,6 +434,7 @@ class PaymentRecordControllerTest extends SqliteIntegrationTestCase
 
     private function callRecordController(string $action, array $data, string $method = 'POST'): array
     {
+        RequestContext::clear();
         RequestContext::instance()->setAuth([
             'id' => 9001,
             'username' => 'admin',
@@ -341,7 +448,7 @@ class PaymentRecordControllerTest extends SqliteIntegrationTestCase
             ->setController('record')
             ->setAction($action);
 
-        $this->app->instance('request', $request);
+        $this->activateApplicationContext($request);
 
         try {
             $controller = new PaymentRecordController($this->app);
@@ -349,6 +456,56 @@ class PaymentRecordControllerTest extends SqliteIntegrationTestCase
             self::fail("Expected {$action} to throw HttpResponseException.");
         } catch (HttpResponseException $exception) {
             return json_decode($exception->getResponse()->getContent(), true) ?: [];
+        }
+    }
+
+    /**
+     * @param class-string $controllerClass
+     */
+    private function callActionHtml(string $controllerClass, string $action, array $query = []): string
+    {
+        $parts = explode('\\', $controllerClass);
+        $request = (new Request())
+            ->withGet($query)
+            ->setMethod('GET')
+            ->setController(strtolower(strval(end($parts))))
+            ->setAction($action);
+
+        $this->setRequestPayload($request, $query);
+        RequestContext::clear();
+        RequestContext::instance()->setAuth([
+            'id' => 9001,
+            'username' => 'admin',
+            'password' => 'test-admin-password',
+        ], '', true);
+        $this->activateApplicationContext($request);
+
+        try {
+            $controller = new $controllerClass($this->app);
+            $controller->{$action}();
+            self::fail("Expected {$controllerClass}::{$action} to throw HttpResponseException.");
+        } catch (HttpResponseException $exception) {
+            return $exception->getResponse()->getContent();
+        }
+    }
+
+    private function setRequestPayload(Request $request, array $data): void
+    {
+        $property = new \ReflectionProperty(Request::class, 'request');
+        $property->setAccessible(true);
+        $property->setValue($request, $data);
+    }
+
+    private function switchPaymentLang(string $langSet): void
+    {
+        $this->app->lang->switchLangSet($langSet);
+        foreach ([
+            TEST_PROJECT_ROOT . "/plugin/think-plugs-payment/src/lang/{$langSet}.php",
+            TEST_PROJECT_ROOT . "/plugin/think-plugs-account/src/lang/{$langSet}.php",
+        ] as $file) {
+            if (is_file($file)) {
+                $this->app->lang->load($file, $langSet);
+            }
         }
     }
 }

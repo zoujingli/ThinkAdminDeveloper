@@ -21,7 +21,10 @@ declare(strict_types=1);
 namespace think\admin\tests;
 
 use plugin\payment\controller\Balance as BalanceController;
+use plugin\payment\controller\Config as ConfigController;
 use plugin\payment\controller\Integral as IntegralController;
+use plugin\payment\controller\api\auth\Balance as AuthBalanceController;
+use plugin\payment\controller\api\auth\Integral as AuthIntegralController;
 use plugin\payment\model\PluginPaymentBalance;
 use plugin\payment\model\PluginPaymentIntegral;
 use plugin\payment\service\Balance;
@@ -37,6 +40,23 @@ use think\Request;
  */
 class PaymentLedgerControllerTest extends SqliteIntegrationTestCase
 {
+    protected function setUp(): void
+    {
+        parent::setUp();
+        $this->configureAccountAccess([
+            'headimg' => 'https://example.com/payment-ledger-controller.png',
+            'userPrefix' => '台账控制器账号',
+        ]);
+    }
+
+    protected function afterSchemaCreated(): void
+    {
+        $this->app->setAppPath(TEST_PROJECT_ROOT . '/plugin/think-plugs-payment/src/');
+        $this->configureView([
+            'view_path' => TEST_PROJECT_ROOT . '/plugin/think-plugs-payment/src/view' . DIRECTORY_SEPARATOR,
+        ]);
+    }
+
     public function testBalanceControllerUnlockCancelAndRemoveChain(): void
     {
         $user = $this->createAccountUser();
@@ -322,9 +342,90 @@ class PaymentLedgerControllerTest extends SqliteIntegrationTestCase
         $this->assertSame('21.00', $this->decimal($result['data']['list'][0]['amount'] ?? 0));
     }
 
+    public function testConfigIndexRendersEnglishTextsWhenLangSetIsEnUs(): void
+    {
+        $this->switchPaymentLang('en-us');
+
+        $html = $this->callActionHtml(ConfigController::class, 'index');
+
+        $this->assertStringContainsString('Payment Management', $html);
+        $this->assertStringContainsString('Recycle Bin', $html);
+        $this->assertStringContainsString('Payment Code', $html);
+        $this->assertStringContainsString('Payment Name', $html);
+        $this->assertStringContainsString('Payment Type', $html);
+        $this->assertStringContainsString('Payment Configuration Management', $html);
+        $this->assertStringContainsString('Search', $html);
+        $this->assertStringNotContainsString('支付编号', $html);
+    }
+
+    public function testConfigAddRendersEnglishTextsWhenLangSetIsEnUs(): void
+    {
+        $this->switchPaymentLang('en-us');
+
+        $html = $this->callActionHtml(ConfigController::class, 'add');
+
+        $this->assertStringContainsString('Payment Type', $html);
+        $this->assertStringContainsString('Payment Name', $html);
+        $this->assertStringContainsString('Payment Icon', $html);
+        $this->assertStringContainsString('Payment Description', $html);
+        $this->assertStringContainsString('Save Data', $html);
+        $this->assertStringContainsString('Offline Payment QR Code', $html);
+        $this->assertStringNotContainsString('支付方式', $html);
+    }
+
+    public function testIntegralIndexRendersEnglishTextsWhenLangSetIsEnUs(): void
+    {
+        $user = $this->createAccountUser([
+            'username' => 'integral-english-user',
+            'nickname' => '积分英文用户',
+        ]);
+
+        Integral::create(intval($user->getAttr('id')), 'ledger-integral-en', '英文积分', '16.00', '英文积分记录');
+        $this->switchPaymentLang('en-us');
+
+        $html = $this->callActionHtml(IntegralController::class, 'index');
+
+        $this->assertStringContainsString('Integral Statistics', $html);
+        $this->assertStringContainsString('Total Issued', $html);
+        $this->assertStringContainsString('User Account', $html);
+        $this->assertStringContainsString('Transaction Status', $html);
+        $this->assertStringContainsString('Operation Remark', $html);
+        $this->assertStringContainsString('Actions', $html);
+        $this->assertStringNotContainsString('积分统计', $html);
+    }
+
+    public function testApiBalanceGetReturnsEnglishInfoWhenLangSetIsEnUs(): void
+    {
+        $account = $this->createBoundAccountFixture();
+        $login = $account->token()->get(true);
+        Balance::create($account->getUnid(), 'api-balance-001', 'API余额', '18.00', 'API余额记录', true);
+        $this->switchPaymentLang('en-us');
+
+        $response = $this->callAuthApiController(AuthBalanceController::class, 'get', ['page' => 1], strval($login['token'] ?? ''));
+
+        $this->assertSame(1, intval($response['code'] ?? 0));
+        $this->assertSame('Balance records loaded successfully', $response['info'] ?? '');
+        $this->assertNotEmpty($response['data'] ?? []);
+    }
+
+    public function testApiIntegralGetReturnsEnglishInfoWhenLangSetIsEnUs(): void
+    {
+        $account = $this->createBoundAccountFixture();
+        $login = $account->token()->get(true);
+        Integral::create($account->getUnid(), 'api-integral-001', 'API积分', '16.00', 'API积分记录', true);
+        $this->switchPaymentLang('en-us');
+
+        $response = $this->callAuthApiController(AuthIntegralController::class, 'get', ['page' => 1], strval($login['token'] ?? ''));
+
+        $this->assertSame(1, intval($response['code'] ?? 0));
+        $this->assertSame('Integral records loaded successfully', $response['info'] ?? '');
+        $this->assertNotEmpty($response['data'] ?? []);
+    }
+
     protected function defineSchema(): void
     {
         $this->createAccountTables();
+        $this->createPaymentConfigTable();
         $this->createPaymentBalanceTable();
         $this->createPaymentIntegralTable();
     }
@@ -379,10 +480,101 @@ class PaymentLedgerControllerTest extends SqliteIntegrationTestCase
         }
     }
 
+    /**
+     * @param class-string $controllerClass
+     */
+    private function callAuthApiController(string $controllerClass, string $action, array $query, string $token): array
+    {
+        $parts = explode('\\', $controllerClass);
+        $request = (new Request())
+            ->withGet($query)
+            ->withHeader(['authorization' => "Bearer {$token}"])
+            ->setMethod('GET')
+            ->setController('api.auth.' . strtolower(strval(end($parts))))
+            ->setAction($action);
+
+        $this->setRequestPayload($request, $query);
+        RequestContext::clear();
+        $this->app->instance('request', $request);
+
+        try {
+            $controller = new $controllerClass($this->app);
+            $controller->{$action}();
+            self::fail("Expected {$controllerClass}::{$action} to throw HttpResponseException.");
+        } catch (HttpResponseException $exception) {
+            return json_decode($exception->getResponse()->getContent(), true) ?: [];
+        }
+    }
+
+    /**
+     * @param class-string $controllerClass
+     */
+    private function callActionHtml(string $controllerClass, string $action, array $query = []): string
+    {
+        $parts = explode('\\', $controllerClass);
+        $request = (new Request())
+            ->withGet($query)
+            ->setMethod('GET')
+            ->setController(strtolower(strval(end($parts))))
+            ->setAction($action);
+
+        $this->setRequestPayload($request, $query);
+        RequestContext::clear();
+        RequestContext::instance()->setAuth([
+            'id' => 9001,
+            'username' => 'admin',
+            'password' => 'test-admin-password',
+        ], '', true);
+        $this->activateApplicationContext($request);
+
+        try {
+            $controller = new $controllerClass($this->app);
+            $controller->{$action}();
+            self::fail("Expected {$controllerClass}::{$action} to throw HttpResponseException.");
+        } catch (HttpResponseException $exception) {
+            return $exception->getResponse()->getContent();
+        }
+    }
+
     private function setRequestPayload(Request $request, array $data): void
     {
         $property = new \ReflectionProperty(Request::class, 'request');
         $property->setAccessible(true);
         $property->setValue($request, $data);
+    }
+
+    private function switchPaymentLang(string $langSet): void
+    {
+        $this->app->lang->switchLangSet($langSet);
+        foreach ([
+            TEST_PROJECT_ROOT . "/plugin/think-plugs-payment/src/lang/{$langSet}.php",
+            TEST_PROJECT_ROOT . "/plugin/think-plugs-account/src/lang/{$langSet}.php",
+        ] as $file) {
+            if (is_file($file)) {
+                $this->app->lang->load($file, $langSet);
+            }
+        }
+    }
+
+    private function createPaymentConfigTable(): void
+    {
+        $this->executeStatements([
+            <<<'SQL'
+CREATE TABLE plugin_payment_config (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    type TEXT DEFAULT '',
+    code TEXT DEFAULT '',
+    name TEXT DEFAULT '',
+    cover TEXT DEFAULT '',
+    remark TEXT DEFAULT '',
+    content TEXT DEFAULT '',
+    sort INTEGER DEFAULT 0,
+    status INTEGER DEFAULT 1,
+    delete_time TEXT DEFAULT NULL,
+    create_time TEXT DEFAULT NULL,
+    update_time TEXT DEFAULT NULL
+)
+SQL,
+        ]);
     }
 }

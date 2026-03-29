@@ -3,30 +3,30 @@
     <form class="layui-form layui-form-pane form-search" data-table-id="PaymentRecordTable" action="{:request()->url()}" onsubmit="return false" method="get" autocomplete="off">
 
         <div class="layui-form-item layui-inline">
-            <label class="layui-form-label">用户账号</label>
+            <label class="layui-form-label">{:lang('用户账号')}</label>
             <label class="layui-input-inline">
-                <input name="userinfo" value="{$get.userinfo|default=''}" placeholder="请输入用户姓名" class="layui-input">
+                <input name="userinfo" value="{$get.userinfo|default=''}" placeholder="{:lang('请输入用户账号')}" class="layui-input">
             </label>
         </div>
 
         <div class="layui-form-item layui-inline">
-            <label class="layui-form-label">订单内容</label>
+            <label class="layui-form-label">{:lang('订单内容')}</label>
             <label class="layui-input-inline">
-                <input name="orderinfo" value="{$get.orderinfo|default=''}" placeholder="请输入订单内容" class="layui-input">
+                <input name="orderinfo" value="{$get.orderinfo|default=''}" placeholder="{:lang('请输入订单内容')}" class="layui-input">
             </label>
         </div>
 
         <div class="layui-form-item layui-inline">
-            <label class="layui-form-label">创建时间</label>
+            <label class="layui-form-label">{:lang('创建时间')}</label>
             <label class="layui-input-inline">
-                <input data-date-range name="create_time" value="{$get.create_time|default=''}" placeholder="请选择创建时间" class="layui-input">
+                <input data-date-range name="create_time" value="{$get.create_time|default=''}" placeholder="{:lang('请选择创建时间')}" class="layui-input">
             </label>
         </div>
 
         <div class="layui-form-item layui-inline">
-            <button type="submit" class="layui-btn layui-btn-primary"><i class="layui-icon">&#xe615;</i> 搜 索</button>
+            <button type="submit" class="layui-btn layui-btn-primary"><i class="layui-icon">&#xe615;</i> {:lang('搜 索')}</button>
             <button type="button" data-form-export="{:url('index')}?type={$type|default=''}" class="layui-btn layui-btn-primary">
-                <i class="layui-icon layui-icon-export"></i> 导 出
+                <i class="layui-icon layui-icon-export"></i> {:lang('导 出')}
             </button>
         </div>
     </form>
@@ -37,21 +37,22 @@
     $.module.use(['excel'], function (excel) {
         excel.bind(function (data) {
             data.forEach(function (item, index) {
+                let record = item.record || {};
                 data[index] = [
                     item.id || 0,
-                    item.order_name || '',
-                    item.order_no || '',
-                    item.order_amount || '',
-                    item.payment_status ? '已支付' : '未支付',
-                    item.channel_type_name || '',
-                    item.payment_time || '',
+                    record.order_name || '',
+                    record.order_no || '',
+                    record.order_amount || '',
+                    record.payment_status ? '{:lang("已支付")}' : '{:lang("未支付")}',
+                    record.channel_type_name || '',
+                    record.payment_time || '',
                     item.create_time || '',
                 ];
             });
-            data.unshift(['ID', '订单名称', '订单编号', '订单金额', '支付状态', '支付类型', '支付时间', '创建时间']);
+            data.unshift(['ID', '{:lang("订单名称")}', '{:lang("订单编号")}', '{:lang("订单金额")}', '{:lang("支付状态")}', '{:lang("支付类型")}', '{:lang("支付时间")}', '{:lang("创建时间")}']);
 
             return this.withStyle(data, {G: 160});
 
-        }, '支付行为数据' + layui.util.toDateString(Date.now(), '_yyyyMMdd_HHmmss'));
+        }, '{:lang("退款数据")}' + layui.util.toDateString(Date.now(), '_yyyyMMdd_HHmmss'));
     });
 </script>

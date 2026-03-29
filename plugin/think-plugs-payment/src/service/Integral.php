@@ -71,7 +71,7 @@ abstract class Integral
     {
         $user = PluginAccountUser::mk()->findOrEmpty($unid);
         if ($user->isEmpty()) {
-            throw new Exception('账号不存在！');
+            throw new Exception(lang('账号不存在！'));
         }
 
         // 扣减积分检查
@@ -81,7 +81,7 @@ abstract class Integral
         $isDecrease = bccomp($amountValue, '0', 2) < 0;
         $decrease = ltrim($amountValue, '-');
         if ($isDecrease && bccomp($decrease, strval($usable), 2) === 1) {
-            throw new Exception('扣减积分不足！');
+            throw new Exception(lang('扣减积分不足！'));
         }
 
         // 积分标准字段
@@ -106,7 +106,7 @@ abstract class Integral
             self::recount($unid);
             return $model->refresh();
         }
-        throw new Exception('积分变更失败！');
+        throw new Exception(lang('积分变更失败！'));
     }
 
     /**
@@ -161,7 +161,7 @@ abstract class Integral
         if ($isUpdate) {
             $user = PluginAccountUser::mk()->findOrEmpty($unid);
             if ($user->isEmpty()) {
-                throw new Exception('账号不存在！');
+                throw new Exception(lang('账号不存在！'));
             }
         }
         // 统计用户积分数据
@@ -190,7 +190,7 @@ abstract class Integral
         $map = ['code' => $code];
         $model = PluginPaymentIntegral::mk()->where($map)->findOrEmpty();
         if ($model->isEmpty()) {
-            throw new Exception('无效的操作编号！');
+            throw new Exception(lang('无效的操作编号！'));
         }
         return $model;
     }

@@ -237,7 +237,7 @@ abstract class Payment
     {
         if (in_array($code, [self::EMPTY, self::COUPON, self::BALANCE, self::INTEGRAL, self::VOUCHER], true)) {
             if (empty(self::$types[$code]['status'])) {
-                throw new Exception(self::typeName($code) . '已被禁用！');
+                throw new Exception(lang('%s已被禁用！', [self::typeName($code)]));
             }
             return self::$types[$code]['class']::mk($code, $code, []);
         }
@@ -245,7 +245,7 @@ abstract class Payment
         if (self::typeStatus($type)) {
             return $attr['class']::mk($code, $type, $params);
         }
-        throw new Exception(self::typeName($type) . '已被禁用！');
+        throw new Exception(lang('%s已被禁用！', [self::typeName($type)]));
     }
 
     /**
@@ -263,15 +263,15 @@ abstract class Payment
                 $config = PluginPaymentConfig::mk()->where($map)->findOrEmpty()->toArray();
             }
             if (empty($config)) {
-                throw new Exception("支付配置[#{$code}]参数异常！");
+                throw new Exception(lang('支付配置[#%s]参数异常！', [$code]));
             }
             $params = is_string($config['content']) ? @json_decode($config['content'], true) : $config['content'];
             if (empty($params)) {
-                throw new Exception("支付配置[#{$code}]参数无效！");
+                throw new Exception(lang('支付配置[#%s]参数无效！', [$code]));
             }
 
             if (empty(self::$types[$config['type']]['status'])) {
-                throw new Exception("支付配置[@{$config['type']}]未启用！");
+                throw new Exception(lang('支付配置[@%s]未启用！', [$config['type']]));
             }
             return [$config['type'], self::$types[$config['type']], $params];
         } catch (\Exception $exception) {
@@ -386,7 +386,7 @@ abstract class Payment
      */
     public static function typeName(string $type): string
     {
-        return self::$types[$type]['name'] ?? $type;
+        return lang(self::$types[$type]['name'] ?? $type);
     }
 
     /**

@@ -86,12 +86,12 @@ class BalancePayment implements PaymentInterface
         try {
             // 记录并退回
             if (bccomp(strval($amount), '0.00', 2) <= 0) {
-                return [1, '无需退款！'];
+                return [1, lang('无需退款！')];
             }
             $record = static::syncRefund($pcode, $rcode, $amount, $reason);
-            $remark = "来自订单 {$record->getAttr('order_no')} 退回余额";
-            BalanceService::create(intval($record->getAttr('unid')), $rcode, '账号余额退款', strval($amount), $remark, true);
-            return [1, '发起退款成功！'];
+            $remark = lang('来自订单 %s 退回余额', [strval($record->getAttr('order_no'))]);
+            BalanceService::create(intval($record->getAttr('unid')), $rcode, lang('账号余额退款'), strval($amount), $remark, true);
+            return [1, lang('发起退款成功！')];
         } catch (\Exception $exception) {
             throw new Exception($exception->getMessage(), $exception->getCode());
         }
@@ -118,19 +118,19 @@ class BalancePayment implements PaymentInterface
             // 检查能否支付
             $data = BalanceService::recount($unid);
             if ($payAmount > $data['usable']) {
-                throw new Exception('账户余额不足');
+                throw new Exception(lang('账户余额不足'));
             }
             // 创建支付行为
             $this->createAction($orderNo, $orderTitle, $orderAmount, $payCode, $payAmount, '', $payAmount);
             // 扣除余额金额
-            $payRemark = $payRemark ?: "支付订单 {$orderNo} 金额 {$payAmount} 元";
+            $payRemark = $payRemark ?: lang('支付订单 %s 金额 %s 元', [$orderNo, $payAmount]);
             BalanceService::create($unid, "ZF{$payCode}", $orderTitle, strval(bcmul(strval($payAmount), '-1', 2)), $payRemark, true);
             // 更新支付行为
-            $data = $this->updateAction($payCode, "ZF{$payCode}", $payAmount, '账户余额支付');
+            $data = $this->updateAction($payCode, "ZF{$payCode}", $payAmount, lang('账户余额支付'));
             // 刷新用户余额
             BalanceService::recount($unid);
             // 返回支付结果
-            return $this->res->set(true, '余额支付完成！', $data);
+            return $this->res->set(true, lang('余额支付完成！'), $data);
         } catch (Exception $exception) {
             throw $exception;
         } catch (\Exception $exception) {
