@@ -26,6 +26,16 @@
 {block name='script'}
 <script>
     $(function () {
+        const serviceTypeLabels = {
+            '订阅号': '{:lang("订阅号")}',
+            '服务号': '{:lang("服务号")}',
+            '小程序': '{:lang("小程序")}',
+        };
+        const serviceVerifyLabels = {
+            '未认证': '{:lang("未认证")}',
+            '已认证': '{:lang("已认证")}',
+        };
+        const authTimeFormat = '{:lang("yyyy年MM月dd日 HH:mm:ss")}';
         let $table = $('#WechatTable').layTable({
             even: true, height: 'full',
             sort: {field: 'auth_time', type: 'desc'},
@@ -42,14 +52,19 @@
                 {
                     field: 'auth_time', sort: true, minWidth: 350, title: '{:lang("公众号信息")}', templet: function (d) {
                         let line = [];
+                        let serviceType = serviceTypeLabels[d.service_type] || d.service_type || '-';
+                        let serviceVerify = serviceVerifyLabels[d.service_verify] || d.service_verify || '-';
                         line.push('{{-d.user_nickname||"<span class=color-desc>' + '{:lang("未获取到微信昵称")}' + '</span>"}} <span class="color-desc">( {{d.user_company}} )</span>')
-                        line.push('{:lang("于")} <span class="color-blue">{{layui.util.toDateString(d.auth_time*1000, "yyyy年MM月dd日 HH:mm:ss")}}</span> {:lang("完成授权")}')
+                        line.push('{:lang("于")} <span class="color-blue">{{layui.util.toDateString(d.auth_time*1000, "' + authTimeFormat + '")}}</span> {:lang("完成授权")}')
                         if (d.service_verify === '未认证') {
-                            line.push("<b>{{d.user_name||'-'}}</b> / <b>{{d.service_type||'-'}}</b> / <b class='color-red'>{:lang('未认证')}</b>")
+                            line.push("<b>{{d.user_name||'-'}}</b> / <b>{{serviceType}}</b> / <b class='color-red'>{{serviceVerify}}</b>")
                         } else {
-                            line.push("<b>{{d.user_name||'-'}}</b> / <b>{{d.service_type||'-'}}</b> / <b class='color-green'>{:lang('已认证')}</b>")
+                            line.push("<b>{{d.user_name||'-'}}</b> / <b>{{serviceType}}</b> / <b class='color-green'>{{serviceVerify}}</b>")
                         }
-                        return laytpl('<div class="flex flex-align-center"><div><img alt="" class="headimg headimg-md headimg-no" referrerpolicy="no-referrer" data-tips-hover data-tips-image src="{{d.qrcode_url}}"></div><div>' + line.join('<br>') + '</div></div>').render(d)
+                        return laytpl('<div class="flex flex-align-center"><div><img alt="" class="headimg headimg-md headimg-no" referrerpolicy="no-referrer" data-tips-hover data-tips-image src="{{d.qrcode_url}}"></div><div>' + line.join('<br>') + '</div></div>').render(Object.assign({}, d, {
+                            serviceType: serviceType,
+                            serviceVerify: serviceVerify,
+                        }))
                     }
                 },
                 {toolbar: '#toolbar', title: '{:lang("操作面板")}', minWidth: 280, fixed: 'right'},

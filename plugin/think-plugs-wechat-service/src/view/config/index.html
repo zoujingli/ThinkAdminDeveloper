@@ -2,7 +2,7 @@
 
 {block name="button"}
 <!--{if !empty($ticketPushDate)}-->
-<span class='layui-btn layui-btn-sm layui-btn-disabled'>TICKET TIME {$ticketPushDate}</span>
+<span class='layui-btn layui-btn-sm layui-btn-disabled'>{:lang('Ticket 推送时间')} {$ticketPushDate}</span>
 <!--{/if}-->
 
 <!--{if auth("edit")}-->
@@ -22,7 +22,7 @@
                     <span class="help-label"><b>{:lang('开放平台账号')}</b>AppId</span>
                     <label class="relative block">
                         <input disabled class="layui-input layui-bg-gray" value="{$componentAppid|default=lang('未配置')}">
-                        <a data-copy="{$componentAppid|default=''}" data-tips-text="复制" class="layui-icon layui-icon-release input-right-icon"></a>
+                        <a data-copy="{$componentAppid|default=''}" data-tips-text="{:lang('复制')}" class="layui-icon layui-icon-release input-right-icon"></a>
                     </label>
                     <p class="help-block">{:lang('开放平台服务 AppId，需要在微信开放平台获取')}</p>
                 </div>
@@ -30,7 +30,7 @@
                     <span class="help-label"><b>{:lang('开放平台密钥')}</b>AppSecret</span>
                     <label class="relative block">
                         <input disabled class="layui-input layui-bg-gray" value="{$componentAppsecret|default=lang('未配置')}">
-                        <a data-copy="{$componentAppsecret|default=''}" data-tips-text="复制" class="layui-icon layui-icon-release input-right-icon"></a>
+                        <a data-copy="{$componentAppsecret|default=''}" data-tips-text="{:lang('复制')}" class="layui-icon layui-icon-release input-right-icon"></a>
                     </label>
                     <p class="help-block">{:lang('开放平台服务 AppSecret，需要在微信开放平台获取')}</p>
                 </div>
@@ -38,7 +38,7 @@
                     <span class="help-label"><b>{:lang('开放平台消息校验')}</b>Token</span>
                     <label class="relative block">
                         <input disabled class="layui-input layui-bg-gray" value="{$componentToken|default=lang('未配置')}">
-                        <a data-copy="{$componentToken|default=''}" data-tips-text="复制" class="layui-icon layui-icon-release input-right-icon"></a>
+                        <a data-copy="{$componentToken|default=''}" data-tips-text="{:lang('复制')}" class="layui-icon layui-icon-release input-right-icon"></a>
                     </label>
                     <p class="help-block">{:lang('开发者在代替微信接收到消息时，用此 TOKEN 来校验消息')}</p>
                 </div>
@@ -46,7 +46,7 @@
                     <span class="help-label"><b>{:lang('开放平台消息加解密')}</b>AesKey</span>
                     <label class="relative block">
                         <input disabled class="layui-input layui-bg-gray" value="{$componentEncodingaeskey|default=lang('未配置')}">
-                        <a data-copy="{$componentEncodingaeskey|default=''}" data-tips-text="复制" class="layui-icon layui-icon-release input-right-icon"></a>
+                        <a data-copy="{$componentEncodingaeskey|default=''}" data-tips-text="{:lang('复制')}" class="layui-icon layui-icon-release input-right-icon"></a>
                     </label>
                     <p class="help-block">{:lang('在代替微信收发消息时使用，必须是长度为43位字母和数字组合的字符串')}</p>
                 </div>
@@ -54,33 +54,33 @@
                     <span class="help-label"><b>{:lang('授权白名单IP地址')}</b>ClientIp</span>
                     <label class="relative block">
                         <input disabled class="layui-input layui-bg-gray" value="{$geoip|default=''}">
-                        <a data-copy="{$geoip|default=''}" data-tips-text="复制" class="layui-icon layui-icon-release input-right-icon"></a>
+                        <a data-copy="{$geoip|default=''}" data-tips-text="{:lang('复制')}" class="layui-icon layui-icon-release input-right-icon"></a>
                     </label>
                     <p class="help-block">{:lang('需要在开放平台配置此IP地址后才能调用开放平台的接口哦')}</p>
                 </div>
             </div>
             <div class="layui-col-md6">
                 <div class="layui-form-item">
-                    <span class="help-label"><b>{:lang('授权发起页域名')}</b>微信开放平台</span>
+                    <span class="help-label"><b>{:lang('授权发起页域名')}</b>{:lang('微信开放平台')}</span>
                     <label class="relative block">
                         <input disabled class="layui-input layui-bg-gray" value="{$request->host()}">
-                        <a data-copy="{$request->host()}" data-tips-text="复制" class="layui-icon layui-icon-release input-right-icon"></a>
+                        <a data-copy="{$request->host()}" data-tips-text="{:lang('复制')}" class="layui-icon layui-icon-release input-right-icon"></a>
                     </label>
                     <p class="help-block">{:lang('微信开放平台对接所需参数，从本域名跳转到登录授权页才可以完成登录授权，无需填写域名协议前缀')}</p>
                 </div>
                 <div class="layui-form-item">
-                    <span class="help-label"><b>{:lang('授权事件接收地址')}</b>微信开放平台</span>
+                    <span class="help-label"><b>{:lang('授权事件接收地址')}</b>{:lang('微信开放平台')}</span>
                     <label class="relative block">
                         <input disabled class="layui-input layui-bg-gray" value="{:apiuri('wechat-service/push/ticket',[],false,true)}">
-                        <a data-copy="{:apiuri('wechat-service/push/ticket',[],false,true)}" data-tips-text="复制" class="layui-icon layui-icon-release input-right-icon"></a>
+                        <a data-copy="{:apiuri('wechat-service/push/ticket',[],false,true)}" data-tips-text="{:lang('复制')}" class="layui-icon layui-icon-release input-right-icon"></a>
                     </label>
                     <p class="help-block">{:lang('微信开放平台对接所需参数，用于接收取消授权通知、授权成功通知、授权更新通知、接收 TICKET 凭据')}</p>
                 </div>
                 <div class="layui-form-item">
-                    <span class="help-label"><b>{:lang('微信消息接收地址')}</b>微信开放平台</span>
+                    <span class="help-label"><b>{:lang('微信消息接收地址')}</b>{:lang('微信开放平台')}</span>
                     <label class="relative block">
                         <input disabled class="layui-input layui-bg-gray" value="{:apiuri('wechat-service/push/notify',[],false,true)}/appid/$APPID$">
-                        <a data-copy="{:apiuri('wechat-service/push/notify',[],false,true)}/appid/$APPID$" data-tips-text="复制" class="layui-icon layui-icon-release input-right-icon"></a>
+                        <a data-copy="{:apiuri('wechat-service/push/notify',[],false,true)}/appid/$APPID$" data-tips-text="{:lang('复制')}" class="layui-icon layui-icon-release input-right-icon"></a>
                     </label>
                     <p class="help-block">{:lang('微信开放平台对接所需参数，通过该 URL 接收微信消息和事件推送，$APPID$ 将被替换为微信 AppId')}</p>
                 </div>

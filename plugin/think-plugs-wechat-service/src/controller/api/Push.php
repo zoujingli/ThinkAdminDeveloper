@@ -80,13 +80,13 @@ class Push extends Controller
         try {
             $server = AuthService::WeOpenService();
             if (!($data = $server->getComonentTicket())) {
-                return 'Ticket event handling failed.';
+                return lang('Ticket 事件处理失败。');
             }
             if (!empty($data['ComponentVerifyTicket'])) {
                 ConfigService::markTicketPushDate();
             }
         } catch (\Exception $exception) {
-            $message = "Ticket event handling failed, {$exception->getMessage()}";
+            $message = lang('Ticket 事件处理失败，%s', [$exception->getMessage()]);
             $this->app->log->notice($message);
             return $message;
         }
@@ -124,7 +124,7 @@ class Push extends Controller
         ];
         $result = AuthService::WeOpenService()->getOauthAccessToken($appid);
         if (empty($result['openid'])) {
-            throw new Exception('网页授权失败, 无法进一步操作！');
+            throw new Exception(lang('网页授权失败，无法进一步操作！'));
         }
         $expire = empty($result['is_snapshotuser']) ? 3600 : 10;
         $this->app->cache->set("{$appid}_{$oauthid}_token", $result, $expire);
@@ -132,7 +132,7 @@ class Push extends Controller
         if (!empty($mode)) {
             $fans = AuthService::WeChatOauth($appid)->getUserInfo($result['access_token'], $result['openid']);
             if (empty($fans)) {
-                throw new Exception('网页授权信息获取失败, 无法进一步操作！');
+                throw new Exception(lang('网页授权信息获取失败，无法进一步操作！'));
             }
             $fans['is_snapshotuser'] = empty($result['is_snapshotuser']) ? 0 : 1;
             $this->app->cache->set("{$appid}_{$oauthid}_fans", $fans, $expire);
@@ -151,10 +151,10 @@ class Push extends Controller
     public function auth(): Response
     {
         if (empty($source = input('source'))) {
-            return response('请传入回跳 source 参数 ( 请使用 enbase64url 加密 )');
+            return response(lang('请传入回跳 source 参数（请使用 enbase64url 加密）'));
         }
         if (empty($resource = debase64url($source))) {
-            return response('请传入回跳 source 参数 ( 请使用 enbase64url 加密 )');
+            return response(lang('请传入回跳 source 参数（请使用 enbase64url 加密）'));
         }
         # 预授权码不为空，则表示可以进行授权处理
         $service = AuthService::WeOpenService();
@@ -168,7 +168,7 @@ class Push extends Controller
             return response("<script>location.href='{$redirect}'</script>", 200, ["Refresh:0;url={$redirect}"]);
         }
         # 生成微信授权链接失败
-        return response('<h2>Failed to create authorization. Please return to try again.</h2>');
+        return response('<h2>' . lang('创建授权链接失败，请返回重试。') . '</h2>');
     }
 
     /**
@@ -187,12 +187,12 @@ class Push extends Controller
         // 授权code换取公众号信息
         $result = $service->getQueryAuthorizerInfo($authcode);
         if (empty($result['authorizer_appid'])) {
-            return response('接收微信第三方平台授权失败! ');
+            return response(lang('接收微信第三方平台授权失败！'));
         }
 
         // 通过接口查询公众号参数
         if (!($data = array_merge($result, $service->getAuthorizerInfo($result['authorizer_appid'])))) {
-            return response('获取授权数据失败, 请稍候再试! ');
+            return response(lang('获取授权数据失败，请稍候再试！'));
         }
 
         // 生成公众号授权参数
@@ -208,7 +208,7 @@ class Push extends Controller
 
         // 授权成功后跳转地址处理
         if (empty($redirect)) {
-            return response('未配置授权成功后的回跳地址！');
+            return response(lang('未配置授权成功后的回跳地址！'));
         }
         $split = is_numeric(stripos($redirect, '?')) ? '&' : '?';
         $realurl = preg_replace(['/appid=\w+/i', '/appkey=\w+/i', '/(\?&)$/i'], ['', '', ''], $redirect);

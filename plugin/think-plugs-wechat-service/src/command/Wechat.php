@@ -41,7 +41,7 @@ class Wechat extends Command
     protected function configure()
     {
         $this->setName('xsync:wechat');
-        $this->setDescription('同步所有已授权的公众号信息');
+        $this->setDescription(lang('同步所有已授权的公众号信息'));
     }
 
     /**
@@ -58,10 +58,14 @@ class Wechat extends Command
         do {
             $data = $wechat->getAuthorizerList(500, $offset);
             if (!isset($data['total_count'])) {
-                $this->queue->error($data['errmsg'] ?? '接口调用异常！');
+                $this->queue->error($data['errmsg'] ?? lang('接口调用异常！'));
             }
             foreach ($data['list'] ?? [] as $item) {
-                $this->queue->message($data['total_count'] ?? 0, ++$offset, "公众号 {$item['authorizer_appid']} 开始同步数据");
+                $this->queue->message(
+                    $data['total_count'] ?? 0,
+                    ++$offset,
+                    lang('公众号%s开始同步数据', [$item['authorizer_appid']])
+                );
                 $config = WechatAuth::mk()->where(['authorizer_appid' => $item['authorizer_appid']])->find();
                 if (isset($item['refresh_token'], $item['auth_time'])) {
                     $info = array_merge(AuthService::buildAuthData($wechat->getAuthorizerInfo($item['authorizer_appid'])), [
@@ -70,11 +74,21 @@ class Wechat extends Command
                     if (empty($config) || empty($config['appkey'])) {
                         $info['appkey'] = md5(uniqid('', true) . rand(1000, 9999));
                     }
-                    $state = ($config ?: WechatAuth::mk())->save($info) ? '成功' : '失败';
-                    $this->queue->message($data['total_count'] ?? 0, $offset, "公众号 {$item['authorizer_appid']} 更新授权{$state}", 1);
+                    $state = ($config ?: WechatAuth::mk())->save($info) ? lang('成功') : lang('失败');
+                    $this->queue->message(
+                        $data['total_count'] ?? 0,
+                        $offset,
+                        lang('公众号%s更新授权%s', [$item['authorizer_appid'], $state]),
+                        1
+                    );
                 } else {
                     empty($config) or $config->save(['status' => 0]);
-                    $this->queue->message($data['total_count'] ?? 0, $offset, "公众号 {$item['authorizer_appid']} 已经取消授权", 1);
+                    $this->queue->message(
+                        $data['total_count'] ?? 0,
+                        $offset,
+                        lang('公众号%s已经取消授权', [$item['authorizer_appid']]),
+                        1
+                    );
                 }
             }
         } while ($offset < $data['total_count'] ?? 0);

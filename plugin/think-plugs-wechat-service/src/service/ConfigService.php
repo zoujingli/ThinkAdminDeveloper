@@ -69,7 +69,7 @@ class ConfigService extends Service
         $this->map = ['authorizer_appid' => $this->appid = $appid];
         $this->config = WechatAuth::mk()->where($this->map)->find();
         if (empty($this->config)) {
-            throw new Exception("公众号{$appid}还没有授权！");
+            throw new Exception(lang('公众号%s还没有授权！', [$appid]));
         }
         return $this;
     }
@@ -90,7 +90,7 @@ class ConfigService extends Service
     public function setApiNotifyUri(string $notify): bool
     {
         if (empty($notify)) {
-            throw new Exception('请传入微信通知URL');
+            throw new Exception(lang('请传入微信通知URL'));
         }
         return WechatAuth::mk()->where($this->map)->update(['appuri' => $notify]) !== false;
     }

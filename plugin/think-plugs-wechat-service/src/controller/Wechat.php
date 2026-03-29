@@ -59,7 +59,7 @@ class Wechat extends Controller
     {
         $this->type = $this->get['type'] ?? 'index';
         WechatAuth::mQuery()->layTable(function () {
-            $this->title = '公众号授权管理';
+            $this->title = lang('公众号授权管理');
         }, function (QueryHelper $query) {
             $query->like('authorizer_appid,user_nickname,user_company');
             $query->equal('service_type,service_verify')->timeBetween('auth_time#create_time');
@@ -74,7 +74,7 @@ class Wechat extends Controller
     public function state()
     {
         WechatAuth::mSave($this->_vali([
-            'status.require' => '状态不能为空!',
+            'status.require' => lang('状态不能为空！'),
         ]));
     }
 
@@ -88,7 +88,7 @@ class Wechat extends Controller
             $appid = $this->request->post('appid');
             $author = WechatAuth::mk()->where(['authorizer_appid' => $appid])->findOrEmpty()->toArray();
             if (empty($author)) {
-                $this->error('无效的授权公众号，请重新绑定授权！');
+                $this->error(lang('无效的授权公众号，请重新绑定授权！'));
             }
             $info = AuthService::WeOpenService()->getAuthorizerInfo($appid);
             $data = AuthService::buildAuthData(array_merge($info, ['authorizer_appid' => $appid]));
@@ -98,12 +98,12 @@ class Wechat extends Controller
                 $data['appkey'] = md5(uniqid('', true));
             }
             if (WechatAuth::mUpdate($data, 'authorizer_appid')) {
-                $this->success('更新公众号授权成功！', '');
+                $this->success(lang('更新公众号授权成功！'), '');
             }
         } catch (HttpResponseException $exception) {
             throw $exception;
         } catch (\Exception $exception) {
-            $this->error("获取授权信息失败，请稍候再试！<br>{$exception->getMessage()}");
+            $this->error(lang('获取授权信息失败，请稍候再试！<br>%s', [$exception->getMessage()]));
         }
     }
 
@@ -113,7 +113,7 @@ class Wechat extends Controller
      */
     public function queue()
     {
-        $this->_queue('同步所有授权公众号数据', 'xsync:wechat');
+        $this->_queue(lang('同步所有授权公众号数据'), 'xsync:wechat');
     }
 
     /**
@@ -126,16 +126,16 @@ class Wechat extends Controller
             $appid = $this->request->post('appid');
             $result = AuthService::WeChatLimit($appid)->clearQuota();
             if (empty($result['errcode']) && $result['errmsg'] === 'ok') {
-                $this->success('接口调用次数清零成功！');
+                $this->success(lang('接口调用次数清零成功！'));
             } elseif (isset($result['errmsg'])) {
-                $this->error("接口调用次数清零失败！<br>{$result['errmsg']}");
+                $this->error(lang('接口调用次数清零失败！<br>%s', [$result['errmsg']]));
             } else {
-                $this->error('接口调用次数清零失败，请稍候再试！');
+                $this->error(lang('接口调用次数清零失败，请稍候再试！'));
             }
         } catch (HttpResponseException $exception) {
             throw $exception;
         } catch (\Exception $exception) {
-            $this->error("接口调用次数清零失败！<br>{$exception->getMessage()}");
+            $this->error(lang('接口调用次数清零失败！<br>%s', [$exception->getMessage()]));
         }
     }
 }

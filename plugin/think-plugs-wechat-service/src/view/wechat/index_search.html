@@ -22,11 +22,11 @@
         <div class="layui-input-inline">
             <select name="service_type" class="layui-select">
                 <option value="">{:lang('- 全部 -')}</option>
-                {foreach [lang('订阅号'),lang('服务号'),lang('小程序')] as $v}
+                {foreach ['订阅号','服务号','小程序'] as $v}
                 {if isset($get.service_type) and $get.service_type eq $v.''}
-                <option selected value="{$v}">{$v}</option>
+                <option selected value="{$v}">{:lang($v)}</option>
                 {else}
-                <option value="{$v}">{$v}</option>
+                <option value="{$v}">{:lang($v)}</option>
                 {/if}{/foreach}
             </select>
         </div>
@@ -36,10 +36,10 @@
         <div class="layui-input-inline">
             <select name="service_verify" class="layui-select">
                 <option value="">{:lang('- 全部 -')}</option>
-                {foreach [lang('已认证'),lang('未认证')] as $v}{if isset($get.service_verify) and $get.service_verify eq $v.''}
-                <option selected value="{$v}">{$v}</option>
+                {foreach ['已认证','未认证'] as $v}{if isset($get.service_verify) and $get.service_verify eq $v.''}
+                <option selected value="{$v}">{:lang($v)}</option>
                 {else}
-                <option value="{$v}">{$v}</option>
+                <option value="{$v}">{:lang($v)}</option>
                 {/if}{/foreach}
             </select>
         </div>

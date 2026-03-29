@@ -83,25 +83,25 @@ class Client extends Controller
         try {
             $data = json_decode(debase64url(input('token', '')), true);
             if (empty($data) || !is_array($data)) {
-                throw new Exception('请求 TOKEN 格式错误！');
+                throw new Exception(lang('请求 TOKEN 格式错误！'));
             }
             [$class, $appid, $time, $nostr, $sign] = [$data['class'], $data['appid'], $data['time'], $data['nostr'], $data['sign']];
             if (empty($class) || empty($appid) || empty($time) || empty($nostr) || empty($sign)) {
-                throw new Exception('请求 TOKEN 格式异常！');
+                throw new Exception(lang('请求 TOKEN 格式异常！'));
             }
             // 接口请求参数检查验证
             $auth = WechatAuth::mk()->where(['authorizer_appid' => $appid])->findOrEmpty();
             if ($auth->isEmpty()) {
-                throw new Exception('该公众号还未授权，请重新授权！');
+                throw new Exception(lang('该公众号还未授权，请重新授权！'));
             }
             if (empty($auth['status'])) {
-                throw new Exception('该公众号已被禁用，请联系管理员！');
+                throw new Exception(lang('该公众号已被禁用，请联系管理员！'));
             }
             if (abs(time() - $data['time']) > 3600) {
-                throw new Exception('请求时间与服务器时差过大，请同步时间！');
+                throw new Exception(lang('请求时间与服务器时差过大，请同步时间！'));
             }
             if (md5("{$class}#{$appid}#{$auth['appkey']}#{$time}#{$nostr}") !== $sign) {
-                throw new Exception("该公众号{$appid}请求签名异常！");
+                throw new Exception(lang('该公众号%s请求签名异常！', [$appid]));
             }
             $auth->where(['id' => $auth->getAttr('id')])->inc('total')->update([]);
             return AuthService::__callStatic($class, [$appid]);
