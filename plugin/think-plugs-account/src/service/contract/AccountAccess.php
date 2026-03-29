@@ -148,7 +148,7 @@ class AccountAccess implements AccountInterface
         if (isset($data[$this->field])) {
             if ($this->bind->isExists()) {
                 if ($data[$this->field] !== $this->bind->getAttr($this->field)) {
-                    throw new Exception('禁止强行关联！');
+                        throw new Exception('禁止强行关联');
                 }
             } else {
                 $map = [$this->field => $data[$this->field]];
@@ -158,11 +158,11 @@ class AccountAccess implements AccountInterface
                 $this->bind = PluginAccountBind::mk()->where($map)->findOrEmpty();
             }
         } elseif ($this->bind->isEmpty()) {
-            throw new Exception("字段 {$this->field} 为空！");
+            throw new Exception(sprintf(lang('字段 %s 为空'), $this->field));
         }
         $this->bind = $this->save(array_merge($data, ['type' => $this->type]));
         if ($this->bind->isEmpty()) {
-            throw new Exception('更新资料失败！');
+            throw new Exception('更新资料失败');
         }
         // 刷新更新用户模型
         $this->user = $this->bind->user()->findOrEmpty();
@@ -241,7 +241,7 @@ class AccountAccess implements AccountInterface
     public function bind(array $map, array $data = []): array
     {
         if ($this->bind->isEmpty()) {
-            throw new Exception('终端账号异常！');
+            throw new Exception('终端账号异常');
         }
         $this->user = PluginAccountUser::mk()->where($map)->findOrEmpty();
         if (!empty($data['extra'])) {
@@ -285,7 +285,7 @@ class AccountAccess implements AccountInterface
             ]);
             return $this->get();
         }
-        throw new Exception('绑定用户失败！');
+        throw new Exception('绑定用户失败');
     }
 
     /**
@@ -295,7 +295,7 @@ class AccountAccess implements AccountInterface
     public function unBind(): array
     {
         if ($this->bind->isEmpty()) {
-            throw new Exception('终端账号异常！');
+            throw new Exception('终端账号异常');
         }
         if (($unid = $this->bind->getAttr('unid')) > 0) {
             $this->bind->save(['unid' => 0]);
@@ -383,10 +383,10 @@ class AccountAccess implements AccountInterface
     public function check(): array
     {
         if ($this->bind->isEmpty()) {
-            throw new Exception('请重新登录！', 401);
+            throw new Exception('请重新登录', 401);
         }
         if ($this->expire > 0 && $this->auth->getAttr('time') < time()) {
-            throw new Exception('登录已超时！', 403);
+            throw new Exception('登录已超时', 403);
         }
         return static::expire()->get();
     }
@@ -466,7 +466,7 @@ class AccountAccess implements AccountInterface
     public function expire(): AccountInterface
     {
         if ($this->auth->isEmpty()) {
-            throw new Exception('无授权记录！');
+            throw new Exception('无授权记录');
         }
         $this->auth->save(['time' => $this->expire > 0 ? $this->expire + time() : 0]);
         return $this;
@@ -479,7 +479,7 @@ class AccountAccess implements AccountInterface
     private function save(array $data): PluginAccountBind
     {
         if (empty($data)) {
-            throw new Exception('资料不能为空！');
+            throw new Exception('资料不能为空');
         }
         $data['extra'] = array_merge($this->bind->getAttr('extra'), $data['extra'] ?? []);
         // 写入默认头像内容
@@ -495,7 +495,7 @@ class AccountAccess implements AccountInterface
         if ($this->bind->save($data) && $this->bind->isExists()) {
             return $this->bind->refresh();
         }
-        throw new Exception('资料保存失败！');
+        throw new Exception('资料保存失败');
     }
 
     /**

@@ -1,44 +1,44 @@
 <form action="{:sysuri()}" autocomplete="off" class="layui-form layui-form-pane form-search" method="get" onsubmit="return false">
 
     <div class="layui-form-item layui-inline">
-        <label class="layui-form-label">用户编号</label>
+        <label class="layui-form-label">{:lang('用户编号')}</label>
         <label class="layui-input-inline">
-            <input class="layui-input" name="code" placeholder="请输入用户编号" value="{$get.code|default=''}">
+            <input class="layui-input" name="code" placeholder="{:lang('请输入用户编号')}" value="{$get.code|default=''}">
         </label>
     </div>
 
     <div class="layui-form-item layui-inline">
-        <label class="layui-form-label">绑定手机</label>
+        <label class="layui-form-label">{:lang('绑定手机')}</label>
         <label class="layui-input-inline">
-            <input class="layui-input" name="phone" placeholder="请输入绑定手机" value="{$get.phone|default=''}">
+            <input class="layui-input" name="phone" placeholder="{:lang('请输入绑定手机')}" value="{$get.phone|default=''}">
         </label>
     </div>
 
     <div class="layui-form-item layui-inline">
-        <label class="layui-form-label">绑定邮箱</label>
+        <label class="layui-form-label">{:lang('绑定邮箱')}</label>
         <label class="layui-input-inline">
-            <input class="layui-input" name="email" placeholder="请输入绑定邮箱" value="{$get.email|default=''}">
+            <input class="layui-input" name="email" placeholder="{:lang('请输入绑定邮箱')}" value="{$get.email|default=''}">
         </label>
     </div>
 
     <div class="layui-form-item layui-inline">
-        <label class="layui-form-label">用户姓名</label>
+        <label class="layui-form-label">{:lang('用户姓名')}</label>
         <label class="layui-input-inline">
-            <input class="layui-input" name="username" placeholder="请输入用户姓名" value="{$get.username|default=''}">
+            <input class="layui-input" name="username" placeholder="{:lang('请输入用户姓名')}" value="{$get.username|default=''}">
         </label>
     </div>
 
     <div class="layui-form-item layui-inline">
-        <label class="layui-form-label">绑定时间</label>
+        <label class="layui-form-label">{:lang('绑定时间')}</label>
         <div class="layui-input-inline">
-            <input class="layui-input" data-date-range name="create_time" placeholder="请选择绑定时间" value="{$get.create_time|default=''}">
+            <input class="layui-input" data-date-range name="create_time" placeholder="{:lang('请选择绑定时间')}" value="{$get.create_time|default=''}">
         </div>
     </div>
 
     <div class="layui-form-item layui-inline">
-        <button class="layui-btn layui-btn-primary"><i class="layui-icon">&#xe615;</i> 搜 索</button>
+        <button class="layui-btn layui-btn-primary"><i class="layui-icon">&#xe615;</i> {:lang('搜 索')}</button>
         <button class="layui-btn layui-btn-primary" data-form-export="{:url('index')}?type={$type|default='index'}" type="button">
-            <i class="layui-icon layui-icon-export"></i> 导 出
+            <i class="layui-icon layui-icon-export"></i> {:lang('导 出')}
         </button>
     </div>
 </form>
@@ -61,11 +61,11 @@
             });
 
             // 设置表头内容
-            data.unshift(['ID', '用户编号', '用户姓名', '用户昵称', '绑定手机', '绑定邮箱', '绑定时间']);
+            data.unshift(['ID', '{:lang("用户编号")}', '{:lang("用户姓名")}', '{:lang("用户昵称")}', '{:lang("绑定手机")}', '{:lang("绑定邮箱")}', '{:lang("绑定时间")}']);
 
             // 设置表格样式
             return this.withStyle(data, {A: 60, B: 110, C: 80, E: 80});
 
-        }, '用户账号数据' + layui.util.toDateString(Date.now(), '_yyyyMMdd_HHmmss'));
+        }, '{:lang("用户账号数据")}' + layui.util.toDateString(Date.now(), '_yyyyMMdd_HHmmss'));
     });
 </script>

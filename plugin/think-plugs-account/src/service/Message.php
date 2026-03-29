@@ -49,6 +49,28 @@ abstract class Message
     ];
 
     /**
+     * 获取业务场景标签.
+     */
+    public static function sceneLabel(string $code): string
+    {
+        return lang(static::$scenes[$code] ?? $code);
+    }
+
+    /**
+     * 获取业务场景选项.
+     *
+     * @return string[]
+     */
+    public static function sceneOptions(): array
+    {
+        $items = [];
+        foreach (static::$scenes as $code => $label) {
+            $items[$code] = lang($label);
+        }
+        return $items;
+    }
+
+    /**
      * 静态方法调用.
      * @return mixed
      * @throws Exception

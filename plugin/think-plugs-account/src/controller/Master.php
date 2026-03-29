@@ -45,7 +45,7 @@ class Master extends Controller
     {
         $this->type = $this->get['type'] ?? 'index';
         PluginAccountUser::mQuery()->layTable(function () {
-            $this->title = '用户账号管理';
+            $this->title = lang('用户账号管理');
         }, function (QueryHelper $query) {
             $query->where(['status' => intval($this->type === 'index')]);
             $query->like('code,phone,email,username,nickname')->dateBetween('create_time');

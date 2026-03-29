@@ -63,7 +63,7 @@ class Wxapp extends Controller
             throw $exception;
         } catch (\Exception $exception) {
             trace_file($exception);
-            $this->error("处理失败，{$exception->getMessage()}");
+            $this->error(sprintf(lang('处理失败，%s'), $exception->getMessage()));
         }
     }
 
@@ -109,7 +109,7 @@ class Wxapp extends Controller
             throw $exception;
         } catch (\Exception $exception) {
             trace_file($exception);
-            $this->error("处理失败，{$exception->getMessage()}");
+            $this->error(sprintf(lang('处理失败，%s'), $exception->getMessage()));
         }
     }
 
@@ -133,7 +133,7 @@ class Wxapp extends Controller
             throw $exception;
         } catch (\Exception $exception) {
             trace_file($exception);
-            $this->error("处理失败，{$exception->getMessage()}");
+            $this->error(sprintf(lang('处理失败，%s'), $exception->getMessage()));
         }
     }
 

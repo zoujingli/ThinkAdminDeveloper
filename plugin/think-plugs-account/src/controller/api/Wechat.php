@@ -67,7 +67,7 @@ class Wechat extends Controller
      */
     public function jssdk()
     {
-        $this->success('获取网页签名！', $this->wechat->getWebJssdkSign($this->source));
+        $this->success('获取网页签名', $this->wechat->getWebJssdkSign($this->source));
     }
 
     /**
@@ -79,10 +79,12 @@ class Wechat extends Controller
      */
     public function oauth(): Response
     {
+        $oauthFailed = json_encode(lang('微信网页授权失败'), JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
+        $virtualDenied = json_encode(lang("不支持虚拟用户登录！\n请 10 秒后刷新页面选择授权！"), JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
         $script = [];
         $result = $this->wechat->getWebOauthInfo($this->source, intval(input('mode', 0)), false);
         if (empty($result['openid'])) {
-            $script[] = 'alert("WeChat Oauth failed.")';
+            $script[] = "alert({$oauthFailed})";
         } else {
             $fansinfo = $result['fansinfo'] ?? [];
             if (empty($fansinfo['is_snapshotuser'])) {
@@ -105,7 +107,7 @@ class Wechat extends Controller
                 $script[] = 'window.WeChatUserInfo=' . json_encode($result['userinfo'], 64 | 128 | 256);
                 $script[] = "sessionStorage.setItem('wechat.token','{$result['userinfo']['token']}')";
             } else {
-                $script[] = 'alert("不支持虚拟用户登录！\n请 10 秒后刷新页面选择授权！")';
+                $script[] = "alert({$virtualDenied})";
                 $script[] = 'location.reload()';
             }
         }

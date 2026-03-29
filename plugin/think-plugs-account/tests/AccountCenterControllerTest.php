@@ -59,7 +59,7 @@ class AccountCenterControllerTest extends SqliteIntegrationTestCase
         $user = PluginAccountUser::mk()->findOrEmpty(intval($bind->getAttr('unid')));
 
         $this->assertSame(1, intval($response['code'] ?? 0));
-        $this->assertSame('关联成功!', $response['info'] ?? '');
+        $this->assertSame('关联成功', $response['info'] ?? '');
         $this->assertNotEmpty($response['data']['token'] ?? '');
         $this->assertSame($phone, $response['data']['user']['phone'] ?? '');
         $this->assertTrue($bind->isExists());
@@ -108,6 +108,30 @@ class AccountCenterControllerTest extends SqliteIntegrationTestCase
         $this->assertTrue(password_verify('Secret@123', strval($user->getAttr('password'))));
     }
 
+    public function testGetControllerReturnsEnglishInfoWhenLangSetIsEnUs(): void
+    {
+        $phone = $this->randomPhone('1350099');
+        $account = $this->createBoundAccountFixture(Account::WAP, ['phone' => $phone]);
+        $login = $account->token()->get(true);
+        $this->switchAccountLang('en-us');
+
+        $response = $this->callCenterController('get', [], strval($login['token'] ?? ''));
+
+        $this->assertSame(1, intval($response['code'] ?? 0));
+        $this->assertSame('Profile loaded successfully', $response['info'] ?? '');
+        $this->assertSame($phone, $response['phone'] ?? $response['data']['phone'] ?? '');
+    }
+
+    public function testGetControllerReturnsEnglishUnauthorizedInfoWhenTokenMissing(): void
+    {
+        $this->switchAccountLang('en-us');
+
+        $response = $this->callCenterController('get', [], '');
+
+        $this->assertSame(401, intval($response['code'] ?? 0));
+        $this->assertSame('Login authorization required', $response['info'] ?? '');
+    }
+
     protected function defineSchema(): void
     {
         $this->createAccountTables();
@@ -145,5 +169,14 @@ class AccountCenterControllerTest extends SqliteIntegrationTestCase
     private function verifyCacheKey(string $phone, string $scene = Message::tLogin): string
     {
         return md5(strtolower("sms-{$scene}-{$phone}"));
+    }
+
+    private function switchAccountLang(string $langSet): void
+    {
+        $this->app->lang->switchLangSet($langSet);
+        $file = TEST_PROJECT_ROOT . "/plugin/think-plugs-account/src/lang/{$langSet}.php";
+        if (is_file($file)) {
+            $this->app->lang->load($file, $langSet);
+        }
     }
 }

@@ -43,7 +43,7 @@ class Device extends Controller
     {
         $this->type = $this->get['type'] ?? 'index';
         PluginAccountBind::mQuery()->layTable(function () {
-            $this->title = '终端账号管理';
+            $this->title = lang('终端账号管理');
             $this->types = Account::types(1);
         }, function (QueryHelper $query) {
             $query->where(['status' => intval($this->type === 'index')]);
@@ -65,8 +65,8 @@ class Device extends Controller
             $builder->fetch([
                 'vo' => $this->loadConfigFormData(),
                 'registerModes' => [
-                    0 => '启用自动注册',
-                    1 => '禁止自动注册',
+                    0 => lang('启用自动注册'),
+                    1 => lang('禁止自动注册'),
                 ],
                 'typeLabels' => $this->buildTypeLabels(),
             ]);
@@ -83,10 +83,10 @@ class Device extends Controller
         }
 
         if (Account::save()) {
-            $this->success('配置保存成功！');
+            $this->success(lang('配置保存成功'));
         }
 
-        $this->error('配置保存失败！');
+        $this->error(lang('配置保存失败'));
     }
 
     /**
@@ -163,7 +163,7 @@ class Device extends Controller
         $data = Account::config() ?: [];
         $data['expire'] = strval($data['expire'] ?? Account::expire());
         $data['disRegister'] = intval($data['disRegister'] ?? 0);
-        $data['userPrefix'] = strval($data['userPrefix'] ?? '用户');
+        $data['userPrefix'] = strval($data['userPrefix'] ?? lang('用户'));
         $data['headimg'] = strval(Account::headimg());
         $data['types'] = array_keys(array_filter($this->types, static function (array $item): bool {
             return !empty($item['status']);
@@ -175,7 +175,7 @@ class Device extends Controller
     {
         $labels = [];
         foreach ($this->types as $key => $item) {
-            $labels[$key] = strval($item['name'] ?? $key);
+            $labels[$key] = lang(strval($item['name'] ?? $key));
         }
         return $labels;
     }

@@ -85,7 +85,7 @@ class Message extends Controller
             $payload['alisms_scenes'][$code] = strval($data[$this->sceneFieldName((string)$code)] ?? '');
         }
         sysdata($this->smskey, $payload);
-        $this->success('修改配置成功！');
+        $this->success(lang('修改配置成功'));
     }
 
     /**
@@ -102,49 +102,52 @@ class Message extends Controller
      */
     private function buildIndexPage(): PageBuilder
     {
+        $failedStatusHtml = json_encode('<b class="color-red">' . lang('失败') . '</b>', JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
+        $successStatusHtml = json_encode('<b class="color-green">' . lang('成功') . '</b>', JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
+
         return PageBuilder::make()
-            ->define(function ($page) {
-                $page->title('手机短信管理')
+            ->define(function ($page) use ($failedStatusHtml, $successStatusHtml) {
+                $page->title(lang('手机短信管理'))
                     ->searchAttrs(['action' => $this->request->url()])
                     ->buttons(function ($buttons) {
-                        $buttons->modal('短信配置', url('config')->build(), '', [], 'config');
+                        $buttons->modal(lang('短信配置'), url('config')->build(), '', [], 'config');
                     })
                     ->bootScript("let scenes = JSON.parse(document.getElementById('ScenesData').value || '{}');")
                     ->search(function ($search) {
-                        $search->input('smsid', '消息编号', '请输入消息编号')
-                            ->input('phone', '发送手机', '请输入发送手机')
-                            ->select('scene', '业务场景', [], [], 'scenes')
-                            ->select('status', '执行结果', [0 => '发送失败', 1 => '发送成功'])
-                            ->dateRange('create_time', '发送时间', '请选择发送时间');
+                        $search->input('smsid', lang('消息编号'), lang('请输入消息编号'))
+                            ->input('phone', lang('发送手机'), lang('请输入发送手机'))
+                            ->select('scene', lang('业务场景'), [], [], 'scenes')
+                            ->select('status', lang('执行结果'), [0 => lang('发送失败'), 1 => lang('发送成功')])
+                            ->dateRange('create_time', lang('发送时间'), lang('请选择发送时间'));
                     })
-                    ->table('MessageData', $this->request->url(), function ($table) {
+                    ->table('MessageData', $this->request->url(), function ($table) use ($failedStatusHtml, $successStatusHtml) {
                         $table->options([
                             'loading' => true,
                             'sort' => ['field' => 'id', 'type' => 'desc'],
                         ])->column(['field' => 'id', 'hide' => true])
-                            ->column(['field' => 'smsid', 'title' => '消息编号', 'sort' => true, 'minWidth' => 100, 'width' => '12%', 'align' => 'center'])
-                            ->column(['field' => 'type', 'title' => '短信类型', 'sort' => true, 'minWidth' => 90, 'width' => '8%', 'align' => 'center'])
-                            ->column(['field' => 'phone', 'title' => '发送手机', 'sort' => true, 'minWidth' => 100, 'width' => '10%', 'align' => 'center'])
+                            ->column(['field' => 'smsid', 'title' => lang('消息编号'), 'sort' => true, 'minWidth' => 100, 'width' => '12%', 'align' => 'center'])
+                            ->column(['field' => 'type', 'title' => lang('短信类型'), 'sort' => true, 'minWidth' => 90, 'width' => '8%', 'align' => 'center'])
+                            ->column(['field' => 'phone', 'title' => lang('发送手机'), 'sort' => true, 'minWidth' => 100, 'width' => '10%', 'align' => 'center'])
                             ->column([
                                 'field' => 'scene',
-                                'title' => '业务场景',
+                                'title' => lang('业务场景'),
                                 'align' => 'center',
                                 'minWidth' => 100,
                                 'width' => '8%',
                                 'templet' => PageBuilder::js('function(d){ return scenes[d.scene] || d.scene_name; }'),
                             ])
-                            ->column(['field' => 'params', 'title' => '短信内容', 'align' => 'center'])
-                            ->column(['field' => 'result', 'title' => '返回结果', 'align' => 'center'])
+                            ->column(['field' => 'params', 'title' => lang('短信内容'), 'align' => 'center'])
+                            ->column(['field' => 'result', 'title' => lang('返回结果'), 'align' => 'center'])
                             ->column([
                                 'field' => 'status',
-                                'title' => '执行结果',
+                                'title' => lang('执行结果'),
                                 'minWidth' => 80,
                                 'width' => '8%',
                                 'sort' => true,
                                 'align' => 'center',
-                                'templet' => PageBuilder::js("function(d){ return ['<b class=\"color-red\">失败</b>', '<b class=\"color-green\">成功</b>'][d.status]; }"),
+                                'templet' => PageBuilder::js("function(d){ return [{$failedStatusHtml}, {$successStatusHtml}][d.status]; }"),
                             ])
-                            ->column(['field' => 'create_time', 'title' => '发送时间', 'width' => 170, 'align' => 'center', 'sort' => true]);
+                            ->column(['field' => 'create_time', 'title' => lang('发送时间'), 'width' => 170, 'align' => 'center', 'sort' => true]);
                     });
 
                 $page->node('label')
@@ -152,7 +155,7 @@ class Message extends Controller
                     ->node('textarea')
                     ->id('ScenesData')
                     ->html('{$scenes|default=\'\'|json_encode}');
-            })
+            }, ['scenes' => AccountMessage::sceneOptions()])
             ->build();
     }
 
@@ -160,22 +163,22 @@ class Message extends Controller
     {
         $regionOptions = [];
         foreach (Alisms::regions() as $code => $region) {
-            $regionOptions[$code] = sprintf('[ %s ] %s', $code, strval($region['name'] ?? $code));
+            $regionOptions[$code] = sprintf('[ %s ] %s', $code, lang(strval($region['name'] ?? $code)));
         }
 
         return FormBuilder::make()
             ->define(function ($form) use ($regionOptions) {
                 $form->action(url('config')->build())
                     ->fields(function ($fields) use ($regionOptions) {
-                        $fields->select('alisms_region', '服务区域', 'Region', true, '', $regionOptions)
-                            ->text('alisms_keyid', '阿里云账号', 'AccessKeyId', true)
-                            ->text('alisms_secret', '阿里云密钥', 'AccessKeySecret', true)
-                            ->text('alisms_signtx', '短信签名', 'SignName', true);
+                        $fields->select('alisms_region', lang('服务区域'), 'Region', true, '', $regionOptions)
+                            ->text('alisms_keyid', lang('阿里云账号'), 'AccessKeyId', true)
+                            ->text('alisms_secret', lang('阿里云密钥'), 'AccessKeySecret', true)
+                            ->text('alisms_signtx', lang('短信签名'), 'SignName', true);
                         foreach (AccountMessage::$scenes as $code => $name) {
-                            $fields->text($this->sceneFieldName((string)$code), (string)$name, ucfirst(strtolower((string)$code)) . ' Code', true);
+                            $fields->text($this->sceneFieldName((string)$code), lang((string)$name), ucfirst(strtolower((string)$code)) . ' Code', true);
                         }
                     })->actions(function ($actions) {
-                        $actions->submit('保存配置')->cancel('取消修改', '确定要取消修改吗？');
+                        $actions->submit(lang('保存配置'))->cancel(lang('取消修改'), lang('确定要取消修改吗？'));
                     });
             })
             ->build();

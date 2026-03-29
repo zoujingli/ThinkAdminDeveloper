@@ -86,19 +86,19 @@ class Login extends Controller
     public function auto()
     {
         try {
-            $data = $this->_vali(['code.require' => '授权编号为空！']);
+            $data = $this->_vali(['code.require' => '授权编号为空']);
             $vars = CodeToolkit::decrypt($data['code'], JwtToken::jwtkey());
             if (is_array($vars) && isset($vars['unid'])) {
                 $user = PluginAccountUser::mk()->findOrEmpty($vars['unid']);
                 if ($user->isEmpty()) {
-                    $this->error('无效账号！');
+                    $this->error('无效账号');
                 }
                 $inset = ['phone' => $user->getAttr('phone')];
                 $account = Account::mk(Account::WAP, $inset);
                 $account->set(['unid' => $user->getAttr('id')] + $inset);
-                $this->successWithToken('登录成功！', $account->token()->get(true));
+                $this->successWithToken('登录成功', $account->token()->get(true));
             } else {
-                $this->error('解密失败！');
+                $this->error('解密失败');
             }
         } catch (HttpResponseException $exception) {
             throw $exception;

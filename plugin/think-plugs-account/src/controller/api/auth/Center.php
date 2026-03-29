@@ -96,14 +96,14 @@ class Center extends Auth
                 });
                 Account::destroySession();
                 Account::forgetTokenCookie();
-                $this->success('账号注销成功！');
+                $this->success('账号注销成功');
             } catch (HttpResponseException $exception) {
                 throw $exception;
             } catch (\Exception $exception) {
                 $this->error($exception->getMessage());
             }
         } else {
-            $this->error('未完成注册！');
+            $this->error('未完成注册');
         }
     }
 
@@ -135,7 +135,7 @@ class Center extends Auth
                 }
                 $result = $this->account->get(true);
                 Account::syncTokenCookie(strval($result['token'] ?? ''));
-                $this->success('关联成功!', $result);
+                $this->success('关联成功', $result);
             } else {
                 $this->error('验证失败');
             }

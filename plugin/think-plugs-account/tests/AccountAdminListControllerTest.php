@@ -42,6 +42,14 @@ class AccountAdminListControllerTest extends SqliteIntegrationTestCase
         $this->configureAccountAccess();
     }
 
+    protected function afterSchemaCreated(): void
+    {
+        $this->app->setAppPath(TEST_PROJECT_ROOT . '/plugin/think-plugs-account/src/');
+        $this->configureView([
+            'view_path' => TEST_PROJECT_ROOT . '/plugin/think-plugs-account/src/view' . DIRECTORY_SEPARATOR,
+        ]);
+    }
+
     public function testMasterIndexFiltersActiveUsersByKeywordAndDateRange(): void
     {
         $older = $this->createAccountUser([
@@ -250,6 +258,56 @@ class AccountAdminListControllerTest extends SqliteIntegrationTestCase
         $this->assertSame(Account::WEB, $result['data']['list'][0]['type'] ?? '');
     }
 
+    public function testMasterIndexRendersEnglishTextsWhenLangSetIsEnUs(): void
+    {
+        $this->switchAccountLang('en-us');
+
+        $html = $this->callActionHtml(MasterController::class, 'index');
+
+        $this->assertStringContainsString('User Management', $html);
+        $this->assertStringContainsString('Recycle Bin', $html);
+        $this->assertStringContainsString('User Code', $html);
+        $this->assertStringContainsString('Account Status', $html);
+        $this->assertStringContainsString('Search', $html);
+        $this->assertStringContainsString('Export', $html);
+        $this->assertStringContainsString('User Account Data', $html);
+        $this->assertStringNotContainsString('搜 索', $html);
+        $this->assertStringNotContainsString('用户管理', $html);
+    }
+
+    public function testDeviceIndexRendersEnglishTextsWhenLangSetIsEnUs(): void
+    {
+        $this->switchAccountLang('en-us');
+
+        $html = $this->callActionHtml(DeviceController::class, 'index');
+
+        $this->assertStringContainsString('Device Type', $html);
+        $this->assertStringContainsString('-- All --', $html);
+        $this->assertStringContainsString('Associated Account', $html);
+        $this->assertStringContainsString('First Login', $html);
+        $this->assertStringContainsString('Search', $html);
+        $this->assertStringContainsString('Export', $html);
+        $this->assertStringContainsString('Mobile Browser', $html);
+        $this->assertStringNotContainsString('终端类型', $html);
+    }
+
+    public function testDeviceConfigRendersEnglishTextsWhenLangSetIsEnUs(): void
+    {
+        $this->switchAccountLang('en-us');
+
+        $html = $this->callActionHtml(DeviceController::class, 'config');
+
+        $this->assertStringContainsString('Authentication Expire Time', $html);
+        $this->assertStringContainsString('Auto Register on Login', $html);
+        $this->assertStringContainsString('Enable Auto Registration', $html);
+        $this->assertStringContainsString('Default Nickname Prefix', $html);
+        $this->assertStringContainsString('Open Interface Channels', $html);
+        $this->assertStringContainsString('Mobile Browser', $html);
+        $this->assertStringContainsString('Save Data', $html);
+        $this->assertStringContainsString('Cancel Edit', $html);
+        $this->assertStringNotContainsString('启用自动注册', $html);
+    }
+
     protected function defineSchema(): void
     {
         $this->createAccountTables();
@@ -277,6 +335,28 @@ class AccountAdminListControllerTest extends SqliteIntegrationTestCase
             self::fail("Expected {$controllerClass}::index to throw HttpResponseException.");
         } catch (HttpResponseException $exception) {
             return json_decode($exception->getResponse()->getContent(), true) ?: [];
+        }
+    }
+
+    private function callActionHtml(string $controllerClass, string $action, array $query = []): string
+    {
+        $parts = explode('\\', $controllerClass);
+        $request = (new Request())
+            ->withGet($query)
+            ->setMethod('GET')
+            ->setController(strtolower(strval(end($parts))))
+            ->setAction($action);
+
+        $this->setRequestPayload($request, $query);
+        RequestContext::clear();
+        $this->activateApplicationContext($request);
+
+        try {
+            $controller = new $controllerClass($this->app);
+            $controller->{$action}();
+            self::fail("Expected {$controllerClass}::{$action} to throw HttpResponseException.");
+        } catch (HttpResponseException $exception) {
+            return $exception->getResponse()->getContent();
         }
     }
 
@@ -309,5 +389,14 @@ class AccountAdminListControllerTest extends SqliteIntegrationTestCase
         $property = new \ReflectionProperty(Request::class, 'request');
         $property->setAccessible(true);
         $property->setValue($request, $data);
+    }
+
+    private function switchAccountLang(string $langSet): void
+    {
+        $this->app->lang->switchLangSet($langSet);
+        $file = TEST_PROJECT_ROOT . "/plugin/think-plugs-account/src/lang/{$langSet}.php";
+        if (is_file($file)) {
+            $this->app->lang->load($file, $langSet);
+        }
     }
 }

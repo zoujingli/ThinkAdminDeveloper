@@ -56,7 +56,7 @@ trait MessageUsageTrait
     {
         $scenes = array_change_key_case($this->scenes);
         if (empty($scenes) || empty($scenes[strtolower($scene)])) {
-            throw new Exception('业务场景未配置！');
+            throw new Exception('业务场景未配置');
         }
         $result = $this->send($scenes[strtolower($scene)], $phone, $params, $options);
         PluginAccountMsms::mk()->save([

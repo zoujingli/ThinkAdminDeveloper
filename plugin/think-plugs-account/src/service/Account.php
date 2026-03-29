@@ -80,14 +80,14 @@ abstract class Account
             self::verifyTokenSession($jwtData);
             [$type, $token] = [$type ?: ($jwtData['type'] ?? ''), $jwtData['token'] ?? $token];
             if (($jwtData['type'] ?? '') !== $type) {
-                throw new Exception('授权不匹配！');
+                throw new Exception('授权不匹配');
             }
         }
         if (($field = self::field($type)) || is_array($token)) {
             $vars = ['type' => $type, 'field' => $field];
             return app(AccountAccess::class, $vars, true)->init($token, $isjwt);
         }
-        throw new Exception('登录已超时！', 401);
+        throw new Exception('登录已超时', 401);
     }
 
     /**
@@ -393,7 +393,7 @@ abstract class Account
 
         $scope = self::sessionScope($sessionId);
         if (!CacheSession::exists($scope)) {
-            throw new Exception('登录已超时！', 401);
+            throw new Exception('登录已超时', 401);
         }
 
         CacheSession::touch(self::expire(), $scope);
@@ -417,7 +417,7 @@ abstract class Account
     private static function verifyJwtPayload(array $data): void
     {
         if (strval($data['typ'] ?? '') !== self::TOKEN_TYPE) {
-            throw new Exception('登录已超时！', 401);
+            throw new Exception('登录已超时', 401);
         }
     }
 }

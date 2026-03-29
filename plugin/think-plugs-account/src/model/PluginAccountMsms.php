@@ -48,7 +48,7 @@ class PluginAccountMsms extends PlainAbs
     {
         $data = parent::toArray();
         if (isset($data['scene'])) {
-            $data['scene_name'] = Message::$scenes[$data['scene']] ?? $data['scene'];
+            $data['scene_name'] = Message::sceneLabel(strval($data['scene']));
         }
         return $data;
     }
