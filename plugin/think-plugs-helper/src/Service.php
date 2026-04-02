@@ -27,8 +27,6 @@ class Service extends \think\Service
         $this->commands([
             DbModelStruct::class,
             DbIndexStruct::class,
-            DbBackupStruct::class,
-            DbRestoreStruct::class,
         ]);
     }
 }
