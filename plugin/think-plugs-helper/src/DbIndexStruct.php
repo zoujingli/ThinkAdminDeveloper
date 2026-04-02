@@ -20,6 +20,7 @@ declare(strict_types=1);
 
 namespace plugin\helper;
 
+use think\admin\extend\IndexNameService;
 use think\admin\service\SystemService;
 use think\console\Command;
 use think\facade\Db;
@@ -50,36 +51,48 @@ class DbIndexStruct extends Command
      */
     public function handle(): void
     {
-        [$tables, $total, $count] = SystemService::getTables();
+        [$tables, $total] = SystemService::getTables();
+        $number = 1;
+        $renamed = 0;
         foreach ($tables as $table) {
-            $this->output->writeln(sprintf("[%s/%s] 开始处理表 {$table}", $count++, $total));
+            $this->output->writeln(sprintf("[%s/%s] 开始处理表 %s", $number++, $total, $table));
+            $indexes = [];
             foreach (Db::query(sprintf('SHOW INDEX FROM `%s`', $table)) as $index) {
-                $keyName = $index['Key_name'] ?? '';
-                if ($keyName === 'PRIMARY') {
+                $keyName = strval($index['Key_name'] ?? '');
+                if ($keyName === '' || $keyName === 'PRIMARY') {
                     continue;
                 }
-                $newName = $this->genIndexName($table, (array)$index);
-                if ($keyName === $newName) {
+                $indexes[$keyName]['unique'] = intval($index['Non_unique'] ?? 1) === 0;
+                $indexes[$keyName]['columns'][intval($index['Seq_in_index'] ?? 0)] = strval($index['Column_name'] ?? '');
+            }
+            $exists = array_fill_keys(array_keys($indexes), true);
+            foreach ($indexes as $keyName => $index) {
+                $columns = $index['columns'] ?? [];
+                ksort($columns);
+                $columns = array_values(array_filter($columns, 'strlen'));
+                if (empty($columns)) {
+                    continue;
+                }
+                $newName = $this->genIndexName($table, $columns, !empty($index['unique']));
+                if ($keyName === $newName || isset($exists[$newName])) {
                     continue;
                 }
                 Db::execute(sprintf('ALTER TABLE `%s` RENAME INDEX `%s` TO `%s`', $table, $keyName, $newName));
-                ++$count;
+                $exists[$newName] = true;
+                ++$renamed;
             }
         }
-        $this->output->writeln("✅ 完成 {$count} 个索引重命名");
+        $this->output->writeln("✅ 完成 {$renamed} 个索引重命名");
     }
 
     /**
      * 生成索引名称.
      * @param string $table 表名
-     * @param array $index 索引信息
+     * @param array<int, string>|string $columns 索引字段
      * @return string 生成的索引名称
      */
-    private function genIndexName(string $table, array $index): string
+    private function genIndexName(string $table, array|string $columns, bool $unique = false): string
     {
-        $abbr = implode('', array_map(function ($word) {
-            return $word[0];
-        }, explode('_', $table)));
-        return ($index['Non_unique'] ? 'idx_' : 'uni_') . $abbr . '_' . substr(md5($table), -4) . '_' . $index['Column_name'];
+        return IndexNameService::generate($table, $columns, $unique);
     }
 }
