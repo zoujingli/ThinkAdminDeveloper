@@ -104,13 +104,24 @@ class FixWemallConstraints extends Migrator
      */
     private function _fix_plugin_wemall_user_relation()
     {
-        // 为path字段添加前缀索引（优化LIKE查询性能）
-        $this->execute('ALTER TABLE `plugin_wemall_user_relation` ADD INDEX `idx_path_prefix` (`path`(20))');
+        $indexes = $this->getTableIndexes('plugin_wemall_user_relation');
 
-        // 为代理层级字段添加索引
-        $this->execute('ALTER TABLE `plugin_wemall_user_relation` ADD INDEX `idx_puid1` (`puid1`)');
-        $this->execute('ALTER TABLE `plugin_wemall_user_relation` ADD INDEX `idx_puid2` (`puid2`)');
-        $this->execute('ALTER TABLE `plugin_wemall_user_relation` ADD INDEX `idx_puid3` (`puid3`)');
+        // 将普通 path 索引收敛为前缀索引，避免重复索引
+        if (!$this->hasIndexDefinition($indexes, ['path'], false, ['path' => 20])) {
+            foreach ($this->findIndexNamesByColumns($indexes, ['path']) as $name) {
+                $this->execute("ALTER TABLE `plugin_wemall_user_relation` DROP INDEX `{$name}`");
+            }
+            $this->execute('ALTER TABLE `plugin_wemall_user_relation` ADD INDEX `idx_path_prefix` (`path`(20))');
+            $indexes = $this->getTableIndexes('plugin_wemall_user_relation');
+        }
+
+        // 为代理层级字段补齐单列索引，已有同定义索引时跳过
+        foreach (['puid1', 'puid2', 'puid3'] as $column) {
+            if (!$this->hasIndexDefinition($indexes, [$column])) {
+                $this->execute("ALTER TABLE `plugin_wemall_user_relation` ADD INDEX `idx_{$column}` (`{$column}`)");
+                $indexes = $this->getTableIndexes('plugin_wemall_user_relation');
+            }
+        }
     }
 
     /**
@@ -155,11 +166,99 @@ class FixWemallConstraints extends Migrator
         }
         $row = $this->getAdapter()->fetchRow('SELECT VERSION() AS version');
         $raw = (string)($row['version'] ?? reset($row) ?: '0.0.0');
-        preg_match('/\\d+(?:\\.\\d+){1,2}/', $raw, $match);
+        preg_match('/\d+(?:\.\d+){1,2}/', $raw, $match);
         $version = $match[0] ?? '0.0.0';
         if (stripos($raw, 'mariadb') !== false) {
             return $supports = version_compare($version, '10.2.1', '>=');
         }
         return $supports = version_compare($version, '8.0.16', '>=');
+    }
+
+    /**
+     * 获取表索引结构.
+     * @return array<string, array<string, mixed>>
+     */
+    private function getTableIndexes(string $table): array
+    {
+        $indexes = [];
+        foreach ($this->fetchAll("SHOW INDEX FROM `{$table}`") as $index) {
+            $name = strval($index['Key_name'] ?? '');
+            if ($name === '' || $name === 'PRIMARY') {
+                continue;
+            }
+            $column = strval($index['Column_name'] ?? '');
+            $indexes[$name]['unique'] = intval($index['Non_unique'] ?? 1) === 0;
+            $indexes[$name]['columns'][intval($index['Seq_in_index'] ?? 0)] = $column;
+            if (is_numeric($index['Sub_part'] ?? null) && intval($index['Sub_part']) > 0) {
+                $indexes[$name]['limits'][$column] = intval($index['Sub_part']);
+            }
+        }
+        foreach ($indexes as $name => $index) {
+            $columns = $index['columns'] ?? [];
+            ksort($columns);
+            $indexes[$name] = [
+                'name' => $name,
+                'unique' => !empty($index['unique']),
+                'columns' => array_values(array_filter($columns, 'strlen')),
+                'limits' => $index['limits'] ?? [],
+            ];
+        }
+        return $indexes;
+    }
+
+    /**
+     * 判断是否已存在目标索引定义.
+     * @param array<string, array<string, mixed>> $indexes
+     * @param array<int, string> $columns
+     * @param array<string, int> $limits
+     */
+    private function hasIndexDefinition(array $indexes, array $columns, bool $unique = false, array $limits = []): bool
+    {
+        $expect = $this->buildIndexSignature($columns, $unique, $limits);
+        foreach ($indexes as $index) {
+            if ($this->buildIndexSignature($index['columns'] ?? [], !empty($index['unique']), (array)($index['limits'] ?? [])) === $expect) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /**
+     * 查找同列索引名称.
+     * @param array<string, array<string, mixed>> $indexes
+     * @param array<int, string> $columns
+     * @return array<int, string>
+     */
+    private function findIndexNamesByColumns(array $indexes, array $columns): array
+    {
+        $columns = array_values($columns);
+        $names = [];
+        foreach ($indexes as $name => $index) {
+            if (($index['columns'] ?? []) === $columns) {
+                $names[] = $name;
+            }
+        }
+        return $names;
+    }
+
+    /**
+     * 生成索引签名用于比较.
+     * @param array<int, string> $columns
+     * @param array<string, int> $limits
+     */
+    private function buildIndexSignature(array $columns, bool $unique = false, array $limits = []): string
+    {
+        $columns = array_values(array_filter(array_map('strval', $columns), 'strlen'));
+        $normalized = [];
+        foreach ($columns as $column) {
+            if (isset($limits[$column]) && is_numeric($limits[$column])) {
+                $normalized[$column] = intval($limits[$column]);
+            }
+        }
+        return json_encode([
+            'columns' => $columns,
+            'unique' => $unique,
+            'limits' => $normalized,
+        ], JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
     }
 }
