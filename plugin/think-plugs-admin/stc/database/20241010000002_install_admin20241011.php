@@ -17,7 +17,6 @@ declare(strict_types=1);
  * | github 代码仓库：https://github.com/zoujingli/ThinkAdmin
  * +----------------------------------------------------------------------
  */
-
 use app\admin\Service;
 use think\admin\extend\PhinxExtend;
 use think\admin\model\SystemConfig;

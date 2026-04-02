@@ -55,7 +55,7 @@ class DbIndexStruct extends Command
         $number = 1;
         $renamed = 0;
         foreach ($tables as $table) {
-            $this->output->writeln(sprintf("[%s/%s] 开始处理表 %s", $number++, $total, $table));
+            $this->output->writeln(sprintf('[%s/%s] 开始处理表 %s', $number++, $total, $table));
             $indexes = [];
             foreach (Db::query(sprintf('SHOW INDEX FROM `%s`', $table)) as $index) {
                 $keyName = strval($index['Key_name'] ?? '');
