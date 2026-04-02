@@ -58,13 +58,13 @@ class FixWemallConstraints extends Migrator
         $table = $this->table('plugin_wemall_user_rebate');
 
         // 添加订单商品项ID字段（用于精确追踪返佣）
-        if (!$this->hasColumn('plugin_wemall_user_rebate', 'order_item_id')) {
+        if (!$table->hasColumn('order_item_id')) {
             $table->addColumn('order_item_id', 'biginteger', ['limit' => 20, 'default' => 0, 'null' => true, 'comment' => '订单商品项ID'])
                 ->update();
         }
 
         // 添加返佣规则ID字段（用于追溯规则版本）
-        if (!$this->hasColumn('plugin_wemall_user_rebate', 'rebate_rule_id')) {
+        if (!$table->hasColumn('rebate_rule_id')) {
             $table->addColumn('rebate_rule_id', 'biginteger', ['limit' => 20, 'default' => 0, 'null' => true, 'comment' => '返佣规则ID'])
                 ->update();
         }
@@ -80,7 +80,7 @@ class FixWemallConstraints extends Migrator
     {
         // 修复余额表
         $table = $this->table('plugin_payment_balance');
-        if (!$this->hasColumn('plugin_payment_balance', 'source_type')) {
+        if (!$table->hasColumn('source_type')) {
             $table->addColumn('source_type', 'string', ['limit' => 50, 'default' => '', 'null' => true, 'comment' => '资金来源类型'])
                 ->addColumn('source_id', 'string', ['limit' => 50, 'default' => '', 'null' => true, 'comment' => '资金来源ID'])
                 ->update();
@@ -88,7 +88,7 @@ class FixWemallConstraints extends Migrator
 
         // 修复积分表
         $table = $this->table('plugin_payment_integral');
-        if (!$this->hasColumn('plugin_payment_integral', 'source_type')) {
+        if (!$table->hasColumn('source_type')) {
             $table->addColumn('source_type', 'string', ['limit' => 50, 'default' => '', 'null' => true, 'comment' => '积分来源类型'])
                 ->addColumn('source_id', 'string', ['limit' => 50, 'default' => '', 'null' => true, 'comment' => '积分来源ID'])
                 ->update();
