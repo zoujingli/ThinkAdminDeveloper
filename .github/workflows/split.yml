@@ -1,6 +1,14 @@
 name: Split Repositorys
 
-on: [ workflow_dispatch ]
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - master
+
+concurrency:
+  group: split-${{ github.ref_name }}
+  cancel-in-progress: false
 
 jobs:
   split:
@@ -13,6 +21,7 @@ jobs:
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
+          ref: ${{ github.ref_name }}
 
       - name: Setup Private Key
         run: |

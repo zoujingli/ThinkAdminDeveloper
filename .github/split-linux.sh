@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 set -e
 set -x
-CURRENT_BRANCH=$(git rev-parse --abbrev-ref HEAD)
+CURRENT_BRANCH=${GITHUB_REF_NAME:-$(git rev-parse --abbrev-ref HEAD)}
 BASEPATH=$(cd `dirname $0`; cd ../plugin/; pwd)
 REPOS=$@
 function split()
