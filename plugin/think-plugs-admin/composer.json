@@ -3,7 +3,7 @@
   "name": "zoujingli/think-plugs-admin",
   "license": "MIT",
   "homepage": "https://thinkadmin.top",
-  "description": "Admin Plugin for ThinkAdmin",
+  "description": "Admin backend module with system, menu, auth, file and queue management for ThinkAdmin",
   "authors": [
     {
       "name": "Anyon",
@@ -35,7 +35,7 @@
       "type": "module",
       "name": "系统后台管理",
       "document": "https://thinkadmin.top/plugin/think-plugs-admin.html",
-      "description": "后台基础管理模块，系统账号及安全配置管理。"
+      "description": "后台基础管理模块，提供系统配置、任务、日志、字典、文件、菜单、权限和用户管理。"
     },
     "plugin": {
       "copy": {

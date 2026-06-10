@@ -2,7 +2,7 @@
   "type": "think-admin-plugin",
   "name": "zoujingli/think-plugs-payment",
   "homepage": "https://thinkadmin.top",
-  "description": "Payment Plugin for ThinkAdmin",
+  "description": "Multi-channel payment, balance, integral and refund plugin for ThinkAdmin",
   "authors": [
     {
       "name": "Anyon",

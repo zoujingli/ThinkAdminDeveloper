@@ -3,7 +3,7 @@
   "name": "zoujingli/think-plugs-wechat",
   "license": "MIT",
   "homepage": "https://thinkadmin.top",
-  "description": "WeChat Plugin for ThinkAdmin",
+  "description": "WeChat official account, menu, reply, payment and refund module for ThinkAdmin",
   "authors": [
     {
       "name": "Anyon",
@@ -30,7 +30,7 @@
       "type": "module",
       "name": "微信平台管理",
       "document": "https://thinkadmin.top/plugin/think-plugs-wechat.html",
-      "description": "后台微信对接模块，功能全面的微信基础管理。"
+      "description": "微信基础管理模块，提供公众号配置、粉丝、素材、菜单、回复、支付和退款管理。"
     },
     "plugin": {
       "copy": {

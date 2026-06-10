@@ -2,7 +2,7 @@
   "type": "think-admin-plugin",
   "name": "zoujingli/think-plugs-account",
   "homepage": "https://thinkadmin.top",
-  "description": "Account Plugin for ThinkAdmin",
+  "description": "Multi-terminal account and JWT authentication plugin for ThinkAdmin",
   "authors": [
     {
       "name": "Anyon",

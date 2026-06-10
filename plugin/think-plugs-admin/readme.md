@@ -8,7 +8,7 @@
 [![PHP Version](https://thinkadmin.top/static/icon/php-7.1.svg)](https://thinkadmin.top)
 [![License](https://thinkadmin.top/static/icon/license-mit.svg)](https://mit-license.org)
 
-**ThinkPlugsAdmin** 是 **ThinkAdmin** 的核心插件，提供后台基础管理模块功能，基于 MIT 协议开源，免费可商用！
+**ThinkPlugsAdmin** 是 **ThinkAdmin** 的后台基础管理插件，提供系统配置、任务、日志、字典、文件、菜单、权限和后台用户管理。该插件基于 MIT 协议开源，免费可商用。
 
 请注意，安装此插件将占用并替换 `app/admin` 目录（采用先删除再写入的方式）。若您曾对 `app/admin` 进行了自定义修改，我们不建议您安装此插件，以避免修改内容丢失。
 
@@ -74,7 +74,7 @@ composer remove zoujingli/think-plugs-admin
 - **高性能优化**: 针对管理后台进行专门优化，确保操作流畅性
 - **向后兼容**: 保持 API 稳定性，确保平滑升级
 
-### 插件数据库
+### 插件数据
 
 本插件涉及数据表有：
 
@@ -95,4 +95,4 @@ composer remove zoujingli/think-plugs-admin
 
 本项目包含的第三方源码和二进制文件的版权信息将另行标注，请在对应文件查看。
 
-版权所有 Copyright © 2014-2025 by ThinkAdmin (https://thinkadmin.top) All rights reserved。
+版权所有 Copyright © 2014-2026 by ThinkAdmin (https://thinkadmin.top) All rights reserved。

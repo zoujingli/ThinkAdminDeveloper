@@ -3,7 +3,7 @@
   "name": "zoujingli/think-plugs-helper",
   "license": "Apache-2.0",
   "homepage": "https://thinkadmin.top",
-  "description": "Developer Tools for ThinkAdmin",
+  "description": "Developer helper commands for ThinkAdmin models and database indexes",
   "authors": [
     {
       "name": "Anyon",

@@ -8,7 +8,7 @@
 [![PHP Version](https://thinkadmin.top/static/icon/php-7.1.svg)](https://thinkadmin.top)
 [![License](https://thinkadmin.top/static/icon/license-mit.svg)](https://mit-license.org)
 
-**ThinkPlugsWechat** 是 **ThinkAdmin** 的核心插件，提供全面的微信基础管理功能，基于 MIT 协议开源，免费可商用！
+**ThinkPlugsWechat** 是 **ThinkAdmin** 的微信基础管理插件，提供公众号配置、粉丝、素材、菜单、关键词回复、关注回复、微信支付和退款管理。该插件基于 MIT 协议开源，免费可商用。
 
 请注意，安装此插件将会占用并替换 `app/wechat` 目录（采用先删除再写入的方式）。因此，如果您之前对 `app/wechat` 目录有过自定义修改，我们强烈建议您在安装插件前进行备份，否则这些修改可能会丢失。
 
@@ -58,8 +58,8 @@ composer remove zoujingli/think-plugs-wechat
 ### 业务功能特性
 
 **核心微信功能：**
-- **微信接口配置**: 提供完整的微信公众号接口配置管理，支持多公众号管理
-- **微信支付配置**: 集成微信支付功能，支持 JSAPI、Native、APP 等多种支付方式
+- **微信接口配置**: 提供微信公众号接口参数配置管理
+- **微信支付配置**: 提供微信支付参数配置，并管理微信支付与退款记录
 - **微信粉丝管理**: 完整的粉丝信息管理，支持标签分组、批量操作等功能
 - **微信图文管理**: 可视化的图文素材编辑和管理，支持多图文组合
 - **微信菜单配置**: 可视化的自定义菜单配置，支持点击、跳转、扫码等菜单类型
@@ -72,10 +72,9 @@ composer remove zoujingli/think-plugs-wechat
 - **MIT 开源协议**: 遵循 MIT 开源协议，免费可商用
 - **模块化设计**: 各微信功能模块独立封装，便于扩展和维护
 - **安全防护**: 内置微信消息签名验证、权限控制等安全机制
-- **高性能优化**: 针对微信接口调用进行专门优化，确保响应速度
 - **向后兼容**: 保持与现有 ThinkAdmin 版本的兼容性，确保平滑升级
 
-### 插件数据库
+### 插件数据
 
 本插件涉及数据表有：
 
@@ -95,4 +94,4 @@ composer remove zoujingli/think-plugs-wechat
 
 本项目包含的第三方源码和二进制文件的版权信息将另行标注，请在对应文件查看。
 
-版权所有 Copyright © 2014-2025 by ThinkAdmin (https://thinkadmin.top) All rights reserved。
+版权所有 Copyright © 2014-2026 by ThinkAdmin (https://thinkadmin.top) All rights reserved。

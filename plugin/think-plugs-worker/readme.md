@@ -7,23 +7,22 @@
 [![PHP Version](https://thinkadmin.top/static/icon/php-7.1.svg)](https://thinkadmin.top)
 [![License](https://poser.pugx.org/zoujingli/think-plugs-worker/license)](https://gitee.com/zoujingli/think-plugs-worker/blob/master/license)
 
+**ThinkPlugsWorker** 是 **ThinkAdmin** 基于 Workerman 的运行服务插件，用于启动 HTTP 服务和自定义常驻进程，支持 Workerman 与 Gateway 两类运行方式。
+
 ### 业务功能特性
 
-**核心异步任务处理：**
-- **HTTP 服务支持**: 基于 Workerman 4.x 提供高性能 HTTP 服务，无需 Nginx/Apache 配置，访问速度显著提升
-- **多协议支持**: 支持 WebSocket、TCP、UDP 等多种通信协议，满足不同应用场景需求
-- **Gateway 模式**: 支持 Gateway 分布式架构，适用于高并发实时通信场景
-- **自定义服务**: 提供灵活的自定义服务配置，支持 Text、WebSocket、Gateway、Register、Business 等多种服务类型
-- **异步任务队列**: 内置高效的异步任务处理机制，响应延时低于 0.5 秒
-- **进程管理**: 完善的进程启动、停止、重载、状态监控等管理功能
-- **跨平台支持**: 同时支持 Windows 和 Linux 平台，提供统一的操作接口
+**核心运行服务：**
+- **HTTP 服务支持**: 基于 Workerman 启动 ThinkAdmin HTTP 服务，可在部分场景替代传统 Web Server 入口。
+- **自定义服务**: 支持 Text、WebSocket、Gateway、Register、Business 等自定义服务配置。
+- **Gateway 模式**: 可按需安装 `workerman/gateway-worker` 并启动 Gateway 相关进程。
+- **进程管理**: 提供启动、停止、重载、状态查看和守护运行等命令能力。
+- **跨平台支持**: 支持 Windows 和 Linux 平台的开发与部署场景。
 
 **技术特性：**
-- **Apache2 开源协议**: 遵循 Apache2 开源协议，免费提供使用
-- **高性能架构**: 基于 Workerman 事件驱动架构，单机可支撑数万并发连接
-- **模块化设计**: 各服务类型独立配置，便于扩展和维护
-- **向后兼容**: 保持与现有 ThinkAdmin 版本的兼容性，确保平滑升级
-- **文档完善**: 提供完整的配置示例和使用文档，快速上手
+- **Apache2 开源协议**: 遵循 Apache2 开源协议，免费提供使用。
+- **Workerman 集成**: 基于 Workerman 运行 HTTP 或自定义常驻进程。
+- **配置驱动**: 通过 `config/worker.php` 管理 HTTP 服务和自定义进程。
+- **文档示例**: 提供 Workerman、Gateway 和 Nginx 代理配置示例。
 
 基于 **Workerman 4.x** 且支持多种通信协议的基础插件。
 
@@ -338,6 +337,6 @@ location ^~ / {
 
 本项目包含的第三方源码和二进制文件之版权信息另行标注。
 
-版权所有 Copyright © 2014-2025 by ThinkAdmin (https://thinkadmin.top) All rights reserved。
+版权所有 Copyright © 2014-2026 by ThinkAdmin (https://thinkadmin.top) All rights reserved。
 
 更多细节参阅 [LICENSE.txt](license)

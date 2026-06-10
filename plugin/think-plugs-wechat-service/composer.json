@@ -2,7 +2,7 @@
   "type": "think-admin-plugin",
   "name": "zoujingli/think-plugs-wechat-service",
   "homepage": "https://thinkadmin.top",
-  "description": "WeChat Service Plugin for ThinkAdmin",
+  "description": "WeChat Open Platform authorization and JSON-RPC service plugin for ThinkAdmin",
   "authors": [
     {
       "name": "Anyon",
@@ -32,7 +32,7 @@
     "config": {
       "type": "module",
       "name": "微信开放平台",
-      "description": "微信开放平台管理模块，提供平台配置以及微信授权管理。",
+      "description": "微信开放平台管理模块，提供开放平台配置、授权微信管理和 JSON-RPC 接口调度。",
       "document": "https://thinkadmin.top/plugin/think-plugs-wechat-service.html",
       "license": [
         "VIP"

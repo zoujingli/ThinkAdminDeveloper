@@ -7,13 +7,13 @@
 [![PHP Version](https://thinkadmin.top/static/icon/php-7.1.svg)](https://thinkadmin.top)
 [![License](https://thinkadmin.top/static/icon/license-apache2.svg)](https://www.apache.org/licenses/LICENSE-2.0)
 
-**ThinkAdmin** 插件管理中心是一个高效便捷的工具，专为管理已安装的插件而设计。
+**ThinkPlugsCenter** 是 **ThinkAdmin** 的插件服务管理中心，用于提供插件入口、插件信息展示和菜单接入。
 
 自 `v1.0.28` 版本起，该中心不再加载线上插件信息，从而确保在内网环境下安全稳定运行，无需依赖外网支持。
 
 此外，我们还对插件机制进行了优化，替换了原有的 **ThinkPlugsSimpleCenter** 模式，进一步简化了插件管理流程。
 
-无论是企业用户还是个人开发者，都能通过 **ThinkAdmin** 插件管理中心轻松管理插件，提升系统功能和用户体验。
+该插件会写入插件中心入口菜单，但不创建业务数据表。
 
 ### 加入我们
 
@@ -41,23 +41,22 @@ composer remove zoujingli/think-plugs-center
 ### 业务功能特性
 
 **核心管理功能：**
-- **插件注册管理**: 自动扫描和注册已安装的插件，提供统一的插件管理入口
-- **插件配置管理**: 支持插件的启用、禁用、配置参数设置等管理功能
-- **菜单自动集成**: 自动将插件菜单集成到系统主菜单中，无需手动配置
-- **权限自动分配**: 自动为插件功能分配相应的权限节点，简化权限管理
+- **插件入口管理**: 提供统一的插件中心入口，集中展示已安装插件
+- **插件信息展示**: 读取插件 Composer 元信息和插件配置，展示插件名称、文档、授权等信息
+- **菜单入口写入**: 安装迁移会写入插件中心菜单入口，便于从后台访问
 - **内网环境支持**: 自 v1.0.28 版本起，不再依赖外网插件信息，支持内网环境稳定运行
 - **插件机制优化**: 替换了原有的 ThinkPlugsSimpleCenter 模式，简化插件管理流程
 
 **技术特性：**
 - **Apache2 开源协议**: 遵循 Apache2 开源协议，免费提供使用
-- **轻量级设计**: 无需独立数据表，减少数据库依赖
+- **轻量级设计**: 不创建业务数据表，仅通过迁移写入插件中心菜单
 - **自动发现**: 自动发现和加载插件，无需手动注册
 - **向后兼容**: 保持与现有插件的兼容性，确保平滑升级
 - **性能优化**: 针对插件加载和管理进行专门优化，确保系统性能
 
 ### 插件数据
 
-该插件未使用独立数据表；
+该插件不创建独立业务数据表；安装迁移仅写入插件中心菜单入口。
 
 ### 版权说明
 
@@ -65,6 +64,6 @@ composer remove zoujingli/think-plugs-center
 
 本项目包含的第三方源码和二进制文件之版权信息另行标注。
 
-版权所有 Copyright © 2014-2025 by ThinkAdmin (https://thinkadmin.top) All rights reserved。
+版权所有 Copyright © 2014-2026 by ThinkAdmin (https://thinkadmin.top) All rights reserved。
 
 更多细节参阅 [LICENSE.txt](license)

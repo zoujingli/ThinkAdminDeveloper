@@ -2,7 +2,7 @@
   "type": "think-admin-plugin",
   "name": "zoujingli/think-plugs-wemall",
   "homepage": "https://thinkadmin.top",
-  "description": "WeMall Plugin for ThinkAdmin",
+  "description": "Distribution mall plugin with goods, orders, members, coupons and rebates for ThinkAdmin",
   "authors": [
     {
       "name": "Anyon",
@@ -33,7 +33,7 @@
       "type": "module",
       "name": "分销商城管理",
       "document": "https://thinkadmin.top/plugin/think-plugs-wemall.html",
-      "description": "分销商城管理模块，提供完整多端商城系统功能。",
+      "description": "分销商城管理模块，提供商品、订单、会员、优惠、推广、返佣和售后管理。",
       "license": [
         "VIP"
       ]

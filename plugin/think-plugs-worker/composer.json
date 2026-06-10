@@ -3,7 +3,7 @@
   "name": "zoujingli/think-plugs-worker",
   "license": "Apache-2.0",
   "homepage": "https://thinkadmin.top",
-  "description": "Workerman HttpServer for ThinkAdmin",
+  "description": "Workerman HTTP and custom process service plugin for ThinkAdmin",
   "authors": [
     {
       "name": "Anyon",
@@ -33,7 +33,8 @@
       "document": "https://thinkadmin.top/plugin/think-plugs-worker.html",
       "license": [
         "Apache-2.0"
-      ]
+      ],
+      "description": "基于 Workerman 的运行服务，支持 HTTP 服务及自定义进程配置。"
     },
     "plugin": {
       "init": {

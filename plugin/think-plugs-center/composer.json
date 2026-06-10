@@ -3,7 +3,7 @@
   "name": "zoujingli/think-plugs-center",
   "license": "Apache-2.0",
   "homepage": "https://thinkadmin.top",
-  "description": "Plugin Center for ThinkAdmin",
+  "description": "Plugin center and plugin entry manager for ThinkAdmin",
   "authors": [
     {
       "name": "Anyon",
@@ -38,7 +38,8 @@
     "config": {
       "type": "service",
       "name": "插件应用管理",
-      "document": "https://thinkadmin.top/plugin/think-plugs-center.html"
+      "document": "https://thinkadmin.top/plugin/think-plugs-center.html",
+      "description": "插件服务管理中心，提供插件入口、插件信息展示和菜单接入。"
     }
   },
   "minimum-stability": "dev",

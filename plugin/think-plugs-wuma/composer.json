@@ -2,7 +2,7 @@
   "type": "think-admin-plugin",
   "name": "zoujingli/think-plugs-wuma",
   "homepage": "https://thinkadmin.top",
-  "description": "Wuma Plugin for ThinkAdmin",
+  "description": "One-code-per-item traceability, warehouse and agent stock plugin for ThinkAdmin",
   "authors": [
     {
       "name": "Anyon",
@@ -35,7 +35,7 @@
       "type": "module",
       "name": "物码标签管理",
       "document": "https://thinkadmin.top/plugin/think-plugs-wuma.html",
-      "description": "防伪溯源管理模块，提供标签生成及出入库管理。",
+      "description": "一物一码管理模块，提供物码批次、防伪溯源、仓储流转和代理库存管理。",
       "license": [
         "FEE"
       ]

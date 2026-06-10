@@ -2,7 +2,7 @@
   "type": "think-admin-plugin",
   "name": "zoujingli/think-plugs-static",
   "license": "MIT",
-  "description": "Static Files for ThinkAdmin",
+  "description": "Static assets and initialization templates for ThinkAdmin",
   "authors": [
     {
       "name": "Anyon",

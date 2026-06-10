@@ -8,9 +8,9 @@
 [![PHP Version Require](http://poser.pugx.org/zoujingli/think-plugs-wechat-service/require/php)](https://packagist.org/packages/zoujingli/think-plugs-wechat-service)
 [![ThinkAdmin VIP 授权](https://img.shields.io/badge/license-VIP%20授权-blueviolet.svg)](https://thinkadmin.top/vip-introduce)
 
-微信开放平台管理插件是一款专为会员尊享的插件，非授权用户不得将其用于商业目的。此插件旨在简化[微信开放平台](https://open.weixin.qq.com)的功能开发流程，让您无需再为服务对接和接口调度而烦恼，所有复杂性都已为您妥善处理。
+**ThinkPlugsWechatService** 是 **ThinkAdmin** 的微信开放平台管理插件，用于开放平台配置、授权微信管理和 JSON-RPC 接口调度。本插件属于[会员尊享插件](https://thinkadmin.top/vip-introduce)，未经授权不得用于商业用途。
 
-今后，**ThinkAdmin** 将把微信开放平台的基础功能统一集中在此插件中，实现功能的集中管理和深度优化。目前，该插件已全面集成 **公众号** 和 **小程序** 管理等核心接口，为您的微信开发工作提供强大的后盾。无论您是希望高效开发公众号、小程序等应用，还是执行其他微信开放平台的操作，此插件都将是您不可或缺的好帮手。
+该插件可为 ThinkPlugsWechat 提供远程开放平台能力，适用于需要集中管理公众号、小程序授权与接口调用的部署场景。
 
 ### 加入我们
 
@@ -74,12 +74,11 @@ var_dump($userInfo);
 ### 业务功能特性
 
 **核心微信开放平台功能：**
-- **微信开放平台集成**: 提供完整的微信开放平台管理功能，支持公众号和小程序的统一管理
+- **微信开放平台集成**: 提供开放平台配置和授权微信管理
 - **远程接口调用**: 支持 JSON-RPC 远程调用，可与 ThinkPlugsWechat 插件无缝集成
 - **授权管理**: 完整的微信授权管理，支持多公众号和小程序的授权配置
-- **用户管理**: 提供粉丝列表获取、用户信息查询等完整的用户管理接口
+- **用户接口调用**: 通过开放平台 SDK 调度粉丝列表、用户信息等微信接口
 - **接口调度**: 统一的接口调度机制，简化微信开放平台的复杂性
-- **会员专享**: 作为会员尊享插件，提供深度优化的微信开发体验
 
 **技术特性：**
 - **VIP 授权**: 会员专享插件，非授权用户不得用于商业目的
@@ -100,4 +99,4 @@ var_dump($userInfo);
 
 未获得此插件授权时仅供参考学习不可商用，了解商用授权请阅读 [《会员授权》](https://thinkadmin.top/vip-introduce)。
 
-版权所有 Copyright © 2014-2025 by ThinkAdmin (https://thinkadmin.top) All rights reserved。
+版权所有 Copyright © 2014-2026 by ThinkAdmin (https://thinkadmin.top) All rights reserved。

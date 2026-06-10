@@ -8,7 +8,7 @@
 [![PHP Version](https://thinkadmin.top/static/icon/php-7.1.svg)](https://thinkadmin.top)
 [![License](https://thinkadmin.top/static/icon/license-mit.svg)](https://mit-license.org)
 
-**ThinkAdmin** 后台提供了功能强大的 **UI** 框架，并附带部分系统初始化文件，遵循 MIT 协议，不仅开源，而且完全免费并可用于商业项目。
+**ThinkPlugsStatic** 提供 **ThinkAdmin** 后台静态资源、入口文件和初始化配置模板，基于 MIT 协议开源，免费可商用。
 
 请注意，安装此插件将会占用并替换 `public/static` 目录下的部分文件（但自定义脚本和样式保存在 `public/static/extra` 目录内的文件将不会被替换）。因此，如果您曾对 `public/static` 目录进行了自定义修改，我们建议您在安装此插件之前备份相关文件，以避免重要内容丢失。
 
@@ -23,16 +23,15 @@
 - **静态资源管理**: 统一管理 CSS、JavaScript、图片等静态资源文件
 - **CDN 加速支持**: 支持 CDN 加速和资源版本控制，提升页面加载速度
 - **自定义扩展**: 保留 `public/static/extra` 目录用于自定义脚本和样式，避免被覆盖
-- **自动更新**: 同步保持 LayUI 框架的最新版本，确保安全性和功能完整性
+- **初始化文件**: 提供入口文件、基础配置模板和默认首页控制器等项目初始化文件
 
 **技术特性：**
 - **MIT 开源协议**: 遵循 MIT 开源协议，免费可商用
 - **模块化设计**: 静态资源按功能模块组织，便于维护和扩展
 - **性能优化**: 针对前端资源进行压缩和优化，提升页面加载性能
 - **向后兼容**: 保持与现有 ThinkAdmin 版本的兼容性，确保平滑升级
-- **安全防护**: 定期更新依赖库，修复已知安全漏洞
 
-`layui 2.8` 于 2023/04/24 正式发布，此插件会同步保持更新。
+该插件会随 ThinkAdmin 版本维护后台所需静态资源和初始化模板。
 
 ### 安装插件
 
@@ -59,4 +58,4 @@ composer remove zoujingli/think-plugs-static
 
 本项目包含的第三方源码和二进制文件的版权信息将另行标注，请在对应文件查看。
 
-版权所有 Copyright © 2014-2025 by ThinkAdmin (https://thinkadmin.top) All rights reserved。
+版权所有 Copyright © 2014-2026 by ThinkAdmin (https://thinkadmin.top) All rights reserved。

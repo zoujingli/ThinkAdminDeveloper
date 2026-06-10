@@ -7,7 +7,7 @@
 [![PHP Version](https://thinkadmin.top/static/icon/php-7.1.svg)](https://thinkadmin.top)
 [![License](https://thinkadmin.top/static/icon/license-apache2.svg)](https://www.apache.org/licenses/LICENSE-2.0)
 
-**ThinkPlugsHelper** 是为便捷 ThinkAdmin 开发而制做的工具包。
+**ThinkPlugsHelper** 是面向 **ThinkAdmin** 开发阶段的辅助工具包，提供模型字段注释生成与数据库索引结构辅助命令。
 
 ### 加入我们
 
@@ -43,22 +43,19 @@ composer remove zoujingli/think-plugs-helper
 ### 业务功能特性
 
 **核心开发工具：**
-- **模型字段注释**: 自动生成数据库模型的字段注释，提升代码可读性和开发效率
-- **开发辅助工具**: 提供便捷的开发命令和工具函数，简化 ThinkAdmin 开发流程
-- **代码生成**: 支持自动生成标准的模型、控制器等代码模板
-- **调试支持**: 提供开发环境下的调试工具和日志记录功能
-- **文档生成**: 支持自动生成 API 文档和代码文档
+- **模型字段注释**: 根据数据表字段生成模型属性注释，提升代码可读性和 IDE 提示体验
+- **索引结构辅助**: 读取数据库索引结构，为迁移和结构检查提供辅助
+- **命令行集成**: 通过 ThinkPHP Command 注册开发辅助命令，适合开发环境按需使用
 
 **技术特性：**
 - **Apache2 开源协议**: 遵循 Apache2 开源协议，免费提供使用
-- **开发专用**: 作为开发工具包，仅在开发环境使用（--dev 参数）
+- **开发专用**: 作为开发工具包，建议通过 `--dev` 安装
 - **轻量级设计**: 无需独立数据表，减少生产环境依赖
-- **向后兼容**: 保持与现有 ThinkAdmin 版本的兼容性
 - **易用性**: 简单的命令行接口，快速上手使用
 
 ### 插件数据
 
-该插件未使用独立数据表；
+该插件不创建独立数据表。
 
 ### 版权说明
 
@@ -66,6 +63,6 @@ composer remove zoujingli/think-plugs-helper
 
 本项目包含的第三方源码和二进制文件之版权信息另行标注。
 
-版权所有 Copyright © 2014-2025 by ThinkAdmin (https://thinkadmin.top) All rights reserved。
+版权所有 Copyright © 2014-2026 by ThinkAdmin (https://thinkadmin.top) All rights reserved。
 
 更多细节参阅 [LICENSE.txt](license)
