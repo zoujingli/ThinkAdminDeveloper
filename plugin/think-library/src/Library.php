@@ -134,7 +134,7 @@ class Library extends Service
             $this->app->loadEvent(include $file);
         }
         if (is_file($file = "{$dir}middleware{$ext}")) {
-            $this->app->middleware->import(include $file, 'app');
+            $this->app->middleware->import(include $file);
         }
 
         // 终端 HTTP 访问时特殊处理
