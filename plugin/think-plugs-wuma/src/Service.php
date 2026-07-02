@@ -21,6 +21,7 @@ declare(strict_types=1);
 namespace plugin\wuma;
 
 use plugin\wuma\command\Create;
+use plugin\wuma\controller\scaner\Query;
 use think\admin\Plugin;
 
 /**
@@ -37,7 +38,7 @@ class Service extends Plugin
     {
         $this->commands([Create::class]);
         // 注册全局防伪访问路由
-        $this->app->route->any('<mode>/<code>!<verify><extra?>', Query::class . '@index')->pattern([
+        $this->app->route->any('<mode>/<code>!<verify><extra?>', [Query::class, 'index'])->pattern([
             'mode' => 'c|n|m', 'code' => '[0-9a-zA-Z]+', 'verify' => '[0-9]{4}', 'extra' => '.+',
         ]);
     }
