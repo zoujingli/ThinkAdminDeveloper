@@ -23,6 +23,8 @@ namespace think\admin\tests;
 use PHPUnit\Framework\TestCase;
 use plugin\account\service\Account;
 use plugin\payment\service\Balance;
+use think\admin\tests\support\TestDatabase;
+use think\facade\Db;
 
 /**
  * @internal
@@ -30,6 +32,20 @@ use plugin\payment\service\Balance;
  */
 class BalanceTest extends TestCase
 {
+    protected function setUp(): void
+    {
+        TestDatabase::reset();
+        Db::table('plugin_account_user')->insert([
+            'id' => 1,
+            'code' => 'USER000000000001',
+            'phone' => '13800000000',
+            'username' => 'Balance User',
+            'extra' => '{}',
+            'status' => 1,
+            'deleted' => 0,
+        ]);
+    }
+
     public function testBindAccount()
     {
         $username = 'UserName' . uniqid();
@@ -44,7 +60,7 @@ class BalanceTest extends TestCase
     public function testCreateAmount()
     {
         $code = uniqid('test');
-        $amount = rand(100, 5000) / 100;
+        $amount = number_format(rand(100, 5000) / 100, 2, '.', '');
         $info = Balance::create(1, $code, '充值测试', $amount, '来自充值案例测试！');
         $this->assertTrue($info->isExists(), '充值成功测试！');
     }
@@ -52,7 +68,7 @@ class BalanceTest extends TestCase
     public function testUnlockAmount()
     {
         $code = uniqid('test');
-        $amount = rand(100, 5000) / 100;
+        $amount = number_format(rand(100, 5000) / 100, 2, '.', '');
         $info = Balance::create(1, $code, '充值测试', $amount, '来自充值案例测试，用于解锁！');
         $this->assertTrue($info->isExists(), '充值成功测试！');
 
@@ -63,7 +79,7 @@ class BalanceTest extends TestCase
     public function testCancelAmount()
     {
         $code = uniqid('test');
-        $amount = rand(100, 5000) / 100;
+        $amount = number_format(rand(100, 5000) / 100, 2, '.', '');
         $info = Balance::create(1, $code, '充值测试', $amount, '来自充值案例测试，用于取消！');
         $this->assertTrue($info->isExists(), '充值成功测试！');
 

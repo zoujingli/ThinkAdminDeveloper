@@ -144,7 +144,7 @@ trait PaymentUsageTrait
     public static function syncRefund(string $pCode, ?string &$rCode = '', ?string $amount = null, string $reason = ''): PluginPaymentRecord
     {
         // 检查退款单号
-        if ($rCode && PluginPaymentRefund::mk()->where(['code' => $pCode])->findOrEmpty()->isExists()) {
+        if ($rCode && PluginPaymentRefund::mk()->where(['code' => $rCode])->findOrEmpty()->isExists()) {
             throw new Exception('退款单已存在！', 2);
         }
         // 查询支付记录

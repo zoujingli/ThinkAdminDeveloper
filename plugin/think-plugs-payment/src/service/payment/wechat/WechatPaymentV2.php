@@ -133,7 +133,7 @@ class WechatPaymentV2 extends WechatPayment
         $result = $this->payment->query(['out_trade_no' => $pcode]);
         if (isset($result['return_code'], $result['result_code'], $result['attach'])) {
             if ($result['return_code'] === 'SUCCESS' && $result['result_code'] === 'SUCCESS') {
-                $this->updateAction($result['out_trade_no'], strval($result['cash_fee'] / 100), $result['transaction_id']);
+                $this->updateAction($result['out_trade_no'], $result['transaction_id'], strval($result['cash_fee'] / 100));
             }
         }
         return $result;

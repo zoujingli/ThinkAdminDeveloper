@@ -15,12 +15,20 @@
     "zoujingli/think-plugs-account": "^1.0|@dev",
     "zoujingli/think-plugs-payment": "^1.0|@dev"
   },
+  "require-dev": {
+    "phpunit/phpunit": "*"
+  },
   "autoload": {
     "files": [
       "./src/helper.php"
     ],
     "psr-4": {
       "plugin\\wemall\\": "src"
+    }
+  },
+  "autoload-dev": {
+    "psr-4": {
+      "plugin\\wemall\\tests\\": "tests/"
     }
   },
   "extra": {
