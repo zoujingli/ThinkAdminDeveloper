@@ -1,6 +1,7 @@
 {
   "type": "think-admin-plugin",
   "name": "zoujingli/think-plugs-payment",
+  "license": "MIT",
   "homepage": "https://thinkadmin.top",
   "description": "Multi-channel payment, balance, integral and refund plugin for ThinkAdmin",
   "authors": [

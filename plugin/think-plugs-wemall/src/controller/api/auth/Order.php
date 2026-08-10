@@ -356,23 +356,36 @@ class Order extends Auth
             // 扣除优惠券
             if (!empty($data['coupon_code']) && $data['coupon_code'] !== $order->getAttr('coupon_code')) {
                 try {
-                    // 检查优惠券是否有效
-                    $where = ['unid' => $this->unid, 'code' => $data['coupon_code'], 'used' => 0, 'status' => 1, 'deleted' => 0];
-                    $coupon = PluginWemallUserCoupon::mk()->where($where)->with('bindCoupon')->findOrEmpty();
-                    if ($coupon->isEmpty() || empty($coupon->getAttr('coupon_status')) || $coupon->getAttr('coupon_deleted') > 0) {
-                        $this->error('无限优惠券！');
-                    }
-                    if ($coupon->getAttr('expire') > 0 && $coupon->getAttr('expire') < time()) {
-                        $this->error('优惠券无效！');
-                    }
-                    if (bccomp(strval($orderAmount), strval($coupon->getAttr('limit_amount')), 2) < 0) {
-                        $this->error('未达到使用条件！');
-                    }
-                    [$couponCode, $couponAmount] = [strval($coupon->getAttr('code')), strval($coupon->getAttr('coupon_amount'))];
-                    $response = Payment::mk(Payment::COUPON)->create($this->account, $data['order_no'], '优惠券抵扣', $orderAmount, $couponAmount, '', '', '', $couponCode);
-                    $order->save(['coupon_code' => $couponCode, 'coupon_amount' => $couponAmount]);
-                    $coupon->save(['used' => 1, 'status' => 2, 'used_time' => date('Y-m-d H:i:s')]);
-                    if (($leaveAmount = Payment::leaveAmount($data['order_no'], $orderAmount)) <= 0) {
+                    [$response, $leaveAmount] = $this->app->db->transaction(function () use ($data, $order, &$orderAmount) {
+                        // 锁定订单，避免并发支付基于相同的剩余金额重复抵扣
+                        $lockedOrder = PluginWemallOrder::mk()->lock(true)->where(['id' => $order->getAttr('id')])->findOrEmpty();
+                        if ($lockedOrder->isEmpty()) {
+                            $this->error('订单不存在！');
+                        }
+                        $orderAmount = strval($lockedOrder->getAttr('amount_real'));
+                        if (($lockedLeaveAmount = Payment::leaveAmount($data['order_no'], $orderAmount)) <= 0) {
+                            return [PaymentResponse::mk(true, '已完成支付！'), $lockedLeaveAmount];
+                        }
+
+                        // 锁定并检查优惠券，支付、订单绑定和核销必须同时成功
+                        $where = ['unid' => $this->unid, 'code' => $data['coupon_code'], 'used' => 0, 'status' => 1, 'deleted' => 0];
+                        $coupon = PluginWemallUserCoupon::mk()->lock(true)->where($where)->with('bindCoupon')->findOrEmpty();
+                        if ($coupon->isEmpty() || empty($coupon->getAttr('coupon_status')) || $coupon->getAttr('coupon_deleted') > 0) {
+                            $this->error('无限优惠券！');
+                        }
+                        if ($coupon->getAttr('expire') > 0 && $coupon->getAttr('expire') < time()) {
+                            $this->error('优惠券无效！');
+                        }
+                        if (bccomp($orderAmount, strval($coupon->getAttr('limit_amount')), 2) < 0) {
+                            $this->error('未达到使用条件！');
+                        }
+                        [$couponCode, $couponAmount] = [strval($coupon->getAttr('code')), strval($coupon->getAttr('coupon_amount'))];
+                        $response = Payment::mk(Payment::COUPON)->create($this->account, $data['order_no'], '优惠券抵扣', $orderAmount, $couponAmount, '', '', '', $couponCode);
+                        $lockedOrder->save(['coupon_code' => $couponCode, 'coupon_amount' => $couponAmount]);
+                        $coupon->save(['used' => 1, 'status' => 2, 'used_time' => date('Y-m-d H:i:s')]);
+                        return [$response, Payment::leaveAmount($data['order_no'], $orderAmount)];
+                    });
+                    if ($leaveAmount <= 0) {
                         $this->success('已完成支付！', $response->toArray());
                     }
                 } catch (HttpResponseException $exception) {

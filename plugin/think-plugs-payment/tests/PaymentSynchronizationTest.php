@@ -97,6 +97,29 @@ class PaymentSynchronizationTest extends TestCase
         CouponPayment::syncRefund('PAYMENT-REFUND', $refundCode, '10.00', 'duplicate test');
     }
 
+    public function testRefundRollsBackWhenCancellationListenerFails(): void
+    {
+        $this->seedCompletedPayment('PAYMENT-ROLLBACK');
+        $refundCode = 'REFUND-ROLLBACK';
+        Library::$sapp->event->listen('PluginPaymentCancel', static function (PluginPaymentRecord $record) {
+            if ($record->getAttr('code') === 'PAYMENT-ROLLBACK') {
+                throw new \RuntimeException('cancel listener failed');
+            }
+        }, true);
+
+        try {
+            Payment::mk(Payment::COUPON)->refund('PAYMENT-ROLLBACK', '10.00', 'rollback test', $refundCode);
+            self::fail('Refund should fail when its cancellation listener fails.');
+        } catch (Exception $exception) {
+            $this->assertSame('cancel listener failed', $exception->getMessage());
+        }
+
+        $record = PluginPaymentRecord::mk()->where(['code' => 'PAYMENT-ROLLBACK'])->findOrEmpty();
+        $this->assertSame(0, Db::table('plugin_payment_refund')->where(['code' => 'REFUND-ROLLBACK'])->count());
+        $this->assertSame(0, bccomp(strval($record->getAttr('refund_amount')), '0.00', 2));
+        $this->assertSame(0, (int)$record->getAttr('refund_status'));
+    }
+
     public function testRefundSynchronizationKeepsDifferentRefundCodesDistinct(): void
     {
         $this->seedCompletedPayment('PAYMENT-PARTIAL-REFUNDS');
@@ -111,6 +134,54 @@ class PaymentSynchronizationTest extends TestCase
             ->order('id asc')
             ->column('code');
         $this->assertSame(['REFUND-FIRST', 'REFUND-SECOND'], $refundCodes);
+    }
+
+    public function testRefundRejectsAmountGreaterThanRemainingPayment(): void
+    {
+        $this->seedCompletedPayment('PAYMENT-OVER-REFUND');
+        $refundCode = 'REFUND-OVER-LIMIT';
+
+        try {
+            Payment::mk(Payment::COUPON)->refund('PAYMENT-OVER-REFUND', '100.01', 'over-refund test', $refundCode);
+            self::fail('Refund should reject an amount greater than the remaining payment.');
+        } catch (Exception $exception) {
+            $this->assertSame('退款金额超出可退金额！', $exception->getMessage());
+        }
+
+        $this->assertSame(0, Db::table('plugin_payment_refund')->where(['record_code' => 'PAYMENT-OVER-REFUND'])->count());
+    }
+
+    public function testCouponRefundIgnoresNonPositiveAmount(): void
+    {
+        $this->seedCompletedPayment('PAYMENT-NON-POSITIVE-REFUND');
+        $refundCode = 'REFUND-NON-POSITIVE';
+
+        [$status, $message] = Payment::mk(Payment::COUPON)->refund('PAYMENT-NON-POSITIVE-REFUND', '-1.00', 'negative refund test', $refundCode);
+
+        $this->assertSame(1, $status);
+        $this->assertSame('无需退款！', $message);
+        $this->assertSame(0, Db::table('plugin_payment_refund')->where(['record_code' => 'PAYMENT-NON-POSITIVE-REFUND'])->count());
+    }
+
+    public function testRefundSynchronizationPersistsTotalsForCompletedNotification(): void
+    {
+        $this->seedCompletedPayment('PAYMENT-REFUND-NOTIFY');
+        Db::table('plugin_payment_refund')->insert([
+            'code' => 'REFUND-NOTIFY',
+            'record_code' => 'PAYMENT-REFUND-NOTIFY',
+            'refund_status' => 1,
+            'refund_amount' => '10.00',
+            'refund_account' => Payment::COUPON,
+            'used_payment' => '10.00',
+        ]);
+        $refundCode = null;
+
+        CouponPayment::syncRefund('PAYMENT-REFUND-NOTIFY', $refundCode);
+
+        $record = PluginPaymentRecord::mk()->where(['code' => 'PAYMENT-REFUND-NOTIFY'])->findOrEmpty();
+        $this->assertSame(0, bccomp(strval($record->getAttr('refund_amount')), '10.00', 2));
+        $this->assertSame(0, bccomp(strval($record->getAttr('refund_payment')), '10.00', 2));
+        $this->assertSame(1, (int)$record->getAttr('refund_status'));
     }
 
     public function testRefundSynchronizationGeneratesCodeWhenOmitted(): void

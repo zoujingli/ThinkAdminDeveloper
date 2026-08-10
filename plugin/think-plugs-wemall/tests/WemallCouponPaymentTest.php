@@ -84,6 +84,23 @@ class WemallCouponPaymentTest extends TestCase
         $this->assertSame('COUPON-SUBMITTED', $order['coupon_code']);
     }
 
+    public function testCouponPaymentRollsBackWhenCouponConsumptionFails(): void
+    {
+        $this->seedOrder('ORDER-ROLLBACK', '100.00');
+        $this->seedCoupon('COUPON-ROLLBACK', '100.00', '0.00');
+        Db::execute("CREATE TRIGGER fail_coupon_consumption BEFORE UPDATE ON plugin_wemall_user_coupon WHEN OLD.code = 'COUPON-ROLLBACK' BEGIN SELECT RAISE(ABORT, 'coupon consumption failed'); END");
+
+        $response = $this->payOrder('ORDER-ROLLBACK', 'COUPON-ROLLBACK');
+
+        $coupon = Db::table('plugin_wemall_user_coupon')->where(['code' => 'COUPON-ROLLBACK'])->find();
+        $order = Db::table('plugin_wemall_order')->where(['order_no' => 'ORDER-ROLLBACK'])->find();
+        $this->assertSame(0, $response['code']);
+        $this->assertSame(0, Db::table('plugin_payment_record')->where(['payment_trade' => 'COUPON-ROLLBACK'])->count());
+        $this->assertSame('', $order['coupon_code']);
+        $this->assertSame(0, (int)$coupon['used']);
+        $this->assertSame(1, (int)$coupon['status']);
+    }
+
     public function testCouponAssignedToAnotherAccountCannotChangeOrder(): void
     {
         $this->assertInvalidCouponCannotChangeOrder(['unid' => 2], [], '无限优惠券！');

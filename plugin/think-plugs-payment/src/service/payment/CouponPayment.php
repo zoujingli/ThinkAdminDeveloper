@@ -85,6 +85,9 @@ class CouponPayment implements PaymentInterface
     {
         try {
             // 记录并退回
+            if (bccomp(strval($amount), '0.00', 2) <= 0) {
+                return [1, '无需退款！'];
+            }
             static::syncRefund($pcode, $rcode, $amount, $reason);
             return [1, '发起退款成功！'];
         } catch (\Exception $exception) {
