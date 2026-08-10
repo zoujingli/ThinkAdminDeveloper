@@ -357,7 +357,7 @@ class Order extends Auth
             if (!empty($data['coupon_code']) && $data['coupon_code'] !== $order->getAttr('coupon_code')) {
                 try {
                     // 检查优惠券是否有效
-                    $where = ['unid' => $this->unid, 'code' => $data['coupon_code'], 'status' => 1, 'deleted' => 0];
+                    $where = ['unid' => $this->unid, 'code' => $data['coupon_code'], 'used' => 0, 'status' => 1, 'deleted' => 0];
                     $coupon = PluginWemallUserCoupon::mk()->where($where)->with('bindCoupon')->findOrEmpty();
                     if ($coupon->isEmpty() || empty($coupon->getAttr('coupon_status')) || $coupon->getAttr('coupon_deleted') > 0) {
                         $this->error('无限优惠券！');

@@ -16,7 +16,9 @@
     "zoujingli/think-plugs-payment": "^1.0|@dev"
   },
   "require-dev": {
-    "phpunit/phpunit": "*"
+    "ext-pdo": "*",
+    "ext-pdo_sqlite": "*",
+    "phpunit/phpunit": "^8.5 || ^9.6 || ^10.5 || ^11.5 || ^12.5 || ^13.3"
   },
   "autoload": {
     "files": [
@@ -53,6 +55,7 @@
     }
   },
   "minimum-stability": "dev",
+  "prefer-stable": true,
   "config": {
     "allow-plugins": {
       "zoujingli/think-install": true

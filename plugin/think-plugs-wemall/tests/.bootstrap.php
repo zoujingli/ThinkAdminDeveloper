@@ -44,6 +44,34 @@ if (getenv('THINKADMIN_TEST_DB') !== ':memory:') {
 $projectRoot = dirname($autoload, 2);
 $app = RuntimeService::init(new App($projectRoot));
 $app->loadConfig();
+
+$testRuntime = sys_get_temp_dir() . '/thinkadmin-wemall-tests-' . getmypid();
+$app->config->set([
+    'default' => 'file',
+    'stores' => [
+        'file' => [
+            'type' => 'File',
+            'path' => $testRuntime . '/cache',
+            'prefix' => '',
+            'expire' => 0,
+            'tag_prefix' => 'tag:',
+            'serialize' => [],
+        ],
+    ],
+], 'cache');
+$app->config->set([
+    'default' => 'file',
+    'level' => [],
+    'type_channel' => [],
+    'channels' => [
+        'file' => [
+            'type' => 'File',
+            'path' => $testRuntime . '/log',
+            'single' => true,
+        ],
+    ],
+], 'log');
+
 $app->config->set([
     'default' => 'sqlite',
     'auto_timestamp' => true,

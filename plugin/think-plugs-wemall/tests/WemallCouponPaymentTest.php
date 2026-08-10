@@ -84,33 +84,34 @@ class WemallCouponPaymentTest extends TestCase
         $this->assertSame('COUPON-SUBMITTED', $order['coupon_code']);
     }
 
-    /**
-     * @dataProvider invalidCouponProvider
-     */
-    public function testInvalidCouponCannotChangeOrder(array $userCoupon, array $couponConfig, string $message): void
+    public function testCouponAssignedToAnotherAccountCannotChangeOrder(): void
     {
-        $this->seedOrder('ORDER-INVALID-COUPON', '100.00');
-        $this->seedCoupon('COUPON-INVALID', '100.00', '0.00', $userCoupon, $couponConfig);
-
-        $response = $this->payOrder('ORDER-INVALID-COUPON', 'COUPON-INVALID');
-
-        $order = Db::table('plugin_wemall_order')->where(['order_no' => 'ORDER-INVALID-COUPON'])->find();
-        $this->assertSame(0, $response['code']);
-        $this->assertSame($message, $response['info']);
-        $this->assertSame('', $order['coupon_code']);
-        $this->assertSame(0, Db::table('plugin_payment_record')->where(['payment_trade' => 'COUPON-INVALID'])->count());
+        $this->assertInvalidCouponCannotChangeOrder(['unid' => 2], [], '无限优惠券！');
     }
 
-    public static function invalidCouponProvider(): array
+    public function testExpiredCouponAssignmentCannotChangeOrder(): void
     {
-        return [
-            'another account' => [['unid' => 2], [], '无限优惠券！'],
-            'expired assignment' => [['expire' => time() - 60], [], '优惠券无效！'],
-            'deleted assignment' => [['deleted' => 1], [], '无限优惠券！'],
-            'used assignment' => [['used' => 1, 'status' => 2], [], '无限优惠券！'],
-            'disabled coupon' => [[], ['status' => 0], '无限优惠券！'],
-            'deleted coupon' => [[], ['deleted' => 1], '无限优惠券！'],
-        ];
+        $this->assertInvalidCouponCannotChangeOrder(['expire' => time() - 60], [], '优惠券无效！');
+    }
+
+    public function testDeletedCouponAssignmentCannotChangeOrder(): void
+    {
+        $this->assertInvalidCouponCannotChangeOrder(['deleted' => 1], [], '无限优惠券！');
+    }
+
+    public function testUsedCouponAssignmentCannotChangeOrder(): void
+    {
+        $this->assertInvalidCouponCannotChangeOrder(['used' => 1], [], '无限优惠券！');
+    }
+
+    public function testDisabledCouponCannotChangeOrder(): void
+    {
+        $this->assertInvalidCouponCannotChangeOrder([], ['status' => 0], '无限优惠券！');
+    }
+
+    public function testDeletedCouponCannotChangeOrder(): void
+    {
+        $this->assertInvalidCouponCannotChangeOrder([], ['deleted' => 1], '无限优惠券！');
     }
 
     public function testCouponIsRejectedWhenOrderIsBelowThreshold(): void
@@ -138,6 +139,20 @@ class WemallCouponPaymentTest extends TestCase
         $this->assertSame(0, (int)$coupon['used']);
         $this->assertSame(1, (int)$coupon['status']);
         $this->assertSame('', $order['coupon_code']);
+    }
+
+    private function assertInvalidCouponCannotChangeOrder(array $userCoupon, array $couponConfig, string $message): void
+    {
+        $this->seedOrder('ORDER-INVALID-COUPON', '100.00');
+        $this->seedCoupon('COUPON-INVALID', '100.00', '0.00', $userCoupon, $couponConfig);
+
+        $response = $this->payOrder('ORDER-INVALID-COUPON', 'COUPON-INVALID');
+
+        $order = Db::table('plugin_wemall_order')->where(['order_no' => 'ORDER-INVALID-COUPON'])->find();
+        $this->assertSame(0, $response['code']);
+        $this->assertSame($message, $response['info']);
+        $this->assertSame('', $order['coupon_code']);
+        $this->assertSame(0, Db::table('plugin_payment_record')->where(['payment_trade' => 'COUPON-INVALID'])->count());
     }
 
     private function payOrder(string $orderNo, string $couponCode = ''): array
