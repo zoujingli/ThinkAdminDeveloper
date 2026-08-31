@@ -153,6 +153,7 @@ class AliPayment implements PaymentInterface
     {
         try {
             // 记录退款数据
+            $amount = static::normalizeRefundAmount($amount);
             if (bccomp(strval($amount), '0.00', 2) <= 0) {
                 return [1, '无需退款！'];
             }

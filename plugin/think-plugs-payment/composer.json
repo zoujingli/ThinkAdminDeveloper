@@ -11,6 +11,7 @@
   ],
   "require": {
     "php": ">7.1",
+    "ext-bcmath": "*",
     "ext-json": "*",
     "zoujingli/think-plugs-admin": "^1.0|@dev",
     "zoujingli/think-plugs-account": "^1.0|@dev"

@@ -85,13 +85,16 @@ class BalancePayment implements PaymentInterface
     {
         try {
             // 记录并退回
+            $amount = static::normalizeRefundAmount($amount);
             if (bccomp(strval($amount), '0.00', 2) <= 0) {
                 return [1, '无需退款！'];
             }
-            $record = static::syncRefund($pcode, $rcode, $amount, $reason);
-            $remark = "来自订单 {$record->getAttr('order_no')} 退回余额";
-            BalanceService::create($record->getAttr('unid'), $rcode, '账号余额退款', strval($amount), $remark, true);
-            return [1, '发起退款成功！'];
+            return $this->app->db->transaction(function () use ($pcode, $amount, $reason, &$rcode) {
+                $record = static::syncRefund($pcode, $rcode, $amount, $reason);
+                $remark = "来自订单 {$record->getAttr('order_no')} 退回余额";
+                BalanceService::create(intval($record->getAttr('unid')), $rcode, '账号余额退款', strval($amount), $remark, true);
+                return [1, '发起退款成功！'];
+            });
         } catch (\Exception $exception) {
             throw new Exception($exception->getMessage(), $exception->getCode());
         }

@@ -97,6 +97,28 @@ class PaymentSynchronizationTest extends TestCase
         CouponPayment::syncRefund('PAYMENT-REFUND', $refundCode, '10.00', 'duplicate test');
     }
 
+    public function testRefundCodeIsUniqueAcrossPaymentRecords(): void
+    {
+        Db::table('plugin_payment_refund')->insert([
+            'code' => 'REFUND-GLOBAL-UNIQUE',
+            'record_code' => 'PAYMENT-FIRST',
+            'refund_amount' => '1.00',
+        ]);
+
+        try {
+            Db::table('plugin_payment_refund')->insert([
+                'code' => 'REFUND-GLOBAL-UNIQUE',
+                'record_code' => 'PAYMENT-SECOND',
+                'refund_amount' => '1.00',
+            ]);
+            self::fail('Refund codes must be unique across payment records.');
+        } catch (\Throwable $exception) {
+            $this->assertStringContainsString('UNIQUE', strtoupper($exception->getMessage()));
+        }
+
+        $this->assertSame(1, Db::table('plugin_payment_refund')->where(['code' => 'REFUND-GLOBAL-UNIQUE'])->count());
+    }
+
     public function testRefundRollsBackWhenCancellationListenerFails(): void
     {
         $this->seedCompletedPayment('PAYMENT-ROLLBACK');
@@ -163,6 +185,80 @@ class PaymentSynchronizationTest extends TestCase
         $this->assertSame(0, Db::table('plugin_payment_refund')->where(['record_code' => 'PAYMENT-NON-POSITIVE-REFUND'])->count());
     }
 
+    public function testRefundRejectsMalformedAmount(): void
+    {
+        $this->seedCompletedPayment('PAYMENT-MALFORMED-REFUND');
+        $refundCode = 'REFUND-MALFORMED';
+
+        try {
+            Payment::mk(Payment::COUPON)->refund('PAYMENT-MALFORMED-REFUND', 'abc', 'malformed refund test', $refundCode);
+            self::fail('Refund should reject a malformed amount.');
+        } catch (Exception $exception) {
+            $this->assertSame('退款金额格式无效！', $exception->getMessage());
+        }
+
+        $this->assertSame(0, Db::table('plugin_payment_refund')->where(['record_code' => 'PAYMENT-MALFORMED-REFUND'])->count());
+    }
+
+    public function testRefundRejectsAmountWithMoreThanTwoDecimalPlaces(): void
+    {
+        $this->seedCompletedPayment('PAYMENT-SUBCENT-REFUND');
+        $refundCode = 'REFUND-SUBCENT';
+
+        try {
+            Payment::mk(Payment::COUPON)->refund('PAYMENT-SUBCENT-REFUND', '100.009', 'sub-cent refund test', $refundCode);
+            self::fail('Refund should reject an amount with more than two decimal places.');
+        } catch (Exception $exception) {
+            $this->assertSame('退款金额格式无效！', $exception->getMessage());
+        }
+
+        $this->assertSame(0, Db::table('plugin_payment_refund')->where(['record_code' => 'PAYMENT-SUBCENT-REFUND'])->count());
+    }
+
+    public function testBalanceRefundRollsBackWhenBalanceLedgerFails(): void
+    {
+        $this->seedRefundAccount();
+        $this->seedCompletedPayment('PAYMENT-BALANCE-ROLLBACK');
+        Db::execute("CREATE TRIGGER fail_balance_refund BEFORE INSERT ON plugin_payment_balance BEGIN SELECT RAISE(ABORT, 'balance refund failed'); END");
+        $refundCode = 'REFUND-BALANCE-ROLLBACK';
+
+        try {
+            Payment::mk(Payment::BALANCE)->refund('PAYMENT-BALANCE-ROLLBACK', '10.00', 'balance rollback test', $refundCode);
+            self::fail('Balance refund should fail when its ledger write fails.');
+        } catch (Exception $exception) {
+            $this->assertStringContainsString('balance refund failed', $exception->getMessage());
+        } finally {
+            Db::execute('DROP TRIGGER fail_balance_refund');
+        }
+
+        $record = PluginPaymentRecord::mk()->where(['code' => 'PAYMENT-BALANCE-ROLLBACK'])->findOrEmpty();
+        $this->assertSame(0, Db::table('plugin_payment_refund')->where(['code' => $refundCode])->count());
+        $this->assertSame(0, Db::table('plugin_payment_balance')->where(['code' => $refundCode])->count());
+        $this->assertSame(0, bccomp(strval($record->getAttr('refund_amount')), '0.00', 2));
+    }
+
+    public function testIntegralRefundRollsBackWhenIntegralLedgerFails(): void
+    {
+        $this->seedRefundAccount();
+        $this->seedCompletedPayment('PAYMENT-INTEGRAL-ROLLBACK', Payment::INTEGRAL, ['used_integral' => '100.00']);
+        Db::execute("CREATE TRIGGER fail_integral_refund BEFORE INSERT ON plugin_payment_integral BEGIN SELECT RAISE(ABORT, 'integral refund failed'); END");
+        $refundCode = 'REFUND-INTEGRAL-ROLLBACK';
+
+        try {
+            Payment::mk(Payment::INTEGRAL)->refund('PAYMENT-INTEGRAL-ROLLBACK', '10.00', 'integral rollback test', $refundCode);
+            self::fail('Integral refund should fail when its ledger write fails.');
+        } catch (Exception $exception) {
+            $this->assertStringContainsString('integral refund failed', $exception->getMessage());
+        } finally {
+            Db::execute('DROP TRIGGER fail_integral_refund');
+        }
+
+        $record = PluginPaymentRecord::mk()->where(['code' => 'PAYMENT-INTEGRAL-ROLLBACK'])->findOrEmpty();
+        $this->assertSame(0, Db::table('plugin_payment_refund')->where(['code' => $refundCode])->count());
+        $this->assertSame(0, Db::table('plugin_payment_integral')->where(['code' => $refundCode])->count());
+        $this->assertSame(0, bccomp(strval($record->getAttr('refund_amount')), '0.00', 2));
+    }
+
     public function testRefundSynchronizationPersistsTotalsForCompletedNotification(): void
     {
         $this->seedCompletedPayment('PAYMENT-REFUND-NOTIFY');
@@ -199,18 +295,31 @@ class PaymentSynchronizationTest extends TestCase
         ])->count());
     }
 
-    private function seedCompletedPayment(string $paymentCode): void
+    private function seedCompletedPayment(string $paymentCode, string $channel = Payment::COUPON, array $extra = []): void
     {
-        Db::table('plugin_payment_record')->insert([
+        Db::table('plugin_payment_record')->insert(array_merge([
             'unid' => 1,
             'usid' => 1,
             'code' => $paymentCode,
             'order_no' => 'ORDER-' . $paymentCode,
-            'channel_code' => Payment::COUPON,
-            'channel_type' => Payment::COUPON,
+            'channel_code' => $channel,
+            'channel_type' => $channel,
             'payment_status' => 1,
             'payment_amount' => '100.00',
             'used_payment' => '100.00',
+        ], $extra));
+    }
+
+    private function seedRefundAccount(): void
+    {
+        Db::table('plugin_account_user')->insert([
+            'id' => 1,
+            'code' => 'USER-REFUND-TEST',
+            'phone' => '13800000000',
+            'username' => 'Refund User',
+            'extra' => '{}',
+            'status' => 1,
+            'deleted' => 0,
         ]);
     }
 }

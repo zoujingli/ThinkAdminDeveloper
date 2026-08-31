@@ -480,20 +480,16 @@ abstract class Payment
     public static function totalRefundAmount(string $pCode): array
     {
         $total = ['amount' => '0.00', 'payment' => '0.00', 'balance' => '0.00', 'integral' => '0.00'];
-        try {
-            PluginPaymentRefund::mk()->where(['record_code' => $pCode, 'refund_status' => [0, 1]])->field([
-                'refund_account', 'sum(refund_amount) amount', 'sum(used_payment)' => 'payment', 'sum(used_balance)' => 'balance', 'sum(used_integral)' => 'integral',
-            ])->group('refund_account')->select()->map(static function (PluginPaymentRefund $item) use (&$total) {
-                $total['amount'] = bcadd($total['amount'], strval($item->getAttr('amount')), 2);
-                $type = $item->getAttr('refund_account');
-                if (!in_array($type, [self::INTEGRAL, self::BALANCE])) {
-                    $type = 'payment';
-                }
-                $total[$type] = bcadd($total[$type], strval($item[$type] ?? '0.00'), 2);
-            });
-        } catch (\Exception $exception) {
-            trace_file($exception);
-        }
+        PluginPaymentRefund::mk()->where(['record_code' => $pCode, 'refund_status' => [0, 1]])->field([
+            'refund_account', 'sum(refund_amount) amount', 'sum(used_payment)' => 'payment', 'sum(used_balance)' => 'balance', 'sum(used_integral)' => 'integral',
+        ])->group('refund_account')->select()->map(static function (PluginPaymentRefund $item) use (&$total) {
+            $total['amount'] = bcadd($total['amount'], strval($item->getAttr('amount') ?: '0.00'), 2);
+            $type = $item->getAttr('refund_account');
+            if (!in_array($type, [self::INTEGRAL, self::BALANCE])) {
+                $type = 'payment';
+            }
+            $total[$type] = bcadd($total[$type], strval($item[$type] ?? '0.00'), 2);
+        });
         return $total;
     }
 

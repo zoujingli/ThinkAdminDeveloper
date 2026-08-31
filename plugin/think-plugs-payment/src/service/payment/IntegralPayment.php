@@ -85,15 +85,18 @@ class IntegralPayment implements PaymentInterface
     {
         try {
             // 记录并退回
+            $amount = static::normalizeRefundAmount($amount);
             if (bccomp(strval($amount), '0.00', 2) <= 0) {
                 return [1, '无需退款！'];
             }
-            $record = static::syncRefund($pcode, $rcode, $amount, $reason);
-            $remark = "来自订单 {$record->getAttr('order_no')} 退回积分";
-            $integral = bcdiv($amount, $record->getAttr('payment_amount'), 6);
-            $integral = bcmul($integral, $record->getAttr('used_integral'), 2);
-            IntegralService::create($record->getAttr('unid'), $rcode, '账号积分退还', strval($integral), $remark, true);
-            return [1, '发起退款成功！'];
+            return $this->app->db->transaction(function () use ($pcode, $amount, $reason, &$rcode) {
+                $record = static::syncRefund($pcode, $rcode, $amount, $reason);
+                $remark = "来自订单 {$record->getAttr('order_no')} 退回积分";
+                $integral = bcdiv($amount, strval($record->getAttr('payment_amount')), 6);
+                $integral = bcmul($integral, strval($record->getAttr('used_integral')), 2);
+                IntegralService::create(intval($record->getAttr('unid')), $rcode, '账号积分退还', strval($integral), $remark, true);
+                return [1, '发起退款成功！'];
+            });
         } catch (\Exception $exception) {
             throw new Exception($exception->getMessage(), $exception->getCode());
         }

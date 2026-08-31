@@ -155,11 +155,12 @@ trait PaymentUsageTrait
                 throw new Exception('支付未完成！');
             }
             // 是否需要写入退款
-            if (!is_numeric($amount)) {
+            if ($amount === null) {
                 $record->save();
                 Library::$sapp->event->trigger('PluginPaymentCancel', $record->refresh());
                 return $record;
             }
+            $amount = self::normalizeRefundAmount($amount);
             // 生成退款记录
             $pType = $record->getAttr('channel_type');
             $extra = ['used_payment' => $amount, 'refund_status' => 0];
@@ -181,11 +182,19 @@ trait PaymentUsageTrait
             if (bccomp(bcadd($currentRefundAmount, $refundAmountFloat, 2), strval($record->getAttr('payment_amount')), 2) > 0) {
                 throw new Exception('退款金额超出可退金额！');
             }
-            PluginPaymentRefund::mk()->save(array_merge([
-                'unid' => $record->getAttr('unid'), 'record_code' => $pCode,
-                'usid' => $record->getAttr('usid'), 'refund_amount' => $amount,
-                'code' => $rCode = $rCode ?: Payment::withRefundCode(), 'refund_remark' => $reason,
-            ], $extra));
+            $rCode = $rCode ?: Payment::withRefundCode();
+            try {
+                PluginPaymentRefund::mk()->save(array_merge([
+                    'unid' => $record->getAttr('unid'), 'record_code' => $pCode,
+                    'usid' => $record->getAttr('usid'), 'refund_amount' => $amount,
+                    'code' => $rCode, 'refund_remark' => $reason,
+                ], $extra));
+            } catch (\Exception $exception) {
+                if (PluginPaymentRefund::mk()->where(['code' => $rCode])->findOrEmpty()->isExists()) {
+                    throw new Exception('退款单已存在！', 2);
+                }
+                throw $exception;
+            }
             // 同步刷新金额
             self::withPaymentByRefundTotal($record);
             // 更新模型数据
@@ -194,6 +203,18 @@ trait PaymentUsageTrait
             Library::$sapp->event->trigger('PluginPaymentCancel', $record->refresh());
             return $record;
         });
+    }
+
+    /**
+     * 规范化退款金额.
+     */
+    protected static function normalizeRefundAmount(string $amount): string
+    {
+        $amount = trim($amount);
+        if (!preg_match('/^-?\d+(?:\.\d{1,2})?$/', $amount)) {
+            throw new Exception('退款金额格式无效！');
+        }
+        return bcadd($amount, '0.00', 2);
     }
 
     /**

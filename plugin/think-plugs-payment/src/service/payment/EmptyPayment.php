@@ -110,6 +110,7 @@ class EmptyPayment implements PaymentInterface
     public function refund(string $pcode, string $amount, string $reason = '', ?string &$rcode = null): array
     {
         try {
+            $amount = static::normalizeRefundAmount($amount);
             if (bccomp(strval($amount), '0.00', 2) <= 0) {
                 return [1, '无需退款！'];
             }

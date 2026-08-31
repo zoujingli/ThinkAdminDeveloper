@@ -99,4 +99,5 @@ if (!is_file($accountMigration)) {
 TestDatabase::createSchema([
     [$accountMigration, 'InstallAccount20241010', 20241010000005],
     [$packageRoot . '/stc/database/20241010000006_install_payment20241010.php', 'InstallPayment20241010', 20241010000006],
+    [$packageRoot . '/stc/database/20241010000011_fix_payment_refund_code.php', 'FixPaymentRefundCode', 20241010000011],
 ]);
