@@ -110,7 +110,11 @@ class Refund extends Controller
                 $this->app->db->transaction(function () use ($data, $order, $refund) {
                     // 根据支付类型，自动合并金额与状态
                     foreach ($data['ptypes'] as $pcode => $type) {
-                        if (bccomp(strval($data['refunds'][$pcode]), '0.00', 2) > 0) {
+                        $amount = strval($data['refunds'][$pcode] ?? '0.00');
+                        if (!preg_match('/^-?\d+(?:\.\d{1,2})?$/', trim($amount))) {
+                            $this->error('退款金额格式无效！');
+                        }
+                        if (bccomp($amount, '0.00', 2) > 0) {
                             $code = $data['pcodes'][$pcode] ?? 0;
                             if ($type === Payment::INTEGRAL) {
                                 $rcode = $refund->getAttr('integral_code') ?: Payment::withRefundCode();

@@ -106,5 +106,6 @@ require_once __DIR__ . '/support/TestDatabase.php';
 TestDatabase::createSchema([
     [$findMigration('account', '20241010000005_install_account20241010.php'), 'InstallAccount20241010', 20241010000005],
     [$findMigration('payment', '20241010000006_install_payment20241010.php'), 'InstallPayment20241010', 20241010000006],
+    [$findMigration('payment', '20241010000011_fix_payment_refund_code.php'), 'FixPaymentRefundCode', 20241010000011],
     [$findMigration('wemall', '20241010000007_install_wemall20241010.php'), 'InstallWemall20241010', 20241010000007],
 ]);

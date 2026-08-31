@@ -42,6 +42,7 @@ final class TestDatabase
         'plugin_wemall_user_coupon',
         'plugin_wemall_user_relation',
         'plugin_wemall_order',
+        'plugin_wemall_order_refund',
     ];
 
     public static function createSchema(array $migrations): void
