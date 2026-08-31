@@ -9,7 +9,7 @@
 
 **注意：** 该插件测试版有数据库结构变化，未生成升级补丁，每次更新需要全新安装！
 
-**ThinkPlugsWemall** 是 **ThinkAdmin** 的分销商城插件，覆盖商品、订单、售后、会员等级、会员折扣、优惠券、推广海报、代理返佣与提现等功能。本插件为[会员尊享插件](https://thinkadmin.top/vip-introduce)，未授权不可商用。
+**ThinkPlugsWemall** 是 **ThinkAdmin** 的分销商城插件，覆盖商品、订单、售后、会员等级、会员折扣、优惠券、推广海报、代理返佣与提现等功能。本插件为 [VIP 会员尊享插件](https://thinkadmin.top/vip-introduce)，未授权不可商用。插件授权类型以 Composer `extra.config.license` 中的 `VIP` 为准，并非 MIT 开源许可。
 
 ### 加入我们
 
@@ -83,7 +83,7 @@ composer remove zoujingli/think-plugs-wemall
 
 ### 版权说明
 
-**ThinkPlugsWemall** 为 **ThinkAdmin** 会员插件。
+**ThinkPlugsWemall** 为 **ThinkAdmin** VIP 会员插件。
 
 未获得此插件授权时仅供参考学习不可商用，了解商用授权请阅读 [《会员授权》](https://thinkadmin.top/vip-introduce)。
 

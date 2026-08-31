@@ -1,7 +1,6 @@
 {
   "type": "think-admin-plugin",
   "name": "zoujingli/think-plugs-wemall",
-  "license": "MIT",
   "homepage": "https://thinkadmin.top",
   "description": "Distribution mall plugin with goods, orders, members, coupons and rebates for ThinkAdmin",
   "authors": [

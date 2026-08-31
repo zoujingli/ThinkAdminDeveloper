@@ -8,7 +8,7 @@
 [![PHP Version](https://thinkadmin.top/static/icon/php-7.1.svg)](https://thinkadmin.top)
 [![License](https://thinkadmin.top/static/icon/license-vip.svg)](https://thinkadmin.top/vip-introduce)
 
-**ThinkPlugsPayment** 是 **ThinkAdmin** 的多端支付插件，本插件属于[会员尊享插件](https://thinkadmin.top/vip-introduce)，未经授权不得用于商业用途。
+**ThinkPlugsPayment** 是 **ThinkAdmin** 的多端支付插件，本插件属于 [VIP 会员尊享插件](https://thinkadmin.top/vip-introduce)，未经授权不得用于商业用途。插件授权类型以 Composer `extra.config.license` 中的 `VIP` 为准，并非 MIT 开源许可。
 
 支付类型主要涵盖线上支付和抵扣支付两大类。
 
@@ -97,7 +97,7 @@ composer remove zoujingli/think-plugs-payment
 
 ### 版权说明
 
-**ThinkPlugsPayment** 为 **ThinkAdmin** 会员插件。
+**ThinkPlugsPayment** 为 **ThinkAdmin** VIP 会员插件。
 
 未获得此插件授权时仅供参考学习不可商用，了解商用授权请阅读 [《会员授权》](https://thinkadmin.top/vip-introduce)。
 
