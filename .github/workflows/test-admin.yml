@@ -1,0 +1,78 @@
+name: Test Admin Plugin
+
+on:
+  push:
+    branches:
+      - master
+    paths:
+      - 'plugin/think-plugs-admin/**'
+      - 'plugin/think-library/**'
+      - '.github/workflows/test-admin.yml'
+  pull_request:
+    paths:
+      - 'plugin/think-plugs-admin/**'
+      - 'plugin/think-library/**'
+      - '.github/workflows/test-admin.yml'
+
+jobs:
+  test:
+    name: PHP ${{ matrix.php }} / ThinkPHP ${{ matrix.framework }}
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - php: '7.2'
+            framework: '^6.1'
+            composer: '2.2'
+            phpunit: '8.5'
+          - php: '8.2'
+            framework: '^8.1'
+            composer: '2'
+            phpunit: '11.5'
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: ${{ matrix.php }}
+          extensions: gd, dom, mbstring, pdo, pdo_sqlite, xml, xmlwriter
+          tools: composer:${{ matrix.composer }}, phpunit:${{ matrix.phpunit }}
+          coverage: none
+
+      - name: Resolve runtime dependencies
+        run: composer update --no-dev --no-interaction --prefer-dist --no-progress --with-all-dependencies \
+          'topthink/framework:${{ matrix.framework }}'
+
+      - name: Validate Admin package metadata
+        run: composer validate --no-check-publish plugin/think-plugs-admin/composer.json
+
+      - name: Check PHP syntax
+        run: |
+          find plugin/think-plugs-admin/src plugin/think-plugs-admin/tests plugin/think-library/src plugin/think-library/tests -type f -name '*.php' -print0 |
+          xargs -0 -n1 php -l
+
+      - name: Run Admin tests
+        run: phpunit -c plugin/think-plugs-admin/phpunit.xml.dist
+
+      - name: Run Library tests
+        run: phpunit -c plugin/think-library/phpunit.xml.dist
+
+      - name: Check coding style on PHP 8.2
+        if: matrix.php == '8.2'
+        run: |
+          composer install --no-interaction --prefer-dist --no-progress
+          vendor/bin/php-cs-fixer fix --dry-run --diff --using-cache=no --config=.php-cs-fixer.php --path-mode=intersection \
+            plugin/think-plugs-admin/src/controller/api/Upload.php \
+            plugin/think-plugs-admin/src/controller/Config.php \
+            plugin/think-plugs-admin/src/controller/api/System.php \
+            plugin/think-plugs-admin/src/service/UploadSecurity.php \
+            plugin/think-plugs-admin/tests \
+            plugin/think-library/src/Storage.php \
+            plugin/think-library/src/storage/LocalStorage.php \
+            plugin/think-library/tests
+
+      - name: Check diff whitespace
+        run: git diff --check
