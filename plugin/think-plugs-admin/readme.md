@@ -34,6 +34,10 @@ composer update --optimize-autoloader
 composer require zoujingli/think-plugs-admin --optimize-autoloader
 ```
 
+### 上传安全说明
+
+本地服务器存储会校验相对路径、文件后缀和图片内容，拒绝脚本文件、路径跳级及图片内嵌服务端代码。COS、OSS、七牛云、又拍云和 Alist 保持直传模式，文件内容由对应对象存储服务负责处理；如业务需要内容安全扫描，请在对象存储侧配置回调或审核策略。
+
 ### 卸载插件
 
 ```shell
