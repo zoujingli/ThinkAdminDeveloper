@@ -7,5 +7,6 @@
 .DS_Store
 *.log
 *.zip
+*.cache
 /vendor
 /composer.lock

@@ -20,9 +20,19 @@
     "zoujingli/think-library": "^6.1|@dev",
     "zoujingli/think-plugs-static": "^1.0|@dev"
   },
+  "require-dev": {
+    "ext-pdo": "*",
+    "ext-pdo_sqlite": "*",
+    "phpunit/phpunit": "^8.5 || ^9.6 || ^10.5 || ^11.5 || ^12.5 || ^13.3"
+  },
   "autoload": {
     "psr-4": {
       "app\\admin\\": "src"
+    }
+  },
+  "autoload-dev": {
+    "psr-4": {
+      "app\\admin\\tests\\": "tests/"
     }
   },
   "extra": {
