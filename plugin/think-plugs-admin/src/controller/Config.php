@@ -20,6 +20,7 @@ declare(strict_types=1);
 
 namespace app\admin\controller;
 
+use app\admin\service\UploadSecurity;
 use think\admin\Controller;
 use think\admin\Plugin;
 use think\admin\service\AdminService;
@@ -89,6 +90,9 @@ class Config extends Controller
             $this->themes = static::themes;
             $this->fetch();
         } else {
+            if (RuntimeService::check('demo')) {
+                $this->error('演示环境禁止修改系统配置！');
+            }
             $post = $this->request->post();
             // 修改网站后台入口路径
             if (!empty($post['xpath'])) {
@@ -126,6 +130,9 @@ class Config extends Controller
      */
     public function storage()
     {
+        if (!$this->request->isGet() && RuntimeService::check('demo')) {
+            $this->error('演示环境禁止修改系统配置！');
+        }
         $this->_applyFormToken();
         if ($this->request->isGet()) {
             $this->type = input('type', 'local');
@@ -140,10 +147,11 @@ class Config extends Controller
         } else {
             $post = $this->request->post();
             if (!empty($post['storage']['allow_exts'])) {
-                $deny = ['sh', 'asp', 'bat', 'cmd', 'exe', 'php'];
                 $exts = array_unique(str2arr(strtolower($post['storage']['allow_exts'])));
-                if (count(array_intersect($deny, $exts)) > 0) {
-                    $this->error('禁止上传可执行的文件！');
+                foreach ($exts as $extension) {
+                    if (!UploadSecurity::isExtensionSafe($extension)) {
+                        $this->error('禁止上传可执行的文件！');
+                    }
                 }
                 $post['storage']['allow_exts'] = join(',', $exts);
             }
