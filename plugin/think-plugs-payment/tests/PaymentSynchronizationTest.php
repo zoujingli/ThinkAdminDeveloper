@@ -70,6 +70,7 @@ class PaymentSynchronizationTest extends TestCase
             }
         };
         $property = new \ReflectionProperty(WechatPaymentV2::class, 'payment');
+        $property->setAccessible(true);
         $property->setValue($payment, $wechat);
 
         $payment->query('PAYMENT-QUERY');
