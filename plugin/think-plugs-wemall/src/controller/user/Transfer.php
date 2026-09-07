@@ -46,6 +46,7 @@ class Transfer extends Controller
 
     /**
      * 代理提现配置.
+     * @auth true
      * @throws Exception
      */
     public function config()
@@ -57,6 +58,7 @@ class Transfer extends Controller
 
     /**
      * 微信转账配置.
+     * @auth true
      * @throws Exception
      */
     public function payment()

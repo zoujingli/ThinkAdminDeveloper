@@ -72,7 +72,7 @@ class Refund extends Controller
 
     /**
      * 处理订单售后.
-     * @auto true
+     * @auth true
      */
     public function edit()
     {
