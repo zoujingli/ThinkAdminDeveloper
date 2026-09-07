@@ -81,6 +81,7 @@ class User extends Controller
 
     /**
      * 代理选择器.
+     * @auth true
      * @throws DataNotFoundException
      * @throws DbException
      * @throws ModelNotFoundException

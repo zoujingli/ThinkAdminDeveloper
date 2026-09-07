@@ -45,6 +45,7 @@ class Batch extends Controller
 {
     /**
      * 仓库批次出库.
+     * @auth true
      * @throws DataNotFoundException
      * @throws DbException
      * @throws ModelNotFoundException
