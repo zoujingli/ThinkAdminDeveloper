@@ -73,23 +73,6 @@ class Level extends Controller
     }
 
     /**
-     * 表单结果处理.
-     * @throws DataNotFoundException
-     * @throws DbException
-     * @throws ModelNotFoundException
-     */
-    public function _form_result(bool $state)
-    {
-        if ($state) {
-            $isasc = input('old_number', 0) <= input('number', 0);
-            $order = $isasc ? 'number asc,utime asc' : 'number asc,utime desc';
-            foreach (PluginWemallConfigLevel::mk()->order($order)->select() as $number => $upgrade) {
-                $upgrade->save(['number' => $number]);
-            }
-        }
-    }
-
-    /**
      * 修改等级状态
      * @auth true
      */
@@ -105,6 +88,23 @@ class Level extends Controller
     public function remove()
     {
         PluginWemallConfigLevel::mDelete();
+    }
+
+    /**
+     * 表单结果处理.
+     * @throws DataNotFoundException
+     * @throws DbException
+     * @throws ModelNotFoundException
+     */
+    protected function _form_result(bool $state)
+    {
+        if ($state) {
+            $isasc = input('old_number', 0) <= input('number', 0);
+            $order = $isasc ? 'number asc,utime asc' : 'number asc,utime desc';
+            foreach (PluginWemallConfigLevel::mk()->order($order)->select() as $number => $upgrade) {
+                $upgrade->save(['number' => $number]);
+            }
+        }
     }
 
     /**

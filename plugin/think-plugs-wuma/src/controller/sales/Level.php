@@ -70,15 +70,6 @@ class Level extends Controller
     }
 
     /**
-     * 表单结果处理.
-     * @throws DbException
-     */
-    public function _form_result(bool $state)
-    {
-        $state && UserLevel::stepSync();
-    }
-
-    /**
      * 修改等级状态
      * @auth true
      */
@@ -97,6 +88,15 @@ class Level extends Controller
     public function remove()
     {
         UserLevel::mDelete();
+    }
+
+    /**
+     * 表单结果处理.
+     * @throws DbException
+     */
+    protected function _form_result(bool $state)
+    {
+        $state && UserLevel::stepSync();
     }
 
     /**

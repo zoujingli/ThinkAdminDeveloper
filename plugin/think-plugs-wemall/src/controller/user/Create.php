@@ -85,24 +85,24 @@ class Create extends Controller
     }
 
     /**
-     * 数据保存处理.
-     * @throws \think\admin\Exception
-     */
-    public function _save_result(bool $result)
-    {
-        if ($result) {
-            $cuid = intval(input('id'));
-            empty(input('status')) ? UserCreate::cancel($cuid) : UserCreate::create($cuid);
-        }
-    }
-
-    /**
      * 移除会员用户.
      * @auth true
      */
     public function remove()
     {
         PluginWemallUserCreate::mDelete();
+    }
+
+    /**
+     * 数据保存处理.
+     * @throws \think\admin\Exception
+     */
+    protected function _save_result(bool $result)
+    {
+        if ($result) {
+            $cuid = intval(input('id'));
+            empty(input('status')) ? UserCreate::cancel($cuid) : UserCreate::create($cuid);
+        }
     }
 
     /**
