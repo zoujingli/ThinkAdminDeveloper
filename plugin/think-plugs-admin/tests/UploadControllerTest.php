@@ -48,7 +48,7 @@ class UploadControllerTest extends TestCase
         try {
             $response = $this->submitFile($filename, $target);
             $this->assertSame(0, $response['code']);
-            $this->assertFileDoesNotExist($this->storagePath($target));
+            $this->assertFalse(file_exists($this->storagePath($target)), 'Rejected uploads must not create a file.');
         } finally {
             @unlink($filename);
         }
