@@ -45,8 +45,9 @@ jobs:
           coverage: none
 
       - name: Resolve runtime dependencies
-        run: composer update --no-dev --no-interaction --prefer-dist --no-progress --with-all-dependencies \
-          'topthink/framework:${{ matrix.framework }}'
+        run: |
+          composer require --no-update --no-interaction 'topthink/framework:${{ matrix.framework }}'
+          composer update --no-dev --no-interaction --prefer-dist --no-progress --with-all-dependencies
 
       - name: Validate Admin package metadata
         run: composer validate --no-check-publish plugin/think-plugs-admin/composer.json
