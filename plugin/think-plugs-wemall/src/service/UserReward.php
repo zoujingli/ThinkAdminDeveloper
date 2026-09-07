@@ -48,12 +48,12 @@ abstract class UserReward
         // 确认奖励余额
         if ($order->getAttr('reward_balance') > 0) {
             $remark = "来自订单 {$order->getAttr('order_no')} 奖励 {$order->getAttr('reward_balance')} 余额";
-            Balance::create($order->getAttr('unid'), $code, '购物奖励余额', strval($order->getAttr('reward_balance')), $remark, true);
+            Balance::create(intval($order->getAttr('unid')), $code, '购物奖励余额', strval($order->getAttr('reward_balance')), $remark, true);
         }
         // 确认奖励积分
         if ($order->getAttr('reward_integral') > 0) {
             $remark = "来自订单 {$order->getAttr('order_no')} 奖励 {$order->getAttr('reward_integral')} 积分";
-            Integral::create($order->getAttr('unid'), $code, '购物奖励积分', strval($order->getAttr('reward_integral')), $remark, true);
+            Integral::create(intval($order->getAttr('unid')), $code, '购物奖励积分', strval($order->getAttr('reward_integral')), $remark, true);
         }
         // 返回订单模型
         return $order;

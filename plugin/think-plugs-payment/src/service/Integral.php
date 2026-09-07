@@ -196,7 +196,7 @@ abstract class Integral
     public static function set(string $code, array $data): PluginPaymentIntegral
     {
         ($model = self::get($code))->save($data);
-        self::recount($model->getAttr('unid'));
+        self::recount(intval($model->getAttr('unid')));
         return $model->refresh();
     }
 }

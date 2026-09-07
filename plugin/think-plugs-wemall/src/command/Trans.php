@@ -173,7 +173,7 @@ class Trans extends Command
                         'change_desc' => $msgs[$item['detail_status'] ?? '-'] ?? '微信提现打款失败',
                     ]);
                     // 刷新用户可提现余额
-                    UserRebate::recount($model->getAttr('unid'));
+                    UserRebate::recount(intval($model->getAttr('unid')));
                 }
             }
         }
@@ -243,7 +243,7 @@ class Trans extends Command
                     'change_desc' => '微信提现打款失败',
                 ]);
                 // 刷新用户可提现余额
-                UserRebate::recount($model->getAttr('unid'));
+                UserRebate::recount(intval($model->getAttr('unid')));
             }
         }
     }

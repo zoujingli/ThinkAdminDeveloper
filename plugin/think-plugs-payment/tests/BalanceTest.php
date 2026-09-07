@@ -23,6 +23,7 @@ namespace think\admin\tests;
 use PHPUnit\Framework\TestCase;
 use plugin\account\service\Account;
 use plugin\payment\service\Balance;
+use plugin\payment\service\Integral;
 use think\admin\tests\support\TestDatabase;
 use think\facade\Db;
 
@@ -85,5 +86,14 @@ class BalanceTest extends TestCase
 
         $info = Balance::cancel($code);
         $this->assertEquals($info->getAttr('cancel'), 1, '取消成功测试！');
+    }
+
+    public function testIntegralStateChangesRefreshAccountTotals(): void
+    {
+        $code = 'integral-state-regression';
+        Integral::create(1, $code, 'Integral fixture', '10.00');
+        $this->assertSame(1, intval(Integral::unlock($code)->getAttr('unlock')));
+        $this->assertSame(1, intval(Integral::cancel($code)->getAttr('cancel')));
+        $this->assertSame('0.00', Integral::recount(1)['usable']);
     }
 }

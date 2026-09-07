@@ -240,7 +240,7 @@ abstract class UserRebate
         $map = [['status', '=', 0], ['deleted', '=', 0], ['order_no', 'like', "{$order->getAttr('order_no')}%"]];
         foreach (PluginWemallUserRebate::mk()->where($map)->cursor() as $item) {
             $item->save(['status' => 1, 'remark' => '订单已确认收货！', 'confirm_time' => date('Y-m-d H:i:s')]);
-            UserRebate::recount($item->getAttr('unid'));
+            UserRebate::recount(intval($item->getAttr('unid')));
         }
         return true;
     }
@@ -263,7 +263,7 @@ abstract class UserRebate
         $map = [['deleted', '=', 0], ['order_no', 'like', "{$order->getAttr('order_no')}%"]];
         foreach (PluginWemallUserRebate::mk()->where($map)->cursor() as $item) {
             $item->save(['status' => 0, 'deleted' => 1, 'remark' => '订单已取消退回返佣！']);
-            UserRebate::recount($item->getAttr('unid'));
+            UserRebate::recount(intval($item->getAttr('unid')));
         }
         return true;
     }

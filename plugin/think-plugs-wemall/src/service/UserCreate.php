@@ -104,7 +104,7 @@ abstract class UserCreate
                     ]);
                     // 更新代理身份及返佣记录
                     UserOrder::entry($user->getAttr('unid'));
-                    UserRebate::recount($user->getAttr('unid'));
+                    UserRebate::recount(intval($user->getAttr('unid')));
                 });
             } catch (\Exception $exception) {
                 trace_file($exception);
@@ -136,7 +136,7 @@ abstract class UserCreate
                     }
                     // 更新代理身份及返佣记录
                     UserOrder::entry($user->getAttr('unid'));
-                    UserRebate::recount($user->getAttr('unid'));
+                    UserRebate::recount(intval($user->getAttr('unid')));
                 });
             } catch (\Exception $exception) {
                 throw new Exception($exception->getMessage());
