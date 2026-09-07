@@ -24,6 +24,7 @@ use think\DbManager;
 use think\exception\HttpResponseException;
 use think\Model;
 use think\Request;
+use think\service\ValidateService;
 
 require dirname(__DIR__) . '/vendor/autoload.php';
 require dirname(__DIR__) . '/vendor/topthink/framework/src/helper.php';
@@ -52,6 +53,7 @@ $db->setConfig(['default' => 'sqlite', 'connections' => ['sqlite' => [
 ]]]);
 $app->instance('db', $db);
 Model::setDb($db);
+(new ValidateService($app))->boot();
 $db->execute('CREATE TABLE plugin_wuma_code_rule (id INTEGER PRIMARY KEY, batch TEXT, remark TEXT)');
 $db->execute('CREATE TABLE plugin_wuma_code_rule_range (id INTEGER PRIMARY KEY, batch TEXT, code_type TEXT, range_start INTEGER, range_after INTEGER)');
 $db->table('plugin_wuma_code_rule')->insert(['id' => 1, 'batch' => 'test-batch', 'remark' => 'fixture']);
@@ -79,6 +81,7 @@ foreach (['batch', 'query'] as $action) {
             $result = $exception->getResponse()->getData()['code'] === $expected;
         } catch (Throwable $exception) {
             $result = false;
+            echo 'ERROR: ', $action, ' ', $label, ' ', get_class($exception), ': ', $exception->getMessage(), PHP_EOL;
         }
         $failures += $result ? 0 : 1;
         echo $result ? 'PASS: ' : 'FAIL: ', $action, ' ', $label, ' token', PHP_EOL;
