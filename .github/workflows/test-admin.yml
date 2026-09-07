@@ -40,7 +40,7 @@ jobs:
         uses: shivammathur/setup-php@v2
         with:
           php-version: ${{ matrix.php }}
-          extensions: gd, dom, mbstring, pdo, pdo_sqlite, xml, xmlwriter
+          extensions: bcmath, gd, dom, mbstring, pdo, pdo_sqlite, xml, xmlwriter
           tools: composer:${{ matrix.composer }}, phpunit:${{ matrix.phpunit }}
           coverage: none
 
@@ -53,8 +53,11 @@ jobs:
           composer require --no-update --no-interaction 'topthink/framework:${{ matrix.framework }}'
           composer update --no-dev --no-interaction --prefer-dist --no-progress --with-all-dependencies
 
-      - name: Validate Admin package metadata
-        run: composer validate --no-check-publish plugin/think-plugs-admin/composer.json
+      - name: Validate ecosystem package metadata
+        run: |
+          for manifest in composer.json plugin/*/composer.json; do
+            composer validate --no-check-publish "$manifest"
+          done
 
       - name: Check PHP syntax
         run: |
@@ -66,6 +69,22 @@ jobs:
 
       - name: Run Library tests
         run: phpunit -c plugin/think-library/phpunit.xml.dist
+
+      - name: Check ecosystem syntax on PHP 8.2
+        if: matrix.php == '8.2'
+        run: |
+          find app plugin tests -type f -name '*.php' ! -path '*/vendor/*' -print0 |
+          xargs -0 -n1 php -l
+
+      - name: Run isolated payment and mall tests
+        env:
+          THINKADMIN_TEST_DB: ':memory:'
+        run: |
+          phpunit -c plugin/think-plugs-payment/phpunit.xml.dist
+          phpunit -c plugin/think-plugs-wemall/phpunit.xml.dist
+
+      - name: Check Wuma code conversion
+        run: phpunit --no-configuration --bootstrap vendor/autoload.php plugin/think-plugs-wuma/tests/CodeTest.php
 
       - name: Check controller authorization
         run: |
