@@ -44,6 +44,10 @@ jobs:
           tools: composer:${{ matrix.composer }}, phpunit:${{ matrix.phpunit }}
           coverage: none
 
+      - name: Isolate legacy runtime dependencies
+        if: matrix.php == '7.2'
+        run: composer remove --dev --no-update --no-interaction zoujingli/think-plugs-helper friendsofphp/php-cs-fixer
+
       - name: Resolve runtime dependencies
         run: |
           composer require --no-update --no-interaction 'topthink/framework:${{ matrix.framework }}'
