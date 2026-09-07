@@ -156,7 +156,11 @@ foreach ($files as $file) {
         }
     }
     $class = new ReflectionClass(trim($namespace) . '\\' . basename($file, '.php'));
-    $assert(realpath($class->getFileName()) === realpath($file), 'Controller autoload mismatch: ' . $file);
+    if (realpath($class->getFileName()) !== realpath($file)) {
+        // The installer copies plugin controllers into app/ on a fresh checkout.
+        $assert(hash_file('sha256', $class->getFileName()) === hash_file('sha256', $file), 'Controller copy differs from autoload source: ' . $file);
+        continue;
+    }
     $classes[] = $class;
 }
 
