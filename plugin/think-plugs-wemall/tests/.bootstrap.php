@@ -43,7 +43,9 @@ if (getenv('THINKADMIN_TEST_DB') !== ':memory:') {
 
 $projectRoot = dirname($autoload, 2);
 $app = RuntimeService::init(new App($projectRoot));
-$app->loadConfig();
+foreach (glob($app->getConfigPath() . '*' . $app->getConfigExt()) ?: [] as $file) {
+    $app->config->load($file, pathinfo($file, PATHINFO_FILENAME));
+}
 
 $testRuntime = sys_get_temp_dir() . '/thinkadmin-wemall-tests-' . getmypid();
 $app->config->set([

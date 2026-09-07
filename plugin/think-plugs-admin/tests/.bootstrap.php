@@ -36,7 +36,9 @@ require_once dirname($autoload) . '/topthink/framework/src/helper.php';
 
 $projectRoot = dirname($autoload, 2);
 $app = \think\admin\service\RuntimeService::init(new \think\App($projectRoot));
-$app->loadConfig();
+foreach (glob($app->getConfigPath() . '*' . $app->getConfigExt()) ?: [] as $file) {
+    $app->config->load($file, pathinfo($file, PATHINFO_FILENAME));
+}
 $app->config->set([
     'default' => 'sqlite',
     'auto_timestamp' => true,
