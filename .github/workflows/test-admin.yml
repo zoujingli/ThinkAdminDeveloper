@@ -61,7 +61,7 @@ jobs:
 
       - name: Check PHP syntax
         run: |
-          find plugin/think-plugs-admin/src plugin/think-plugs-admin/tests plugin/think-library/src plugin/think-library/tests tests -type f -name '*.php' -print0 |
+          git ls-files -z -- '*.php' ':(exclude)plugin/think-plugs-helper/**' |
           xargs -0 -n1 php -l
 
       - name: Run Admin tests
