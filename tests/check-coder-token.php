@@ -20,7 +20,7 @@ declare(strict_types=1);
 use plugin\wuma\controller\api\Coder;
 use think\admin\Library;
 use think\App;
-use think\DbManager;
+use think\Db;
 use think\exception\HttpResponseException;
 use think\Model;
 use think\Request;
@@ -47,10 +47,12 @@ $cache = new class {
     }
 };
 $app->instance('cache', $cache);
-$db = new DbManager();
-$db->setConfig(['default' => 'sqlite', 'connections' => ['sqlite' => [
+$app->config->set(['default' => 'sqlite', 'connections' => ['sqlite' => [
     'type' => 'sqlite', 'database' => ':memory:', 'prefix' => '', 'debug' => true,
-]]]);
+]]], 'database');
+$db = new Db();
+$db->setConfig($app->config);
+$db->setEvent($app->event);
 $app->instance('db', $db);
 Model::setDb($db);
 (new ValidateService($app))->boot();
