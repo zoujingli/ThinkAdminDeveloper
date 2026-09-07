@@ -84,7 +84,7 @@ class Coder extends Controller
         }
 
         // 检查接口验证
-        if ($this->app->cache->get("create_auth_{$range['batch']}") !== $range['token']) {
+        if ($this->app->cache->get("create_auth_{$range['batch']}") !== $data['token']) {
             $this->error('无效的请求令牌！');
         }
 
