@@ -23,7 +23,7 @@
   "require-dev": {
     "ext-pdo": "*",
     "ext-pdo_sqlite": "*",
-    "phpunit/phpunit": "^8.5 || ^9.6 || ^10.5 || ^11.5 || ^12.5 || ^13.3"
+    "phpunit/phpunit": "^8.5.52 || ^9.6.33 || ^10.5.62 || ^11.5.50 || ^12.5.8 || ^13.3"
   },
   "autoload": {
     "psr-4": {
