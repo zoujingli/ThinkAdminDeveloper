@@ -20,6 +20,8 @@ jobs:
   test:
     name: PHP ${{ matrix.php }} / ThinkPHP ${{ matrix.framework }}
     runs-on: ubuntu-latest
+    env:
+      PHINX_TEST_MYSQL_PORT: '13306'
     strategy:
       fail-fast: false
       matrix:
@@ -40,7 +42,7 @@ jobs:
         uses: shivammathur/setup-php@v2
         with:
           php-version: ${{ matrix.php }}
-          extensions: bcmath, gd, dom, mbstring, pdo, pdo_sqlite, xml, xmlwriter
+          extensions: bcmath, gd, dom, mbstring, pdo, pdo_mysql, pdo_sqlite, xml, xmlwriter
           tools: composer:${{ matrix.composer }}, phpunit:${{ matrix.phpunit }}
           coverage: none
 
@@ -67,6 +69,22 @@ jobs:
       - name: Run Admin tests
         run: phpunit -c plugin/think-plugs-admin/phpunit.xml.dist
 
+      - name: Start disposable MySQL for database regression tests
+        run: |
+          docker run --rm --detach --name thinkadmin-test-mysql \
+            --publish 127.0.0.1:13306:3306 --tmpfs /var/lib/mysql:rw \
+            --env MYSQL_ALLOW_EMPTY_PASSWORD=yes --env MYSQL_DATABASE=phinx_fixture \
+            --env MYSQL_ROOT_HOST=% mysql:8.4 --mysql-native-password=ON
+          for attempt in $(seq 1 30); do
+            if docker exec thinkadmin-test-mysql mysqladmin --protocol=tcp --host=127.0.0.1 ping --silent; then
+              docker exec thinkadmin-test-mysql mysql -uroot -e "ALTER USER 'root'@'%' IDENTIFIED WITH mysql_native_password BY ''; ALTER USER 'root'@'localhost' IDENTIFIED WITH mysql_native_password BY '';"
+              exit 0
+            fi
+            sleep 2
+          done
+          docker logs thinkadmin-test-mysql
+          exit 1
+
       - name: Run Library tests
         run: phpunit -c plugin/think-library/phpunit.xml.dist
 
@@ -76,10 +94,11 @@ jobs:
           find app plugin tests -type f -name '*.php' ! -path '*/vendor/*' -print0 |
           xargs -0 -n1 php -l
 
-      - name: Run isolated payment and mall tests
+      - name: Run isolated account, payment and mall tests
         env:
           THINKADMIN_TEST_DB: ':memory:'
         run: |
+          phpunit -c plugin/think-plugs-account/phpunit.xml.dist
           phpunit -c plugin/think-plugs-payment/phpunit.xml.dist
           phpunit -c plugin/think-plugs-wemall/phpunit.xml.dist
 
@@ -108,3 +127,7 @@ jobs:
 
       - name: Check diff whitespace
         run: git diff --check
+
+      - name: Stop disposable MySQL
+        if: always()
+        run: docker stop thinkadmin-test-mysql || true
