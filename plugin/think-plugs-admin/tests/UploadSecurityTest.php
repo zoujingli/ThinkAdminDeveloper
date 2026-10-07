@@ -48,9 +48,9 @@ class UploadSecurityTest extends TestCase
     public static function unsafeNameProvider(): array
     {
         return [
-            'query path' => ['ab/hash.jpg?/public/shell.php'],
-            'encoded fragment' => ['ab/hash.jpg%23/public/shell.php'],
-            'encoded slash' => ['ab/hash.jpg%2fpublic%2fshell.php'],
+            'query path' => ['ab/hash.jpg?/public/example.php'],
+            'encoded fragment' => ['ab/hash.jpg%23/public/example.php'],
+            'encoded slash' => ['ab/hash.jpg%2fpublic%2fexample.php'],
             'parent traversal' => ['ab/../hash.jpg'],
             'absolute path' => ['/ab/hash.jpg'],
             'backslash' => ['ab\hash.jpg'],
@@ -77,7 +77,8 @@ class UploadSecurityTest extends TestCase
     {
         $filename = tempnam(sys_get_temp_dir(), 'upload-security-');
         $this->assertNotFalse($filename);
-        file_put_contents($filename, 'GIF89a' . str_repeat("\0", 2048) . '<?php eval(base64_decode($_REQUEST[\'cmd\']));?>');
+        // Harmless PHP constants are sufficient to exercise script tag detection.
+        file_put_contents($filename, 'GIF89a' . str_repeat("\0", 2048) . '<?php echo 1;?>');
 
         try {
             $this->assertFalse(UploadSecurity::isImageSafe($filename));
@@ -88,7 +89,7 @@ class UploadSecurityTest extends TestCase
 
     public function testRejectsShortEchoTagWithoutClosingTag(): void
     {
-        $filename = $this->writeImagePayload('<?=system($_GET[\'x\']);');
+        $filename = $this->writeImagePayload('<?=1;');
 
         try {
             $this->assertFalse(UploadSecurity::isImageSafe($filename));

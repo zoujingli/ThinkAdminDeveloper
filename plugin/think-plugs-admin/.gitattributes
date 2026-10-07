@@ -1,3 +1,8 @@
 *.js linguist-language=php
 *.css linguist-language=php
 *.html linguist-language=php
+
+# Keep development tests out of distribution archives.
+/tests export-ignore
+/phpunit.xml.dist export-ignore
+/.phpunit.result.cache export-ignore

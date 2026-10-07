@@ -42,7 +42,7 @@ class UploadControllerTest extends TestCase
 
     public function testFileRejectsEmbeddedShortEchoPhpBeforeWriting(): void
     {
-        $filename = $this->writeImagePayload('<?=system($_GET["x"]);');
+        $filename = $this->writeImagePayload('<?=1;');
         $target = '12/controller-short-echo.gif';
 
         try {
@@ -86,7 +86,7 @@ class UploadControllerTest extends TestCase
     public function testStateRejectsFragmentStorageKeyBeforeIssuingLocalUploadAuthorization(): void
     {
         $request = (new Request())->withPost([
-            'key' => '12/controller.gif#/public/shell.php',
+            'key' => '12/controller.gif#/public/example.php',
             'safe' => 0,
             'uptype' => 'local',
             'name' => 'controller.gif',
