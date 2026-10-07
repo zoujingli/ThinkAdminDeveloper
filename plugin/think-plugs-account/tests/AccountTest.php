@@ -54,8 +54,12 @@ class AccountTest extends TestCase
 
         try {
             Account::mk('web');
+            $this->fail('禁用通道必须拒绝创建账号实例');
         } catch (Exception $exception) {
-            $this->assertStringContainsString('未定义', $exception->getMessage());
+            $this->assertSame('登录已超时！', $exception->getMessage());
+            $this->assertSame(401, $exception->getCode());
+        } finally {
+            Account::set('web', 1);
         }
     }
 
@@ -93,5 +97,14 @@ class AccountTest extends TestCase
 
         $info = $account->unBind();
         $this->assertEmpty($info['user'], '账号解绑成功！');
+        $this->assertSame(0, (int)$info['unid']);
+        $this->assertFalse($account->isBind());
+        $this->assertEmpty($account->get()['user']);
+        $this->assertEmpty($account->unBind()['user']);
+        $this->assertFalse(Account::mk(Account::WAP, ['id' => $info['id']])->isBind());
+
+        $rebound = $account->bind(['phone' => '138888888888']);
+        $this->assertNotEmpty($rebound['user']);
+        $this->assertTrue($account->isBind());
     }
 }

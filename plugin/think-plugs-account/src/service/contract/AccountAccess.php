@@ -307,6 +307,9 @@ class AccountAccess implements AccountInterface
         }
         if (($unid = $this->bind->getAttr('unid')) > 0) {
             $this->bind->save(['unid' => 0]);
+        }
+        $this->user = PluginAccountUser::mk();
+        if ($unid > 0) {
             $this->app->event->trigger('PluginAccountUnbind', [
                 'type' => $this->type,
                 'unid' => intval($unid),

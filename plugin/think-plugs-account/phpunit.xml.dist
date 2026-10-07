@@ -6,16 +6,8 @@
          backupGlobals="false"
          stopOnFailure="false"
          processIsolation="false"
-         backupStaticProperties="false"
-         xsi:noNamespaceSchemaLocation="https://schema.phpunit.de/10.1/phpunit.xsd"
-         cacheDirectory=".phpunit.cache"
          beStrictAboutTestsThatDoNotTestAnything="false"
 >
-    <coverage>
-        <include>
-            <directory suffix=".php">./src</directory>
-        </include>
-    </coverage>
     <testsuites>
         <testsuite name="ThinkAdmin Test Suite">
             <directory suffix="Test.php">./tests</directory>
