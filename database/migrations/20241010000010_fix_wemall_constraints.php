@@ -1,0 +1,303 @@
+<?php
+
+declare(strict_types=1);
+/**
+ * +----------------------------------------------------------------------
+ * | ThinkAdmin Plugin for ThinkAdmin
+ * +----------------------------------------------------------------------
+ * | 版权所有 2014~2026 ThinkAdmin [ thinkadmin.top ]
+ * +----------------------------------------------------------------------
+ * | 官方网站: https://thinkadmin.top
+ * +----------------------------------------------------------------------
+ * | 开源协议 ( https://mit-license.org )
+ * | 免责声明 ( https://thinkadmin.top/disclaimer )
+ * | 会员特权 ( https://thinkadmin.top/vip-introduce )
+ * +----------------------------------------------------------------------
+ * | gitee 代码仓库：https://gitee.com/zoujingli/ThinkAdmin
+ * | github 代码仓库：https://github.com/zoujingli/ThinkAdmin
+ * +----------------------------------------------------------------------
+ */
+use think\admin\extend\PhinxSchema;
+use think\migration\Migrator;
+
+@set_time_limit(0);
+@ini_set('memory_limit', '-1');
+
+class FixWemallConstraints extends Migrator
+{
+    /**
+     * 获取脚本名称.
+     */
+    public function getName(): string
+    {
+        return 'FixWemallConstraints';
+    }
+
+    /**
+     * 修复数据库约束
+     */
+    public function change()
+    {
+        // 为返佣记录表添加外键约束和业务字段
+        $this->_fix_plugin_wemall_user_rebate();
+
+        // 为余额/积分表添加来源字段
+        $this->_fix_plugin_payment_balance_integral();
+
+        // 为用户关系表添加索引优化
+        $this->_fix_plugin_wemall_user_relation();
+
+        // 为订单表添加检查约束
+        $this->_fix_plugin_wemall_order();
+    }
+
+    /**
+     * 修复返佣记录表.
+     */
+    private function _fix_plugin_wemall_user_rebate()
+    {
+        $table = $this->table('plugin_wemall_user_rebate');
+
+        // 添加订单商品项ID字段（用于精确追踪返佣）
+        if (!$table->hasColumn('order_item_id')) {
+            $table->addColumn('order_item_id', 'biginteger', ['limit' => 20, 'default' => 0, 'null' => true, 'comment' => '订单商品项ID'])
+                ->update();
+        }
+
+        // 添加返佣规则ID字段（用于追溯规则版本）
+        if (!$table->hasColumn('rebate_rule_id')) {
+            $table->addColumn('rebate_rule_id', 'biginteger', ['limit' => 20, 'default' => 0, 'null' => true, 'comment' => '返佣规则ID'])
+                ->update();
+        }
+
+        // 添加金额非负约束
+        $this->executeModifyWithCheck('plugin_wemall_user_rebate', 'amount', "DECIMAL(20,2) NOT NULL DEFAULT '0.00'", 'amount >= 0');
+    }
+
+    /**
+     * 修复余额/积分表.
+     */
+    private function _fix_plugin_payment_balance_integral()
+    {
+        // 修复余额表
+        $table = $this->table('plugin_payment_balance');
+        if (!$table->hasColumn('source_type')) {
+            $table->addColumn('source_type', 'string', ['limit' => 50, 'default' => '', 'null' => true, 'comment' => '资金来源类型'])
+                ->addColumn('source_id', 'string', ['limit' => 50, 'default' => '', 'null' => true, 'comment' => '资金来源ID'])
+                ->update();
+        }
+
+        // 修复积分表
+        $table = $this->table('plugin_payment_integral');
+        if (!$table->hasColumn('source_type')) {
+            $table->addColumn('source_type', 'string', ['limit' => 50, 'default' => '', 'null' => true, 'comment' => '积分来源类型'])
+                ->addColumn('source_id', 'string', ['limit' => 50, 'default' => '', 'null' => true, 'comment' => '积分来源ID'])
+                ->update();
+        }
+
+        // 添加金额非负约束
+        $this->executeModifyWithCheck('plugin_payment_balance', 'amount', "DECIMAL(20,2) NOT NULL DEFAULT '0.00'");
+        $this->executeModifyWithCheck('plugin_payment_integral', 'amount', "DECIMAL(20,2) NOT NULL DEFAULT '0.00'");
+    }
+
+    /**
+     * 修复用户关系表索引.
+     */
+    private function _fix_plugin_wemall_user_relation()
+    {
+        if (PhinxSchema::driver($this->getAdapter()) === 'sqlite') {
+            // SQLite 不支持前缀索引，使用完整字段索引。
+            $table = $this->table('plugin_wemall_user_relation');
+            foreach (['path', 'puid1', 'puid2', 'puid3'] as $column) {
+                if (!$table->hasIndex([$column])) {
+                    $table->addIndex([$column], ['name' => 'idx_' . $column])->update();
+                }
+            }
+            return;
+        }
+
+        [$adapter, $name] = PhinxSchema::connection($this->getAdapter(), 'plugin_wemall_user_relation');
+        $tableName = $adapter->quoteTableName($name);
+        $indexes = $this->getTableIndexes('plugin_wemall_user_relation');
+
+        // 将普通 path 索引收敛为前缀索引，避免重复索引
+        if (!$this->hasIndexDefinition($indexes, ['path'], false, ['path' => 20])) {
+            foreach ($this->findIndexNamesByColumns($indexes, ['path']) as $name) {
+                $this->execute("ALTER TABLE {$tableName} DROP INDEX " . $adapter->quoteColumnName($name));
+            }
+            $this->execute("ALTER TABLE {$tableName} ADD INDEX `idx_path_prefix` (`path`(20))");
+            $indexes = $this->getTableIndexes('plugin_wemall_user_relation');
+        }
+
+        // 为代理层级字段补齐单列索引，已有同定义索引时跳过
+        foreach (['puid1', 'puid2', 'puid3'] as $column) {
+            if (!$this->hasIndexDefinition($indexes, [$column])) {
+                $this->execute("ALTER TABLE {$tableName} ADD INDEX `idx_{$column}` (`{$column}`)");
+                $indexes = $this->getTableIndexes('plugin_wemall_user_relation');
+            }
+        }
+    }
+
+    /**
+     * 修复订单表约束
+     */
+    private function _fix_plugin_wemall_order()
+    {
+        // 添加金额字段的非负约束
+        $amount_fields = [
+            'amount_cost', 'amount_real', 'amount_total', 'amount_goods',
+            'amount_profit', 'amount_reduct', 'amount_balance', 'amount_integral',
+            'amount_payment', 'amount_express', 'amount_discount', 'coupon_amount',
+            'allow_balance', 'allow_integral', 'ratio_integral', 'rebate_amount',
+            'reward_balance', 'reward_integral', 'payment_amount',
+        ];
+
+        foreach ($amount_fields as $field) {
+            $this->executeModifyWithCheck('plugin_wemall_order', $field, "DECIMAL(20,2) NOT NULL DEFAULT '0.00'", "{$field} >= 0");
+        }
+
+        // 添加状态字段的枚举约束
+        $this->executeModifyWithCheck('plugin_wemall_order', 'status', 'TINYINT NOT NULL DEFAULT 1', 'status BETWEEN 0 AND 7', 'integer', 1);
+        $this->executeModifyWithCheck('plugin_wemall_order', 'refund_status', 'TINYINT NOT NULL DEFAULT 0', 'refund_status BETWEEN 0 AND 7', 'integer');
+        $this->executeModifyWithCheck('plugin_wemall_order', 'payment_status', 'TINYINT NOT NULL DEFAULT 0', 'payment_status BETWEEN 0 AND 2', 'integer');
+        $this->executeModifyWithCheck('plugin_wemall_order', 'delivery_type', 'TINYINT NOT NULL DEFAULT 0', 'delivery_type BETWEEN 0 AND 1', 'integer');
+    }
+
+    private function executeModifyWithCheck(string $table, string $field, string $definition, string $check = '', string $type = 'decimal', int $default = 0): void
+    {
+        [$adapter, $name] = PhinxSchema::connection($this->getAdapter(), $table);
+        $tableName = $adapter->quoteTableName($name);
+        if (PhinxSchema::driver($adapter) === 'sqlite') {
+            if ($check !== '' && $adapter->fetchRow("SELECT 1 FROM {$tableName} WHERE NOT ({$check}) LIMIT 1")) {
+                throw new RuntimeException("Existing data violates CHECK constraint: {$table}.{$field}");
+            }
+            $options = ['null' => false, 'default' => $default];
+            if ($type === 'decimal') {
+                $options = ['precision' => 20, 'scale' => 2, 'null' => false, 'default' => '0.00'];
+            }
+            $this->table($table)->changeColumn($field, $type, $options)->update();
+
+            // SQLite 不能通过 ALTER COLUMN 添加 CHECK，用触发器同时约束新增和更新。
+            if ($check !== '') {
+                $condition = preg_replace('/\b' . preg_quote($field, '/') . '\b/', 'NEW.' . $adapter->quoteColumnName($field), $check);
+                foreach (['INSERT', 'UPDATE'] as $event) {
+                    $trigger = $adapter->quoteColumnName('ck_' . $name . '_' . $field . '_' . strtolower($event));
+                    $this->execute("CREATE TRIGGER IF NOT EXISTS {$trigger} BEFORE {$event} ON {$tableName} "
+                        . "WHEN NOT ({$condition}) BEGIN SELECT RAISE(ABORT, 'CHECK constraint failed: {$field}'); END");
+                }
+            }
+            return;
+        }
+
+        $sql = "ALTER TABLE {$tableName} MODIFY " . $adapter->quoteColumnName($field) . " {$definition}";
+        if ($check !== '' && $this->supportsCheckConstraint()) {
+            $sql .= " CHECK ({$check})";
+        }
+        $this->execute($sql);
+    }
+
+    private function supportsCheckConstraint(): bool
+    {
+        static $supports = null;
+        if ($supports !== null) {
+            return $supports;
+        }
+        $row = $this->getAdapter()->fetchRow('SELECT VERSION() AS version');
+        $raw = (string)($row['version'] ?? reset($row) ?: '0.0.0');
+        preg_match('/\d+(?:\.\d+){1,2}/', $raw, $match);
+        $version = $match[0] ?? '0.0.0';
+        if (stripos($raw, 'mariadb') !== false) {
+            return $supports = version_compare($version, '10.2.1', '>=');
+        }
+        return $supports = version_compare($version, '8.0.16', '>=');
+    }
+
+    /**
+     * 获取表索引结构.
+     * @return array<string, array<string, mixed>>
+     */
+    private function getTableIndexes(string $table): array
+    {
+        [$adapter, $name] = PhinxSchema::connection($this->getAdapter(), $table);
+        $indexes = [];
+        foreach ($this->fetchAll('SHOW INDEX FROM ' . $adapter->quoteTableName($name)) as $index) {
+            $name = strval($index['Key_name'] ?? '');
+            if ($name === '' || $name === 'PRIMARY') {
+                continue;
+            }
+            $column = strval($index['Column_name'] ?? '');
+            $indexes[$name]['unique'] = intval($index['Non_unique'] ?? 1) === 0;
+            $indexes[$name]['columns'][intval($index['Seq_in_index'] ?? 0)] = $column;
+            if (is_numeric($index['Sub_part'] ?? null) && intval($index['Sub_part']) > 0) {
+                $indexes[$name]['limits'][$column] = intval($index['Sub_part']);
+            }
+        }
+        foreach ($indexes as $name => $index) {
+            $columns = $index['columns'] ?? [];
+            ksort($columns);
+            $indexes[$name] = [
+                'name' => $name,
+                'unique' => !empty($index['unique']),
+                'columns' => array_values(array_filter($columns, 'strlen')),
+                'limits' => $index['limits'] ?? [],
+            ];
+        }
+        return $indexes;
+    }
+
+    /**
+     * 判断是否已存在目标索引定义.
+     * @param array<string, array<string, mixed>> $indexes
+     * @param array<int, string> $columns
+     * @param array<string, int> $limits
+     */
+    private function hasIndexDefinition(array $indexes, array $columns, bool $unique = false, array $limits = []): bool
+    {
+        $expect = $this->buildIndexSignature($columns, $unique, $limits);
+        foreach ($indexes as $index) {
+            if ($this->buildIndexSignature($index['columns'] ?? [], !empty($index['unique']), (array)($index['limits'] ?? [])) === $expect) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /**
+     * 查找同列索引名称.
+     * @param array<string, array<string, mixed>> $indexes
+     * @param array<int, string> $columns
+     * @return array<int, string>
+     */
+    private function findIndexNamesByColumns(array $indexes, array $columns): array
+    {
+        $columns = array_values($columns);
+        $names = [];
+        foreach ($indexes as $name => $index) {
+            if (($index['columns'] ?? []) === $columns) {
+                $names[] = $name;
+            }
+        }
+        return $names;
+    }
+
+    /**
+     * 生成索引签名用于比较.
+     * @param array<int, string> $columns
+     * @param array<string, int> $limits
+     */
+    private function buildIndexSignature(array $columns, bool $unique = false, array $limits = []): string
+    {
+        $columns = array_values(array_filter(array_map('strval', $columns), 'strlen'));
+        $normalized = [];
+        foreach ($columns as $column) {
+            if (isset($limits[$column]) && is_numeric($limits[$column])) {
+                $normalized[$column] = intval($limits[$column]);
+            }
+        }
+        return json_encode([
+            'columns' => $columns,
+            'unique' => $unique,
+            'limits' => $normalized,
+        ], JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
+    }
+}
