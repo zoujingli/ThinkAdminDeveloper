@@ -2,7 +2,11 @@
 *.css linguist-language=php
 *.html linguist-language=php
 
-# Keep development tests out of distribution archives.
+# Exclude development and repository-maintenance files from release archives.
+/.github export-ignore
+/.gitattributes export-ignore
+/.gitignore export-ignore
+/.php-cs-fixer* export-ignore
+/.phpunit* export-ignore
+/phpunit.xml* export-ignore
 /tests export-ignore
-/phpunit.xml.dist export-ignore
-/.phpunit.result.cache export-ignore

@@ -1,7 +1,3 @@
-*.js linguist-language=php
-*.css linguist-language=php
-*.html linguist-language=php
-
 # Exclude development and repository-maintenance files from release archives.
 /.github export-ignore
 /.gitattributes export-ignore
