@@ -95,8 +95,8 @@ class FixWemallConstraints extends Migrator
         }
 
         // 添加金额非负约束
-        $this->execute("ALTER TABLE `plugin_payment_balance` MODIFY `amount` DECIMAL(20,2) NOT NULL DEFAULT '0.00'");
-        $this->execute("ALTER TABLE `plugin_payment_integral` MODIFY `amount` DECIMAL(20,2) NOT NULL DEFAULT '0.00'");
+        $this->executeModifyWithCheck('plugin_payment_balance', 'amount', "DECIMAL(20,2) NOT NULL DEFAULT '0.00'");
+        $this->executeModifyWithCheck('plugin_payment_integral', 'amount', "DECIMAL(20,2) NOT NULL DEFAULT '0.00'");
     }
 
     /**
@@ -104,6 +104,17 @@ class FixWemallConstraints extends Migrator
      */
     private function _fix_plugin_wemall_user_relation()
     {
+        if ($this->getAdapter()->getOption('adapter') === 'sqlite') {
+            // SQLite 不支持前缀索引，使用完整字段索引。
+            $table = $this->table('plugin_wemall_user_relation');
+            foreach (['path', 'puid1', 'puid2', 'puid3'] as $column) {
+                if (!$table->hasIndex([$column])) {
+                    $table->addIndex([$column], ['name' => 'idx_' . $column])->update();
+                }
+            }
+            return;
+        }
+
         $indexes = $this->getTableIndexes('plugin_wemall_user_relation');
 
         // 将普通 path 索引收敛为前缀索引，避免重复索引
@@ -143,16 +154,40 @@ class FixWemallConstraints extends Migrator
         }
 
         // 添加状态字段的枚举约束
-        $this->executeModifyWithCheck('plugin_wemall_order', 'status', 'TINYINT NOT NULL DEFAULT 1', 'status BETWEEN 0 AND 7');
-        $this->executeModifyWithCheck('plugin_wemall_order', 'refund_status', 'TINYINT NOT NULL DEFAULT 0', 'refund_status BETWEEN 0 AND 7');
-        $this->executeModifyWithCheck('plugin_wemall_order', 'payment_status', 'TINYINT NOT NULL DEFAULT 0', 'payment_status BETWEEN 0 AND 2');
-        $this->executeModifyWithCheck('plugin_wemall_order', 'delivery_type', 'TINYINT NOT NULL DEFAULT 0', 'delivery_type BETWEEN 0 AND 1');
+        $this->executeModifyWithCheck('plugin_wemall_order', 'status', 'TINYINT NOT NULL DEFAULT 1', 'status BETWEEN 0 AND 7', 'integer', 1);
+        $this->executeModifyWithCheck('plugin_wemall_order', 'refund_status', 'TINYINT NOT NULL DEFAULT 0', 'refund_status BETWEEN 0 AND 7', 'integer');
+        $this->executeModifyWithCheck('plugin_wemall_order', 'payment_status', 'TINYINT NOT NULL DEFAULT 0', 'payment_status BETWEEN 0 AND 2', 'integer');
+        $this->executeModifyWithCheck('plugin_wemall_order', 'delivery_type', 'TINYINT NOT NULL DEFAULT 0', 'delivery_type BETWEEN 0 AND 1', 'integer');
     }
 
-    private function executeModifyWithCheck(string $table, string $field, string $definition, string $check): void
+    private function executeModifyWithCheck(string $table, string $field, string $definition, string $check = '', string $type = 'decimal', int $default = 0): void
     {
+        if ($this->getAdapter()->getOption('adapter') === 'sqlite') {
+            $adapter = $this->getAdapter();
+            $tableName = $adapter->quoteTableName($table);
+            if ($check !== '' && $adapter->fetchRow("SELECT 1 FROM {$tableName} WHERE NOT ({$check}) LIMIT 1")) {
+                throw new RuntimeException("Existing data violates CHECK constraint: {$table}.{$field}");
+            }
+            $options = ['null' => false, 'default' => $default];
+            if ($type === 'decimal') {
+                $options = ['precision' => 20, 'scale' => 2, 'null' => false, 'default' => '0.00'];
+            }
+            $this->table($table)->changeColumn($field, $type, $options)->update();
+
+            // SQLite 不能通过 ALTER COLUMN 添加 CHECK，用触发器同时约束新增和更新。
+            if ($check !== '') {
+                $condition = preg_replace('/\b' . preg_quote($field, '/') . '\b/', 'NEW.' . $adapter->quoteColumnName($field), $check);
+                foreach (['INSERT', 'UPDATE'] as $event) {
+                    $trigger = $adapter->quoteColumnName('ck_' . $table . '_' . $field . '_' . strtolower($event));
+                    $this->execute("CREATE TRIGGER IF NOT EXISTS {$trigger} BEFORE {$event} ON {$tableName} "
+                        . "WHEN NOT ({$condition}) BEGIN SELECT RAISE(ABORT, 'CHECK constraint failed: {$field}'); END");
+                }
+            }
+            return;
+        }
+
         $sql = "ALTER TABLE `{$table}` MODIFY `{$field}` {$definition}";
-        if ($this->supportsCheckConstraint()) {
+        if ($check !== '' && $this->supportsCheckConstraint()) {
             $sql .= " CHECK ({$check})";
         }
         $this->execute($sql);

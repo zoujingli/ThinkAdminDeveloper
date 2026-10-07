@@ -56,6 +56,7 @@ final class TestDatabase
         )');
 
         $adapter = AdapterFactory::instance()->getAdapter('sqlite', [
+            'adapter' => 'sqlite',
             'connection' => Db::connect()->connect(),
             'name' => ':memory:',
         ]);
