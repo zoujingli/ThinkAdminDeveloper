@@ -17,6 +17,7 @@ declare(strict_types=1);
  * | github 代码仓库：https://github.com/zoujingli/ThinkAdmin
  * +----------------------------------------------------------------------
  */
+use think\admin\extend\PhinxSchema;
 use think\migration\Migrator;
 
 @set_time_limit(0);
@@ -104,7 +105,7 @@ class FixWemallConstraints extends Migrator
      */
     private function _fix_plugin_wemall_user_relation()
     {
-        if ($this->getAdapter()->getOption('adapter') === 'sqlite') {
+        if (PhinxSchema::driver($this->getAdapter()) === 'sqlite') {
             // SQLite 不支持前缀索引，使用完整字段索引。
             $table = $this->table('plugin_wemall_user_relation');
             foreach (['path', 'puid1', 'puid2', 'puid3'] as $column) {
@@ -115,21 +116,23 @@ class FixWemallConstraints extends Migrator
             return;
         }
 
+        [$adapter, $name] = PhinxSchema::connection($this->getAdapter(), 'plugin_wemall_user_relation');
+        $tableName = $adapter->quoteTableName($name);
         $indexes = $this->getTableIndexes('plugin_wemall_user_relation');
 
         // 将普通 path 索引收敛为前缀索引，避免重复索引
         if (!$this->hasIndexDefinition($indexes, ['path'], false, ['path' => 20])) {
             foreach ($this->findIndexNamesByColumns($indexes, ['path']) as $name) {
-                $this->execute("ALTER TABLE `plugin_wemall_user_relation` DROP INDEX `{$name}`");
+                $this->execute("ALTER TABLE {$tableName} DROP INDEX " . $adapter->quoteColumnName($name));
             }
-            $this->execute('ALTER TABLE `plugin_wemall_user_relation` ADD INDEX `idx_path_prefix` (`path`(20))');
+            $this->execute("ALTER TABLE {$tableName} ADD INDEX `idx_path_prefix` (`path`(20))");
             $indexes = $this->getTableIndexes('plugin_wemall_user_relation');
         }
 
         // 为代理层级字段补齐单列索引，已有同定义索引时跳过
         foreach (['puid1', 'puid2', 'puid3'] as $column) {
             if (!$this->hasIndexDefinition($indexes, [$column])) {
-                $this->execute("ALTER TABLE `plugin_wemall_user_relation` ADD INDEX `idx_{$column}` (`{$column}`)");
+                $this->execute("ALTER TABLE {$tableName} ADD INDEX `idx_{$column}` (`{$column}`)");
                 $indexes = $this->getTableIndexes('plugin_wemall_user_relation');
             }
         }
@@ -162,9 +165,9 @@ class FixWemallConstraints extends Migrator
 
     private function executeModifyWithCheck(string $table, string $field, string $definition, string $check = '', string $type = 'decimal', int $default = 0): void
     {
-        if ($this->getAdapter()->getOption('adapter') === 'sqlite') {
-            $adapter = $this->getAdapter();
-            $tableName = $adapter->quoteTableName($table);
+        [$adapter, $name] = PhinxSchema::connection($this->getAdapter(), $table);
+        $tableName = $adapter->quoteTableName($name);
+        if (PhinxSchema::driver($adapter) === 'sqlite') {
             if ($check !== '' && $adapter->fetchRow("SELECT 1 FROM {$tableName} WHERE NOT ({$check}) LIMIT 1")) {
                 throw new RuntimeException("Existing data violates CHECK constraint: {$table}.{$field}");
             }
@@ -178,7 +181,7 @@ class FixWemallConstraints extends Migrator
             if ($check !== '') {
                 $condition = preg_replace('/\b' . preg_quote($field, '/') . '\b/', 'NEW.' . $adapter->quoteColumnName($field), $check);
                 foreach (['INSERT', 'UPDATE'] as $event) {
-                    $trigger = $adapter->quoteColumnName('ck_' . $table . '_' . $field . '_' . strtolower($event));
+                    $trigger = $adapter->quoteColumnName('ck_' . $name . '_' . $field . '_' . strtolower($event));
                     $this->execute("CREATE TRIGGER IF NOT EXISTS {$trigger} BEFORE {$event} ON {$tableName} "
                         . "WHEN NOT ({$condition}) BEGIN SELECT RAISE(ABORT, 'CHECK constraint failed: {$field}'); END");
                 }
@@ -186,7 +189,7 @@ class FixWemallConstraints extends Migrator
             return;
         }
 
-        $sql = "ALTER TABLE `{$table}` MODIFY `{$field}` {$definition}";
+        $sql = "ALTER TABLE {$tableName} MODIFY " . $adapter->quoteColumnName($field) . " {$definition}";
         if ($check !== '' && $this->supportsCheckConstraint()) {
             $sql .= " CHECK ({$check})";
         }
@@ -215,8 +218,9 @@ class FixWemallConstraints extends Migrator
      */
     private function getTableIndexes(string $table): array
     {
+        [$adapter, $name] = PhinxSchema::connection($this->getAdapter(), $table);
         $indexes = [];
-        foreach ($this->fetchAll("SHOW INDEX FROM `{$table}`") as $index) {
+        foreach ($this->fetchAll('SHOW INDEX FROM ' . $adapter->quoteTableName($name)) as $index) {
             $name = strval($index['Key_name'] ?? '');
             if ($name === '' || $name === 'PRIMARY') {
                 continue;
