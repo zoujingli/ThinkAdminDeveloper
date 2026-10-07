@@ -2,11 +2,11 @@
 *.css linguist-language=php
 *.html linguist-language=php
 
-# Exclude development and repository-maintenance files from release archives.
+# Keep project ignore rules and the formatter configuration used by Composer scripts.
+# Exclude repository-maintenance files, tests, and tool caches from release archives.
 /.github export-ignore
 /.gitattributes export-ignore
-/.gitignore export-ignore
-/.php-cs-fixer* export-ignore
+/.php-cs-fixer*.cache export-ignore
 /.phpunit* export-ignore
 /phpunit.xml* export-ignore
 /tests export-ignore
