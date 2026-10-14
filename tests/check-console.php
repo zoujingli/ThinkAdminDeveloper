@@ -70,6 +70,9 @@ class AcceptanceConsoleProbe extends \think\console\Command
             case 'nested':
                 $this->app->console->find('list')->run(new \think\console\Input(['list', '--raw']), new \think\console\Output('buffer'));
                 throw new RuntimeException('NESTED_EXCEPTION');
+            case 'nested-call':
+                $this->app->console->call('list', ['--raw']);
+                throw new RuntimeException('NESTED_CALL_EXCEPTION');
         }
         $output->writeln('COMMAND_OK');
         return 0;
@@ -90,14 +93,14 @@ PHP
         }
         acceptanceWrite($directory . '/vendor/services.php', '<?php return ' . var_export($services, true) . ';');
         acceptanceWrite($directory . '/think', $entry);
-        foreach (['success' => 0, 'status' => 7, 'exception' => 1, 'nested' => 1, 'error' => 1, 'type-error' => 1, 'config' => 1, 'boot' => 1] as $scenario => $expected) {
+        foreach (['success' => 0, 'status' => 7, 'exception' => 1, 'nested' => 1, 'nested-call' => 1, 'error' => 1, 'type-error' => 1, 'config' => 1, 'boot' => 1] as $scenario => $expected) {
             putenv('ACCEPTANCE_INIT_FAILURE=' . $scenario);
             [$status, $output] = acceptanceRun($directory, [PHP_BINARY, 'think', 'acceptance:probe', $scenario]);
             $passed = $expected === 0 ? $status === 0 && strpos($output, 'COMMAND_OK') !== false : $status !== 0;
             if ($scenario === 'status') {
                 $passed = $status === 7;
             }
-            $markers = ['exception' => 'COMMAND_EXCEPTION', 'nested' => 'NESTED_EXCEPTION', 'error' => 'COMMAND_ERROR', 'type-error' => 'COMMAND_TYPE_ERROR', 'config' => 'INIT_FAILURE', 'boot' => 'BOOT_FAILURE'];
+            $markers = ['exception' => 'COMMAND_EXCEPTION', 'nested' => 'NESTED_EXCEPTION', 'nested-call' => 'NESTED_CALL_EXCEPTION', 'error' => 'COMMAND_ERROR', 'type-error' => 'COMMAND_TYPE_ERROR', 'config' => 'INIT_FAILURE', 'boot' => 'BOOT_FAILURE'];
             if (isset($markers[$scenario])) {
                 $passed = $passed && strpos($output, $markers[$scenario]) !== false;
             }
@@ -108,18 +111,18 @@ PHP
         }
     }
     putenv('ACCEPTANCE_INIT_FAILURE');
-    acceptanceWrite($directory . '/vendor/services.php', '<?php return [\think\admin\Library::class];');
+    acceptanceWrite($directory . '/vendor/services.php', '<?php return [\think\admin\Library::class, AcceptanceBootFailure::class];');
     acceptanceWrite(
         $directory . '/embedded.php',
         <<<'PHP'
 <?php
 require __DIR__ . '/vendor/autoload.php';
-$app = \think\admin\service\RuntimeService::init(new \think\App(__DIR__));
-$app->console->setAutoExit(false);
-if (getenv('ACCEPTANCE_PROPAGATE')) {
-    $app->console->setCatchExceptions(false);
-}
 try {
+    $app = \think\admin\service\RuntimeService::init(new \think\App(__DIR__));
+    $app->console->setAutoExit(false);
+    if (getenv('ACCEPTANCE_PROPAGATE')) {
+        $app->console->setCatchExceptions(false);
+    }
     $status = \think\admin\service\RuntimeService::doConsoleInit($app);
     echo "RETURNED:{$status}\n";
 } catch (\Throwable $error) {
@@ -128,16 +131,34 @@ try {
 echo "CALLER_CONTINUED\n";
 PHP
     );
-    foreach (['status' => 'RETURNED:7', 'exception' => 'RETURNED:1'] as $scenario => $marker) {
+    // 未捕获错误可交给调用方；兼容框架后续补齐捕获后返回非零状态，两者均不得强制退出。
+    foreach (['success' => 'RETURNED:0', 'status' => 'RETURNED:7', 'exception' => 'RETURNED:1', 'nested' => 'RETURNED:1',
+        'error' => ['RETURNED:1', 'FORWARDED:Error:COMMAND_ERROR'],
+        'type-error' => ['RETURNED:1', 'FORWARDED:TypeError:COMMAND_TYPE_ERROR'],
+        'nested-call' => ['RETURNED:1', 'FORWARDED:RuntimeException:NESTED_CALL_EXCEPTION']] as $scenario => $markers) {
         [$status, $output] = acceptanceRun($directory, [PHP_BINARY, 'embedded.php', 'acceptance:probe', $scenario]);
-        acceptanceCheck($status === 0 && strpos($output, $marker) !== false && strpos($output, 'CALLER_CONTINUED') !== false, '关闭自动退出后的返回约定失败：' . $output);
+        $matched = false;
+        foreach ((array)$markers as $marker) {
+            $matched = $matched || strpos($output, $marker) !== false;
+        }
+        acceptanceCheck($status === 0 && $matched && strpos($output, 'CALLER_CONTINUED') !== false, '关闭自动退出后的返回约定失败：' . $output);
+        echo "PASS: autoExit=false / {$scenario} / 调用方继续执行\n";
     }
     putenv('ACCEPTANCE_PROPAGATE=1');
-    foreach (['exception' => 'RuntimeException:COMMAND_EXCEPTION', 'error' => 'Error:COMMAND_ERROR', 'type-error' => 'TypeError:COMMAND_TYPE_ERROR'] as $scenario => $marker) {
+    foreach (['exception' => 'RuntimeException:COMMAND_EXCEPTION', 'nested' => 'RuntimeException:NESTED_EXCEPTION',
+        'nested-call' => 'RuntimeException:NESTED_CALL_EXCEPTION', 'error' => 'Error:COMMAND_ERROR',
+        'type-error' => 'TypeError:COMMAND_TYPE_ERROR'] as $scenario => $marker) {
         [$status, $output] = acceptanceRun($directory, [PHP_BINARY, 'embedded.php', 'acceptance:probe', $scenario]);
         acceptanceCheck($status === 0 && strpos($output, 'FORWARDED:' . $marker) !== false && strpos($output, 'CALLER_CONTINUED') !== false, '关闭异常捕获后的传递约定失败：' . $output);
+        echo "PASS: catchExceptions=false / {$scenario} / 异常向上传递\n";
     }
-    echo "PASS: 调用方关闭自动退出及关闭异常捕获\n";
+    // 服务启动早于 Console 设置，初始化失败应由覆盖整个入口的调用方 try/catch 接收。
+    foreach (['config' => 'INIT_FAILURE', 'boot' => 'BOOT_FAILURE'] as $scenario => $marker) {
+        putenv('ACCEPTANCE_INIT_FAILURE=' . $scenario);
+        [$status, $output] = acceptanceRun($directory, [PHP_BINARY, 'embedded.php', 'acceptance:probe']);
+        acceptanceCheck($status === 0 && strpos($output, 'FORWARDED:RuntimeException:' . $marker) !== false && strpos($output, 'CALLER_CONTINUED') !== false, '初始化异常未传递给调用方：' . $output);
+        echo "PASS: caller / {$scenario} / 初始化异常向上传递\n";
+    }
 } finally {
     putenv('ACCEPTANCE_INIT_FAILURE');
     putenv('ACCEPTANCE_PROPAGATE');

@@ -99,6 +99,14 @@ tests/check-console.php 同时运行项目入口、static 模板和不注册 Lib
 仍不完整。责任位置可对照官方 [Console::run](https://github.com/top-think/framework/blob/57d1950a1844ef8d3098ea290032aeb92e2e32c3/src/think/Console.php)
 和 [Error::appException](https://github.com/top-think/framework/blob/8e7b2b2364047cbf71a38c4e397a9ca0d4ef2b01/src/think/initializer/Error.php)。
 
+嵌套调用还需区分 `find()->run()` 和 ThinkPHP 的 `Console::call()`：后者会将当前控制台的
+catchExceptions 设为 false，且不会恢复。即使内层命令成功，随后外层抛出普通异常也可能由
+全局处理器输出后以 0 退出。Publish 已使用前者执行迁移，应保留；队列的命令调用外层已有
+Throwable 捕获并记录任务失败，不能为了退出码统一改写所有 call 调用。
+补充验收同时覆盖两种嵌套方式，调用方关闭自动退出后的继续执行，以及覆盖整个入口的
+try/catch 接收配置和服务启动异常。失败命令在关闭自动退出时允许非零返回或原异常传递；明确关闭
+异常捕获时必须传递原异常，不以强制退出满足进程验收。
+
 PHP 7.2 原生对照还复现了 think-helper 3.1.12 的语法错误：Arr::random 的函数调用含尾随逗号，
 但该包仍声明 PHP >=7.1。ThinkLibrary 已有 conflict 排除该版本，本项目四组锁文件均为 3.1.11，
 应保留此约束；上述 PHP 7.2 稳定版对照也使用 3.1.11，避免无关依赖错误干扰结论。
@@ -164,6 +172,27 @@ PhinxRoundTripTest 覆盖。生产规模、真实支付通道、设备和切流�
 重复发布、远端偏移、冲突、过期来源和并发保护。主仓正式发布资格仍受阻：每组命令检查均复现
 三个入口的 Error、TypeError、服务 boot 异常退出码为 0；四组总退出码均为 1，没有生成有效发布凭据。
 真实远端推送、主仓标签发布、生产全量恢复和现场切换均未运行。
+
+### 2026-10-14 定向补验
+
+沿用上轮锁文件，在 Docker 的 PHP 7.2 / ThinkPHP 6.1、PHP 8.2 / ThinkPHP 8 中补齐命令检查。
+每条依赖线均执行 41 个场景：29 通过、12 失败。失败为根入口、static 入口和原生框架对照各自
+出现的四类零退出：Error、TypeError、服务 boot 异常，以及 Console::call 成功后外层普通异常。
+调用方关闭自动退出的 7 个场景、关闭异常捕获的 5 个场景和初始化异常传递的 2 个场景全部通过。
+
+两条依赖线的 SQLite 安装、历史库升级、配置与数据保留、失败重试和重复执行均通过，覆盖
+无前缀及 tenant_；当前 Publish 的直接子命令调用仍能让普通迁移异常返回非零。
+真实 splitsh / 本地 bare Git 补验共 9 组通过，新增覆盖单项失败与总状态冲突、重复检查、缺失
+日志和矩阵，以及第二个插件拒绝推送后的局部成功、凭据阻断和修复后重跑。
+
+本轮仅修改验收脚本及本文，未修改 ThinkPHP、业务运行代码或两个 think 入口。
+PHP 7.2 首次依赖下载曾出现 SDK 压缩包损坏，隔离重新下载后恢复，原日志保留。
+PHP 8.2 上述结果来自首次有效补验；最终复跑在连续两次 ip2region 下载连接中断后停止依赖
+准备，未进入测试，单独记为环境受阻。最终脚本的 PHP 8.2 语法检查已通过，不以语法检查
+代替运行结果；调整后断言的运行复核已在 PHP 7.2 完成。
+证据位于本地 runtime/acceptance/followup.n2Wglw，记录实际源码差异、依赖、镜像和日志；
+这些是定向开发验收，不是新的完整四矩阵发布凭据。MySQL、HTTP、Workerman 和队列沿用前轮
+结果，本轮未重跑。命令退出码仍失败，生产更新与正式发布继续受阻。
 
 ## 拆分与标签发布
 
