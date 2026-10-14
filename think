@@ -24,4 +24,4 @@ use think\admin\service\RuntimeService;
 require __DIR__ . '/vendor/autoload.php';
 
 // 命令行应用初始化
-exit(RuntimeService::doConsoleInit());
+RuntimeService::doConsoleInit();

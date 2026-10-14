@@ -25,11 +25,12 @@ require dirname(__DIR__) . '/vendor/autoload.php';
  * 执行隔离站点的实际命令行入口，保留输出和进程退出码.
  * @param string $directory 隔离站点根目录
  * @param string[] $arguments ThinkPHP 命令及参数
+ * @param string $entry 隔离站点中的入口文件名
  * @return array{0:int,1:string} [退出码, 合并后的标准输出与错误输出]
  */
-function runUpgradeCommand(string $directory, array $arguments): array
+function runUpgradeCommand(string $directory, array $arguments, string $entry = 'think'): array
 {
-    $command = implode(' ', array_map('escapeshellarg', array_merge([PHP_BINARY, $directory . '/think'], $arguments)));
+    $command = implode(' ', array_map('escapeshellarg', array_merge([PHP_BINARY, $directory . '/' . $entry], $arguments)));
     $process = proc_open($command . ' 2>&1', [0 => ['pipe', 'r'], 1 => ['pipe', 'w']], $pipes, $directory);
     if (!is_resource($process)) {
         throw new RuntimeException('无法启动验收命令');
@@ -101,6 +102,48 @@ foreach (['', 'tenant_'] as $prefix) {
             ], true) . ';');
             $configHash = hash_file('sha256', $directory . '/config/database.php');
             $environmentHash = hash_file('sha256', $directory . '/.env');
+
+            if ($driver === 'sqlite' && $prefix === '' && $scenario === 'install') {
+                // 模拟调用方关闭自动退出后复用入口，确保入口不额外终止当前进程。
+                file_put_contents(
+                    $directory . '/console-include.php',
+                    <<<'PHP'
+<?php
+require __DIR__ . '/vendor/autoload.php';
+$app = \think\admin\service\RuntimeService::init(new \think\App(__DIR__));
+$app->console->setAutoExit(false);
+require __DIR__ . '/think-embedded';
+echo "ENTRY_RETURNED\n";
+PHP
+                );
+                foreach (['think', 'plugin/think-plugs-static/stc/think'] as $source) {
+                    $embedded = str_replace('RuntimeService::doConsoleInit()', 'RuntimeService::doConsoleInit($app)', file_get_contents($root . '/' . $source), $replacements);
+                    verifyUpgrade($replacements === 1, '入口变化后需重新确认嵌入调用方式');
+                    // PHP 7 将被 include 文件的 shebang 当作输出，仅移除该启动器行。
+                    $embedded = preg_replace('/^#![^\r\n]*\R/', '', $embedded);
+                    file_put_contents($directory . '/think-embedded', $embedded);
+                    [$status, $output] = runUpgradeCommand($directory, ['list', '--raw'], 'console-include.php');
+                    verifyUpgrade($status === 0 && strpos($output, 'ENTRY_RETURNED') !== false, $source . ' 在禁用自动退出后必须允许调用方继续执行：' . $output);
+                }
+                file_put_contents(
+                    $directory . '/console-exception.php',
+                    <<<'PHP'
+<?php
+require __DIR__ . '/vendor/autoload.php';
+$app = \think\admin\service\RuntimeService::init(new \think\App(__DIR__));
+$app->console->setAutoExit(false);
+$app->console->setCatchExceptions(false);
+try {
+    \think\admin\service\RuntimeService::doConsoleInit($app);
+} catch (\InvalidArgumentException $exception) {
+    echo "EXCEPTION_FORWARDED\n";
+}
+PHP
+                );
+                [$status, $output] = runUpgradeCommand($directory, ['acceptance:missing-command'], 'console-exception.php');
+                verifyUpgrade($status === 0 && strpos($output, 'EXCEPTION_FORWARDED') !== false, '调用方关闭异常捕获后必须能够接收原异常：' . $output);
+                echo "PASS: CLI 入口返回及异常向上传递\n";
+            }
 
             $arguments = $scenario === 'install' ? ['xadmin:publish', '--migrate'] : ['migrate:run', '--target', '20241010000009'];
             [$status, $output] = runUpgradeCommand($directory, $arguments);
