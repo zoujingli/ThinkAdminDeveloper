@@ -35,9 +35,29 @@ jobs:
           ssh-keyscan github.com >> ~/.ssh/known_hosts
           echo "StrictHostKeyChecking no" >> ~/.ssh/config
 
+      - name: Setup acceptance manifest verifier
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.2'
+          coverage: none
+
+      - name: Download tested dependency and runtime evidence
+        uses: actions/download-artifact@v4
+        with:
+          pattern: acceptance-*
+          path: runtime/acceptance
+
       - name: Split And Push
         run: |
           git config pull.rebase true
           git config --global user.name "Anyon"
           git config --global user.email "zoujingli@qq.com"
           ./.github/split-linux.sh
+
+      - name: Keep source and split mapping
+        uses: actions/upload-artifact@v4
+        with:
+          name: release-manifest-${{ github.sha }}
+          path: runtime/release/${{ github.sha }}/
+          if-no-files-found: ignore
+          overwrite: true

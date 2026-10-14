@@ -64,13 +64,9 @@ start http://127.0.0.1:8088
 
 ### 发版与升级验收
 
-在隔离环境安装开发依赖后执行 `composer test`，统一运行核心库、后台、账号、支付、商城、物码、权限检查及命令行安装升级验收。也可通过 `PHPUNIT_BIN` 指定与当前 PHP 兼容的 PHPUnit 脚本或 PHAR。
+使用 `bash tests/docker/run.sh` 执行四组隔离验收；已有回归仍可使用 `composer test`。Docker 同时检查真实 Composer 安装升级、HTTP/Workerman/队列生命周期及发布过程，并保留源码、依赖、镜像和检查结果。
 
-CI 覆盖 PHP 7.2 / ThinkPHP 6.1 / think-migration 3.0.0 与 PHP 8.2 / ThinkPHP 8 / think-migration 3.1，使用临时 MySQL 容器和 SQLite 测试数据。MySQL 8.4 执行完整回归，MySQL 5.7、8.0 执行新装和升级验收；MySQL 8 专有默认表达式不作为 5.7 的验收项目。独立运行升级验收可使用 `THINKADMIN_TEST_DB=:memory: php tests/check-upgrade.php sqlite`；测试 MySQL 时使用 `mysql` 参数并设置隔离实例的 `PHINX_TEST_MYSQL_PORT`，实例需有空密码测试账号 `root` 和 `phinx_fixture` 数据库。验收会创建并清理专用临时数据库，覆盖有无表前缀、新装、数据保留、重复执行、失败退出和修复数据后重试。
-
-仓库拆分和主仓库标签发布须等待回归通过，拆分使用通过验收的提交。插件标签发布绑定触发标签，支持补发旧版本、预发布和重复执行。维护脚本可先运行 `bash .github/release.sh --dry-run <版本标签> [插件名 ...]` 检查分支和标签冲突；演练不创建或推送标签。发布说明由 GitHub 根据该标签生成。
-
-生产更新沿用已有配置，`composer install --no-dev --optimize-autoloader` 会通过安装器运行 `xadmin:publish --migrate`。更新失败必须检查非零退出码，并在修复原因后重试。已有配置不使用 `--force` 覆盖；MySQL DDL 可能隐式提交，数据库恢复依赖更新前的备份，不能用切回代码版本替代。验收范围不包含真实支付通道、现场设备及生产流量切换。
+架构、配置所有权、近期改动处置、已知发布阻断，以及升级恢复和 `--manifest` 发版用法统一维护在[架构、升级与发布约定](docs/architecture-upgrade.md)。验收失败或阻断未解除时，不进入生产更新。
 
 ### 开发文档
 
