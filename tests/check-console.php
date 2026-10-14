@@ -83,7 +83,7 @@ PHP
     // 仅注入隔离应用根目录，其他内容使用仓库和静态插件的实际入口。
     foreach (['think', 'plugin/think-plugs-static/stc/think', 'framework'] as $source) {
         if ($source === 'framework') {
-            // 原生框架对照不注册 Library，用于区分本仓逻辑和外部依赖缺陷。
+            // 原生框架对照不注册 Library，用于定位行为发生在项目入口还是框架默认处理层。
             $entry = '<?php require __DIR__ . "/vendor/autoload.php"; (new \think\App(__DIR__))->console->run();';
             $services = ['AcceptanceBootFailure'];
         } else {

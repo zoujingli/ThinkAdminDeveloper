@@ -125,6 +125,56 @@ PHP
     acceptanceCheck($status === 0 && strpos($output, 'SERVICES_READY') !== false, '已安装插件未完整注册：' . $output);
 }
 
+/**
+ * 在真实安装站点验证迁移失败的进程状态，防止 Composer 将未完成的升级判为成功。
+ * 保留安装器生成的入口和钩子；临时迁移只写入隔离站点，结束时删除。
+ * @param string $site 隔离站点目录
+ * @param string $composer Composer 可执行文件
+ * @param PDO $pdo 隔离数据库连接
+ * @param string $prefix 迁移表前缀
+ * @param string $driver 数据库类型，用于区分验收证据
+ * @return string[] 未满足失败退出约定的场景及输出
+ * @throws RuntimeException 未执行预期迁移或退出码采集不一致
+ */
+function composerAcceptanceCommandFailures(string $site, string $composer, PDO $pdo, string $prefix, string $driver): array
+{
+    $file = $site . '/database/migrations/20991231235959_acceptance_command_failure.php';
+    acceptanceCheck(!file_exists($file), '临时迁移与已有文件冲突');
+    $failures = [];
+    try {
+        foreach (['exception' => "throw new \\RuntimeException('MIGRATION_EXCEPTION');",
+            'error' => 'acceptance_missing_migration_function();',
+            'type-error' => '$this->acceptArray("invalid");'] as $scenario => $trigger) {
+            // 使用 PHP 自身产生的 Error/TypeError，避免仅手工 throw 覆盖不到实际编程错误。
+            acceptanceWrite($file, '<?php class AcceptanceCommandFailure extends \think\migration\Migrator {'
+                . ' public function change(): void { ' . $trigger . ' }'
+                . ' private function acceptArray(array $value): void {} }');
+            $marker = ['exception' => 'MIGRATION_EXCEPTION', 'error' => 'acceptance_missing_migration_function', 'type-error' => 'acceptArray'][$scenario];
+            foreach (['publish' => [PHP_BINARY, 'think', 'xadmin:publish', '--migrate'],
+                'composer' => [PHP_BINARY, $composer, 'install', '--no-dev', '--no-interaction', '--prefer-dist', '--no-progress']] as $entry => $arguments) {
+                $command = implode(' ', array_map('escapeshellarg', $arguments));
+                // shell 直接记录子进程状态，并与 proc_get_status 对照，排除采集导致的假阳性。
+                [$status, $output] = acceptanceRun($site, ['sh', '-c', $command . '; status=$?; printf "\nSHELL_EXIT=%s\n" "$status"; exit "$status"'], 300);
+                acceptanceCheck(strpos($output, 'SHELL_EXIT=' . $status . "\n") !== false, 'shell 与进程采集的退出状态不一致：' . $output);
+                acceptanceCheck(strpos($output, $marker) !== false, '未执行预期的失败迁移：' . $output);
+                if ($entry === 'composer') {
+                    acceptanceCheck(strpos($output, 'xadmin:publish --migrate') !== false, '未执行真实安装器钩子：' . $output);
+                }
+                $records = (int)$pdo->query("SELECT COUNT(*) FROM {$prefix}migrations WHERE version=20991231235959")->fetchColumn();
+                acceptanceCheck($records === 0, '失败迁移被登记为完成');
+                $label = "{$driver} / migration-{$scenario} / {$entry} / exit={$status} / shell={$status} / records={$records}";
+                echo ($status !== 0 ? 'PASS: ' : 'FAIL: ') . $label . "\n";
+                if ($status === 0) {
+                    $failures[] = $label . "\n" . substr($output, -3000);
+                }
+            }
+        }
+    } finally {
+        is_file($file) && unlink($file);
+    }
+    return $failures;
+}
+
 acceptanceCheck(getenv('THINKADMIN_TEST_DB') === ':memory:', '必须显式启用隔离验收');
 $driver = $argv[1] ?? 'sqlite';
 acceptanceCheck(in_array($driver, ['sqlite', 'mysql'], true), '仅支持 sqlite/mysql');
@@ -173,6 +223,8 @@ try {
             $pdo = new PDO($driver === 'sqlite' ? 'sqlite:' . $site . '/fixture.db' : 'mysql:host=127.0.0.1;port=' . $port . ';dbname=' . $database, 'root', '', [PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION, PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC]);
             if ($core) {
                 acceptanceCheck((int)$pdo->query("SELECT COUNT(*) FROM {$prefix}migrations")->fetchColumn() > 0, '基础插件组合未完成迁移');
+                acceptanceCheck(hash_file('sha256', $site . '/think') === hash_file('sha256', $root . '/plugin/think-plugs-static/stc/think'), '安装入口与模板不一致');
+                $failures = array_merge($failures, composerAcceptanceCommandFailures($site, $composer, $pdo, $prefix, $driver));
                 echo "PASS: {$driver} / {$scenario} / 安装钩子及服务注册\n";
                 continue;
             }

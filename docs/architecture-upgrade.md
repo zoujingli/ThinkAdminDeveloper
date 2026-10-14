@@ -78,12 +78,13 @@ xadmin:publish 还发布应用模块内的 config、public、database：配置�
 发布包复制 app/admin、app/wechat 并清理 vendor 后，对应服务无法注册。根项目改为 app\ → app/，
 延续框架原有应用目录规则；path 与 dist、基础与完整插件组合均通过真实服务注册检查。
 
-外部依赖阻断：PHP 7.2/ThinkPHP 6.1 和 PHP 8.2/ThinkPHP 8 两条依赖线中，
+命令失败状态阻断：PHP 7.2/ThinkPHP 6.1 和 PHP 8.2/ThinkPHP 8 两条依赖线中，
 原生 Console 与本仓入口对 Error/TypeError、服务 boot 异常均可输出错误但以 0 退出。
 Console::run 只捕获 Exception，初始化又发生于 run 之前；全局异常处理器只 report/render。
 tests/check-console.php 同时运行项目入口、static 模板和不注册 Library 的原生框架对照，
-发现上述行为时返回非零。此项解决前不得将验收标记为通过，也不通过入口 exit、改写全局处理器
-或修改 vendor 绕过。外部依赖修复后，用同一入口验证才能解除阻断。
+发现上述行为时返回非零。原生对照定位的是行为边界，不能单凭该结果笼统认定框架有问题，
+也不能将项目的“真实失败非零”要求改为接受 0。此项解决前不得将验收标记为通过；保持入口
+无额外 exit、不改写共享异常处理器、不修改 vendor 的约束，通过原失败场景才能解除阻断。
 
 2026-10-14 继续核查官方版本：6.1、8.x 分支最新提交仍分别为 bc1045b、ced4837，与本次验收锁定
 的提交一致。另在 Docker 内仅安装官方框架、不加载 ThinkLibrary 的最小应用中验证稳定版：
@@ -95,8 +96,8 @@ tests/check-console.php 同时运行项目入口、static 模板和不注册 Lib
 
 因此切换到这两个稳定版也不能解除阻断。已有 autoExit、catchExceptions 开关控制正常，
 但不能补齐 Throwable 捕获，也不能覆盖发生于 Console::run 之前的初始化异常。
-框架层修复需要同时处理命令执行和未捕获的初始化失败；仅把 Console 的 Exception 改成 Throwable
-仍不完整。责任位置可对照官方 [Console::run](https://github.com/top-think/framework/blob/57d1950a1844ef8d3098ea290032aeb92e2e32c3/src/think/Console.php)
+项目要求覆盖命令执行和未捕获的初始化失败；两者不在同一个捕获范围内，不能用全局退出补丁
+替代责任边界分析。行为位置可对照官方 [Console::run](https://github.com/top-think/framework/blob/57d1950a1844ef8d3098ea290032aeb92e2e32c3/src/think/Console.php)
 和 [Error::appException](https://github.com/top-think/framework/blob/8e7b2b2364047cbf71a38c4e397a9ca0d4ef2b01/src/think/initializer/Error.php)。
 
 嵌套调用还需区分 `find()->run()` 和 ThinkPHP 的 `Console::call()`：后者会将当前控制台的
@@ -130,7 +131,8 @@ PHP 7.2 镜像仅用于旧版本兼容验收，不作为生产运行镜像。
 - composer test / tests/run.php：现有核心与业务回归、权限、令牌及隔离 CLI 迁移。
 - tests/check-console.php：真实进程退出码、初始化失败、Throwable、嵌套调用及调用方控制权。
 - tests/check-composer.php sqlite|mysql：真实安装器、path/zip 两种分发、后台基础组合与全部运行插件，
-  新装、模拟旧库更新、失败重试、锁文件重装、配置保留、服务注册及独立库恢复余额样本。
+  新装、模拟旧库更新、失败重试、锁文件重装、配置保留、服务注册及独立库恢复余额样本；
+  已安装站点补验普通异常、未定义函数和参数类型错误的失败迁移，核对 shell/进程状态及迁移记录。
 - tests/check-lifecycle.php：HTTP、Workerman 连续请求、异常恢复、请求状态和会话隔离，以及队列生命周期。
 - tests/check-release.php：真实 splitsh、本地 bare 仓库、发布凭据、标签冲突、重跑、过期来源与并发覆盖保护；
   源码仓库和远端均为隔离夹具，门禁输入是合成证据，不能冒充主仓发布或数据库验收结果。
@@ -193,6 +195,40 @@ PHP 8.2 上述结果来自首次有效补验；最终复跑在连续两次 ip2re
 证据位于本地 runtime/acceptance/followup.n2Wglw，记录实际源码差异、依赖、镜像和日志；
 这些是定向开发验收，不是新的完整四矩阵发布凭据。MySQL、HTTP、Workerman 和队列沿用前轮
 结果，本轮未重跑。命令退出码仍失败，生产更新与正式发布继续受阻。
+
+### 2026-10-14 验收口径与真实迁移复核
+
+曾将 Error、TypeError、服务 boot 异常和 Console::call 后外层异常的退出码 0 标为
+`framework-handled`，由此得到的四组全绿不满足原验收要求。该断言调整已撤回，未提交到代码库；
+“框架已输出错误”和“部署能够识别失败”必须分别判断。以下目录保留原始记录，但不得用其中的
+命令通过状态认定发布通过：
+
+- php7.2-mysql8.4.6wSpPE、php8.2-mysql8.4.Kgs0Zk；
+- php7.2-mysql5.7.viBdSh、php8.2-mysql8.0.GbVlVB。
+
+上述四组均包含未提交改动；逐组调用 verify-acceptance.php 已确认现有发布门禁拒绝这些凭据。
+
+本轮沿用上述锁文件，在 Docker 中重新运行两条依赖线的原命令门禁，并补验真实 Composer
+安装后的 SQLite 站点。入口哈希与 static 模板一致，没有替换应用初始化调用；安装器原有
+post-autoload-dump 钩子实际执行。临时迁移分别触发普通异常、未定义函数和参数类型错误，
+同时从 shell 和进程接口读取状态，再检查失败迁移没有登记完成。
+
+| Docker 依赖线 | 命令门禁 | 普通迁移异常：Publish / Composer | 未定义函数及类型错误：Publish / Composer |
+| --- | --- | --- | --- |
+| PHP 7.2.34 / ThinkPHP 6.1 | 29/41 通过，12 失败 | 1 / 1，已通过 | 均为 0 / 0，失败 |
+| PHP 8.2.34 / ThinkPHP 8 | 29/41 通过，12 失败 | 1 / 1，已通过 | 均为 0 / 0，失败 |
+
+两条依赖线共 12 项迁移故障检查：4 项通过、8 项失败；shell 与进程采集一致，失败迁移记录均为
+0。故障注入用于验证升级失败能否被识别，不代表现有业务迁移含有这些编程错误。每条依赖线原有
+5 个 Composer 安装场景继续通过，包含配置、数据、重复执行和恢复检查；此次新增故障场景的
+MySQL 分支未运行。MySQL、HTTP、Workerman、队列和真实 splitsh 沿用此前各自有效的验收结果，
+没有用 SQLite 结果替代其他环境。
+
+证据保存在本地 runtime/acceptance/command-recheck.7qb44s，含源码差异、镜像、依赖锁文件和
+实际输出。两组检查最终状态均为失败，不能生成发布凭据。新增脚本通过 PHP 7.2/8.2 语法检查，
+本次测试差异通过代码风格检查；故障迁移、站点和容器均已清理。原生对照及真实安装结果共同说明
+当前调用链的失败状态不足以满足项目部署要求；本轮仅补验收与说明，没有修改运行时代码、
+ThinkPHP 或两个 think 入口，也未添加全局退出补丁。正式发布及生产更新继续受阻。
 
 ## 拆分与标签发布
 
