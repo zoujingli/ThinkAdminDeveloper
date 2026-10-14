@@ -85,6 +85,25 @@ tests/check-console.php 同时运行项目入口、static 模板和不注册 Lib
 发现上述行为时返回非零。此项解决前不得将验收标记为通过，也不通过入口 exit、改写全局处理器
 或修改 vendor 绕过。外部依赖修复后，用同一入口验证才能解除阻断。
 
+2026-10-14 继续核查官方版本：6.1、8.x 分支最新提交仍分别为 bc1045b、ced4837，与本次验收锁定
+的提交一致。另在 Docker 内仅安装官方框架、不加载 ThinkLibrary 的最小应用中验证稳定版：
+
+| PHP / 框架 | Error / TypeError / 服务 boot 异常的实际退出码 | 调用方控制 |
+| --- | --- | --- |
+| 7.2.34 / v6.1.5（57d1950） | 0 / 0 / 0，失败 | 关闭自动退出后返回、捕获原异常均通过 |
+| 8.2.34 / v8.1.4（8e7b2b2） | 0 / 0 / 0，失败 | 关闭自动退出后返回、捕获原异常均通过 |
+
+因此切换到这两个稳定版也不能解除阻断。已有 autoExit、catchExceptions 开关控制正常，
+但不能补齐 Throwable 捕获，也不能覆盖发生于 Console::run 之前的初始化异常。
+框架层修复需要同时处理命令执行和未捕获的初始化失败；仅把 Console 的 Exception 改成 Throwable
+仍不完整。责任位置可对照官方 [Console::run](https://github.com/top-think/framework/blob/57d1950a1844ef8d3098ea290032aeb92e2e32c3/src/think/Console.php)
+和 [Error::appException](https://github.com/top-think/framework/blob/8e7b2b2364047cbf71a38c4e397a9ca0d4ef2b01/src/think/initializer/Error.php)。
+
+PHP 7.2 原生对照还复现了 think-helper 3.1.12 的语法错误：Arr::random 的函数调用含尾随逗号，
+但该包仍声明 PHP >=7.1。ThinkLibrary 已有 conflict 排除该版本，本项目四组锁文件均为 3.1.11，
+应保留此约束；上述 PHP 7.2 稳定版对照也使用 3.1.11，避免无关依赖错误干扰结论。
+本次未调整项目依赖、vendor 或异常处理行为，原生复现、锁文件和失败日志保留在本地验收证据中。
+
 ## 验收与证据
 
 Docker 统一入口为 `bash tests/docker/run.sh`，依次运行既有四组矩阵：
