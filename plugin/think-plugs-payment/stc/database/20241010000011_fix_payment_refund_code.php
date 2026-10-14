@@ -17,6 +17,7 @@ declare(strict_types=1);
  * | github 代码仓库：https://github.com/zoujingli/ThinkAdmin
  * +----------------------------------------------------------------------
  */
+use think\admin\extend\PhinxExtend;
 use think\migration\Migrator;
 
 /**
@@ -33,9 +34,9 @@ class FixPaymentRefundCode extends Migrator
     public function change(): void
     {
         $table = $this->table('plugin_payment_refund');
-        if ($table->exists() && !$table->hasIndexByName('uq_plugin_payment_refund_code')) {
+        if ($table->exists()) {
             // 已有重复退款编号时让迁移明确失败，交由管理员清理后重试。
-            $table->addIndex(['code'], ['unique' => true, 'name' => 'uq_plugin_payment_refund_code'])->update();
+            PhinxExtend::upgrade($table, [], [['columns' => ['code'], 'unique' => true, 'name' => 'uq_plugin_payment_refund_code']], true);
         }
     }
 }

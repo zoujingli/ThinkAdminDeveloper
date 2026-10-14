@@ -61,7 +61,8 @@ $adapter = \Phinx\Db\Adapter\AdapterFactory::instance()->getAdapter('sqlite', [
     'connection' => \think\facade\Db::connect()->connect(),
     'name' => ':memory:',
 ]);
-$migration = new \InstallAdmin20241010('test', 20241010000001);
+$class = new ReflectionClass(InstallAdmin20241010::class);
+$migration = $class->newInstanceArgs($class->getConstructor()->getNumberOfRequiredParameters() > 1 ? ['test', 20241010000001] : [20241010000001]);
 $migration->setAdapter($adapter);
 $migration->change();
 \think\facade\Db::table('system_config')->insertAll([

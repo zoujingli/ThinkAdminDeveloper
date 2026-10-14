@@ -62,6 +62,7 @@ $app->config->set([
 $app->db->execute('CREATE TABLE system_data(id INTEGER PRIMARY KEY AUTOINCREMENT, name TEXT NOT NULL DEFAULT "", value TEXT, create_time TEXT, update_time TEXT)');
 $adapter = AdapterFactory::instance()->getAdapter('sqlite', ['connection' => $app->db->connect()->connect(), 'name' => ':memory:']);
 require_once $packageRoot . '/stc/database/20241010000005_install_account20241010.php';
-$migration = new InstallAccount20241010('test', 20241010000005);
+$class = new ReflectionClass(InstallAccount20241010::class);
+$migration = $class->newInstanceArgs($class->getConstructor()->getNumberOfRequiredParameters() > 1 ? ['test', 20241010000005] : [20241010000005]);
 $migration->setAdapter($adapter);
 $migration->change();

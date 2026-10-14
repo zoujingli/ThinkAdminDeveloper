@@ -1106,7 +1106,7 @@ class InstallWemall20241010 extends Migrator
             ['rebate_usable', 'decimal', ['precision' => 20, 'scale' => 2, 'default' => '0.00', 'null' => true, 'comment' => '可提返利']],
             ['rebate_usable_code', 'string', ['limit' => 50, 'default' => '', 'null' => true, 'comment' => '记录编号']],
             ['rebate_usable_desc', 'string', ['limit' => 180, 'default' => '', 'null' => true, 'comment' => '记录描述']],
-            ['agent_entry', 'tinyinteger', ['limit' => 1, 'default' => 0, 'null' => true, 'comment' => '代理权限']],
+            ['agent_entry', 'integer', ['limit' => 1, 'mysql_type' => 'tinyint(1)', 'default' => 0, 'null' => true, 'comment' => '代理权限']],
             ['agent_phone', 'string', ['limit' => 50, 'default' => '', 'null' => true, 'comment' => '上级手机']],
             ['status', 'integer', ['limit' => 1, 'default' => 1, 'null' => true, 'comment' => '记录状态(0无效,1有效)']],
             ['deleted', 'integer', ['limit' => 1, 'default' => 0, 'null' => true, 'comment' => '删除状态(0未删,1已删)']],

@@ -59,7 +59,8 @@ final class TestDatabase
                 throw new \RuntimeException("Test migration not found: {$file}");
             }
             require_once $file;
-            $migration = new $class('test', $version);
+            $reflection = new \ReflectionClass($class);
+            $migration = $reflection->newInstanceArgs($reflection->getConstructor()->getNumberOfRequiredParameters() > 1 ? ['test', $version] : [$version]);
             if (!$migration instanceof Migrator) {
                 throw new \RuntimeException("Invalid test migration: {$class}");
             }

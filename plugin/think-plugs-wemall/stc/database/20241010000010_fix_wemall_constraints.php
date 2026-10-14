@@ -17,6 +17,7 @@ declare(strict_types=1);
  * | github 代码仓库：https://github.com/zoujingli/ThinkAdmin
  * +----------------------------------------------------------------------
  */
+use think\admin\extend\PhinxExtend;
 use think\admin\extend\PhinxSchema;
 use think\migration\Migrator;
 
@@ -60,14 +61,12 @@ class FixWemallConstraints extends Migrator
 
         // 添加订单商品项ID字段（用于精确追踪返佣）
         if (!$table->hasColumn('order_item_id')) {
-            $table->addColumn('order_item_id', 'biginteger', ['limit' => 20, 'default' => 0, 'null' => true, 'comment' => '订单商品项ID'])
-                ->update();
+            PhinxExtend::upgrade($table, [['order_item_id', 'biginteger', ['limit' => 20, 'default' => 0, 'null' => true, 'comment' => '订单商品项ID']]], [], true);
         }
 
         // 添加返佣规则ID字段（用于追溯规则版本）
         if (!$table->hasColumn('rebate_rule_id')) {
-            $table->addColumn('rebate_rule_id', 'biginteger', ['limit' => 20, 'default' => 0, 'null' => true, 'comment' => '返佣规则ID'])
-                ->update();
+            PhinxExtend::upgrade($table, [['rebate_rule_id', 'biginteger', ['limit' => 20, 'default' => 0, 'null' => true, 'comment' => '返佣规则ID']]], [], true);
         }
 
         // 添加金额非负约束
@@ -82,17 +81,19 @@ class FixWemallConstraints extends Migrator
         // 修复余额表
         $table = $this->table('plugin_payment_balance');
         if (!$table->hasColumn('source_type')) {
-            $table->addColumn('source_type', 'string', ['limit' => 50, 'default' => '', 'null' => true, 'comment' => '资金来源类型'])
-                ->addColumn('source_id', 'string', ['limit' => 50, 'default' => '', 'null' => true, 'comment' => '资金来源ID'])
-                ->update();
+            PhinxExtend::upgrade($table, [
+                ['source_type', 'string', ['limit' => 50, 'default' => '', 'null' => true, 'comment' => '资金来源类型']],
+                ['source_id', 'string', ['limit' => 50, 'default' => '', 'null' => true, 'comment' => '资金来源ID']],
+            ], [], true);
         }
 
         // 修复积分表
         $table = $this->table('plugin_payment_integral');
         if (!$table->hasColumn('source_type')) {
-            $table->addColumn('source_type', 'string', ['limit' => 50, 'default' => '', 'null' => true, 'comment' => '积分来源类型'])
-                ->addColumn('source_id', 'string', ['limit' => 50, 'default' => '', 'null' => true, 'comment' => '积分来源ID'])
-                ->update();
+            PhinxExtend::upgrade($table, [
+                ['source_type', 'string', ['limit' => 50, 'default' => '', 'null' => true, 'comment' => '积分来源类型']],
+                ['source_id', 'string', ['limit' => 50, 'default' => '', 'null' => true, 'comment' => '积分来源ID']],
+            ], [], true);
         }
 
         // 添加金额非负约束
@@ -175,7 +176,8 @@ class FixWemallConstraints extends Migrator
             if ($type === 'decimal') {
                 $options = ['precision' => 20, 'scale' => 2, 'null' => false, 'default' => '0.00'];
             }
-            $this->table($table)->changeColumn($field, $type, $options)->update();
+            // 复用兼容层重建列，避免旧版 SQLite 适配器截断 DECIMAL 定义并丢失触发器。
+            PhinxExtend::upgrade($this->table($table), [[$field, $type, $options]], [], true);
 
             // SQLite 不能通过 ALTER COLUMN 添加 CHECK，用触发器同时约束新增和更新。
             if ($check !== '') {

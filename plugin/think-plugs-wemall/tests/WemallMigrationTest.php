@@ -23,6 +23,7 @@ namespace plugin\wemall\tests;
 use Phinx\Db\Adapter\AdapterFactory;
 use Phinx\Db\Adapter\AdapterInterface;
 use PHPUnit\Framework\TestCase;
+use think\admin\extend\PhinxSchema;
 
 /**
  * @internal
@@ -80,8 +81,11 @@ class WemallMigrationTest extends TestCase
     private function assertMigration(AdapterInterface $adapter, string $prefix): void
     {
         require_once dirname(__DIR__) . '/stc/database/20241010000010_fix_wemall_constraints.php';
-        $database = $adapter->getConnection();
-        foreach ([new \InstallPayment20241010('test', 20241010000006), new \InstallWemall20241010('test', 20241010000007)] as $schema) {
+        [$connectionAdapter] = PhinxSchema::connection($adapter, '');
+        $database = $connectionAdapter->getConnection();
+        foreach ([[\InstallPayment20241010::class, 20241010000006], [\InstallWemall20241010::class, 20241010000007]] as [$class, $version]) {
+            $reflection = new \ReflectionClass($class);
+            $schema = $reflection->newInstanceArgs($reflection->getConstructor()->getNumberOfRequiredParameters() > 1 ? ['test', $version] : [$version]);
             $schema->setAdapter($adapter);
             $schema->change();
         }
@@ -89,7 +93,8 @@ class WemallMigrationTest extends TestCase
         $database->exec("INSERT INTO {$prefix}plugin_payment_balance (id, amount) VALUES (1, -10)");
         $database->exec("INSERT INTO {$prefix}plugin_wemall_user_rebate (id, amount) VALUES (1, 10)");
 
-        $migration = new \FixWemallConstraints('test', 20241010000010);
+        $reflection = new \ReflectionClass(\FixWemallConstraints::class);
+        $migration = $reflection->newInstanceArgs($reflection->getConstructor()->getNumberOfRequiredParameters() > 1 ? ['test', 20241010000010] : [20241010000010]);
         $migration->setAdapter($adapter);
         $migration->change();
         $migration->change();
