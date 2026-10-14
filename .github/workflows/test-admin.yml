@@ -1,24 +1,23 @@
 name: Test Admin Plugin
 
 on:
-  push:
-    branches:
-      - master
-    paths:
-      - 'app/**'
-      - 'plugin/**'
-      - 'tests/**'
-      - '.github/workflows/test-admin.yml'
+  workflow_call:
+  workflow_dispatch:
   pull_request:
     paths:
       - 'app/**'
       - 'plugin/**'
       - 'tests/**'
-      - '.github/workflows/test-admin.yml'
+      - 'config/**'
+      - 'database/**'
+      - 'think'
+      - 'composer.json'
+      - '.env.example'
+      - '.github/**'
 
 jobs:
   test:
-    name: PHP ${{ matrix.php }} / ThinkPHP ${{ matrix.framework }}
+    name: PHP ${{ matrix.php }} / ThinkPHP ${{ matrix.framework }} / MySQL ${{ matrix.mysql }}
     runs-on: ubuntu-latest
     env:
       PHINX_TEST_MYSQL_PORT: '13306'
@@ -28,10 +27,30 @@ jobs:
         include:
           - php: '7.2'
             framework: '^6.1'
+            migration: '3.0.0'
+            mysql: '8.4'
+            scope: full
             composer: '2.2'
             phpunit: '8.5'
           - php: '8.2'
             framework: '^8.1'
+            migration: '^3.1'
+            mysql: '8.4'
+            scope: full
+            composer: '2'
+            phpunit: '11.5'
+          - php: '7.2'
+            framework: '^6.1'
+            migration: '3.0.0'
+            mysql: '5.7'
+            scope: upgrade
+            composer: '2.2'
+            phpunit: '8.5'
+          - php: '8.2'
+            framework: '^8.1'
+            migration: '^3.1'
+            mysql: '8.0'
+            scope: upgrade
             composer: '2'
             phpunit: '11.5'
     steps:
@@ -52,7 +71,7 @@ jobs:
 
       - name: Resolve runtime dependencies
         run: |
-          composer require --no-update --no-interaction 'topthink/framework:${{ matrix.framework }}'
+          composer require --no-update --no-interaction 'topthink/framework:${{ matrix.framework }}' 'topthink/think-migration:${{ matrix.migration }}'
           composer update --no-dev --no-interaction --prefer-dist --no-progress --with-all-dependencies
 
       - name: Validate ecosystem package metadata
@@ -66,16 +85,19 @@ jobs:
           git ls-files -z -- '*.php' ':(exclude)plugin/think-plugs-helper/**' |
           xargs -0 -n1 php -l
 
-      - name: Run Admin tests
-        run: phpunit -c plugin/think-plugs-admin/phpunit.xml.dist
-
       - name: Start disposable MySQL for database regression tests
+        env:
+          MYSQL_VERSION: ${{ matrix.mysql }}
         run: |
+          options=(--default-authentication-plugin=mysql_native_password)
+          if [[ "$MYSQL_VERSION" == '8.4' ]]; then
+            options=(--mysql-native-password=ON)
+          fi
           docker run --rm --detach --name thinkadmin-test-mysql \
             --publish 127.0.0.1:13306:3306 --tmpfs /var/lib/mysql:rw \
             --env MYSQL_ALLOW_EMPTY_PASSWORD=yes --env MYSQL_DATABASE=phinx_fixture \
-            --env MYSQL_ROOT_HOST=% mysql:8.4 --mysql-native-password=ON
-          for attempt in $(seq 1 30); do
+            --env MYSQL_ROOT_HOST=% "mysql:$MYSQL_VERSION" "${options[@]}"
+          for ((attempt = 0; attempt < 30; attempt++)); do
             if docker exec thinkadmin-test-mysql mysqladmin --protocol=tcp --host=127.0.0.1 ping --silent; then
               docker exec thinkadmin-test-mysql mysql -uroot -e "ALTER USER 'root'@'%' IDENTIFIED WITH mysql_native_password BY ''; ALTER USER 'root'@'localhost' IDENTIFIED WITH mysql_native_password BY '';"
               exit 0
@@ -85,33 +107,24 @@ jobs:
           docker logs thinkadmin-test-mysql
           exit 1
 
-      - name: Run Library tests
-        run: phpunit -c plugin/think-library/phpunit.xml.dist
+      - name: Run ecosystem regression tests
+        if: matrix.scope == 'full'
+        run: PHPUNIT_BIN="$(command -v phpunit)" php tests/run.php
+
+      - name: Verify installation and production upgrades on older MySQL
+        if: matrix.scope == 'upgrade'
+        env:
+          THINKADMIN_TEST_DB: ':memory:'
+        run: php tests/check-upgrade.php mysql
 
       - name: Check ecosystem syntax on PHP 8.2
-        if: matrix.php == '8.2'
+        if: matrix.php == '8.2' && matrix.scope == 'full'
         run: |
           find app plugin tests -type f -name '*.php' ! -path '*/vendor/*' -print0 |
           xargs -0 -n1 php -l
 
-      - name: Run isolated account, payment and mall tests
-        env:
-          THINKADMIN_TEST_DB: ':memory:'
-        run: |
-          phpunit -c plugin/think-plugs-account/phpunit.xml.dist
-          phpunit -c plugin/think-plugs-payment/phpunit.xml.dist
-          phpunit -c plugin/think-plugs-wemall/phpunit.xml.dist
-
-      - name: Check Wuma code conversion
-        run: phpunit --no-configuration --bootstrap vendor/autoload.php plugin/think-plugs-wuma/tests/CodeTest.php
-
-      - name: Check controller authorization
-        run: |
-          php tests/check-rbac.php
-          php tests/check-coder-token.php
-
       - name: Check coding style on PHP 8.2
-        if: matrix.php == '8.2'
+        if: matrix.php == '8.2' && matrix.scope == 'full'
         run: |
           composer install --no-interaction --prefer-dist --no-progress
           vendor/bin/php-cs-fixer fix --dry-run --diff --using-cache=no --config=.php-cs-fixer.php --path-mode=intersection \

@@ -11,7 +11,11 @@ concurrency:
   cancel-in-progress: false
 
 jobs:
+  test:
+    uses: ./.github/workflows/test-admin.yml
+
   split:
+    needs: test
     if: github.repository == 'zoujingli/ThinkAdminDeveloper'
     runs-on: ubuntu-latest
     env:
@@ -21,7 +25,7 @@ jobs:
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
-          ref: ${{ github.ref_name }}
+          ref: ${{ github.sha }}
 
       - name: Setup Private Key
         run: |
