@@ -114,17 +114,47 @@ try {
     }
     echo "PASS: release / 失败、脏源码、来源不符及缺失检查均阻断\n";
 
+    // 总状态成功不能覆盖单项失败；缺失日志和矩阵同样不能成为发布凭据。
+    $results = $evidence . '/7.2-8.4/results.tsv';
+    $original = file_get_contents($results);
+    foreach ([str_replace("console\t0", "console\t1", $original), $original . "console\t0\n"] as $invalid) {
+        acceptanceWrite($results, $invalid);
+        [$status] = acceptanceRun($site, ['bash', '.github/split-linux.sh']);
+        acceptanceCheck($status !== 0, '总状态掩盖单项失败或重复检查');
+    }
+    acceptanceWrite($results, $original);
+    foreach ([$evidence . '/7.2-8.4/console.log', $evidence . '/8.2-8.0/matrix.json'] as $path) {
+        rename($path, $path . '.held');
+        [$status] = acceptanceRun($site, ['bash', '.github/split-linux.sh']);
+        acceptanceCheck($status !== 0, '证据文件缺失未阻断：' . basename($path));
+        rename($path . '.held', $path);
+    }
+    acceptanceCheck(releaseGit($directory, ['--git-dir=' . $remotes . '/think-one.git', 'for-each-ref', '--format=%(refname)']) === '', '证据不完整时仍发生推送');
+    echo "PASS: release / 单项失败、重复检查、缺失日志及缺失矩阵均阻断\n";
+
+    // 模拟第二个仓库拒绝更新，第一仓库的局部成功不能产生完整发布凭据。
+    $rejectHook = $remotes . '/think-two.git/hooks/pre-receive';
+    acceptanceWrite($rejectHook, "#!/bin/sh\nexit 1\n");
+    chmod($rejectHook, 0755);
+    [$status] = acceptanceRun($site, ['bash', '.github/split-linux.sh']);
+    acceptanceCheck($status !== 0, '部分拆分失败仍返回成功');
+    $manifest = $site . '/runtime/release/' . $source . '/split.tsv';
+    acceptanceCheck(!is_file($manifest) && !is_file(dirname($manifest) . '/acceptance.json'), '部分拆分失败仍生成发布凭据');
+    acceptanceCheck(releaseGit($directory, ['--git-dir=' . $remotes . '/think-one.git', 'rev-parse', 'master']) !== '', '未进入部分拆分成功场景');
+    acceptanceCheck(releaseGit($directory, ['--git-dir=' . $remotes . '/think-two.git', 'for-each-ref', '--format=%(refname)']) === '', '失败的远端仍被更新');
+    unlink($rejectHook);
+
     [$status, $output] = acceptanceRun($site, ['bash', '.github/split-linux.sh']);
     if ($status !== 0) {
         fwrite(STDERR, $output);
     }
     acceptanceCheck($status === 0, '真实 splitsh 拆分失败，退出码 ' . $status);
-    $manifest = $site . '/runtime/release/' . $source . '/split.tsv';
     acceptanceCheck(is_file($manifest), '未生成拆分凭据');
     foreach (['think-one', 'think-two'] as $plugin) {
         $tree = releaseGit($directory, ['--git-dir=' . $remotes . '/' . $plugin . '.git', 'rev-parse', 'master^{tree}']);
         acceptanceCheck($tree === releaseGit($site, ['rev-parse', 'HEAD:plugin/' . $plugin]), '拆分树与被验收源码不一致');
     }
+    echo "PASS: release / 部分失败阻止发布并允许修复后重跑\n";
     echo "PASS: release / 真实 splitsh 与源码目录树一致\n";
     $arguments = ['bash', '.github/release.sh', '--manifest', $manifest];
     [$status, $output] = acceptanceRun($site, array_merge($arguments, ['--dry-run', 'v1.0.0']));
