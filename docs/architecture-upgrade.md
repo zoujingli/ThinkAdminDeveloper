@@ -34,8 +34,9 @@ flowchart LR
   L --> Q[队列监听与任务子进程]
 ```
 
-- HTTP：public/index.php → RuntimeService::doWebsiteInit → Http::run/end；
+- HTTP：Nginx/FastCGI → PHP-FPM → public/index.php → RuntimeService::doWebsiteInit → Http::run/end；
   Library 初始化时注册中间件，HttpEnd 清理请求内 sysvar。
+  `php think run` 使用 ThinkPHP 内置开发服务器和 static 的 router，单独记录验证结果，不能替代 FPM。
 - CLI：think → RuntimeService::doConsoleInit → Console::run；框架拥有自动退出和异常捕获设置，
   项目入口不额外 exit。调用方关闭自动退出后获得返回码，关闭异常捕获后接收原异常。
 - Workerman：xadmin:worker → HttpServer::onWorkerStart → ThinkApp，每个工作进程初始化一次；
@@ -133,7 +134,12 @@ PHP 7.2 镜像仅用于旧版本兼容验收，不作为生产运行镜像。
 - tests/check-composer.php sqlite|mysql：真实安装器、path/zip 两种分发、后台基础组合与全部运行插件，
   新装、模拟旧库更新、失败重试、锁文件重装、配置保留、服务注册及独立库恢复余额样本；
   已安装站点补验普通异常、未定义函数和参数类型错误的失败迁移，核对 shell/进程状态及迁移记录。
-- tests/check-lifecycle.php：HTTP、Workerman 连续请求、异常恢复、请求状态和会话隔离，以及队列生命周期。
+- tests/check-lifecycle.php sqlite|mysql web：分别启动 `php think run` 和 Nginx/PHP-FPM，覆盖真实
+  HTTP 请求、初始化异常及 Exception/Error/TypeError/数据库错误后的同一进程恢复、会话与配置隔离及事务回滚。
+  使用 static 配置、router 和 admin 迁移；两个入口只注入临时应用根目录，复用真实运行服务。
+  FPM 固定单个非 root worker，通过响应的 `PHP_SAPI=fpm-fcgi` 与进程号验证请求链。
+- tests/check-lifecycle.php sqlite worker：Workerman 连续请求、异常恢复、请求状态和会话隔离，
+  以及队列启动、任务失败、后续任务成功和停止；不以该结果替代 FPM 验收。
 - tests/check-release.php：真实 splitsh、本地 bare 仓库、发布凭据、标签冲突、重跑、过期来源与并发覆盖保护；
   源码仓库和远端均为隔离夹具，门禁输入是合成证据，不能冒充主仓发布或数据库验收结果。
 
@@ -142,7 +148,9 @@ PHP 7.2 镜像仅用于旧版本兼容验收，不作为生产运行镜像。
 安装、更新、post-autoload-dump 事件照常执行。
 
 每组证据保存在 runtime/acceptance：源码 SHA、工作区差异、源码归档哈希、镜像 ID、依赖锁文件、
-PHP/Composer 版本、各检查日志和退出状态。各独立检查全部执行，任一失败使整组失败。
+PHP/FPM/Nginx/Composer 版本、各检查日志和退出状态。FPM 和 Nginx 的访问、错误及进程日志也保留，
+正常停止需返回 0。各独立检查全部执行，任一失败使整组失败。发布门禁要求 `http-sqlite`、
+`http-mysql` 检查与 FPM/Nginx 版本证据，旧的仅 CLI/Workerman 结果不能作为新 FPM 验收凭据。
 带工作区改动的结果仅用于开发验收，不能作为发布某一 Git 提交的证明。
 复现某组已记录依赖时，在对应源码上设置 THINKADMIN_ACCEPTANCE_LOCK 为该组证据内 composer.lock
 的绝对路径，再运行单组 Docker 命令；依赖准备将改用 install，避免重新解析版本。
@@ -282,3 +290,35 @@ bash .github/release.sh --dry-run --manifest /path/to/split.tsv vX.Y.Z [插件�
 修复后的定向包测试在 PHP 7.2 / ThinkPHP 6.1 和 PHP 8.2 / ThinkPHP 8 均通过：ThinkLibrary 61 tests / 420 assertions，Wemall 18 tests / 89 assertions。四组 Docker 验收中，语法、元数据、核心回归或升级、生命周期和拆分发布检查通过；Console 与 Composer 检查仍因既有 Error、TypeError、boot 及嵌套命令失败返回 0 的门禁而失败，四组没有生成发布资格凭据。该既有阻断未在本次月度回归修复中扩大处理，生产上线仍须先解除命令失败门禁并重新跑完整矩阵。
 
 本次证据保存在 `runtime/acceptance/month-review.rhikyb` 及四组新验收目录；当前工作区的修复差异可通过 `git diff` 复核。未执行真实远端推送、标签发布、生产数据库恢复或现场切换。
+
+## 2026-10-15 FPM 与 think run 验收
+
+以 `f7c50f2` 加本次测试差异为开发快照，沿用上一轮四组依赖锁文件，实际补验结果如下。
+每格 HTTP 结果均包含 SQLite 和该行 MySQL 的真实请求，不以 CLI 或 Workerman 结果代替。
+
+| 环境 | Nginx / PHP-FPM | php think run | 核心回归或升级 | 整组发布门禁 |
+| --- | --- | --- | --- | --- |
+| PHP 7.2.34 / MySQL 8.4 | 已通过 | 已通过 | 已通过 | 失败 |
+| PHP 8.2.34 / MySQL 8.4 | 已通过 | 已通过 | 已通过 | 失败 |
+| PHP 7.2.34 / MySQL 5.7.44 | 已通过 | 已通过 | 已通过 | 失败 |
+| PHP 8.2.34 / MySQL 8.0 | 已通过 | 已通过 | 已通过 | 失败 |
+
+已验证正常请求、TypeError、普通异常、Error、真实数据库查询错误和应用初始化异常后，
+同一 worker 仍可继续响应；HTTP 错误状态为 500，正常请求为 200，会话隔离、配置稳定、
+数据保留与事务回滚均通过。Nginx/FPM 正常停止的退出码均为 0。初始化故障对应日志中的
+`LIFECYCLE_INIT_FAILURE` 为预期注入，后续请求的 PID 未变化。实际 Nginx 为 1.14.2 / 1.26.3。
+
+两条完整回归各为 139 tests / 692 assertions，另两组升级、四组 Workerman/队列和本地拆分发布
+检查通过。Console 以及 SQLite/MySQL Composer 故障注入仍因 Error/TypeError 等失败返回 0
+而不满足门禁，四组总退出码均为 1；本轮没有解除该阻断，也没有生成发布凭据。
+
+首轮新增数据库故障夹具误用了无条件 `find()`，该调用按 ThinkPHP 约定不执行 SQL，不能注入
+数据库错误；改为显式查询不存在的表并隔离各模式数据后重跑通过，没有修改 ORM 或业务逻辑。
+MySQL 5.7 首次容器启动退出 139，PHP 验收未开始；同镜像重建隔离实例后完成上述测试，
+该次环境故障的确切根因尚未定位，原始记录保存在 `php7.2-mysql5.7.A8Lu3x`。
+
+最终四组证据位于 `runtime/acceptance/` 下的 `php7.2-mysql8.4.4w3526`、
+`php8.2-mysql8.4.nlRTjU`、`php7.2-mysql5.7.ucuhPf`、`php8.2-mysql8.0.evqAWM`。
+这些是包含测试差异的开发验收，不能作为干净提交的发布证明。临时站点、数据库和容器已回收。
+生产配置、多 worker 并发负载、生产快照恢复和现场切换未运行；本次结论限定为上述请求链及
+升级场景，不代表整站业务或生产容量已经验收。

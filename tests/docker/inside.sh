@@ -18,6 +18,8 @@ done
 [[ $resolved == true ]] || { cat /evidence/resolve.log; exit 1; }
 cp composer.lock /evidence/composer.lock
 php -v > /evidence/php-version.txt
+php-fpm -v > /evidence/fpm-version.txt
+nginx -v > /evidence/nginx-version.txt 2>&1
 composer --version > /evidence/composer-version.txt
 composer show --locked --format=json > /evidence/dependencies.json
 
@@ -48,7 +50,9 @@ fi
 check console php tests/check-console.php
 check composer-sqlite php tests/check-composer.php sqlite
 check composer-mysql php tests/check-composer.php mysql
-check lifecycle php tests/check-lifecycle.php
+check http-sqlite php tests/check-lifecycle.php sqlite web
+check http-mysql php tests/check-lifecycle.php mysql web
+check lifecycle php tests/check-lifecycle.php sqlite worker
 if [[ $(php -r 'echo PHP_MAJOR_VERSION;') == 8 && $scope == full ]]; then
     check dev-dependencies composer install --no-plugins --no-scripts --no-interaction --prefer-dist --no-progress
     check style vendor/bin/php-cs-fixer fix --dry-run --diff --using-cache=no --config=.php-cs-fixer.php --path-mode=override \

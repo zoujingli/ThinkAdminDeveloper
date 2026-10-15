@@ -37,7 +37,7 @@ try {
         if (!isset($expected[$key]) || isset($verified[$key]) || ($matrix['scope'] ?? '') !== $expected[$key]) {
             throw new RuntimeException('矩阵不匹配或重复：' . $key);
         }
-        foreach (['source-sha.txt', 'worktree.txt', 'exit-code.txt', 'results.tsv', 'composer.lock', 'dependencies.json', 'images.txt', 'source-archive.sha256', 'php-version.txt', 'composer-version.txt'] as $required) {
+        foreach (['source-sha.txt', 'worktree.txt', 'exit-code.txt', 'results.tsv', 'composer.lock', 'dependencies.json', 'images.txt', 'source-archive.sha256', 'php-version.txt', 'fpm-version.txt', 'nginx-version.txt', 'composer-version.txt'] as $required) {
             if (!is_file($path . '/' . $required)) {
                 throw new RuntimeException($key . ' 缺少证据：' . $required);
             }
@@ -56,7 +56,7 @@ try {
             }
             $checks[$columns[0]] = true;
         }
-        $requiredChecks = ['syntax', 'metadata', $expected[$key] === 'full' ? 'regression' : 'upgrade', 'console', 'composer-sqlite', 'composer-mysql', 'lifecycle'];
+        $requiredChecks = ['syntax', 'metadata', $expected[$key] === 'full' ? 'regression' : 'upgrade', 'console', 'composer-sqlite', 'composer-mysql', 'http-sqlite', 'http-mysql', 'lifecycle'];
         if ($key === '8.2/8.4') {
             $requiredChecks[] = 'dev-dependencies';
             $requiredChecks[] = 'style';

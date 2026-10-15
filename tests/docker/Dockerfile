@@ -1,5 +1,5 @@
 ARG PHP_SERIES=8.2
-FROM public.ecr.aws/docker/library/php:${PHP_SERIES}-cli
+FROM public.ecr.aws/docker/library/php:${PHP_SERIES}-fpm
 
 ARG PHP_SERIES
 ARG COMPOSER_VERSION=2.8.12
@@ -12,7 +12,7 @@ RUN if [ "$PHP_SERIES" = "7.2" ]; then \
             -e '/buster-updates/d' /etc/apt/sources.list; \
     fi \
     && apt-get -o Acquire::Check-Valid-Until=false update \
-    && apt-get install -y --no-install-recommends git unzip zip procps libpng-dev libjpeg62-turbo-dev libfreetype6-dev \
+    && apt-get install -y --no-install-recommends git unzip zip procps util-linux nginx libpng-dev libjpeg62-turbo-dev libfreetype6-dev \
     && if [ "$PHP_SERIES" = "7.2" ]; then \
         docker-php-ext-configure gd --with-freetype-dir=/usr --with-jpeg-dir=/usr --with-png-dir=/usr; \
     else \
