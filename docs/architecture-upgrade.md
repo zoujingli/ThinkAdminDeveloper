@@ -397,3 +397,29 @@ PHP 7.2 / migration 3.0.0 的 MySQL 失败用例中，先恢复表的 1 行保�
 
 本轮是备份相关的定向验收，没有重跑整体发布矩阵。既有 Console/Composer 失败状态门禁仍受阻，
 不能据此判定可稳定上线。生产真实快照、生产 WAL 配置、非事务表恢复、容量与现场切换未运行。
+
+## 2026-10-15 修复后完整矩阵
+
+在干净提交 `5a2adce00d726215c51f2076c7807afd3850d920` 上执行统一 Docker 入口，复用并核对
+原四组 Composer 锁文件。四组均记录同一源码 SHA、空工作区差异及实际镜像和依赖信息。
+
+| 环境 | 核心回归或升级 | FPM / think run（含 SQLite 和 MySQL） | 发布门禁 |
+| --- | --- | --- | --- |
+| PHP 7.2 / MySQL 8.4 | 已通过，140 tests / 708 assertions | 已通过 | 失败 |
+| PHP 8.2 / MySQL 8.4 | 已通过，140 tests / 708 assertions | 已通过 | 失败 |
+| PHP 7.2 / MySQL 5.7 | 已通过，安装升级 | 已通过 | 失败 |
+| PHP 8.2 / MySQL 8.0 | 已通过，安装升级 | 已通过 | 失败 |
+
+四组 Workerman/队列、语法及包元数据检查通过；两条完整回归均包含新增备份完整性用例。
+正常 Composer 安装升级、配置与数据保留、重复执行及可捕获迁移异常场景继续通过。
+本地真实 splitsh 发布检查、开发依赖安装和代码风格检查通过，本轮未发现新增回归。
+
+失败仍为既有 Console 的 Error/TypeError、boot 初始化和嵌套 call 后异常，以及真实发布和
+Composer 入口的 Error/TypeError 故障迁移返回 0。四组总退出码均为 1；对实际验收证据执行
+verify-acceptance.php 返回“验收失败，禁止发布”，没有生成发布凭据。FPM 请求链通过不能解除
+自动更新的失败状态阻断，也不能代替生产快照、容量或现场切换验收。
+
+证据目录为 `runtime/acceptance/` 下的 `php7.2-mysql8.4.QEPRkr`、`php8.2-mysql8.4.23ePPC`、
+`php7.2-mysql5.7.CbrPRK`、`php8.2-mysql8.0.8FIEE7`。5.7 首个实例在 PHP 启动前退出 139，
+OOMKilled=false，重建后完成上述验收；环境故障原因仍未定位，日志保存在 `php7.2-mysql5.7.1sCWSG`。
+临时站点、数据库和容器均已清理；本轮只更新验收记录，没有修改运行代码或执行远端、生产操作。
