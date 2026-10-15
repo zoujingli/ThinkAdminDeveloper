@@ -31,6 +31,16 @@ use think\admin\extend\PhinxSchema;
  */
 class WemallMigrationTest extends TestCase
 {
+    /**
+     * 约束商城发布包至少安装包含 PhinxSchema 的 ThinkLibrary 版本。
+     * 保留开发分支约束以支持聚合项目的 path 开发包和同一分支联调。
+     */
+    public function testPackageRequiresCompatibleThinkLibrary(): void
+    {
+        $manifest = json_decode(file_get_contents(dirname(__DIR__) . '/composer.json'), true);
+        self::assertSame('^6.1.100|dev-main|dev-master', $manifest['require']['zoujingli/think-library'] ?? null);
+    }
+
     public function testSqliteMigrationPreservesDataAndEnforcesConstraints(): void
     {
         $this->assertSqliteMigration('');

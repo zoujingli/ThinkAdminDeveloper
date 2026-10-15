@@ -269,3 +269,16 @@ bash .github/release.sh --dry-run --manifest /path/to/split.tsv vX.Y.Z [插件�
    若需要恢复，按已演练步骤恢复数据库与匹配代码，不能仅回退代码假定数据已回退。
 
 真实推送、标签发布、生产备份恢复和流量切换需要对应操作授权；本地验收不会执行这些操作。
+
+## 2026-10-15 本月回归修复复核
+
+本次针对 `40c4163..04c9cc3` 的复核确认并修复两处本月新增问题：
+
+| 问题 | 修复 | 结果 |
+| --- | --- | --- |
+| PHP 7.2 / migration 3.0.0 的 SQLite PDO 静默模式下，备份约束失败只返回 false，恢复行数仍递增并登记迁移 | `PhinxBackup::insertRows` 显式检查 `PDOStatement::execute()`，失败抛出异常并复用既有保存点回滚；新增静默 PDO 回归测试 | PHP 7.2 实际冲突恢复：退出 1、实际 0 行、无迁移记录；PHP 8.2 同场景通过 |
+| Wemall 新迁移直接使用 `PhinxSchema`，但 Composer 允许只保留旧 ThinkLibrary | Wemall 直接声明 `zoujingli/think-library` 为 `^6.1.100|dev-main|dev-master`；`v6.1.99` 不含该类，`v6.1.100` 起提供 | 只更新商城且不允许依赖联动时 Composer 安全拒绝；使用验收入口的 `--with-all-dependencies` 自动更新 Library 后迁移通过；两包同步更新通过 |
+
+修复后的定向包测试在 PHP 7.2 / ThinkPHP 6.1 和 PHP 8.2 / ThinkPHP 8 均通过：ThinkLibrary 61 tests / 420 assertions，Wemall 18 tests / 89 assertions。四组 Docker 验收中，语法、元数据、核心回归或升级、生命周期和拆分发布检查通过；Console 与 Composer 检查仍因既有 Error、TypeError、boot 及嵌套命令失败返回 0 的门禁而失败，四组没有生成发布资格凭据。该既有阻断未在本次月度回归修复中扩大处理，生产上线仍须先解除命令失败门禁并重新跑完整矩阵。
+
+本次证据保存在 `runtime/acceptance/month-review.rhikyb` 及四组新验收目录；当前工作区的修复差异可通过 `git diff` 复核。未执行真实远端推送、标签发布、生产数据库恢复或现场切换。
