@@ -453,3 +453,26 @@ OOMKilled=false，重建后完成上述验收；环境故障原因仍未定位�
 已复核四组原始结果及本地发布演练的 9 组通过记录，没有重复运行未变化的测试。
 正常安装升级、FPM、think run 和所测备份恢复已通过；故障注入的退出状态仍未满足发布门禁。
 这与上次远端拆分成功是两个不同版本、不同验收范围的结果，不能表述为线上发布失败或当前修复已发布。
+
+## 2026-10-15 例外发布及远端结果
+
+维护者在明确告知 CLI/Composer 故障退出码限制后确认继续例外发布。主仓
+[`v1.0.7`](https://github.com/zoujingli/ThinkAdminDeveloper/releases/tag/v1.0.7) 指向
+`aa86c7327f8818067d640158c5ec35b04c35be18`；12 个插件按各仓独立补丁版本发布，完整标签与
+拆分 SHA 对应关系记录在该 Release。13 个远端标签均匹配预定提交，12 个插件目录树均与
+主仓对应目录一致，所有 Release 已发布并明确披露例外及已知限制，没有改写验收通过状态。
+
+发布触发的主仓 CI 四组正常回归或升级、FPM、think run、Workerman/队列均通过；两条完整
+核心回归各为 140 tests / 708 assertions。Console/Composer 的原有故障注入仍失败，自动拆分
+和自动主仓 Release 作业因此跳过；本次分发和 Release 由已授权的例外操作完成。
+远端运行与证据分别见 [master 流水线](https://github.com/zoujingli/ThinkAdminDeveloper/actions/runs/38762555927)
+和 [v1.0.7 流水线](https://github.com/zoujingli/ThinkAdminDeveloper/actions/runs/38762943475)。
+
+额外发现 Linux CI 的结果文件由容器 root 创建，宿主在追加发布检查结果时拒绝写入；该次
+9 组发布演练实际通过，但 results.tsv 缺少 release 行。后续仅在宿主提前创建该文件以保留
+其所有权；Linux 不同用户的最小复现先失败、预建后通过，既有失败行继续保留。该修正只影响
+验收证据写入，不改变运行代码、已发布标签或发布门禁的判定标准。
+
+截至本轮核验，11 个插件新标签已进入公开 Packagist，source/dist 引用均与发布提交一致；
+wuma 的公开元数据接口返回 404，未据此宣称 Composer 公共仓可安装，也未新增注册包。
+本次只完成代码分发、标签和 GitHub Release，没有进行生产站点更新或现场恢复。

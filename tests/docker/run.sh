@@ -34,6 +34,8 @@ cleanup() {
     exit "$exit_code"
 }
 trap cleanup EXIT
+# 宿主还会追加发布结果，预建文件以避免 Linux 上容器 root 创建的文件拒绝宿主写入。
+touch "$evidence/results.tsv"
 git -C "$root" rev-parse HEAD > "$evidence/source-sha.txt"
 printf '{"php":"%s","mysql":"%s","scope":"%s"}\n' "$php_version" "$mysql_version" "$scope" > "$evidence/matrix.json"
 git -C "$root" status --porcelain > "$evidence/worktree.txt"
