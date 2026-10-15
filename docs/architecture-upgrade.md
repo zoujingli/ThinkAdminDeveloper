@@ -423,3 +423,33 @@ verify-acceptance.php 返回“验收失败，禁止发布”，没有生成发�
 `php7.2-mysql5.7.CbrPRK`、`php8.2-mysql8.0.8FIEE7`。5.7 首个实例在 PHP 启动前退出 139，
 OOMKilled=false，重建后完成上述验收；环境故障原因仍未定位，日志保存在 `php7.2-mysql5.7.1sCWSG`。
 临时站点、数据库和容器均已清理；本轮只更新验收记录，没有修改运行代码或执行远端、生产操作。
+
+## 2026-10-15 远端发布状态核验
+
+只读核验 GitHub 后确认，远端 `master` 仍为 `5eecf723127b86391bf0247df066bc88fbe9bc83`。
+对应的 [2026-10-14 拆分流水线](https://github.com/zoujingli/ThinkAdminDeveloper/actions/runs/38501094465)
+四组测试及拆分任务均成功。逐项对照推送日志与 12 个插件仓库当前 `master`，拆分提交全部一致；
+再比较每个远端提交的根目录树与该主仓提交的 `plugin/<插件名>` 目录树，12 项均一致。
+
+| 插件仓库 | 已核对的远端拆分提交 |
+| --- | --- |
+| think-library | `3b0ae65e2bdcf4e4d16abc95f788eba927a02d5f` |
+| think-plugs-account | `b6d3b5476f1244cdce65afb8c75a339250c37599` |
+| think-plugs-admin | `fa4daef8ffcfa9a1d8a36b54e67eb1de33b035a4` |
+| think-plugs-center | `d81c8238e3e004696155724c013541ae25fa64e4` |
+| think-plugs-helper | `5a12d68bcf816a2b183597e82b2faadd034005f6` |
+| think-plugs-payment | `b55212d124e84456d23f5d7cd429a7c4e67138cb` |
+| think-plugs-static | `61a96dbe7bffd247c2c0f2ae31d3ba746b687cde` |
+| think-plugs-wechat-service | `bcbb95691bcf455c2cd1e1ee2c83bb27cbd3b753` |
+| think-plugs-wechat | `816c42d5cdd6fabd9d408e1370ea214fc14e1165` |
+| think-plugs-wemall | `5d6b514c7bc25b02ad86d3b9b47c20ad8f3a8de1` |
+| think-plugs-worker | `419b96e2ffe2e348711a46eb90f3137bfe16f981` |
+| think-plugs-wuma | `1f310c2b70bf0ffaf866cd2733db93c41ec3ca9f` |
+
+主仓最新 GitHub Release 仍为 `v1.0.6`，发布时间为 2025-03-05；该记录不代表各插件的最新稳定版本。
+本轮核验不包含 Packagist 同步或生产站点部署。当前本地修复尚未推送，未触发其远端 CI、拆分或标签发布。
+
+本地完整矩阵的验收源码仍是上一节的 `5a2adce`，随后 `01c9444` 和本次记录只更新本文。
+已复核四组原始结果及本地发布演练的 9 组通过记录，没有重复运行未变化的测试。
+正常安装升级、FPM、think run 和所测备份恢复已通过；故障注入的退出状态仍未满足发布门禁。
+这与上次远端拆分成功是两个不同版本、不同验收范围的结果，不能表述为线上发布失败或当前修复已发布。
