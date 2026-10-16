@@ -1,7 +1,6 @@
 #!/usr/bin/env php
 <?php
 
-declare(strict_types=1);
 /**
  * +----------------------------------------------------------------------
  * | ThinkAdmin Plugin for ThinkAdmin
@@ -20,6 +19,7 @@ declare(strict_types=1);
  */
 use think\admin\service\RuntimeService;
 
+// 带 shebang 的入口不声明 strict_types，兼容 PHP 7.2 的包含调用。
 // 加载基础文件
 require __DIR__ . '/vendor/autoload.php';
 
