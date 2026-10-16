@@ -38,7 +38,8 @@ flowchart LR
   Library 初始化时注册中间件，HttpEnd 清理请求内 sysvar。
   `php think run` 使用 ThinkPHP 内置开发服务器和 static 的 router，单独记录验证结果，不能替代 FPM。
 - CLI：think → RuntimeService::doConsoleInit → Console::run；框架拥有自动退出和异常捕获设置，
-  项目入口不额外 exit。调用方关闭自动退出后获得返回码，关闭异常捕获后接收原异常。
+  项目入口不额外 exit。调用方关闭自动退出后获得返回码，关闭异常捕获后接收原异常；
+  入口未捕获异常的处理边界见下文“命令失败状态”。
 - Workerman：xadmin:worker → HttpServer::onWorkerStart → ThinkApp，每个工作进程初始化一次；
   每次请求复用应用，重置请求、会话、视图和查询计数，再执行 Http::run/end。
 - 队列：xadmin:queue listen 扫描等待任务，任务子进程执行 dorun 并记录状态；
@@ -79,13 +80,20 @@ xadmin:publish 还发布应用模块内的 config、public、database：配置�
 发布包复制 app/admin、app/wechat 并清理 vendor 后，对应服务无法注册。根项目改为 app\ → app/，
 延续框架原有应用目录规则；path 与 dist、基础与完整插件组合均通过真实服务注册检查。
 
-命令失败状态阻断：PHP 7.2/ThinkPHP 6.1 和 PHP 8.2/ThinkPHP 8 两条依赖线中，
+命令失败状态：修复前 PHP 7.2/ThinkPHP 6.1 和 PHP 8.2/ThinkPHP 8 两条依赖线中，
 原生 Console 与本仓入口对 Error/TypeError、服务 boot 异常均可输出错误但以 0 退出。
 Console::run 只捕获 Exception，初始化又发生于 run 之前；全局异常处理器只 report/render。
-tests/check-console.php 同时运行项目入口、static 模板和不注册 Library 的原生框架对照，
-发现上述行为时返回非零。原生对照定位的是行为边界，不能单凭该结果笼统认定框架有问题，
-也不能将项目的“真实失败非零”要求改为接受 0。此项解决前不得将验收标记为通过；保持入口
-无额外 exit、不改写共享异常处理器、不修改 vendor 的约束，通过原失败场景才能解除阻断。
+static 权威模板及根 think 仅在入口直接被 CLI/phpdbg 执行且异常逃出控制台时，清除当前
+异常处理器并重新抛出原 Throwable，由 PHP 原生未捕获机制产生非零状态。此边界不添加 exit，
+不修改共享服务、HTTP 入口或 vendor；入口被其他脚本包含时保留调用方处理器并传递原异常。
+正常返回和显式状态码继续由 Console 控制。
+
+tests/check-console.php 与 tests/check-composer.php 分别对项目两个入口和真实 Composer 更新
+继续严格要求失败非零。
+不注册 Library 的原生 ThinkPHP 对照单独输出 CONTROL、实际退出码及是否满足项目约定，
+确认故障标记真实出现，但不将其默认退出行为作为项目门禁，也不将对照标记为通过。
+包含两个实际入口的回归同时验证 autoExit=false 后继续执行、catchExceptions=false 时原异常
+传递，以及调用方异常处理器保持不变。通过项目原始失败场景及完整矩阵后才能解除发布阻断。
 
 2026-10-14 继续核查官方版本：6.1、8.x 分支最新提交仍分别为 bc1045b、ced4837，与本次验收锁定
 的提交一致。另在 Docker 内仅安装官方框架、不加载 ThinkLibrary 的最小应用中验证稳定版：
@@ -95,7 +103,7 @@ tests/check-console.php 同时运行项目入口、static 模板和不注册 Lib
 | 7.2.34 / v6.1.5（57d1950） | 0 / 0 / 0，失败 | 关闭自动退出后返回、捕获原异常均通过 |
 | 8.2.34 / v8.1.4（8e7b2b2） | 0 / 0 / 0，失败 | 关闭自动退出后返回、捕获原异常均通过 |
 
-因此切换到这两个稳定版也不能解除阻断。已有 autoExit、catchExceptions 开关控制正常，
+当时验证表明，仅切换到这两个稳定版不能解除阻断。已有 autoExit、catchExceptions 开关控制正常，
 但不能补齐 Throwable 捕获，也不能覆盖发生于 Console::run 之前的初始化异常。
 项目要求覆盖命令执行和未捕获的初始化失败；两者不在同一个捕获范围内，不能用全局退出补丁
 替代责任边界分析。行为位置可对照官方 [Console::run](https://github.com/top-think/framework/blob/57d1950a1844ef8d3098ea290032aeb92e2e32c3/src/think/Console.php)
@@ -112,7 +120,11 @@ try/catch 接收配置和服务启动异常。失败命令在关闭自动退出�
 PHP 7.2 原生对照还复现了 think-helper 3.1.12 的语法错误：Arr::random 的函数调用含尾随逗号，
 但该包仍声明 PHP >=7.1。ThinkLibrary 已有 conflict 排除该版本，本项目四组锁文件均为 3.1.11，
 应保留此约束；上述 PHP 7.2 稳定版对照也使用 3.1.11，避免无关依赖错误干扰结论。
-本次未调整项目依赖、vendor 或异常处理行为，原生复现、锁文件和失败日志保留在本地验收证据中。
+该次对照未调整项目依赖、vendor 或异常处理行为，原生复现、锁文件和失败日志保留在本地验收证据中。
+
+2026-10-16 入口局部修复的宿主验证：PHP 8.4.14 下先确认两份入口各有四类故障退出 0，
+修复后 18 项直接执行、28 项包含入口及 14 项运行服务调用检查全部通过；9 项原生对照保留
+实际结果。入口语法和验收脚本风格检查通过；这些局部结果不替代下述 Docker 四组矩阵。
 
 ## 验收与证据
 

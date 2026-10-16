@@ -101,17 +101,70 @@ PHP
                 $passed = $status === 7;
             }
             $markers = ['exception' => 'COMMAND_EXCEPTION', 'nested' => 'NESTED_EXCEPTION', 'nested-call' => 'NESTED_CALL_EXCEPTION', 'error' => 'COMMAND_ERROR', 'type-error' => 'COMMAND_TYPE_ERROR', 'config' => 'INIT_FAILURE', 'boot' => 'BOOT_FAILURE'];
+            $observed = true;
             if (isset($markers[$scenario])) {
-                $passed = $passed && strpos($output, $markers[$scenario]) !== false;
+                $observed = strpos($output, $markers[$scenario]) !== false;
+                $passed = $passed && $observed;
             }
-            echo ($passed ? 'PASS' : 'FAIL') . ": {$source} / {$scenario} / exit={$status}\n";
-            if (!$passed) {
+            if ($source === 'framework') {
+                // 对照只诊断外部框架默认行为；仍要求场景真实执行，不以项目入口约定判为通过。
+                echo "CONTROL: {$source} / {$scenario} / exit={$status} / 项目退出码约定=" . ($passed ? '满足' : '不满足') . "\n";
+            } else {
+                echo ($passed ? 'PASS' : 'FAIL') . ": {$source} / {$scenario} / exit={$status}\n";
+            }
+            if ($source === 'framework' && isset($markers[$scenario]) ? !$observed : !$passed) {
                 $failures[] = "{$source}/{$scenario}: exit={$status}\n{$output}";
             }
         }
     }
     putenv('ACCEPTANCE_INIT_FAILURE');
     acceptanceWrite($directory . '/vendor/services.php', '<?php return [\think\admin\Library::class, AcceptanceBootFailure::class];');
+    acceptanceWrite(
+        $directory . '/included.php',
+        <<<'PHP'
+<?php
+require __DIR__ . '/vendor/autoload.php';
+$app = \think\admin\service\RuntimeService::init(new \think\App(__DIR__));
+$app->console->setAutoExit(false);
+if (getenv('ACCEPTANCE_PROPAGATE')) {
+    $app->console->setCatchExceptions(false);
+}
+$handler = static function (\Throwable $error) { echo "UNEXPECTED_HANDLER\n"; };
+set_exception_handler($handler);
+try {
+    require __DIR__ . '/think';
+    echo "ENTRY_RETURNED\n";
+} catch (\Throwable $error) {
+    echo 'ENTRY_FORWARDED:' . get_class($error) . ':' . $error->getMessage() . "\n";
+}
+$active = set_exception_handler($handler);
+restore_exception_handler();
+echo $active === $handler ? "HANDLER_PRESERVED\n" : "HANDLER_CHANGED\n";
+echo "CALLER_CONTINUED\n";
+PHP
+    );
+    // 包含实际入口时，异常和处理器由调用方控制，不得因 CLI SAPI 而清除调用方处理器。
+    foreach (['think', 'plugin/think-plugs-static/stc/think'] as $source) {
+        acceptanceWrite($directory . '/think', file_get_contents($root . '/' . $source));
+        foreach ([false, true] as $propagate) {
+            putenv('ACCEPTANCE_PROPAGATE=' . ($propagate ? '1' : '0'));
+            foreach (['success' => '', 'status' => '', 'exception' => 'RuntimeException:COMMAND_EXCEPTION',
+                'nested' => 'RuntimeException:NESTED_EXCEPTION', 'nested-call' => 'RuntimeException:NESTED_CALL_EXCEPTION',
+                'error' => 'Error:COMMAND_ERROR', 'type-error' => 'TypeError:COMMAND_TYPE_ERROR'] as $scenario => $marker) {
+                [$status, $output] = acceptanceRun($directory, [PHP_BINARY, 'included.php', 'acceptance:probe', $scenario]);
+                $returned = strpos($output, 'ENTRY_RETURNED') !== false;
+                $forwarded = $marker !== '' && strpos($output, 'ENTRY_FORWARDED:' . $marker) !== false;
+                $matched = $propagate && $marker !== '' ? $forwarded : $returned || $forwarded;
+                acceptanceCheck(
+                    $status === 0 && $matched && strpos($output, 'HANDLER_PRESERVED') !== false
+                    && strpos($output, 'CALLER_CONTINUED') !== false && strpos($output, 'UNEXPECTED_HANDLER') === false,
+                    '包含入口的调用方控制约定失败：' . $source . '/' . $scenario . "\n" . $output
+                );
+                echo "PASS: include {$source} / {$scenario} / catchExceptions=" . ($propagate ? 'false' : 'true') . " / 调用方继续执行且处理器保留\n";
+            }
+        }
+    }
+    putenv('ACCEPTANCE_PROPAGATE');
     acceptanceWrite(
         $directory . '/embedded.php',
         <<<'PHP'
