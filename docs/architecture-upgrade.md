@@ -141,6 +141,15 @@ Docker 统一入口为 `bash tests/docker/run.sh`，依次运行既有四组矩�
 `bash tests/docker/run.sh 8.2 8.4 full`。MySQL 8 专有默认表达式不作为 5.7 的支持承诺。
 PHP 7.2 镜像仅用于旧版本兼容验收，不作为生产运行镜像。
 
+镜像拉取和构建准备仅在日志表明限流、超时等网络故障时最多尝试三次，间隔 5、15 秒；
+构建语法错误或鉴权失败立即终止。已有匹配平台的 MySQL 镜像可复用，否则先显式拉取。
+每次尝试的日志分别保留，实际镜像 ID/摘要仍写入 images.txt；最终准备失败写入
+preparation-status.txt，明确对应测试未运行。该重试不包裹真实安装钩子、迁移或验收检查。
+GitHub Actions 四组矩阵最多同时运行两组，以降低镜像服务的瞬时请求量。
+2026-10-16 已用临时故障注入验证恢复、持续限流、超时、构建错误和鉴权失败五种分支，
+次数、等待间隔、逐次日志和未运行标记符合上述规则；Bash、ShellCheck、Actionlint 检查通过。
+故障注入只验证准备控制流，真实 Docker 及远端验收仍按四组结果判定。
+
 - composer test / tests/run.php：现有核心与业务回归、权限、令牌及隔离 CLI 迁移。
 - tests/check-console.php：真实进程退出码、初始化失败、Throwable、嵌套调用及调用方控制权。
 - tests/check-composer.php sqlite|mysql：真实安装器、path/zip 两种分发、后台基础组合与全部运行插件，
