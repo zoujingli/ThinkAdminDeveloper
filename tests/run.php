@@ -34,6 +34,7 @@ foreach (['think-library', 'think-plugs-admin', 'think-plugs-account', 'think-pl
 $commands[] = [PHP_BINARY, $phpunit, '--do-not-cache-result', '--no-configuration', '--bootstrap', 'vendor/autoload.php', 'plugin/think-plugs-wuma/tests/CodeTest.php'];
 $commands[] = [PHP_BINARY, 'tests/check-rbac.php'];
 $commands[] = [PHP_BINARY, 'tests/check-coder-token.php'];
+$commands[] = [PHP_BINARY, 'tests/check-form-token.php'];
 $commands[] = [PHP_BINARY, 'tests/check-upgrade.php', 'sqlite'];
 if (getenv('PHINX_TEST_MYSQL_PORT')) {
     $commands[] = [PHP_BINARY, 'tests/check-upgrade.php', 'mysql'];

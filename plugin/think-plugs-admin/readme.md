@@ -78,6 +78,8 @@ composer remove zoujingli/think-plugs-admin
 - **高性能优化**: 针对管理后台进行专门优化，确保操作流畅性
 - **向后兼容**: 保持 API 稳定性，确保平滑升级
 
+用户密码修改（`admin/user/pass`）和文件存储配置（`admin/config/storage`）表单使用 GET 展示、POST 提交，其他请求方法返回 HTTP 405；演示环境的存储配置写入仍优先返回原有禁止修改提示。
+
 ### 插件数据
 
 本插件涉及数据表有：
