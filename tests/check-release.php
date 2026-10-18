@@ -33,6 +33,111 @@ function releaseGit(string $site, array $arguments): string
 }
 
 /**
+ * 执行实际工作流的发布步骤，验证直接提交、首次发布、旧标签补发和重跑行为。
+ * Git 使用隔离仓库；仅将 gh 替换为参数及正文记录器，不连接 GitHub 或创建远端 Release。
+ * @param string $root 被验收源码目录
+ * @param string $directory 本次临时根目录
+ * @throws RuntimeException 正文遗漏提交、范围错误或幂等行为变化时失败
+ */
+function releaseNotesCheck(string $root, string $directory): void
+{
+    $workflow = file_get_contents($root . '/.github/workflows/release.yml');
+    $marker = "        run: |\n";
+    acceptanceCheck(substr_count($workflow, $marker) === 1, '发布步骤结构变化，需重新确认回归入口');
+    $script = preg_replace('/^          /m', '', substr($workflow, strpos($workflow, $marker) + strlen($marker)));
+    $site = $directory . '/notes project';
+    mkdir($site);
+    acceptanceWrite($directory . '/release-step.sh', $script);
+    acceptanceWrite(
+        $directory . '/bin/gh',
+        <<<'PHP'
+#!/usr/bin/env php
+<?php
+if (($argv[1] ?? '') !== 'release') {
+    exit(64);
+}
+if (($argv[2] ?? '') === 'view') {
+    exit(getenv('RELEASE_FIXTURE_EXISTS') === '1' ? 0 : 1);
+}
+if (($argv[2] ?? '') !== 'create') {
+    exit(64);
+}
+$index = array_search('--notes-file', $argv, true);
+$body = $index === false ? '' : file_get_contents($argv[$index + 1]);
+file_put_contents(getenv('RELEASE_FIXTURE_RECORD'), json_encode(['arguments' => $argv, 'body' => $body]));
+PHP
+    );
+    chmod($directory . '/bin/gh', 0755);
+    $environment = [];
+    foreach (['PATH', 'GITHUB_REPOSITORY', 'GITHUB_SERVER_URL', 'RELEASE_TAG', 'RELEASE_FIXTURE_RECORD', 'RELEASE_FIXTURE_EXISTS'] as $name) {
+        $environment[$name] = getenv($name);
+    }
+    try {
+        putenv('PATH=' . $directory . '/bin:' . getenv('PATH'));
+        putenv('GITHUB_REPOSITORY=acceptance/fixture');
+        putenv('GITHUB_SERVER_URL=https://github.com');
+        $record = $directory . '/release-record.json';
+        putenv('RELEASE_FIXTURE_RECORD=' . $record);
+        putenv('RELEASE_FIXTURE_EXISTS=0');
+        releaseGit($site, ['init']);
+        $commits = [
+            ['v1.0.0', 'fix(发布): 首次提交'],
+            ['v1.1.0-rc.1', 'fix(中间件): 直接提交 $(touch injected)'],
+            ['v1.1.0', 'fix(文件): 前缀修复'],
+            ['v2.0.0', 'fix(后续): 不应混入旧版本'],
+        ];
+        foreach ($commits as [$tag, $subject]) {
+            // 从文件读取中文提交，避免旧 PHP 的 C locale 在 shell 参数转义时丢失多字节字符。
+            acceptanceWrite($directory . '/commit-message.txt', $subject . "\n");
+            releaseGit($site, ['commit', '--allow-empty', '-F', $directory . '/commit-message.txt']);
+            releaseGit($site, ['tag', $tag]);
+        }
+        foreach (['v1.1.0', 'v1.0.0', 'v1.1.0-rc.1'] as $tag) {
+            putenv('RELEASE_TAG=' . $tag);
+            [$status, $output] = acceptanceRun($site, ['bash', $directory . '/release-step.sh']);
+            acceptanceCheck($status === 0 && is_file($record), '发布步骤失败：' . $output);
+            $release = json_decode(file_get_contents($record), true);
+            $body = $release['body'];
+            $arguments = $release['arguments'];
+            acceptanceCheck($arguments[3] === $tag && strpos($body, '不应混入旧版本') === false, '正文或目标使用了最新标签而非触发标签');
+            if ($tag === 'v1.0.0') {
+                acceptanceCheck(strpos($body, '首次提交') !== false && strpos($body, '前缀修复') === false, '首次发布遗漏提交或包含未来提交');
+                acceptanceCheck(strpos($body, '/commits/v1.0.0') !== false, '首次发布缺少提交历史链接');
+            } else {
+                acceptanceCheck(strpos($body, '直接提交 $(touch injected)') !== false, 'Release 正文没有具体的直接提交内容：' . $body);
+                acceptanceCheck(strpos($body, '首次提交') === false && strpos($body, '/compare/v1.0.0...' . $tag) !== false, '发布范围没有使用先前版本');
+                acceptanceCheck((strpos($body, '前缀修复') !== false) === ($tag === 'v1.1.0'), '稳定版与预发布的提交范围错误');
+            }
+            acceptanceCheck(in_array('--prerelease', $arguments, true) === (strpos($tag, '-') !== false), '预发布标记变化');
+            acceptanceCheck(!file_exists($site . '/injected'), '提交信息被作为 shell 命令执行');
+        }
+        echo "PASS: release notes / 直接提交、首次发布、旧标签补发、稳定版范围及预发布\n";
+
+        $before = file_get_contents($record);
+        putenv('RELEASE_FIXTURE_EXISTS=1');
+        [$status] = acceptanceRun($site, ['bash', $directory . '/release-step.sh']);
+        acceptanceCheck($status === 0 && file_get_contents($record) === $before, '重跑覆盖了已存在的 Release 正文');
+        putenv('RELEASE_FIXTURE_EXISTS=0');
+        putenv('RELEASE_TAG=v9.9.9');
+        [$status] = acceptanceRun($site, ['bash', $directory . '/release-step.sh']);
+        acceptanceCheck($status !== 0 && file_get_contents($record) === $before, '不存在的标签仍生成 Release');
+        echo "PASS: release notes / 已有正文保留、缺失标签阻断及提交信息按数据处理\n";
+
+        foreach (array_merge([$root . '/.github/workflows/release.yml'], glob($root . '/plugin/*/.github/workflows/release.yml')) as $file) {
+            $content = file_get_contents($file);
+            acceptanceCheck(substr_count($content, $marker) === 1 && strpos($content, 'fetch-depth: 0') !== false, '工作流未获取完整标签历史：' . $file);
+            $actual = preg_replace('/^          /m', '', substr($content, strpos($content, $marker) + strlen($marker)));
+            acceptanceCheck($actual === $script, '子仓发布步骤偏离权威工作流：' . $file);
+        }
+        echo "PASS: release notes / 主仓与全部子仓的发布步骤和完整历史检出一致\n";
+    } finally {
+        foreach ($environment as $name => $value) {
+            putenv($value === false ? $name : $name . '=' . $value);
+        }
+    }
+}
+
+/**
  * 创建门禁专用合成证据，覆盖所有必须存在的检查。
  * @param string $directory 临时证据目录
  * @param string $source 演练源码提交
@@ -78,6 +183,7 @@ try {
     // Debian 旧版 Git 尚不支持 GIT_CONFIG_GLOBAL，用参数继承保证所有子命令使用同一配置。
     putenv("GIT_CONFIG_PARAMETERS='include.path=" . $directory . "/gitconfig'");
     putenv('GIT_CONFIG_NOSYSTEM=1');
+    releaseNotesCheck($root, $directory);
     foreach (['release.sh', 'split-linux.sh', 'splitsh-lite-linux', 'verify-acceptance.php'] as $file) {
         acceptanceWrite($site . '/.github/' . $file, file_get_contents($root . '/.github/' . $file));
         chmod($site . '/.github/' . $file, 0755);
