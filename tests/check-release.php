@@ -48,7 +48,7 @@ function releaseEvidence(string $directory, string $source): void
         foreach (['composer.lock', 'dependencies.json', 'images.txt', 'source-archive.sha256', 'php-version.txt', 'fpm-version.txt', 'nginx-version.txt', 'composer-version.txt'] as $file) {
             acceptanceWrite($path . '/' . $file, 'SYNTHETIC_GATE_FIXTURE');
         }
-        $checks = ['syntax', 'metadata', $scope === 'full' ? 'regression' : 'upgrade', 'console', 'composer-sqlite', 'composer-mysql', 'http-sqlite', 'http-mysql', 'lifecycle'];
+        $checks = ['syntax', 'metadata', $scope === 'full' ? 'regression' : 'upgrade', 'file-distinct-sqlite', 'file-distinct-mysql', 'console', 'composer-sqlite', 'composer-mysql', 'http-sqlite', 'http-mysql', 'lifecycle'];
         if ($php === '8.2' && $mysql === '8.4') {
             $checks[] = 'dev-dependencies';
             $checks[] = 'style';
@@ -117,13 +117,18 @@ try {
     // 总状态成功不能覆盖单项失败；缺失日志和矩阵同样不能成为发布凭据。
     $results = $evidence . '/7.2-8.4/results.tsv';
     $original = file_get_contents($results);
+    foreach (['file-distinct-sqlite', 'file-distinct-mysql'] as $check) {
+        acceptanceWrite($results, str_replace($check . "\t0\n", '', $original));
+        [$status] = acceptanceRun($site, [PHP_BINARY, '.github/verify-acceptance.php', $evidence, $source]);
+        acceptanceCheck($status !== 0, '缺失文件去重检查未阻断：' . $check);
+    }
     foreach ([str_replace("console\t0", "console\t1", $original), $original . "console\t0\n"] as $invalid) {
         acceptanceWrite($results, $invalid);
         [$status] = acceptanceRun($site, ['bash', '.github/split-linux.sh']);
         acceptanceCheck($status !== 0, '总状态掩盖单项失败或重复检查');
     }
     acceptanceWrite($results, $original);
-    foreach ([$evidence . '/7.2-8.4/console.log', $evidence . '/8.2-8.0/matrix.json', $evidence . '/8.2-8.4/http-sqlite.log', $evidence . '/8.2-8.4/fpm-version.txt'] as $path) {
+    foreach ([$evidence . '/7.2-8.4/console.log', $evidence . '/8.2-8.0/matrix.json', $evidence . '/8.2-8.4/http-sqlite.log', $evidence . '/8.2-8.4/fpm-version.txt', $evidence . '/7.2-8.4/file-distinct-sqlite.log', $evidence . '/8.2-8.0/file-distinct-mysql.log'] as $path) {
         rename($path, $path . '.held');
         [$status] = acceptanceRun($site, ['bash', '.github/split-linux.sh']);
         acceptanceCheck($status !== 0, '证据文件缺失未阻断：' . basename($path));
