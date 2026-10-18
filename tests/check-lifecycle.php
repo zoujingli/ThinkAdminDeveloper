@@ -55,6 +55,35 @@ function lifecycleRequest(int $port, string $path, string $session, bool $initFa
 }
 
 /**
+ * 经真实 HTTP 服务核验中间件层次、短路及异常后恢复，重复请求不得累积执行次数。
+ * @param int $port 服务端口
+ * @param string $session 验收会话编号
+ * @param int $pid 同一服务进程编号
+ */
+function lifecycleCheckMiddleware(int $port, string $session, int $pid): void
+{
+    $normal = 'global:before,app:before,route:before,controller,route:after,app:after,global:after';
+    $cases = [
+        ['', 200, $normal],
+        ['&stop=global', 202, 'global:before,global:after'],
+        ['&stop=app', 202, 'global:before,app:before,app:after,global:after'],
+        ['&stop=route', 202, 'global:before,app:before,route:before,route:after,app:after,global:after'],
+        ['', 200, $normal],
+        ['&failure=1', 500, $normal],
+        ['', 200, $normal],
+    ];
+    foreach ($cases as [$query, $expectedStatus, $trace]) {
+        [$status, , $body, $headers] = lifecycleRequest($port, 'middleware?_middleware_probe=1' . $query, $session);
+        $headers = array_map(static function (string $header): string {
+            return preg_replace('/:\s*/', ': ', strtolower($header), 1);
+        }, $headers);
+        acceptanceCheck($status === $expectedStatus, '中间件请求状态错误：' . $query . ' / ' . $body);
+        acceptanceCheck(in_array('x-acceptance-middleware: ' . $trace, $headers, true), '中间件次数或顺序错误：' . $query . ' / ' . json_encode($headers));
+        acceptanceCheck(in_array('x-acceptance-pid: ' . $pid, $headers, true), '中间件异常或短路后工作进程发生变化');
+    }
+}
+
+/**
  * 在独立进程组中启动真实服务，便于回收 think run 派生的 HTTP 子进程。
  * @param string $directory 隔离站点
  * @param string $name 日志名称
@@ -165,6 +194,16 @@ try {
 namespace app\index\controller;
 class Probe
 {
+    public function middleware(\think\Request $request)
+    {
+        $trace = $request->middleware('acceptance_trace', []);
+        $trace[] = 'controller';
+        $request->withMiddleware(['acceptance_trace' => $trace]);
+        if ($request->get('failure')) {
+            throw new \TypeError('MIDDLEWARE_FAILURE');
+        }
+        return json(['controller' => true]);
+    }
     public function state(\think\App $app)
     {
         $before = $app->session->get('acceptance');
@@ -214,6 +253,32 @@ PHP
 if (isset($_SERVER['HTTP_X_ACCEPTANCE_INIT_FAILURE'])) {
     throw new RuntimeException('LIFECYCLE_INIT_FAILURE');
 }
+class AcceptanceMiddleware
+{
+    protected $stage = 'global';
+    public function handle(\think\Request $request, \Closure $next): \think\Response
+    {
+        if (!$request->get('_middleware_probe')) {
+            return $next($request);
+        }
+        $trace = $request->middleware('acceptance_trace', []);
+        $trace[] = $this->stage . ':before';
+        $request->withMiddleware(['acceptance_trace' => $trace]);
+        $response = $request->get('stop') === $this->stage ? json(['stop' => $this->stage], 202) : $next($request);
+        $trace = $request->middleware('acceptance_trace', []);
+        $trace[] = $this->stage . ':after';
+        $request->withMiddleware(['acceptance_trace' => $trace]);
+        return $response->header(['X-Acceptance-Middleware' => implode(',', $trace), 'X-Acceptance-Pid' => (string)getmypid()]);
+    }
+}
+class AcceptanceAppMiddleware extends AcceptanceMiddleware
+{
+    protected $stage = 'app';
+}
+class AcceptanceRouteMiddleware extends AcceptanceMiddleware
+{
+    protected $stage = 'route';
+}
 class AcceptanceQueueSuccess extends \think\admin\Queue
 {
     public function execute(array $data = [])
@@ -230,6 +295,9 @@ class AcceptanceQueueFailure extends \think\admin\Queue
 }
 PHP
     );
+    acceptanceWrite($directory . '/app/middleware.php', '<?php return [AcceptanceMiddleware::class];');
+    acceptanceWrite($directory . '/app/index/middleware.php', '<?php return [AcceptanceAppMiddleware::class];');
+    acceptanceWrite($directory . '/app/index/route/app.php', '<?php \think\facade\Route::get("probe/middleware", "Probe/middleware")->middleware(AcceptanceRouteMiddleware::class);');
     [$status, $output] = acceptanceRun($directory, [PHP_BINARY, 'think', 'xadmin:publish', '--migrate']);
     acceptanceCheck($status === 0 && strpos($output, 'Succeed!') !== false, '生命周期站点初始化失败：' . $output);
     $pdo = new PDO($driver === 'sqlite' ? 'sqlite:' . $directory . '/database/sqlite.db' : 'mysql:host=127.0.0.1;port=' . $mysqlPort . ';dbname=' . $databaseName, 'root', '', [PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION]);
@@ -286,6 +354,8 @@ PHP
             }
             [$status, $other, $body] = lifecycleRequest($port, 'state?key=' . $key, bin2hex(random_bytes(16)));
             acceptanceCheck($status === 200 && empty($other['before']) && $other['cached'] === null, '请求或会话串入另一用户：' . $body);
+            lifecycleCheckMiddleware($port, $session, $first['pid']);
+            echo "PASS: {$driver} / {$mode} / 全局、应用、路由中间件各执行一次，顺序、短路及异常后恢复\n";
             echo "PASS: {$driver} / {$mode} / sapi={$first['sapi']} / pid={$first['pid']} / 正常、异常、正常，同一进程、会话隔离、配置及数据库稳定\n";
             if ($mode !== 'worker') {
                 echo "PASS: {$driver} / {$mode} / Exception、Error、TypeError、数据库异常的事务回滚及初始化异常恢复\n";
