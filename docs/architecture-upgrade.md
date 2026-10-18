@@ -522,3 +522,33 @@ MultAccess 负责，框架队列顺序和系统中间件保持原有机制。纯
 同时验证各层短路、控制器 TypeError 后继续正常请求及同一进程内执行次数不累积。
 PHP 7.2/8.2 的完整 Composer 依赖环境中，三种服务均先复现重复执行，移除重复注册后通过；
 原有请求状态、会话隔离及队列启动、失败任务、后续任务和停止检查继续通过。
+
+本轮历史条目按以下依据处置；此表是代码复核结论，不代表已修改 GitHub Issue/PR 状态。
+条目来自聚合仓及 12 个插件子仓；ThinkLibrary 的大小写仓库别名只统计一次。
+
+| 条目 | 处置与证据 |
+| --- | --- |
+| 主仓 [#8](https://github.com/zoujingli/ThinkAdminDeveloper/issues/8)、PR #9/#10 | 原管理员隔离修复保留；本次补齐前缀缺陷和真实控制器回归，不重做旧方案 |
+| 主仓 [PR #18](https://github.com/zoujingli/ThinkAdminDeveloper/pull/18) | 虽已关闭，当前仍存在重复注册；本次按 ThinkPHP 实际加载职责修复并补真实服务回归 |
+| 主仓 [#19](https://github.com/zoujingli/ThinkAdminDeveloper/issues/19)–#23 | `3028f4d` 已实现支付测试隔离、退款查重、微信 V2 字段及优惠券约束；现有 Payment/PaymentSynchronization/WemallCouponPayment/WemallRefundController 测试保留。既有 Docker 日志记录支付 20 tests/46 assertions、商城 18 tests/121 assertions；业务数据用例使用 SQLite，不能据此声称支付 MySQL 并发验收通过。父 Spec 的无 schema 变化描述需与后续独立迁移区分，建议整理证据后归档，不按旧文本反向改写实现 |
+| ThinkLibrary [PR #12](https://github.com/zoujingli/ThinkLibrary/pull/12)、Issue #11 | `6bfa89f` 已实现两处警告修正，无需重复合并；PHP 8.5 专项验收未运行，不扩大整项目兼容承诺 |
+| ThinkLibrary [PR #10](https://github.com/zoujingli/ThinkLibrary/pull/10) | MinIO 属于未完成新功能：签名 scope、受保护桶删除签名以及后台上传链路尚不完整。暂缓合并，后续独立补齐并用真实 MinIO 验收 |
+| ThinkLibrary [PR #14](https://github.com/zoujingli/ThinkLibrary/pull/14)、旧 PR #13 | HTTP 并发暂缓：确切 PR 源码在 Docker PHP 7.2/8.2 下，非法 URL 的单请求返回 false，而批请求返回空字符串，无法区分失败与空响应。后续先确定失败契约并验证超时、部分失败和清理，不改现有单请求接口 |
+| ThinkLibrary PR #6/#7 | Alist 签名按实际需求另立功能，旧方案尚需处理已有查询参数、有效期及额外请求；本次不移植 |
+| 主仓 PR #3、ThinkLibrary Issue #9/PR #8 | OSS 协议问题先核对代理及返回域名配置，不统一强制所有端点 HTTPS；未针对真实外部存储服务补验 |
+| 主仓 Issue #13 | 旧 Composer 环境问题不能仅凭截图认定当前回归；按下述真实安装、配置保留及锁文件证据判定 |
+| 其余历史条目 | 环境模板、菜单及图标、提示颜色、Base64、短信页面、数组转换、昵称、include_once、模型支持、COS 和微信菜单 URL 的相关修复已存在；ThinkLibrary v5.1 旧分页补丁不移植到当前版本，无证据不重复改动 |
+
+维护入口沿用聚合仓约定：ThinkLibrary 的 Composer `support.source` 指向 GitHub 子仓，
+`support.issues` 指向聚合仓 Issue。实现始终在聚合仓维护，再通过自动拆分分发。
+
+本轮发布门禁仍为当前修复提交的四组 Docker 与远端 Actions 全部通过，并核对验收凭据及
+12 个子仓拆分 SHA。`bash tests/docker/run.sh` 从干净提交执行，保留源码、实际依赖、镜像及
+逐项结果；真实 Composer 新装、升级、失败重试、用户配置保留和备份恢复沿用已有检查。
+准备失败标记未运行，测试失败保留失败结果，不以旧绿色运行替代本轮验收。
+
+待发布清单至少包含本次变更的 Library、admin，以及稳定标签尚未包含 CLI 退出码修复的
+static；各包以发布预检时最新稳定标签递增补丁号，不要求共用版本。旧标签保持不变，
+本轮只执行发布预检，不创建标签或执行生产更新。正式发布后必须在 Docker 中从公开
+Composer 源重新安装稳定包并核对 source/dist 引用及行为，才能确认稳定用户获得修复；
+本地 path/zip 验收及子仓 master 已更新都不能替代这一步，私有 wuma 仍需要单独授权来源。
