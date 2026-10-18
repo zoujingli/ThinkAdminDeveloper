@@ -59,7 +59,7 @@ prepare_image() {
         fi
         cat "$log" >> "$evidence/$name.log"
         cat "$log" >&2
-        if [[ $attempt == 3 ]] || ! grep -Eiq 'toomanyrequests|too many requests|rate exceeded|rate.?limit|timed? out|timeout|connection reset|temporary failure (resolving|in name resolution)|network is unreachable|unexpected EOF|bad gateway|service unavailable|gateway timeout' "$log"; then
+        if [[ $attempt == 3 ]] || ! grep -Eiq 'toomanyrequests|too many requests|rate exceeded|rate.?limit|timed? out|timeout|connection reset|temporary failure (resolving|in name resolution)|network is unreachable|unexpected EOF|failed to (fetch anonymous token|do request): (Get|Head|Post) .*: EOF|bad gateway|service unavailable|gateway timeout' "$log"; then
             printf 'NOT_RUN: %s 镜像准备失败，对应测试未运行（exit=%s）\n' "$name" "$status" | tee -a "$evidence/preparation-status.txt" >&2
             return "$status"
         fi
