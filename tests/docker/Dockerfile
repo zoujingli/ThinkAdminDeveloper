@@ -1,5 +1,5 @@
 ARG PHP_SERIES=8.2
-FROM public.ecr.aws/docker/library/php:${PHP_SERIES}-fpm
+FROM docker.io/library/php:${PHP_SERIES}-fpm
 
 ARG PHP_SERIES
 ARG COMPOSER_VERSION=2.8.12

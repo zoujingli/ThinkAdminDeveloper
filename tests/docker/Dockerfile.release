@@ -1,5 +1,5 @@
 # 仓库内 splitsh-lite 是 Linux x86_64 二进制，统一在 amd64 容器实测。
-FROM public.ecr.aws/docker/library/php@sha256:5249d94b4b00db63a0ed53e6528114926110ab5dcb0d0f07cc30d1ea7dbe747e
+FROM docker.io/library/php@sha256:5249d94b4b00db63a0ed53e6528114926110ab5dcb0d0f07cc30d1ea7dbe747e
 RUN sed -i -e 's/deb.debian.org/archive.debian.org/g' \
         -e 's/security.debian.org/archive.debian.org/g' \
         -e '/buster-updates/d' /etc/apt/sources.list \

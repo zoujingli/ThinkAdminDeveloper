@@ -76,11 +76,11 @@ image="thinkadmin-acceptance:$php_version"
 prepare_image build docker build --force-rm --build-arg "PHP_SERIES=$php_version" --build-arg "COMPOSER_VERSION=$composer_version" \
     --build-arg "PHPUNIT_VERSION=$phpunit_version" -t "$image" "$root/tests/docker"
 docker image inspect "$image" --format '{{.Id}} {{json .RepoDigests}}' > "$evidence/images.txt"
-mysql_image="public.ecr.aws/docker/library/mysql:$mysql_version"
+mysql_image="docker.io/library/mysql:$mysql_version"
 options=(--default-authentication-plugin=mysql_native_password)
 platform=(--platform "$(docker version --format '{{.Server.Os}}/{{.Server.Arch}}')")
 if [[ $mysql_version == 8.4 ]]; then options=(--mysql-native-password=ON); fi
-if [[ $mysql_version == 5.7 ]]; then mysql_image="public.ecr.aws/docker/library/mysql:5.7.44"; platform=(--platform linux/amd64); fi
+if [[ $mysql_version == 5.7 ]]; then mysql_image="docker.io/library/mysql:5.7.44"; platform=(--platform linux/amd64); fi
 if [[ $(docker image inspect "$mysql_image" --format '{{.Os}}/{{.Architecture}}' 2>/dev/null || true) != "${platform[1]}" ]]; then
     prepare_image mysql-pull docker pull "${platform[@]}" "$mysql_image"
 fi
