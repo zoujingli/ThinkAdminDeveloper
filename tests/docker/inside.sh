@@ -47,6 +47,8 @@ if [[ $scope == full ]]; then
 else
     check upgrade php tests/check-upgrade.php mysql
 fi
+check file-distinct-sqlite php tests/check-file-distinct.php sqlite
+check file-distinct-mysql php tests/check-file-distinct.php mysql
 check console php tests/check-console.php
 check composer-sqlite php tests/check-composer.php sqlite
 check composer-mysql php tests/check-composer.php mysql
