@@ -56,7 +56,7 @@ try {
             }
             $checks[$columns[0]] = true;
         }
-        $requiredChecks = ['syntax', 'metadata', $expected[$key] === 'full' ? 'regression' : 'upgrade', 'file-distinct-sqlite', 'file-distinct-mysql', 'console', 'composer-sqlite', 'composer-mysql', 'http-sqlite', 'http-mysql', 'lifecycle'];
+        $requiredChecks = ['syntax', 'metadata', $expected[$key] === 'full' ? 'regression' : 'upgrade', 'file-distinct-sqlite', 'file-distinct-mysql', 'console', 'composer-sqlite', 'composer-mysql', 'http-sqlite', 'http-mysql', 'lifecycle', 'http-client', 'minio'];
         if ($key === '8.2/8.4') {
             $requiredChecks[] = 'dev-dependencies';
             $requiredChecks[] = 'style';

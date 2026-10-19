@@ -1,0 +1,16 @@
+# 官方预编译镜像已不可用；固定官方发布源码，构建仅用于隔离验收的 MinIO。
+FROM docker.io/library/golang:1.24.8 AS build
+ARG MINIO_COMMIT=9e49d5e7a648f00e26f2246f4dc28e6b07f8c84a
+RUN git init /src && cd /src && git remote add origin https://github.com/minio/minio.git \
+    && git fetch --depth=1 origin "$MINIO_COMMIT" && git checkout --detach FETCH_HEAD \
+    && test "$(git rev-parse HEAD)" = "$MINIO_COMMIT"
+WORKDIR /src
+RUN CGO_ENABLED=0 go build -trimpath -o /minio .
+
+FROM scratch
+COPY --from=build /minio /minio
+COPY --from=build /etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/ca-certificates.crt
+LABEL org.opencontainers.image.source="https://github.com/minio/minio" \
+      org.opencontainers.image.revision="9e49d5e7a648f00e26f2246f4dc28e6b07f8c84a"
+ENTRYPOINT ["/minio"]
+CMD ["server", "/data", "--address", ":9000"]

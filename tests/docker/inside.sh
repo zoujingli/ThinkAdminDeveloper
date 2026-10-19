@@ -55,6 +55,8 @@ check composer-mysql php tests/check-composer.php mysql
 check http-sqlite php tests/check-lifecycle.php sqlite web
 check http-mysql php tests/check-lifecycle.php mysql web
 check lifecycle php tests/check-lifecycle.php sqlite worker
+check http-client php /opt/phpunit.phar -c plugin/think-library/phpunit.xml.dist --filter HttpExtendTest
+check minio php tests/check-minio.php
 if [[ $(php -r 'echo PHP_MAJOR_VERSION;') == 8 && $scope == full ]]; then
     check dev-dependencies composer install --no-plugins --no-scripts --no-interaction --prefer-dist --no-progress
     check style vendor/bin/php-cs-fixer fix --dry-run --diff --using-cache=no --config=.php-cs-fixer.php --path-mode=override \
@@ -64,6 +66,8 @@ if [[ $(php -r 'echo PHP_MAJOR_VERSION;') == 8 && $scope == full ]]; then
         plugin/think-plugs-admin/src/service/UploadSecurity.php \
         plugin/think-plugs-admin/tests tests .github/verify-acceptance.php \
         plugin/think-library/src/Storage.php \
+        plugin/think-library/src/extend/HttpExtend.php \
+        plugin/think-library/src/storage/MinioStorage.php \
         plugin/think-library/src/storage/LocalStorage.php \
         plugin/think-library/tests
 fi

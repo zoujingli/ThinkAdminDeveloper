@@ -539,8 +539,8 @@ PHP 7.2/8.2 的完整 Composer 依赖环境中，三种服务均先复现重复�
 | 主仓 [PR #18](https://github.com/zoujingli/ThinkAdminDeveloper/pull/18) | 虽已关闭，当前仍存在重复注册；本次按 ThinkPHP 实际加载职责修复并补真实服务回归 |
 | 主仓 [#19](https://github.com/zoujingli/ThinkAdminDeveloper/issues/19)–#23 | `3028f4d` 已实现支付测试隔离、退款查重、微信 V2 字段及优惠券约束；现有 Payment/PaymentSynchronization/WemallCouponPayment/WemallRefundController 测试保留。既有 Docker 日志记录支付 20 tests/46 assertions、商城 18 tests/121 assertions；业务数据用例使用 SQLite，不能据此声称支付 MySQL 并发验收通过。父 Spec 的无 schema 变化描述需与后续独立迁移区分，建议整理证据后归档，不按旧文本反向改写实现 |
 | ThinkLibrary [PR #12](https://github.com/zoujingli/ThinkLibrary/pull/12)、Issue #11 | `6bfa89f` 已实现两处警告修正，无需重复合并；PHP 8.5 专项验收未运行，不扩大整项目兼容承诺 |
-| ThinkLibrary [PR #10](https://github.com/zoujingli/ThinkLibrary/pull/10) | MinIO 属于未完成新功能：签名 scope、受保护桶删除签名以及后台上传链路尚不完整。暂缓合并，后续独立补齐并用真实 MinIO 验收 |
-| ThinkLibrary [PR #14](https://github.com/zoujingli/ThinkLibrary/pull/14)、旧 PR #13 | HTTP 并发暂缓：确切 PR 源码在 Docker PHP 7.2/8.2 下，非法 URL 的单请求返回 false，而批请求返回空字符串，无法区分失败与空响应。后续先确定失败契约并验证超时、部分失败和清理，不改现有单请求接口 |
+| ThinkLibrary [PR #10](https://github.com/zoujingli/ThinkLibrary/pull/10) | 在聚合仓补齐 MinIO 驱动、SigV4 scope、私有桶签名操作、配置页和上传链路；沿用贡献提议，不直接合并旧分支。真实服务验收入口为 `tests/check-minio.php`，行为与边界见下文 |
+| ThinkLibrary [PR #14](https://github.com/zoujingli/ThinkLibrary/pull/14)、旧 PR #13 | 在聚合仓接入 HTTP 并发；修正原 PR 把传输失败变为空字符串的问题，保留输入键、单项 `string\|false` 语义及既有请求配置。永久回归为 `HttpExtendTest` |
 | ThinkLibrary PR #6/#7 | Alist 签名按实际需求另立功能，旧方案尚需处理已有查询参数、有效期及额外请求；本次不移植 |
 | 主仓 PR #3、ThinkLibrary Issue #9/PR #8 | OSS 协议问题先核对代理及返回域名配置，不统一强制所有端点 HTTPS；未针对真实外部存储服务补验 |
 | 主仓 Issue #13 | 旧 Composer 环境问题不能仅凭截图认定当前回归；按下述真实安装、配置保留及锁文件证据判定 |
@@ -572,3 +572,49 @@ static；各包以发布预检时最新稳定标签递增补丁号，不要求�
 本轮只执行发布预检，不创建标签或执行生产更新。正式发布后必须在 Docker 中从公开
 Composer 源重新安装稳定包并核对 source/dist 引用及行为，才能确认稳定用户获得修复；
 本地 path/zip 验收及子仓 master 已更新都不能替代这一步，私有 wuma 仍需要单独授权来源。
+
+## HTTP 并发与 MinIO 接入
+
+`http_multi($requests, $concurrency = 10)` 对应 `HttpExtend::multiRequest`，每项使用
+`['url' => $url, 'method' => 'GET', 'options' => []]`。返回保留输入键和顺序；传输失败为
+`false`，成功空响应为 `''`，HTTP 4xx/5xx 沿用单请求返回响应体的约定。单项超时从开始
+执行时计算，不自动重试；格式、配置和回调异常继续抛出，并释放所有在途句柄。并发与
+单请求复用原 query、headers、cookie、cookie_file、data、setopt 配置，不改变既有 TLS
+默认行为。并发写同一 cookie_file 仍受 cURL 文件写入语义约束，调用方应使用独立文件。
+`submit` 的二进制 content 表单及 `CURLFile` 保持兼容。
+
+PHP 7 显式 `curl_close` 释放资源；PHP 8 使用句柄对象生命周期释放，避免 PHP 8.5 的
+弃用警告。`curl_multi_close` 和文件流 `fclose` 仍保留。该专项不扩大为全部 PHP 8.5
+依赖、GD 图像业务或 Swoole 的兼容承诺。
+
+MinIO 使用现有 `StorageInterface` 和后台配置入口，配置键统一归 `storage`：
+
+| 配置 | 含义 |
+| --- | --- |
+| `minio_http_protocol` | `http` 或 `https`；HTTPS 验证证书 |
+| `minio_http_domain` | S3 API 域名/IP 和可选端口；不含协议、路径、桶名，不是 Console 地址 |
+| `minio_bucket` | 管理员预先创建的桶 |
+| `minio_region` | 与部署一致的区域，空值使用 `us-east-1` |
+| `minio_access_key`、`minio_secret_key` | 仅授权目标桶对象操作的凭据；secret 不下发浏览器 |
+
+采用路径式 S3 API；端点必须同时被 PHP 服务和浏览器访问。普通文件的浏览器链接是
+长期 URL，管理员需为目标对象配置匿名只读和本站来源的 POST 跨域规则；驱动不会创建桶、
+更改权限或开放匿名写入。服务端 PUT/GET/HEAD/DELETE 均使用含 region 的 SigV4 签名，
+可访问私有桶，但私有桶不自动获得公开 URL 或临时下载 URL。MinIO 不提供原云厂商图片
+处理能力，原有显示后缀会在定位对象时去除；有效键沿用系统文件路径检查。
+
+安全文件 `safe=true` 委托本地 `safefile` 机制，后台强制回到 local 上传，不签发 MinIO
+令牌。普通文件通过 `state → S3 POST → done` 更新原有记录，秒传沿用 `info/has`。POST
+policy 限定桶、对象键、签名字段、有效期和内容大小；浏览器只提交返回的 fields 并最后
+追加 file，不携带本地 safe/uptype。服务端写失败返回空数组，读失败返回空字符串，
+检查/删除失败返回 false；S3 删除不存在对象仍是幂等成功。不会自动重试上传或迁移。
+
+四组 Docker 共同执行 `http-client` 与 `minio`，发布凭据要求两项结果和日志。MinIO
+官方镜像及二进制下载入口不可用时，验收环境从固定官方提交
+`9e49d5e7a648f00e26f2246f4dc28e6b07f8c84a` 构建隔离服务；这仅是测试依赖，不随 Composer
+包安装，也不是生产部署方案。验收创建独立私有桶和只读公开桶，宿主 curl 以独立 SigV4
+实现初始化，覆盖非默认区域、带端口端点、签名读写删除、表单上传、错误凭据、篡改键、
+安全文件及后台记录。结束时删除本次容器和临时数据，保留源码、锁文件、镜像及运行日志。
+
+这两项功能需等待对应修复提交的 Actions 与拆分核验后归档 PR；未创建新稳定标签前，
+不能声称公开 Composer 稳定用户已经获得功能。

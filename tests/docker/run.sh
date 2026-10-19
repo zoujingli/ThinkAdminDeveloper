@@ -26,7 +26,8 @@ instance="thinkadmin-acceptance-$(basename "$workspace" | tr '[:upper:]' '[:lowe
 # shellcheck disable=SC2329
 cleanup() {
     local exit_code=$?
-    docker rm -f "$instance-php" "$instance-release" "$instance-db" >/dev/null 2>&1 || true
+    docker logs "$instance-minio" > "$evidence/minio-service.log" 2>&1 || true
+    docker rm -f "$instance-php" "$instance-release" "$instance-minio" "$instance-db" >/dev/null 2>&1 || true
     # 路径来自本次 mktemp，且不会接收外部输入。
     rm -rf -- "$workspace"
     printf '%s\n' "$exit_code" > "$evidence/exit-code.txt"
@@ -85,7 +86,11 @@ if [[ $(docker image inspect "$mysql_image" --format '{{.Os}}/{{.Architecture}}'
     prepare_image mysql-pull docker pull "${platform[@]}" "$mysql_image"
 fi
 docker image inspect "$mysql_image" --format '{{.Id}} {{json .RepoDigests}}' >> "$evidence/images.txt"
+prepare_image minio-build docker build --force-rm -f "$root/tests/docker/Dockerfile.minio" \
+    -t thinkadmin-minio:acceptance "$root/tests/docker"
+docker image inspect thinkadmin-minio:acceptance --format '{{.Id}} {{json .Config.Labels}}' >> "$evidence/images.txt"
 docker run --detach --name "$instance-db" "${platform[@]}" --tmpfs /var/lib/mysql:rw \
+    --publish 127.0.0.1::9000 \
     --env MYSQL_ALLOW_EMPTY_PASSWORD=yes --env MYSQL_ROOT_HOST=% --env MYSQL_DATABASE=phinx_fixture \
     "$mysql_image" "${options[@]}" > /dev/null
 ready=false
@@ -98,6 +103,16 @@ for ((attempt=0; attempt<90; attempt++)); do
 done
 [[ $ready == true ]] || { docker logs "$instance-db"; exit 1; }
 docker exec "$instance-db" mysql -uroot -e "ALTER USER 'root'@'%' IDENTIFIED WITH mysql_native_password BY ''; ALTER USER 'root'@'localhost' IDENTIFIED WITH mysql_native_password BY '';"
+docker run --detach --name "$instance-minio" --network "container:$instance-db" --tmpfs /data:rw \
+    --env MINIO_ROOT_USER=thinkadmin --env MINIO_ROOT_PASSWORD=acceptance-secret \
+    --env MINIO_SITE_REGION=acceptance-1 --env MINIO_API_CORS_ALLOW_ORIGIN=http://thinkadmin.test \
+    thinkadmin-minio:acceptance > /dev/null
+minio_port=$(docker port "$instance-db" 9000/tcp | sed 's/.*://')
+bash "$root/tests/docker/minio-init.sh" "http://127.0.0.1:$minio_port" > "$evidence/minio-init.log" 2>&1 || {
+    cat "$evidence/minio-init.log" >&2
+    echo 'NOT_RUN: MinIO 初始化失败，测试未运行' >> "$evidence/preparation-status.txt"
+    exit 1
+}
 
 # 与专用数据库共享网络命名空间，使现有验收继续使用 127.0.0.1，无需增加连接配置。
 docker create --name "$instance-php" --network "container:$instance-db" \
