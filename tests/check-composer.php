@@ -26,7 +26,8 @@ use Phinx\Db\Table;
 use think\admin\extend\PhinxBackup;
 
 /**
- * 构建离线仓库，发布包走 zip 解压，开发包保留真实 path 链接。
+ * 构建离线仓库，本地插件按 Git 归档规则生成发布包，开发包保留真实 path 链接。
+ * Git 索引仅写入临时副本，确保 export-ignore 与发布分发一致，不改动被验收源码。
  * @param string $root 聚合源码目录
  * @param string $directory 本次验收目录
  * @return array 两代包元数据，旧代仅移除目标版本之后的迁移
@@ -59,7 +60,15 @@ function composerAcceptancePackages(string $root, string $directory): array
             }
             $reference = sha1($name . '/' . $generation);
             $archive = $directory . '/' . str_replace('/', '-', $name) . '-' . $generation . '.zip';
-            [$status, $output] = acceptanceRun($copy, ['zip', '-qr', $archive, '.', '-x', '.git/*']);
+            if ($local) {
+                foreach ([['init', '--quiet'], ['add', '--force', '.'], ['write-tree']] as $arguments) {
+                    [$status, $output] = acceptanceRun($copy, array_merge(['git'], $arguments));
+                    acceptanceCheck($status === 0, '准备插件归档索引失败：' . $output);
+                }
+                [$status, $output] = acceptanceRun($copy, ['git', 'archive', '--format=zip', '--output=' . $archive, trim($output)]);
+            } else {
+                [$status, $output] = acceptanceRun($copy, ['zip', '-qr', $archive, '.', '-x', '.git/*']);
+            }
             acceptanceCheck($status === 0, '生成发布包失败：' . $output);
             $metadata['dist'] = ['type' => 'zip', 'url' => 'file://' . $archive, 'reference' => $reference, 'shasum' => sha1_file($archive)];
             $repositories[$generation][$name] = [$metadata, $copy, $local];
@@ -123,6 +132,26 @@ PHP
     );
     [$status, $output] = acceptanceRun($site, [PHP_BINARY, 'verify-services.php']);
     acceptanceCheck($status === 0 && strpos($output, 'SERVICES_READY') !== false, '已安装插件未完整注册：' . $output);
+}
+
+/**
+ * 核对安装后的主题构建清单、Less 源码和预编译样式，防止发布归档遗漏构建入口。
+ * @param string $root 聚合源码目录
+ * @param string $site 隔离安装站点
+ * @throws RuntimeException 安装产物缺失或构建清单与权威模板不一致
+ */
+function composerAcceptanceTheme(string $root, string $site): void
+{
+    $relative = '/public/static/theme/css/';
+    $manifest = $site . $relative . 'package.json';
+    clearstatcache();
+    acceptanceCheck(is_file($manifest), '安装后的主题缺少 package.json，无法执行 npm run build');
+    acceptanceCheck(hash_file('sha256', $manifest) === hash_file('sha256', $root . '/plugin/think-plugs-static/stc' . $relative . 'package.json'), '主题构建清单与权威模板不一致');
+    foreach (['login', 'mobile', 'console', 'iconfont'] as $name) {
+        foreach (['less', 'css'] as $extension) {
+            acceptanceCheck(is_file($site . $relative . $name . '.' . $extension), '主题构建文件缺失：' . $name . '.' . $extension);
+        }
+    }
 }
 
 /**
@@ -220,12 +249,17 @@ try {
             $databaseFile = $site . '/config/database.php';
             acceptanceCheck(is_file($databaseFile) && is_file($site . '/think'), '未生成入口和配置');
             composerAcceptanceServices($site);
+            composerAcceptanceTheme($root, $site);
             $pdo = new PDO($driver === 'sqlite' ? 'sqlite:' . $site . '/fixture.db' : 'mysql:host=127.0.0.1;port=' . $port . ';dbname=' . $database, 'root', '', [PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION, PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC]);
             if ($core) {
                 acceptanceCheck((int)$pdo->query("SELECT COUNT(*) FROM {$prefix}migrations")->fetchColumn() > 0, '基础插件组合未完成迁移');
                 acceptanceCheck(hash_file('sha256', $site . '/think') === hash_file('sha256', $root . '/plugin/think-plugs-static/stc/think'), '安装入口与模板不一致');
+                // 不设置 ignore，验证默认主题强制替换后仍保留构建能力。
+                [$status, $output] = acceptanceRun($site, [PHP_BINARY, $composer, 'reinstall', 'zoujingli/think-plugs-static', '--no-interaction', '--prefer-dist', '--no-progress'], 300);
+                acceptanceCheck($status === 0, '基础组合重装静态包失败：' . $output);
+                composerAcceptanceTheme($root, $site);
                 $failures = array_merge($failures, composerAcceptanceCommandFailures($site, $composer, $pdo, $prefix, $driver));
-                echo "PASS: {$driver} / {$scenario} / 安装钩子及服务注册\n";
+                echo "PASS: {$driver} / {$scenario} / 安装钩子、服务注册及主题构建文件重装\n";
                 continue;
             }
             $balance = $prefix . 'plugin_payment_balance';

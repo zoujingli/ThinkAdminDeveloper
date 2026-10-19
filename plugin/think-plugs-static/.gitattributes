@@ -6,6 +6,3 @@
 /.phpunit* export-ignore
 /phpunit.xml* export-ignore
 /tests export-ignore
-
-# The installed theme uses the compiled stylesheets.
-/stc/public/static/theme/css/package.json export-ignore

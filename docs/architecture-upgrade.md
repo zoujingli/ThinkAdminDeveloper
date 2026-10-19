@@ -58,6 +58,10 @@ flowchart LR
 | 用户 .env、自定义配置和业务文件 | 站点目录 | 用户所有，不纳入模板清理或强制重置 |
 | installed.json | vendor/services.php、versions.php | Publish 根据实际安装包重新生成，不能手工维护生成结果 |
 
+static 的主题发布包同时保留 Less 源码、预编译 CSS 和 css/package.json，确保 Composer 安装后
+仍可按 README 执行主题构建。该清单属于安装产物，不按仓库维护文件排除；只恢复站点副本
+无法修复发布包缺失，默认主题更新仍按上表替换，ignore 保留规则不变。
+
 xadmin:publish 还发布应用模块内的 config、public、database：配置和迁移默认不强制覆盖，
 静态资源覆盖；--force 会扩大覆盖范围，常规升级不使用。迁移改名清理由现有 Publish 实现处理，
 不能用目录清理替代迁移兼容设计。
@@ -158,7 +162,9 @@ GitHub Actions 四组矩阵最多同时运行两组，以降低镜像服务的�
 - tests/check-console.php：真实进程退出码、初始化失败、Throwable、嵌套调用及调用方控制权。
 - tests/check-composer.php sqlite|mysql：真实安装器、path/zip 两种分发、后台基础组合与全部运行插件，
   新装、模拟旧库更新、失败重试、锁文件重装、配置保留、服务注册及独立库恢复余额样本；
-  已安装站点补验普通异常、未定义函数和参数类型错误的失败迁移，核对 shell/进程状态及迁移记录。
+  本地插件 zip 使用临时 Git 索引归档，实际应用 export-ignore；安装及默认主题重装后核对
+  主题构建清单、Less 源码和预编译 CSS。已安装站点补验普通异常、未定义函数和参数类型错误
+  的失败迁移，核对 shell/进程状态及迁移记录。
 - tests/check-lifecycle.php sqlite|mysql web：分别启动 `php think run` 和 Nginx/PHP-FPM，覆盖真实
   HTTP 请求、初始化异常及 Exception/Error/TypeError/数据库错误后的同一进程恢复、会话与配置隔离及事务回滚。
   使用 static 配置、router 和 admin 迁移；两个入口只注入临时应用根目录，复用真实运行服务。
