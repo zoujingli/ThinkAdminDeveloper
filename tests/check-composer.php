@@ -45,7 +45,8 @@ function composerAcceptancePackages(string $root, string $directory): array
         foreach ($local ? ['old', 'current'] : ['current'] as $generation) {
             $copy = $directory . '/packages/' . $generation . '/' . $name;
             mkdir($copy, 0777, true);
-            [$status, $output] = acceptanceRun($root, ['cp', '-a', $source . '/.', $copy]);
+            // Docker 中只保留内容、权限及时间，副本归当前用户所有，兼容新旧 Git 的所有权校验。
+            [$status, $output] = acceptanceRun($root, ['cp', '-a', '--no-preserve=ownership', $source . '/.', $copy]);
             acceptanceCheck($status === 0, '准备包失败：' . $output);
             if ($local && $generation === 'old') {
                 foreach (glob($copy . '/stc/database/*_*.php') as $file) {
@@ -61,13 +62,11 @@ function composerAcceptancePackages(string $root, string $directory): array
             $reference = sha1($name . '/' . $generation);
             $archive = $directory . '/' . str_replace('/', '-', $name) . '-' . $generation . '.zip';
             if ($local) {
-                // cp -a 会保留 CI 宿主所有者；仅信任本次创建的临时副本，不改全局 Git 配置。
-                $git = ['git', '-c', 'safe.directory=' . $copy];
                 foreach ([['init', '--quiet'], ['add', '--force', '.'], ['write-tree']] as $arguments) {
-                    [$status, $output] = acceptanceRun($copy, array_merge($git, $arguments));
+                    [$status, $output] = acceptanceRun($copy, array_merge(['git'], $arguments));
                     acceptanceCheck($status === 0, '准备插件归档索引失败：' . $output);
                 }
-                [$status, $output] = acceptanceRun($copy, array_merge($git, ['archive', '--format=zip', '--output=' . $archive, trim($output)]));
+                [$status, $output] = acceptanceRun($copy, ['git', 'archive', '--format=zip', '--output=' . $archive, trim($output)]);
             } else {
                 [$status, $output] = acceptanceRun($copy, ['zip', '-qr', $archive, '.', '-x', '.git/*']);
             }
