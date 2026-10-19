@@ -1,20 +1,5 @@
 <?php
 
-// +----------------------------------------------------------------------
-// | Worker Plugin for ThinkAdmin
-// +----------------------------------------------------------------------
-// | 版权所有 2014~2025 ThinkAdmin [ thinkadmin.top ]
-// +----------------------------------------------------------------------
-// | 官方网站: https://thinkadmin.top
-// +----------------------------------------------------------------------
-// | 免责声明 ( https://thinkadmin.top/disclaimer )
-// | 开源协议 ( http://www.apache.org/licenses/LICENSE-2.0 )
-// | 参考文件 ( https://github.com/top-think/think-worker/blob/3.0/src/command/Worker.php )
-// +----------------------------------------------------------------------
-// | gitee 代码仓库：https://gitee.com/zoujingli/think-plugs-worker
-// | github 代码仓库：https://github.com/zoujingli/think-plugs-worker
-// +----------------------------------------------------------------------
-
 declare(strict_types=1);
 /**
  * +----------------------------------------------------------------------
@@ -32,6 +17,8 @@ declare(strict_types=1);
  * | github 代码仓库：https://github.com/zoujingli/ThinkAdmin
  * +----------------------------------------------------------------------
  */
+// 开源协议 ( http://www.apache.org/licenses/LICENSE-2.0 )
+// 参考文件 ( https://github.com/top-think/think-worker/blob/3.0/src/command/Worker.php )
 
 namespace plugin\worker\command;
 

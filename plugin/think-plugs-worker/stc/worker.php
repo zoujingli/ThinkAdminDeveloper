@@ -17,21 +17,8 @@ declare(strict_types=1);
  * | github 代码仓库：https://github.com/zoujingli/ThinkAdmin
  * +----------------------------------------------------------------------
  */
-// | Worker Plugin for ThinkAdmin
-// +----------------------------------------------------------------------
-// | 版权所有 2014~2025 ThinkAdmin [ thinkadmin.top ]
-// +----------------------------------------------------------------------
-// | 官方网站: https://thinkadmin.top
-// +----------------------------------------------------------------------
-// | 免责声明 ( https://thinkadmin.top/disclaimer )
-// | 开源协议 ( http://www.apache.org/licenses/LICENSE-2.0 )
-// | 配置参考 ( https://www.workerman.net/doc/workerman/worker/properties.html )
-// +----------------------------------------------------------------------
-// | gitee 代码仓库：https://gitee.com/zoujingli/think-plugs-worker
-// | github 代码仓库：https://github.com/zoujingli/think-plugs-worker
-// +----------------------------------------------------------------------
-// | 配置参数参数：https://www.workerman.net/doc/workerman/worker/properties.html
-// +----------------------------------------------------------------------
+// 开源协议 ( http://www.apache.org/licenses/LICENSE-2.0 )
+// 配置参考 ( https://www.workerman.net/doc/workerman/worker/properties.html )
 
 return [
     // 服务监听地址
