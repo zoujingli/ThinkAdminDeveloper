@@ -25,7 +25,7 @@ return [
     // 存储连接
     'store' => env('SESSION_STORE', ''),
     // 过期时间
-    'expire' => env('SESSION_EXPIRE', 7200),
+    'expire' => (int) env('SESSION_EXPIRE', 7200),
     // 文件前缀
     'prefix' => env('SESSION_PREFIX', ''),
 ];
