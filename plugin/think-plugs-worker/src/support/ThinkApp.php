@@ -22,6 +22,7 @@ namespace plugin\worker\support;
 
 use think\App;
 use think\exception\Handle;
+use think\Middleware;
 use Workerman\Connection\TcpConnection;
 use Workerman\Protocols\Http\Request as WorkerRequest;
 use Workerman\Protocols\Http\Response as WorkerResponse;
@@ -34,6 +35,38 @@ use Workerman\Protocols\Http\Response as WorkerResponse;
  */
 class ThinkApp extends App
 {
+    /** @var null|array Worker 启动时的中间件队列快照 */
+    protected $workerMiddlewareQueue;
+
+    /**
+     * 保存常驻 Worker 的中间件启动快照.
+     */
+    public function captureWorkerState(): void
+    {
+        $property = $this->middlewareQueueProperty();
+        $queue = $property->getValue($this->middleware);
+        $this->workerMiddlewareQueue = [];
+        foreach (['global', 'app', 'route', 'controller'] as $type) {
+            $this->workerMiddlewareQueue[$type] = $queue[$type] ?? [];
+        }
+    }
+
+    /**
+     * 恢复常驻 Worker 的中间件状态并清理路由实例.
+     */
+    public function resetWorkerState(): void
+    {
+        if (is_array($this->workerMiddlewareQueue)) {
+            $property = $this->middlewareQueueProperty();
+            $queue = $property->getValue($this->middleware);
+            foreach ($this->workerMiddlewareQueue as $type => $middlewares) {
+                $queue[$type] = $middlewares;
+            }
+            $property->setValue($this->middleware, $queue);
+        }
+        $this->delete('route');
+    }
+
     /**
      * 访问请求处理.
      */
@@ -41,6 +74,7 @@ class ThinkApp extends App
     {
         try {
             // 初始化请求
+            $this->resetWorkerState();
             $this->delete('view');
             $this->db->clearQueryTimes();
             $this->beginTime = microtime(true);
@@ -81,6 +115,21 @@ class ThinkApp extends App
     public function runningInConsole(): bool
     {
         return false;
+    }
+
+    /**
+     * 获取中间件队列属性.
+     *
+     * PHP 8.1 起 ReflectionProperty 可以直接访问非公开属性，避免调用
+     * PHP 8.5 已弃用的 setAccessible().
+     */
+    protected function middlewareQueueProperty(): \ReflectionProperty
+    {
+        $property = new \ReflectionProperty(Middleware::class, 'queue');
+        if (PHP_VERSION_ID < 80100) {
+            $property->setAccessible(true);
+        }
+        return $property;
     }
 
     /**

@@ -84,6 +84,87 @@ function lifecycleCheckMiddleware(int $port, string $session, int $pid): void
 }
 
 /**
+ * 验证常驻 Worker 不会把路由及控制器中间件带入后续请求，并且路由规则数量保持稳定。
+ * @param int $port 服务端口
+ * @param string $session 验收会话编号
+ * @param int $pid 同一服务进程编号
+ */
+function lifecycleCheckWorkerState(int $port, string $session, int $pid): void
+{
+    [$status, $privateRoute, $body] = lifecycleRequest($port, 'private-route', $session);
+    acceptanceCheck($status === 418 && ($privateRoute['route_middleware'] ?? false) === true, '私有路由中间件未执行：' . $body);
+
+    [$status, $publicRoute, $body] = lifecycleRequest($port, 'public-route', $session);
+    acceptanceCheck($status === 200 && ($publicRoute['action'] ?? '') === 'public-route' && !isset($publicRoute['route_middleware']), '私有路由中间件污染公开路由：' . $body);
+
+    [$status, $publicRoute, $body] = lifecycleRequest($port, 'public-route', $session);
+    acceptanceCheck($status === 200 && ($publicRoute['action'] ?? '') === 'public-route' && !isset($publicRoute['route_middleware']), '第二次公开路由仍被污染：' . $body);
+
+    [$status, $publicRoute, $body] = lifecycleRequest($port, 'public-route', $session);
+    acceptanceCheck($status === 200 && ($publicRoute['action'] ?? '') === 'public-route' && !isset($publicRoute['route_middleware']), '公开路由前置请求未保持干净：' . $body);
+
+    [$status, $privateRoute, $body] = lifecycleRequest($port, 'private-route', $session);
+    acceptanceCheck($status === 418 && ($privateRoute['route_middleware'] ?? false) === true, '第二组私有路由中间件未执行：' . $body);
+
+    [$status, $publicRoute, $body] = lifecycleRequest($port, 'public-route', $session);
+    acceptanceCheck($status === 200 && ($publicRoute['action'] ?? '') === 'public-route' && !isset($publicRoute['route_middleware']), '第二组公开路由被污染：' . $body);
+
+    [$status, , $body] = lifecycleRequest($port, 'private-route?failure=1', $session);
+    acceptanceCheck($status === 500, '私有路由异常未返回 500：' . $body);
+
+    [$status, $publicRoute, $body] = lifecycleRequest($port, 'public-route', $session);
+    acceptanceCheck($status === 200 && ($publicRoute['action'] ?? '') === 'public-route' && !isset($publicRoute['route_middleware']), '私有路由异常后公开路由被污染：' . $body);
+
+    [$status, $privateController, $body] = lifecycleRequest($port, 'private-controller', $session);
+    acceptanceCheck($status === 403 && ($privateController['controller_middleware'] ?? false) === true, '私有控制器中间件未执行：' . $body);
+
+    [$status, $publicController, $body] = lifecycleRequest($port, 'public-controller', $session);
+    acceptanceCheck($status === 200 && ($publicController['action'] ?? '') === 'public-controller' && !isset($publicController['controller_middleware']), '私有控制器中间件污染公开操作：' . $body);
+
+    [$status, $publicController, $body] = lifecycleRequest($port, 'public-controller', $session);
+    acceptanceCheck($status === 200 && ($publicController['action'] ?? '') === 'public-controller' && !isset($publicController['controller_middleware']), '第二次公开操作仍被污染：' . $body);
+
+    [$status, $publicController, $body] = lifecycleRequest($port, 'public-controller', $session);
+    acceptanceCheck($status === 200 && ($publicController['action'] ?? '') === 'public-controller' && !isset($publicController['controller_middleware']), '公开操作前置请求未保持干净：' . $body);
+
+    [$status, $privateController, $body] = lifecycleRequest($port, 'private-controller', $session);
+    acceptanceCheck($status === 403 && ($privateController['controller_middleware'] ?? false) === true, '第二组私有操作中间件未执行：' . $body);
+
+    [$status, $publicController, $body] = lifecycleRequest($port, 'public-controller', $session);
+    acceptanceCheck($status === 200 && ($publicController['action'] ?? '') === 'public-controller' && !isset($publicController['controller_middleware']), '第二组公开操作被污染：' . $body);
+
+    $requestCount = (int)(getenv('THINKADMIN_WORKER_STATE_REQUESTS') ?: 100);
+    acceptanceCheck($requestCount >= 100, 'Worker 状态请求次数不得少于 100');
+    $observations = [];
+    for ($index = 0; $index < $requestCount; ++$index) {
+        [$status, $state, $body] = lifecycleRequest($port, 'worker-state', $session);
+        acceptanceCheck($status === 200 && ($state['pid'] ?? 0) === $pid, 'Worker 状态探针未保持同一进程：' . $body);
+        acceptanceCheck(isset($state['route_group_rules'], $state['route_middleware'], $state['controller_middleware'], $state['memory']), 'Worker 状态探针字段不完整：' . $body);
+        $observations[] = $state;
+    }
+
+    $ruleCount = $observations[0]['route_group_rules'];
+    $routeMiddlewareCount = $observations[0]['route_middleware'];
+    $controllerMiddlewareCount = $observations[0]['controller_middleware'];
+    foreach ($observations as $state) {
+        acceptanceCheck($state['route_group_rules'] === $ruleCount, '常驻请求路由规则持续增长：' . json_encode($state));
+        acceptanceCheck($state['route_middleware'] === $routeMiddlewareCount, '常驻请求路由中间件队列持续变化：' . json_encode($state));
+        acceptanceCheck($state['controller_middleware'] === $controllerMiddlewareCount, '常驻请求控制器中间件队列持续变化：' . json_encode($state));
+    }
+    $memory = array_column($observations, 'memory');
+    echo sprintf(
+        "PASS: worker-state / requests=%d / pid=%d / rules=%d / route=%d / controller=%d / memory=%d..%d\n",
+        $requestCount,
+        $pid,
+        $ruleCount,
+        $routeMiddlewareCount,
+        $controllerMiddlewareCount,
+        min($memory),
+        max($memory)
+    );
+}
+
+/**
  * 在独立进程组中启动真实服务，便于回收 think run 派生的 HTTP 子进程。
  * @param string $directory 隔离站点
  * @param string $name 日志名称
@@ -194,6 +275,13 @@ try {
 namespace app\index\controller;
 class Probe
 {
+    protected $middleware = [
+        [
+            'middleware' => \AcceptancePrivateControllerMiddleware::class,
+            'options' => ['only' => 'privateController'],
+        ],
+    ];
+
     public function middleware(\think\Request $request)
     {
         $trace = $request->middleware('acceptance_trace', []);
@@ -204,6 +292,38 @@ class Probe
         }
         return json(['controller' => true]);
     }
+
+    public function privateRoute()
+    {
+        return json(['action' => 'private-route']);
+    }
+
+    public function publicRoute()
+    {
+        return json(['action' => 'public-route']);
+    }
+
+    public function privateController()
+    {
+        return json(['action' => 'private-controller']);
+    }
+
+    public function publicController()
+    {
+        return json(['action' => 'public-controller']);
+    }
+
+    public function workerState(\think\App $app)
+    {
+        return json([
+            'pid' => getmypid(),
+            'route_group_rules' => count($app->route->getGroup()->getRules()),
+            'route_middleware' => count($app->middleware->all('route')),
+            'controller_middleware' => count($app->middleware->all('controller')),
+            'memory' => memory_get_usage(true),
+        ]);
+    }
+
     public function state(\think\App $app)
     {
         $before = $app->session->get('acceptance');
@@ -279,6 +399,23 @@ class AcceptanceRouteMiddleware extends AcceptanceMiddleware
 {
     protected $stage = 'route';
 }
+class AcceptancePrivateRouteMiddleware
+{
+    public function handle(\think\Request $request, \Closure $next): \think\Response
+    {
+        if ($request->get('failure')) {
+            throw new \TypeError('PRIVATE_ROUTE_FAILURE');
+        }
+        return json(['route_middleware' => true], 418);
+    }
+}
+class AcceptancePrivateControllerMiddleware
+{
+    public function handle(\think\Request $request, \Closure $next): \think\Response
+    {
+        return json(['controller_middleware' => true], 403);
+    }
+}
 class AcceptanceQueueSuccess extends \think\admin\Queue
 {
     public function execute(array $data = [])
@@ -297,7 +434,18 @@ PHP
     );
     acceptanceWrite($directory . '/app/middleware.php', '<?php return [AcceptanceMiddleware::class];');
     acceptanceWrite($directory . '/app/index/middleware.php', '<?php return [AcceptanceAppMiddleware::class];');
-    acceptanceWrite($directory . '/app/index/route/app.php', '<?php \think\facade\Route::get("probe/middleware", "Probe/middleware")->middleware(AcceptanceRouteMiddleware::class);');
+    acceptanceWrite(
+        $directory . '/app/index/route/app.php',
+        <<<'PHP'
+<?php
+\think\facade\Route::get('probe/middleware', 'Probe/middleware')->middleware(AcceptanceRouteMiddleware::class);
+\think\facade\Route::get('probe/private-route', 'Probe/privateRoute')->middleware(AcceptancePrivateRouteMiddleware::class);
+\think\facade\Route::get('probe/public-route', 'Probe/publicRoute');
+\think\facade\Route::get('probe/private-controller', 'Probe/privateController');
+\think\facade\Route::get('probe/public-controller', 'Probe/publicController');
+\think\facade\Route::get('probe/worker-state', 'Probe/workerState');
+PHP
+    );
     [$status, $output] = acceptanceRun($directory, [PHP_BINARY, 'think', 'xadmin:publish', '--migrate']);
     acceptanceCheck($status === 0 && strpos($output, 'Succeed!') !== false, '生命周期站点初始化失败：' . $output);
     $pdo = new PDO($driver === 'sqlite' ? 'sqlite:' . $directory . '/database/sqlite.db' : 'mysql:host=127.0.0.1;port=' . $mysqlPort . ';dbname=' . $databaseName, 'root', '', [PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION]);
@@ -355,6 +503,9 @@ PHP
             [$status, $other, $body] = lifecycleRequest($port, 'state?key=' . $key, bin2hex(random_bytes(16)));
             acceptanceCheck($status === 200 && empty($other['before']) && $other['cached'] === null, '请求或会话串入另一用户：' . $body);
             lifecycleCheckMiddleware($port, $session, $first['pid']);
+            if ($mode === 'worker') {
+                lifecycleCheckWorkerState($port, $session, $first['pid']);
+            }
             echo "PASS: {$driver} / {$mode} / 全局、应用、路由中间件各执行一次，顺序、短路及异常后恢复\n";
             echo "PASS: {$driver} / {$mode} / sapi={$first['sapi']} / pid={$first['pid']} / 正常、异常、正常，同一进程、会话隔离、配置及数据库稳定\n";
             if ($mode !== 'worker') {

@@ -73,6 +73,10 @@ class HttpServer extends Server
         // 初始化运行环境
         RuntimeService::init($this->app)->initialize();
 
+        // 预热路由并保存常驻 Worker 的中间件启动快照
+        $this->app->make('route');
+        $this->app->captureWorkerState();
+
         // 定时发起数据库请求，防止失效而锁死
         Timer::add(60, function () {
             $this->app->db->query(sprintf('select %d as stime', time()));
