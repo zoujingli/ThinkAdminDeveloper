@@ -43,6 +43,11 @@ class ThinkApp extends App
      */
     public function captureWorkerState(): void
     {
+        // Worker 启动时创建多应用中间件，确保其快照来自请求之前的基础状态。
+        $middleware = 'think\\admin\\support\\middleware\\MultAccess';
+        if (class_exists($middleware)) {
+            $this->make($middleware);
+        }
         $property = $this->middlewareQueueProperty();
         $queue = $property->getValue($this->middleware);
         $this->workerMiddlewareQueue = [];
@@ -56,6 +61,7 @@ class ThinkApp extends App
      */
     public function resetWorkerState(): void
     {
+        function_exists('sysvar') && sysvar('CurrentPluginCode', '');
         if (is_array($this->workerMiddlewareQueue)) {
             $property = $this->middlewareQueueProperty();
             $queue = $property->getValue($this->middleware);
@@ -64,6 +70,15 @@ class ThinkApp extends App
             }
             $property->setValue($this->middleware, $queue);
         }
+        // 多应用中间件会在 HttpRun 事件后才执行；先清掉上次应用的事件和容器状态。
+        $middleware = 'think\\admin\\support\\middleware\\MultAccess';
+        if (class_exists($middleware) && $this->exists($middleware)) {
+            $instance = $this->make($middleware);
+            if (method_exists($instance, 'resetApplicationState')) {
+                $instance->resetApplicationState();
+            }
+        }
+        // 基线可能持有启动时的 route 实例，必须在恢复应用状态后删除，确保本次请求重新创建。
         $this->delete('route');
     }
 
@@ -106,6 +121,21 @@ class ThinkApp extends App
         } catch (\Error|\Exception|\RuntimeException|\Throwable $exception) {
             // 其他异常处理
             $this->showException($connection, $exception);
+        } finally {
+            // HttpEnd 可能因异常未触发，清理请求变量和应用状态，避免事件循环间隙可见脏数据。
+            try {
+                while (ob_get_level() > 1) {
+                    ob_end_clean();
+                }
+                if ($this->exists('request')) {
+                    $request = $this->make('request');
+                    method_exists($request, 'clearWorkerGlobals') && $request->clearWorkerGlobals();
+                }
+                $this->resetWorkerState();
+            } catch (\Throwable $cleanup) {
+                // 清理失败不能覆盖原始响应，下一次请求入口仍会再次执行基线恢复。
+            }
+            function_exists('sysvar') && sysvar('', '');
         }
     }
 

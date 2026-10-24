@@ -41,15 +41,26 @@ function lifecyclePort(): int
  * @param string $path 请求路径
  * @param string $session 验收会话编号
  * @param bool $initFailure 是否在服务注册阶段注入异常
+ * @param string $extraHeaders 额外请求头
+ * @param string $extraCookies 额外 Cookie（不含 Cookie 前缀）
+ * @param string $application 应用名称
+ * @param string $method 请求方法
+ * @param string $body 请求体
+ * @param string $contentType 请求体类型
  * @return array{0:int,1:array,2:string,3:array}
  */
-function lifecycleRequest(int $port, string $path, string $session, bool $initFailure = false): array
+function lifecycleRequest(int $port, string $path, string $session, bool $initFailure = false, string $extraHeaders = '', string $extraCookies = '', string $application = 'index', string $method = 'GET', string $body = '', string $contentType = ''): array
 {
+    $cookie = "ssid={$session}" . ($extraCookies === '' ? '' : "; {$extraCookies}");
+    $headers = "Cookie: {$cookie}\r\nConnection: close\r\nAccept: application/json\r\n" . ($initFailure ? "X-Acceptance-Init-Failure: 1\r\n" : '') . $extraHeaders;
+    if ($contentType !== '') {
+        $headers .= "Content-Type: {$contentType}\r\n";
+    }
     $context = stream_context_create(['http' => [
-        'timeout' => 5, 'ignore_errors' => true,
-        'header' => "Cookie: ssid={$session}\r\nConnection: close\r\nAccept: application/json\r\n" . ($initFailure ? "X-Acceptance-Init-Failure: 1\r\n" : ''),
+        'timeout' => 5, 'ignore_errors' => true, 'method' => $method,
+        'header' => $headers, 'content' => $body,
     ]]);
-    $body = file_get_contents("http://127.0.0.1:{$port}/index/probe/{$path}", false, $context);
+    $body = file_get_contents("http://127.0.0.1:{$port}/{$application}/probe/{$path}", false, $context);
     preg_match('#HTTP/\S+ (\d+)#', $http_response_header[0] ?? '', $match);
     return [(int)($match[1] ?? 0), json_decode($body ?: '', true) ?: [], $body ?: '', $http_response_header ?? []];
 }
@@ -78,9 +89,72 @@ function lifecycleCheckMiddleware(int $port, string $session, int $pid): void
             return preg_replace('/:\s*/', ': ', strtolower($header), 1);
         }, $headers);
         acceptanceCheck($status === $expectedStatus, '中间件请求状态错误：' . $query . ' / ' . $body);
-        acceptanceCheck(in_array('x-acceptance-middleware: ' . $trace, $headers, true), '中间件次数或顺序错误：' . $query . ' / ' . json_encode($headers));
+        acceptanceCheck(in_array('x-acceptance-middleware: ' . $trace, $headers, true), '中间件次数或顺序错误：' . $query . ' / ' . json_encode($headers) . ' / ' . $body);
         acceptanceCheck(in_array('x-acceptance-pid: ' . $pid, $headers, true), '中间件异常或短路后工作进程发生变化');
     }
+}
+
+/**
+ * 验证 Worker 与 FPM 的 PHP 超全局输入保持一致，且请求之间不会残留。
+ * @param int $port 服务端口
+ * @param string $session 验收会话编号
+ */
+function lifecycleCheckRequestGlobals(int $port, string $session): void
+{
+    $boundary = 'acceptance-' . bin2hex(random_bytes(8));
+    $multipart = "--{$boundary}\r\nContent-Disposition: form-data; name=\"post\"\r\n\r\nfirst\r\n"
+        . "--{$boundary}\r\nContent-Disposition: form-data; name=\"upload\"; filename=\"probe.txt\"\r\nContent-Type: text/plain\r\n\r\nworker-state\r\n"
+        . "--{$boundary}--\r\n";
+    [$status, $first, $body] = lifecycleRequest(
+        $port,
+        'globals?leak=first',
+        $session,
+        false,
+        "X-Leak: first\r\n",
+        'leak=first',
+        'index',
+        'POST',
+        $multipart,
+        'multipart/form-data; boundary=' . $boundary
+    );
+    acceptanceCheck($status === 200 && ($first['get'] ?? null) === 'first' && ($first['post'] ?? null) === 'first'
+        && ($first['file'] ?? null) === 'probe.txt'
+        && ($first['server'] ?? null) === 'first' && ($first['request_server'] ?? null) === 'first'
+        && ($first['cookie'] ?? null) === 'first' && ($first['request'] ?? null) === 'first', '当前请求超全局没有完整同步：' . $body);
+
+    [$status, $second, $body] = lifecycleRequest($port, 'globals', $session, false, "X-Leak: second\r\n", 'leak=second', 'index', 'POST', 'post=second', 'application/x-www-form-urlencoded');
+    acceptanceCheck($status === 200 && ($second['get'] ?? null) === null && ($second['post'] ?? null) === 'second'
+        && ($second['file'] ?? null) === null && ($second['raw_length'] ?? 0) > 0
+        && ($second['server'] ?? null) === 'second' && ($second['request_server'] ?? null) === 'second'
+        && ($second['cookie'] ?? null) === 'second' && ($second['request'] ?? null) === 'second', '当前请求 POST 或文件状态没有正确替换：' . $body);
+
+    [$status, $third, $body] = lifecycleRequest($port, 'globals', $session);
+    acceptanceCheck($status === 200 && ($third['get'] ?? null) === null && ($third['post'] ?? null) === null
+        && ($third['file'] ?? null) === null && ($third['raw_length'] ?? -1) === 0
+        && ($third['server'] ?? null) === null && ($third['request_server'] ?? '') === ''
+        && ($third['cookie'] ?? null) === null && ($third['request'] ?? null) === null, '超全局输入跨请求残留：' . $body);
+}
+
+/**
+ * 验证多应用切换不会把上一个应用的配置带入当前请求。
+ * @param int $port 服务端口
+ * @param string $session 验收会话编号
+ */
+function lifecycleCheckApplicationState(int $port, string $session): void
+{
+    [$status, $admin, $body] = lifecycleRequest($port, 'scope', $session, false, '', '', 'admin');
+    acceptanceCheck($status === 200 && ($admin['application'] ?? null) === 'admin' && ($admin['marker'] ?? null) === 'admin' && ($admin['admin_only'] ?? null) === 'admin'
+        && ($admin['admin_binding'] ?? false) && ($admin['admin_instance'] ?? false) && ($admin['path'] ?? null) === 'app/admin/'
+        && ($admin['namespace'] ?? null) === 'app\admin', '管理应用初始化失败：' . $body);
+
+    [$status, $index, $body] = lifecycleRequest($port, 'scope', $session);
+    acceptanceCheck($status === 200 && ($index['application'] ?? null) === 'index' && ($index['marker'] ?? null) === 'index' && ($index['admin_only'] ?? null) === null
+        && ($index['stale_event'] ?? null) === null && ($index['route_loaded'] ?? null) === true && !($index['admin_binding'] ?? true) && !($index['admin_instance'] ?? true)
+        && ($index['path'] ?? null) === 'app/index/' && ($index['namespace'] ?? null) === 'app\index', '应用切换后配置或事件发生污染：' . $body);
+
+    [$status, $index, $body] = lifecycleRequest($port, 'scope', $session);
+    acceptanceCheck($status === 200 && ($index['application'] ?? null) === 'index' && ($index['marker'] ?? null) === 'index' && ($index['admin_only'] ?? null) === null
+        && ($index['stale_event'] ?? null) === null && ($index['route_loaded'] ?? null) === true && !($index['admin_binding'] ?? true) && !($index['admin_instance'] ?? true), '连续公开应用请求仍有配置或事件残留：' . $body);
 }
 
 /**
@@ -313,6 +387,36 @@ class Probe
         return json(['action' => 'public-controller']);
     }
 
+    public function globals()
+    {
+        $request = app('request');
+        return json([
+            'get' => $request->get('leak'),
+            'post' => $request->post('post'),
+            'file' => $_FILES['upload']['name'] ?? null,
+            'raw_length' => strlen($request->getInput()),
+            'server' => $_SERVER['HTTP_X_LEAK'] ?? null,
+            'request_server' => $request->server('HTTP_X_LEAK'),
+            'cookie' => $_COOKIE['leak'] ?? null,
+            'request' => $_REQUEST['leak'] ?? null,
+        ]);
+    }
+
+    public function scope(\think\App $app)
+    {
+        return json([
+            'application' => $app->http->getName(),
+            'marker' => $app->config->get('worker_scope.marker'),
+            'admin_only' => $app->config->get('worker_scope.admin_only'),
+            'stale_event' => sysvar('stale_admin_event'),
+            'route_loaded' => sysvar('acceptance_route_loaded'),
+            'admin_binding' => $app->has('acceptance.admin'),
+            'admin_instance' => $app->exists('acceptance.admin'),
+            'path' => str_replace($app->getRootPath(), '', $app->http->getPath()),
+            'namespace' => $app->getNamespace(),
+        ]);
+    }
+
     public function workerState(\think\App $app)
     {
         return json([
@@ -362,6 +466,45 @@ class Probe
                 default: throw new \TypeError('LIFECYCLE_TYPE_ERROR');
             }
         });
+    }
+}
+PHP
+    );
+    acceptanceWrite($directory . '/app/index/config/worker_scope.php', '<?php return [\'marker\' => \'index\'];');
+    acceptanceWrite($directory . '/app/admin/config/worker_scope.php', '<?php return [\'marker\' => \'admin\', \'admin_only\' => \'admin\'];');
+    acceptanceWrite(
+        $directory . '/app/admin/event.php',
+        <<<'PHP'
+<?php
+return [
+    'listen' => [
+        'HttpRun' => [static function () {
+            sysvar('stale_admin_event', true);
+        }],
+    ],
+];
+PHP
+    );
+    acceptanceWrite($directory . '/app/admin/provider.php', '<?php return [\'acceptance.admin\' => AcceptanceAdminService::class];');
+    acceptanceWrite(
+        $directory . '/app/admin/controller/Probe.php',
+        <<<'PHP'
+<?php
+namespace app\admin\controller;
+class Probe
+{
+    public function scope(\think\App $app)
+    {
+        $app->make('acceptance.admin');
+        return json([
+            'application' => $app->http->getName(),
+            'marker' => $app->config->get('worker_scope.marker'),
+            'admin_only' => $app->config->get('worker_scope.admin_only'),
+            'admin_binding' => $app->has('acceptance.admin'),
+            'admin_instance' => $app->exists('acceptance.admin'),
+            'path' => str_replace($app->getRootPath(), '', $app->http->getPath()),
+            'namespace' => $app->getNamespace(),
+        ]);
     }
 }
 PHP
@@ -416,6 +559,9 @@ class AcceptancePrivateControllerMiddleware
         return json(['controller_middleware' => true], 403);
     }
 }
+class AcceptanceAdminService
+{
+}
 class AcceptanceQueueSuccess extends \think\admin\Queue
 {
     public function execute(array $data = [])
@@ -444,10 +590,16 @@ PHP
 \think\facade\Route::get('probe/private-controller', 'Probe/privateController');
 \think\facade\Route::get('probe/public-controller', 'Probe/publicController');
 \think\facade\Route::get('probe/worker-state', 'Probe/workerState');
+\think\facade\Route::get('probe/globals', 'Probe/globals');
+\think\facade\Route::get('probe/scope', 'Probe/scope');
+sysvar('acceptance_route_loaded', true);
 PHP
     );
+    acceptanceWrite($directory . '/app/admin/route/app.php', "<?php \\think\\facade\\Route::get('probe/scope', 'Probe/scope');");
     [$status, $output] = acceptanceRun($directory, [PHP_BINARY, 'think', 'xadmin:publish', '--migrate']);
     acceptanceCheck($status === 0 && strpos($output, 'Succeed!') !== false, '生命周期站点初始化失败：' . $output);
+    // 发布器会把应用配置复制到根配置；为多应用切换验收保留明确的中性基线。
+    acceptanceWrite($directory . '/config/worker_scope.php', '<?php return [\'marker\' => \'base\'];');
     $pdo = new PDO($driver === 'sqlite' ? 'sqlite:' . $directory . '/database/sqlite.db' : 'mysql:host=127.0.0.1;port=' . $mysqlPort . ';dbname=' . $databaseName, 'root', '', [PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION]);
     acceptanceCheck((int)$pdo->query('SELECT COUNT(*) FROM migrations')->fetchColumn() === count(glob($directory . '/database/migrations/*_*.php')), 'HTTP 站点迁移不完整');
 
@@ -503,6 +655,8 @@ PHP
             [$status, $other, $body] = lifecycleRequest($port, 'state?key=' . $key, bin2hex(random_bytes(16)));
             acceptanceCheck($status === 200 && empty($other['before']) && $other['cached'] === null, '请求或会话串入另一用户：' . $body);
             lifecycleCheckMiddleware($port, $session, $first['pid']);
+            lifecycleCheckRequestGlobals($port, $session);
+            lifecycleCheckApplicationState($port, $session);
             if ($mode === 'worker') {
                 lifecycleCheckWorkerState($port, $session, $first['pid']);
             }

@@ -31,6 +31,9 @@ use Workerman\Worker;
  */
 class ThinkRequest extends Request
 {
+    /** @var null|array Worker 进程启动时的超全局变量基线 */
+    protected static $workerGlobalsBaseline;
+
     /**
      * 初始化属性.
      */
@@ -50,27 +53,35 @@ class ThinkRequest extends Request
      */
     public function withWorkerRequest(TcpConnection $connection, WorkerRequest $request): ThinkRequest
     {
+        $headers = $request->header();
+        $get = $request->get();
+        $post = $request->post();
+        $cookie = $request->cookie();
+        $files = $request->file() ?? [];
+        $raw = $request->rawBody();
+        $method = $request->method();
+
         // 初始化变量
         $this->reset();
 
         // 赋值新的变量
-        $this->get = $request->get();
-        $this->file = $request->file() ?? [];
-        $this->post = $request->post();
-        $this->cookie = $request->cookie();
-        $this->header = $request->header();
+        $this->get = $get;
+        $this->file = $files;
+        $this->post = $post;
+        $this->cookie = $cookie;
+        $this->header = $headers;
         $this->method = $request->method();
         $this->request = $this->post + $this->get;
         $this->pathinfo = ltrim($request->path(), '\/');
 
         // 请求真实IP
-        $this->realIP = $this->header['x-real-ip'] ?? ($this->header['x-forwarded-for'] ?? $connection->getRemoteIp());
+        $this->realIP = $headers['x-real-ip'] ?? ($headers['x-forwarded-for'] ?? $connection->getRemoteIp());
 
         // 请求服务器的域名处理
-        $this->host = $this->header['x-host'] ?? ($this->header['x-requested-host'] ?? ($this->header['remote-host'] ?? ($this->header['host'] ?? $request->host())));
+        $this->host = $headers['x-host'] ?? ($headers['x-requested-host'] ?? ($headers['remote-host'] ?? ($headers['host'] ?? $request->host())));
 
         // 请求服务器的端口处理
-        if (!is_numeric($port = $this->header['x-port'] ?? ($this->header['x-requested-port'] ?? ($this->header['port'] ?? null)))) {
+        if (!is_numeric($port = $headers['x-port'] ?? ($headers['x-requested-port'] ?? ($headers['port'] ?? null)))) {
             $port = strpos($this->host, ':') !== false ? explode(':', $this->host)[1] : $connection->getRemotePort();
         }
 
@@ -79,15 +90,12 @@ class ThinkRequest extends Request
             $this->host = strstr($this->host, ':', true);
         }
 
-        // 替换全局变量
-        $_GET = $request->get();
-        $_POST = $request->post();
-        $_REQUEST = $request->post() + $request->get() + $request->cookie();
-        $_SERVER['REQUEST_METHOD'] = strtoupper($request->method());
-        $GLOBALS['HTTP_RAW_POST_DATA'] = $request->rawBody();
-
-        // 服务变量替换
-        return $this->withInput($request->rawBody())->withServer(array_filter([
+        $headerServer = [];
+        foreach ($headers as $name => $value) {
+            $key = strtoupper(str_replace('-', '_', $name));
+            $headerServer[in_array($key, ['CONTENT_TYPE', 'CONTENT_LENGTH'], true) ? $key : 'HTTP_' . $key] = $value;
+        }
+        $server = array_filter(array_merge($headerServer, [
             'HTTP_HOST' => $this->host,
             'PATH_INFO' => $this->pathinfo,
             'REQUEST_URI' => $request->uri(),
@@ -97,24 +105,78 @@ class ThinkRequest extends Request
             'REMOTE_ADDR' => $this->realIP,
             'REMOTE_PORT' => $connection->getRemotePort(),
             'QUERY_STRING' => $request->queryString(),
-            'REQUEST_METHOD' => $request->method(),
-            'REQUEST_SCHEME' => $this->header['x-scheme'] ?? null,
-            'HTTP_X_PJAX' => $this->header['x-pjax'] ?? null,
-            'HTTP_X_FORWARDED_HOST' => $this->header['x-forwarded-host'] ?? null,
-            'HTTP_X_REQUESTED_WITH' => $this->header['x-forwarded-with'] ?? null,
-            'HTTP_X_FORWARDED_PORT' => $this->header['x-requested-port'] ?? null,
-            'HTTP_X_FORWARDED_PROTO' => $this->header['x-forwarded-proto'] ?? null,
-            'HTTP_ACCEPT' => $this->header['accept'] ?? null,
-            'HTTP_ACCEPT_ENCODING' => $this->header['accept-encoding'] ?? null,
-            'HTTP_ACCEPT_LANGUAGE' => $this->header['accept-language'] ?? null,
-            'HTTP_USER_AGENT' => $this->header['user-agent'] ?? null,
-            'HTTP_COOKIE' => $this->header['cookie'] ?? null,
-            'HTTP_CACHE_CONTROL' => $this->header['cache-control'] ?? null,
-            'HTTP_PRAGMA' => $this->header['pragma'] ?? null,
-            'SERVER_PROTOCOL' => $this->header['x-scheme'] ?? ($port === 443 ? 'https' : 'http'),
+            'REQUEST_METHOD' => $method,
+            'REQUEST_SCHEME' => $headers['x-scheme'] ?? null,
+            'SERVER_PROTOCOL' => $headers['x-scheme'] ?? ($port === 443 ? 'https' : 'http'),
             'SERVER_SOFTWARE' => 'Server/' . Worker::VERSION,
             'REQUEST_TIME' => time(),
             'REQUEST_TIME_FLOAT' => microtime(true),
         ]));
+
+        // 替换全局变量，保持常驻模式与 FPM 的请求边界一致
+        $this->withWorkerGlobals($get, $post, $cookie, $files, $raw, $server);
+
+        // 服务变量替换
+        return $this->withInput($raw)->withServer($server);
+    }
+
+    /**
+     * 同步当前请求的 PHP 超全局变量.
+     * @param array $get GET 参数
+     * @param array $post POST 参数
+     * @param array $cookie Cookie 参数
+     * @param array $files 上传文件
+     * @param string $raw 原始请求体
+     * @param array $server ThinkPHP 服务变量
+     */
+    protected function withWorkerGlobals(array $get, array $post, array $cookie, array $files, string $raw, array $server): void
+    {
+        if (is_null(static::$workerGlobalsBaseline)) {
+            static::$workerGlobalsBaseline = [
+                'get' => $_GET,
+                'post' => $_POST,
+                'cookie' => $_COOKIE,
+                'files' => $_FILES,
+                'request' => $_REQUEST,
+                'server' => $_SERVER,
+                'rawExists' => array_key_exists('HTTP_RAW_POST_DATA', $GLOBALS),
+                'raw' => $GLOBALS['HTTP_RAW_POST_DATA'] ?? null,
+            ];
+        }
+
+        $_GET = $get;
+        $_POST = $post;
+        $_COOKIE = $cookie;
+        $_FILES = $files;
+        $_REQUEST = $post + $get + $cookie;
+        $_SERVER = static::$workerGlobalsBaseline['server'];
+        $_SERVER = array_merge($_SERVER, $server);
+        if (isset($server['REQUEST_METHOD'])) {
+            $_SERVER['REQUEST_METHOD'] = strtoupper($server['REQUEST_METHOD']);
+        }
+        $GLOBALS['HTTP_RAW_POST_DATA'] = $raw;
+    }
+
+    /**
+     * 清理当前请求的 PHP 超全局变量，供 Worker 请求结束或异常时调用.
+     */
+    public function clearWorkerGlobals(): void
+    {
+        if (is_null(static::$workerGlobalsBaseline)) {
+            return;
+        }
+
+        $this->reset();
+        $_GET = static::$workerGlobalsBaseline['get'];
+        $_POST = static::$workerGlobalsBaseline['post'];
+        $_COOKIE = static::$workerGlobalsBaseline['cookie'];
+        $_FILES = static::$workerGlobalsBaseline['files'];
+        $_REQUEST = static::$workerGlobalsBaseline['request'];
+        $_SERVER = static::$workerGlobalsBaseline['server'];
+        if (static::$workerGlobalsBaseline['rawExists']) {
+            $GLOBALS['HTTP_RAW_POST_DATA'] = static::$workerGlobalsBaseline['raw'];
+        } else {
+            unset($GLOBALS['HTTP_RAW_POST_DATA']);
+        }
     }
 }
