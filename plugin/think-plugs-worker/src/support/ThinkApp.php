@@ -44,7 +44,7 @@ class ThinkApp extends App
     public function captureWorkerState(): void
     {
         // Worker 启动时创建多应用中间件，确保其快照来自请求之前的基础状态。
-        $middleware = 'think\\admin\\support\\middleware\\MultAccess';
+        $middleware = 'think\admin\support\middleware\MultAccess';
         if (class_exists($middleware)) {
             $this->make($middleware);
         }
@@ -71,7 +71,7 @@ class ThinkApp extends App
             $property->setValue($this->middleware, $queue);
         }
         // 多应用中间件会在 HttpRun 事件后才执行；先清掉上次应用的事件和容器状态。
-        $middleware = 'think\\admin\\support\\middleware\\MultAccess';
+        $middleware = 'think\admin\support\middleware\MultAccess';
         if (class_exists($middleware) && $this->exists($middleware)) {
             $instance = $this->make($middleware);
             if (method_exists($instance, 'resetApplicationState')) {
@@ -87,6 +87,7 @@ class ThinkApp extends App
      */
     public function worker(TcpConnection $connection, WorkerRequest $request)
     {
+        $httpEnded = false;
         try {
             // 初始化请求
             $this->resetWorkerState();
@@ -118,6 +119,7 @@ class ThinkApp extends App
 
             // 结束当前请求
             $this->http->end($thinkres);
+            $httpEnded = true;
         } catch (\Error|\Exception|\RuntimeException|\Throwable $exception) {
             // 其他异常处理
             $this->showException($connection, $exception);
@@ -127,10 +129,28 @@ class ThinkApp extends App
                 while (ob_get_level() > 1) {
                     ob_end_clean();
                 }
+                // 仅在 HttpEnd 未执行时保存异常路径日志，保证日志监听器仍能读取当前请求上下文。
+                if (!$httpEnded && $this->exists('log')) {
+                    $log = $this->make('log');
+                    method_exists($log, 'save') && $log->save();
+                }
                 if ($this->exists('request')) {
                     $request = $this->make('request');
                     method_exists($request, 'clearWorkerGlobals') && $request->clearWorkerGlobals();
                 }
+                if ($this->exists('session')) {
+                    $session = $this->make('session');
+                    method_exists($session, 'clear') && $session->clear();
+                }
+                if ($this->exists('cookie')) {
+                    $cookie = $this->make('cookie');
+                    method_exists($cookie, 'withWorkerResponse') && $cookie->withWorkerResponse();
+                }
+                if ($this->exists('db')) {
+                    $db = $this->make('db');
+                    method_exists($db, 'clearQueryTimes') && $db->clearQueryTimes();
+                }
+                $this->delete('view');
                 $this->resetWorkerState();
             } catch (\Throwable $cleanup) {
                 // 清理失败不能覆盖原始响应，下一次请求入口仍会再次执行基线恢复。

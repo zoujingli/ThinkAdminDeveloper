@@ -98,8 +98,9 @@ function lifecycleCheckMiddleware(int $port, string $session, int $pid): void
  * 验证 Worker 与 FPM 的 PHP 超全局输入保持一致，且请求之间不会残留。
  * @param int $port 服务端口
  * @param string $session 验收会话编号
+ * @param bool $worker 是否核验 Worker 的代理端口协议推导
  */
-function lifecycleCheckRequestGlobals(int $port, string $session): void
+function lifecycleCheckRequestGlobals(int $port, string $session, bool $worker = false): void
 {
     $boundary = 'acceptance-' . bin2hex(random_bytes(8));
     $multipart = "--{$boundary}\r\nContent-Disposition: form-data; name=\"post\"\r\n\r\nfirst\r\n"
@@ -110,7 +111,7 @@ function lifecycleCheckRequestGlobals(int $port, string $session): void
         'globals?leak=first',
         $session,
         false,
-        "X-Leak: first\r\n",
+        "X-Leak: first\r\nX-Zero: 0\r\n" . ($worker ? "X-Port: 443\r\n" : ''),
         'leak=first',
         'index',
         'POST',
@@ -120,6 +121,8 @@ function lifecycleCheckRequestGlobals(int $port, string $session): void
     acceptanceCheck($status === 200 && ($first['get'] ?? null) === 'first' && ($first['post'] ?? null) === 'first'
         && ($first['file'] ?? null) === 'probe.txt'
         && ($first['server'] ?? null) === 'first' && ($first['request_server'] ?? null) === 'first'
+        && ($first['zero'] ?? null) === '0' && in_array($first['protocol'] ?? null, ['HTTP/1.0', 'HTTP/1.1'], true)
+        && (!$worker || ($first['scheme'] ?? null) === 'https')
         && ($first['cookie'] ?? null) === 'first' && ($first['request'] ?? null) === 'first', '当前请求超全局没有完整同步：' . $body);
 
     [$status, $second, $body] = lifecycleRequest($port, 'globals', $session, false, "X-Leak: second\r\n", 'leak=second', 'index', 'POST', 'post=second', 'application/x-www-form-urlencoded');
@@ -144,12 +147,14 @@ function lifecycleCheckApplicationState(int $port, string $session): void
 {
     [$status, $admin, $body] = lifecycleRequest($port, 'scope', $session, false, '', '', 'admin');
     acceptanceCheck($status === 200 && ($admin['application'] ?? null) === 'admin' && ($admin['marker'] ?? null) === 'admin' && ($admin['admin_only'] ?? null) === 'admin'
-        && ($admin['admin_binding'] ?? false) && ($admin['admin_instance'] ?? false) && ($admin['path'] ?? null) === 'app/admin/'
+        && ($admin['admin_binding'] ?? false) && ($admin['admin_instance'] ?? false) && ($admin['admin_service'] ?? false)
+        && ($admin['admin_resolving'] ?? false) && ($admin['path'] ?? null) === 'app/admin/'
         && ($admin['namespace'] ?? null) === 'app\admin', '管理应用初始化失败：' . $body);
 
     [$status, $index, $body] = lifecycleRequest($port, 'scope', $session);
     acceptanceCheck($status === 200 && ($index['application'] ?? null) === 'index' && ($index['marker'] ?? null) === 'index' && ($index['admin_only'] ?? null) === null
         && ($index['stale_event'] ?? null) === null && ($index['route_loaded'] ?? null) === true && !($index['admin_binding'] ?? true) && !($index['admin_instance'] ?? true)
+        && ($index['admin_service'] ?? null) === false && ($index['admin_resolving'] ?? null) === null
         && ($index['path'] ?? null) === 'app/index/' && ($index['namespace'] ?? null) === 'app\index', '应用切换后配置或事件发生污染：' . $body);
 
     [$status, $index, $body] = lifecycleRequest($port, 'scope', $session);
@@ -397,6 +402,9 @@ class Probe
             'raw_length' => strlen($request->getInput()),
             'server' => $_SERVER['HTTP_X_LEAK'] ?? null,
             'request_server' => $request->server('HTTP_X_LEAK'),
+            'zero' => $_SERVER['HTTP_X_ZERO'] ?? null,
+            'protocol' => $_SERVER['SERVER_PROTOCOL'] ?? null,
+            'scheme' => $_SERVER['REQUEST_SCHEME'] ?? null,
             'cookie' => $_COOKIE['leak'] ?? null,
             'request' => $_REQUEST['leak'] ?? null,
         ]);
@@ -409,6 +417,8 @@ class Probe
             'marker' => $app->config->get('worker_scope.marker'),
             'admin_only' => $app->config->get('worker_scope.admin_only'),
             'stale_event' => sysvar('stale_admin_event'),
+            'admin_service' => (bool)$app->getService(\AcceptanceAdminService::class),
+            'admin_resolving' => sysvar('stale_admin_resolve'),
             'route_loaded' => sysvar('acceptance_route_loaded'),
             'admin_binding' => $app->has('acceptance.admin'),
             'admin_instance' => $app->exists('acceptance.admin'),
@@ -481,6 +491,12 @@ return [
         'HttpRun' => [static function () {
             sysvar('stale_admin_event', true);
         }],
+        'RouteLoaded' => [static function () {
+            app()->resolving('acceptance.admin', static function () {
+                sysvar('stale_admin_resolve', true);
+            });
+            app()->register(AcceptanceAdminService::class);
+        }],
     ],
 ];
 PHP
@@ -502,6 +518,8 @@ class Probe
             'admin_only' => $app->config->get('worker_scope.admin_only'),
             'admin_binding' => $app->has('acceptance.admin'),
             'admin_instance' => $app->exists('acceptance.admin'),
+            'admin_service' => (bool)$app->getService(\AcceptanceAdminService::class),
+            'admin_resolving' => sysvar('stale_admin_resolve'),
             'path' => str_replace($app->getRootPath(), '', $app->http->getPath()),
             'namespace' => $app->getNamespace(),
         ]);
@@ -559,7 +577,7 @@ class AcceptancePrivateControllerMiddleware
         return json(['controller_middleware' => true], 403);
     }
 }
-class AcceptanceAdminService
+class AcceptanceAdminService extends \think\Service
 {
 }
 class AcceptanceQueueSuccess extends \think\admin\Queue
@@ -655,7 +673,7 @@ PHP
             [$status, $other, $body] = lifecycleRequest($port, 'state?key=' . $key, bin2hex(random_bytes(16)));
             acceptanceCheck($status === 200 && empty($other['before']) && $other['cached'] === null, '请求或会话串入另一用户：' . $body);
             lifecycleCheckMiddleware($port, $session, $first['pid']);
-            lifecycleCheckRequestGlobals($port, $session);
+            lifecycleCheckRequestGlobals($port, $session, $mode === 'worker');
             lifecycleCheckApplicationState($port, $session);
             if ($mode === 'worker') {
                 lifecycleCheckWorkerState($port, $session, $first['pid']);

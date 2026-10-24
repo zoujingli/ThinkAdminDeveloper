@@ -49,6 +49,29 @@ class ThinkRequest extends Request
     }
 
     /**
+     * 清理当前请求的 PHP 超全局变量，供 Worker 请求结束或异常时调用.
+     */
+    public function clearWorkerGlobals(): void
+    {
+        if (is_null(static::$workerGlobalsBaseline)) {
+            return;
+        }
+
+        $this->reset();
+        $_GET = static::$workerGlobalsBaseline['get'];
+        $_POST = static::$workerGlobalsBaseline['post'];
+        $_COOKIE = static::$workerGlobalsBaseline['cookie'];
+        $_FILES = static::$workerGlobalsBaseline['files'];
+        $_REQUEST = static::$workerGlobalsBaseline['request'];
+        $_SERVER = static::$workerGlobalsBaseline['server'];
+        if (static::$workerGlobalsBaseline['rawExists']) {
+            $GLOBALS['HTTP_RAW_POST_DATA'] = static::$workerGlobalsBaseline['raw'];
+        } else {
+            unset($GLOBALS['HTTP_RAW_POST_DATA']);
+        }
+    }
+
+    /**
      * WorkermanRequest 转换为 ThinkRequest 对象
      */
     public function withWorkerRequest(TcpConnection $connection, WorkerRequest $request): ThinkRequest
@@ -70,7 +93,7 @@ class ThinkRequest extends Request
         $this->post = $post;
         $this->cookie = $cookie;
         $this->header = $headers;
-        $this->method = $request->method();
+        $this->method = $method;
         $this->request = $this->post + $this->get;
         $this->pathinfo = ltrim($request->path(), '\/');
 
@@ -84,6 +107,7 @@ class ThinkRequest extends Request
         if (!is_numeric($port = $headers['x-port'] ?? ($headers['x-requested-port'] ?? ($headers['port'] ?? null)))) {
             $port = strpos($this->host, ':') !== false ? explode(':', $this->host)[1] : $connection->getRemotePort();
         }
+        $port = (int)$port;
 
         // 如果是正常端口，不需要在 host 表示端口
         if (strpos($this->host, ':') !== false && in_array($port, [80, 443])) {
@@ -94,6 +118,11 @@ class ThinkRequest extends Request
         foreach ($headers as $name => $value) {
             $key = strtoupper(str_replace('-', '_', $name));
             $headerServer[in_array($key, ['CONTENT_TYPE', 'CONTENT_LENGTH'], true) ? $key : 'HTTP_' . $key] = $value;
+        }
+        $scheme = $headers['x-scheme'] ?? ($port === 443 ? 'https' : 'http');
+        $protocol = method_exists($request, 'protocolVersion') ? $request->protocolVersion() : '1.1';
+        if (stripos($protocol, 'HTTP/') === 0) {
+            $protocol = substr($protocol, 5);
         }
         $server = array_filter(array_merge($headerServer, [
             'HTTP_HOST' => $this->host,
@@ -106,12 +135,15 @@ class ThinkRequest extends Request
             'REMOTE_PORT' => $connection->getRemotePort(),
             'QUERY_STRING' => $request->queryString(),
             'REQUEST_METHOD' => $method,
-            'REQUEST_SCHEME' => $headers['x-scheme'] ?? null,
-            'SERVER_PROTOCOL' => $headers['x-scheme'] ?? ($port === 443 ? 'https' : 'http'),
+            'REQUEST_SCHEME' => $scheme,
+            'SERVER_PROTOCOL' => 'HTTP/' . $protocol,
             'SERVER_SOFTWARE' => 'Server/' . Worker::VERSION,
             'REQUEST_TIME' => time(),
             'REQUEST_TIME_FLOAT' => microtime(true),
-        ]));
+        ]), static function ($value) {
+            // 保留合法的 "0" 请求头和端口值，行为与 FPM 超全局一致。
+            return $value !== null && $value !== '';
+        });
 
         // 替换全局变量，保持常驻模式与 FPM 的请求边界一致
         $this->withWorkerGlobals($get, $post, $cookie, $files, $raw, $server);
@@ -155,28 +187,5 @@ class ThinkRequest extends Request
             $_SERVER['REQUEST_METHOD'] = strtoupper($server['REQUEST_METHOD']);
         }
         $GLOBALS['HTTP_RAW_POST_DATA'] = $raw;
-    }
-
-    /**
-     * 清理当前请求的 PHP 超全局变量，供 Worker 请求结束或异常时调用.
-     */
-    public function clearWorkerGlobals(): void
-    {
-        if (is_null(static::$workerGlobalsBaseline)) {
-            return;
-        }
-
-        $this->reset();
-        $_GET = static::$workerGlobalsBaseline['get'];
-        $_POST = static::$workerGlobalsBaseline['post'];
-        $_COOKIE = static::$workerGlobalsBaseline['cookie'];
-        $_FILES = static::$workerGlobalsBaseline['files'];
-        $_REQUEST = static::$workerGlobalsBaseline['request'];
-        $_SERVER = static::$workerGlobalsBaseline['server'];
-        if (static::$workerGlobalsBaseline['rawExists']) {
-            $GLOBALS['HTTP_RAW_POST_DATA'] = static::$workerGlobalsBaseline['raw'];
-        } else {
-            unset($GLOBALS['HTTP_RAW_POST_DATA']);
-        }
     }
 }
