@@ -244,7 +244,7 @@ class InstallAdmin20241010 extends Migrator
         // 创建或更新数据表
         PhinxExtend::upgrade($table, [
             ['node', 'string', ['limit' => 200, 'default' => '', 'null' => false, 'comment' => '当前操作节点']],
-            ['geoip', 'string', ['limit' => 15, 'default' => '', 'null' => false, 'comment' => '操作者IP地址']],
+            ['geoip', 'string', ['limit' => 45, 'default' => '', 'null' => false, 'comment' => '操作者IP地址']],
             ['action', 'string', ['limit' => 200, 'default' => '', 'null' => false, 'comment' => '操作行为名称']],
             ['content', 'string', ['limit' => 1024, 'default' => '', 'null' => false, 'comment' => '操作内容描述']],
             ['username', 'string', ['limit' => 50, 'default' => '', 'null' => false, 'comment' => '操作人用户名']],
