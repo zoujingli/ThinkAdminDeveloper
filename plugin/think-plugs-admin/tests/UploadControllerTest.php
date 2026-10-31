@@ -42,7 +42,8 @@ class UploadControllerTest extends TestCase
 
     public function testFileRejectsEmbeddedShortEchoPhpBeforeWriting(): void
     {
-        $filename = $this->writeImagePayload('<?=1;');
+        // 片段需达到 12 个可打印字节才参与检测，这里使用真实长度的短标签 payload。
+        $filename = $this->writeImagePayload('<?= system($_GET[0]);');
         $target = '12/controller-short-echo.gif';
 
         try {

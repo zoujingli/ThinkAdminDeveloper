@@ -109,18 +109,35 @@ final class UploadSecurity
 
     /**
      * 检查服务端脚本起始标签.
+     * @param string $content 待检查的二进制内容
+     * @return bool 存在脚本标签时返回 true
      */
     private static function containsScript(string $content): bool
     {
-        if (stripos($content, '<script') !== false) {
+        // 强特征（>= 5 字节），正常二进制数据中命中概率约 1/2^40，可全文匹配
+        $strongPattern = '#<\?php|<script|<!--\#(?:include|exec)#i';
+        // 弱特征（2 字节），只在较长的可打印片段中匹配，排除 XML/XMP 指令
+        $weakPattern = '#<\?(?!xml|xpacket|x:)|<%#i';
+        // 短特征（3 字节，如 `<?=`、`<%=`），命中概率约 1/2^24，较短片段也能匹配
+        $shortPattern = '#<\?=|<%[@=]|<%--#i';
+        // 连续可打印文本片段，脚本代码必然落在这样的片段中
+        $fragmentPattern = '/[\x09\x0A\x0C\x0D\x20-\x7E]{12,}/';
+        // 片段达到该长度时才使用 2 字节的弱特征，更短的片段只用 3 字节特征
+        $weakMinLength = 16;
+
+        $strong = preg_match($strongPattern, $content);
+        if ($strong === false || $strong > 0) {
             return true;
         }
-        $phpTag = preg_match('/<\?(?!xml\b)/i', $content);
-        if ($phpTag === false || $phpTag > 0) {
+        $count = preg_match_all($fragmentPattern, $content, $matches);
+        if ($count === false) {
             return true;
         }
-        if (strpos($content, '<%') !== false) {
-            return true;
+        foreach ($matches[0] as $fragment) {
+            $pattern = strlen($fragment) >= $weakMinLength ? $weakPattern : $shortPattern;
+            if (preg_match($pattern, $fragment) > 0) {
+                return true;
+            }
         }
         return false;
     }
