@@ -201,7 +201,7 @@ class UploadSecurityTest extends TestCase
             'short tag across multiple chunks' => ['<?' . str_repeat(' ', 20000) . 'echo 1; ?>'],
             'full tag after binary noise' => ["<?\xFF\x00" . '<?php echo 1; ?>'],
             'short echo after invalid short open tag' => ["<?\xFF\x00" . '<?=1;'],
-            'short echo after XMP' => ['<?xpacket begin=""?>' . '<?=1;'],
+            'short echo after XMP' => ['<?xpacket begin=""?><?=1;'],
             'short echo across chunk boundary' => [str_repeat("\0", 6109) . '<?=1;'],
             'asp' => ['<%echo 1;%>'],
             'asp across multiple chunks' => ['<%' . str_repeat(' ', 20000) . 'echo 1;%>'],
