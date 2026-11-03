@@ -70,6 +70,32 @@ class UploadControllerTest extends TestCase
         }
     }
 
+    public function testFileAcceptsJpegWithXmpMetadataWithoutRewritingIt(): void
+    {
+        $image = imagecreatetruecolor(2, 2);
+        ob_start();
+        imagejpeg($image, null, 90);
+        $jpeg = ob_get_clean();
+        imagedestroy($image);
+        $xmp = "http://ns.adobe.com/xap/1.0/\0"
+            . '<?xpacket begin="" id="W5M0MpCehiHzreSzNTczkc9d"?>'
+            . '<x:xmpmeta xmlns:x="adobe:ns:meta/"></x:xmpmeta><?xpacket end="w"?>';
+        $jpeg = substr($jpeg, 0, 2) . "\xFF\xE1" . pack('n', strlen($xmp) + 2) . $xmp . substr($jpeg, 2);
+        $filename = tempnam(sys_get_temp_dir(), 'upload-controller-');
+        $target = '12/controller-xmp.jpg';
+
+        try {
+            file_put_contents($filename, $jpeg);
+            $response = $this->submitFile($filename, $target, 'controller.jpg');
+            $this->assertSame(1, $response['code']);
+            $this->assertSame($jpeg, file_get_contents($this->storagePath($target)));
+        } finally {
+            @unlink($this->storagePath($target));
+            @rmdir(dirname($this->storagePath($target)));
+            @unlink($filename);
+        }
+    }
+
     public function testFileRejectsArrayStorageKey(): void
     {
         $filename = $this->writeImagePayload('');
@@ -119,7 +145,7 @@ class UploadControllerTest extends TestCase
         );
     }
 
-    private function submitFile(string $filename, $key): array
+    private function submitFile(string $filename, $key, string $originalName = 'controller.gif'): array
     {
         $request = (new Request())->withPost([
             'key' => $key,
@@ -128,8 +154,8 @@ class UploadControllerTest extends TestCase
         ])->withFiles([
             'file' => [
                 'tmp_name' => $filename,
-                'name' => 'controller.gif',
-                'type' => 'image/gif',
+                'name' => $originalName,
+                'type' => getimagesize($filename)['mime'],
                 'error' => UPLOAD_ERR_OK,
                 'size' => filesize($filename),
             ],

@@ -124,6 +124,91 @@ class UploadSecurityTest extends TestCase
         }
     }
 
+    public function testAllowsCompressedJpegContainingIncidentalShortTags(): void
+    {
+        $image = imagecreatetruecolor(512, 512);
+        for ($y = 0; $y < 512; ++$y) {
+            for ($x = 0; $x < 512; ++$x) {
+                imagesetpixel($image, $x, $y, hexdec(substr(md5("{$x}:{$y}"), 0, 6)));
+            }
+        }
+        ob_start();
+        imagejpeg($image, null, 92);
+        $jpeg = ob_get_clean();
+        imagedestroy($image);
+        $this->assertStringContainsString('<?', $jpeg);
+        $this->assertStringContainsString('<%', $jpeg);
+        $filename = tempnam(sys_get_temp_dir(), 'upload-security-');
+
+        try {
+            file_put_contents($filename, $jpeg);
+            $this->assertNotFalse(getimagesize($filename));
+            $this->assertTrue(UploadSecurity::isImageSafe($filename));
+        } finally {
+            unlink($filename);
+        }
+    }
+
+    public function testAllowsXmpProcessingInstructions(): void
+    {
+        $filename = $this->writeImagePayload(
+            '<?xml version="1.0" encoding="UTF-8"?>'
+            . '<?xpacket begin="" id="W5M0MpCehiHzreSzNTczkc9d"?>'
+            . '<x:xmpmeta xmlns:x="adobe:ns:meta/"></x:xmpmeta><?xpacket end="w"?>'
+        );
+
+        try {
+            $this->assertTrue(UploadSecurity::isImageSafe($filename));
+        } finally {
+            unlink($filename);
+        }
+    }
+
+    public function testAllowsIncidentalShortEchoBytesInBinaryImageData(): void
+    {
+        $filename = $this->writeImagePayload("\xFF<?=\x00\x83<%=\x00");
+
+        try {
+            $this->assertTrue(UploadSecurity::isImageSafe($filename));
+        } finally {
+            unlink($filename);
+        }
+    }
+
+    /**
+     * @dataProvider embeddedScriptProvider
+     */
+    public function testRejectsScriptsWithoutAFragmentLengthExemption(string $payload): void
+    {
+        $filename = $this->writeImagePayload($payload);
+
+        try {
+            $this->assertFalse(UploadSecurity::isImageSafe($filename));
+        } finally {
+            unlink($filename);
+        }
+    }
+
+    public static function embeddedScriptProvider(): array
+    {
+        return [
+            'short echo' => ['<?=7*7;'],
+            'short open tag' => ['<? echo 1; ?>'],
+            'x label' => ['<?x: echo 1; /* metadata is not a PHP label exemption */ ?>'],
+            'xml label' => ['<?xml: echo 1; ?>'],
+            'xpacket label' => ['<?xpacket: echo 1; ?>'],
+            'short tag without closing tag' => ['<?echo 1;'],
+            'short tag across multiple chunks' => ['<?' . str_repeat(' ', 20000) . 'echo 1; ?>'],
+            'full tag after binary noise' => ["<?\xFF\x00" . '<?php echo 1; ?>'],
+            'short echo after invalid short open tag' => ["<?\xFF\x00" . '<?=1;'],
+            'short echo after XMP' => ['<?xpacket begin=""?>' . '<?=1;'],
+            'short echo across chunk boundary' => [str_repeat("\0", 6109) . '<?=1;'],
+            'asp' => ['<%echo 1;%>'],
+            'asp across multiple chunks' => ['<%' . str_repeat(' ', 20000) . 'echo 1;%>'],
+            'script element' => ['<script>alert(1)</script>'],
+        ];
+    }
+
     private function writeImagePayload(string $payload): string
     {
         $filename = tempnam(sys_get_temp_dir(), 'upload-security-');

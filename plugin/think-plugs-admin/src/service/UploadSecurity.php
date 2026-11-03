@@ -64,7 +64,7 @@ final class UploadSecurity
     }
 
     /**
-     * 流式检查图片中是否夹带服务端脚本.
+     * 扫描明确脚本标签；遇到 PHP 短标签时按完整文件校验语法，不执行内容.
      */
     public static function isImageSafe(string $filename): bool
     {
@@ -75,6 +75,7 @@ final class UploadSecurity
             return false;
         }
         $carry = '';
+        $hasShortTag = false;
         try {
             while (!feof($stream)) {
                 $chunk = fread($stream, 8192);
@@ -85,9 +86,33 @@ final class UploadSecurity
                 if (self::containsScript($buffer)) {
                     return false;
                 }
+                $hasShortTag = $hasShortTag || strpos($buffer, '<?') !== false || strpos($buffer, '<%') !== false;
                 $carry = substr($buffer, -4096);
             }
-            return true;
+            if (!$hasShortTag) {
+                return true;
+            }
+            // 两字节标签也会自然出现在压缩数据中；不能按片段长度放行。
+            if (!rewind($stream)) {
+                return false;
+            }
+            $content = stream_get_contents($stream);
+            // 完整复核超出流式重叠区的文本标签。
+            if ($content === false || self::containsScript($content)) {
+                return false;
+            }
+            if (strpos($content, '<?') === false) {
+                return true;
+            }
+            // 未安装 tokenizer 时保留保守拒绝行为，解析过程不会执行上传内容。
+            if (!function_exists('token_get_all')) {
+                return false;
+            }
+            // 分别覆盖 short_open_tag 关闭和开启；前面的随机 <? 不能掩盖后面的 <?=。
+            if (strpos($content, '<?=') !== false && self::isPhpProgram(strtr($content, ['<?=' => '<?php echo ', '<?' => '<!']))) {
+                return false;
+            }
+            return !self::isPhpProgram(strtr($content, ['<?=' => '<?php echo ', '<?' => '<?php ']));
         } finally {
             fclose($stream);
         }
@@ -112,16 +137,21 @@ final class UploadSecurity
      */
     private static function containsScript(string $content): bool
     {
-        if (stripos($content, '<script') !== false) {
+        // 明确的起始标签始终拦截；旧式 ASP 标签需要有完整的文本代码上下文。
+        $matched = preg_match('/<\?php|<script|<%[\x09\x0A\x0C\x0D\x20-\x7E]*%>/i', $content);
+        return $matched === false || $matched > 0;
+    }
+
+    /**
+     * 仅解析语法，不执行文件；压缩二进制中的偶然标签通常不能构成完整 PHP 程序.
+     */
+    private static function isPhpProgram(string $content): bool
+    {
+        try {
+            token_get_all($content, TOKEN_PARSE);
             return true;
+        } catch (\ParseError $error) {
+            return false;
         }
-        $phpTag = preg_match('/<\?(?!xml\b)/i', $content);
-        if ($phpTag === false || $phpTag > 0) {
-            return true;
-        }
-        if (strpos($content, '<%') !== false) {
-            return true;
-        }
-        return false;
     }
 }
