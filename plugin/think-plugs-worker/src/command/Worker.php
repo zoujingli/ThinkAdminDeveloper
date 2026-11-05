@@ -101,8 +101,8 @@ class Worker extends Command
             }
         }
 
-        // 守护进程模式
-        if ($this->input->hasOption('daemon')) {
+        // 守护进程模式仅适用于启动和重启，停止及状态命令保留 Workerman 自身参数语义
+        if (in_array($action, ['start', 'restart'], true) && $this->input->hasOption('daemon')) {
             Workerman::$daemonize = true;
         }
 
@@ -115,8 +115,7 @@ class Worker extends Command
                     $this->output->writeln("<error>Worker Server Class Not Exists : {$class}</error>");
                 }
             }
-            Workerman::runAll();
-            return;
+            return $this->runWorkerman();
         }
 
         if ($custom === 'default') {
@@ -153,7 +152,33 @@ class Worker extends Command
         }
 
         // 应用并启动服务
-        Workerman::runAll();
+        return $this->runWorkerman();
+    }
+
+    /**
+     * 运行 Workerman，并把启动阶段捕获的异常转换为失败退出码。
+     *
+     * Workerman 会在 runAll() 内部记录异常后直接返回；启动失败时状态仍为 STARTING，
+     * 因而需要由命令层向调用方报告失败。正常运行及停止流程不会返回到这里。
+     */
+    protected function runWorkerman(): int
+    {
+        try {
+            Workerman::runAll();
+        } catch (\Throwable $error) {
+            // Workerman 4.x 把启动异常抛出，5.x 则在 runAll() 内记录后返回；统一转为命令失败。
+            Workerman::log($error);
+        }
+        if (DIRECTORY_SEPARATOR === '/' && method_exists(Workerman::class, 'getStatus')
+            && defined(Workerman::class . '::STATUS_STARTING')
+            && Workerman::getStatus() === Workerman::STATUS_STARTING) {
+            $this->output->writeln(sprintf(
+                '<error>Worker server failed to start. Check log: %s</error>',
+                Workerman::$logFile
+            ));
+            return 1;
+        }
+        return 0;
     }
 
     /**

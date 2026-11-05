@@ -55,6 +55,11 @@ check composer-mysql php tests/check-composer.php mysql
 check http-sqlite php tests/check-lifecycle.php sqlite web
 check http-mysql php tests/check-lifecycle.php mysql web
 check lifecycle php tests/check-lifecycle.php sqlite worker
+if [[ $(php -r 'echo PHP_MAJOR_VERSION;') == 8 ]]; then
+    check worker-daemon php tests/check-worker-daemon.php
+else
+    echo 'CHECK worker-daemon: skipped on PHP 7.x; lifecycle covers Worker compatibility'
+fi
 check http-client php /opt/phpunit.phar -c plugin/think-library/phpunit.xml.dist --filter HttpExtendTest
 check minio php tests/check-minio.php
 if [[ $(php -r 'echo PHP_MAJOR_VERSION;') == 8 && $scope == full ]]; then

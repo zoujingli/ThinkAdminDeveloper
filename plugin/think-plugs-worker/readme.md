@@ -247,6 +247,10 @@ class Events
 # 通过 Workerman 方式，启动默认 Http 服务
 php think xadmin:worker
 
+# 守护方式启动；推荐停止时省略 -d
+php think xadmin:worker start -d
+php think xadmin:worker stop
+
 # 通过 Workerman 方式，启动自定义 text 服务，注意 text 为 customs 配置项
 php think xadmin:worker --custom text
 
@@ -285,10 +289,18 @@ composer require workerman/gateway-worker
 **Linux** 支持操作指令如下：
 
 ```shell
-php think xadmin:worker [start|stop|reload|restart|status|-d]
+php think xadmin:worker [start|stop|reload|restart|status|connections]
+
+# -d 仅用于 start/restart；status -d 可持续显示状态
+php think xadmin:worker start -d
+php think xadmin:worker restart -d
+php think xadmin:worker status -d
+php think xadmin:worker stop
 
 # 以上所有操作效果与 Workerman 官方操作一致，详情请阅读对应文档。
 ```
+
+`stop -d` 仍保持兼容，并会显示停止结果。启动阶段如果端口被占用或监听失败，命令会返回退出码 `1`，并提示检查 `safefile/worker/worker_<port>.log`；此时 `stop` 显示未运行是预期结果，因为启动失败没有留下 Worker 主进程。
 
 **Windows** 支持操作指令如下：
 
